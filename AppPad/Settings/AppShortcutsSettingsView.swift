@@ -98,22 +98,27 @@ struct AppShortcutsSettingsView: View {
     @State private var loaded = ShortcutAppsCache.entries != nil
     @State private var query = ""
 
-    var body: some View {
-        VStack(spacing: 0) {
-            TextField("Search apps", text: $query)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+    // Extra scroll-content margin so the index bar fits between the cards and the scroller.
+    private static let formInset: CGFloat = 24
+    // Grouped Form caps its cards at this width and centers them (measured: 704 pt).
+    private static let formCardMaxWidth: CGFloat = 704
+    // Index bar sits left of the vertical scroller.
+    private static let scrollerWidth: CGFloat =
+        NSScroller.scrollerWidth(for: .regular, scrollerStyle: NSScroller.preferredScrollerStyle)
 
-            ScrollViewReader { proxy in
+    var body: some View {
+        ScrollViewReader { proxy in
+            VStack(spacing: 0) {
+                searchBar
                 form
+                    .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
                     .overlay(alignment: .trailing) {
                         LetterIndexBar(letters: AppShortcutEntry.letters,
                                        available: Set(groups.map(\.letter))) { letter in
                             guard let target = scrollTarget(for: letter) else { return }
                             proxy.scrollTo(target, anchor: .top)
                         }
-                        .padding(.trailing, 2)
+                        .padding(.trailing, Self.scrollerWidth + 2)
                     }
             }
         }
@@ -131,6 +136,21 @@ struct AppShortcutsSettingsView: View {
             }
         }
     }
+
+    // Same rule as the cards below: inset by contentMargins, capped width, centered.
+    private var searchBar: some View {
+        GlassSearchField(text: $query,
+                         placeholder: String(localized: "Search apps"),
+                         isGlass: prefs.glassControls)
+            .frame(maxWidth: Self.formCardMaxWidth)
+            .frame(height: GlassSearchFieldView.height)
+            .padding(.horizontal, Self.formInset)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
+    }
+
+    private static func headerID(_ letter: String) -> String { "letter-header-" + letter }
 
     private var form: some View {
         Form {
@@ -183,10 +203,14 @@ struct AppShortcutsSettingsView: View {
             }
 
             ForEach(groups) { group in
-                Section(group.letter) {
+                Section {
                     ForEach(group.items) { entry in
-                        unassignedRow(entry).id(entry.id)
+                        unassignedRow(entry)
                     }
+                } header: {
+                    // Scroll target: the letter header, not the first row (which hid the header).
+                    Text(verbatim: group.letter)
+                        .id(Self.headerID(group.letter))
                 }
             }
         }
@@ -233,14 +257,14 @@ struct AppShortcutsSettingsView: View {
         return result
     }
 
-    // Letter tapped → its first row, or the next letter that has rows.
+    // Letter tapped → its section header, or the next letter that has rows.
     private func scrollTarget(for letter: String) -> String? {
-        let current = groups
+        let present = Set(groups.map(\.letter))
         guard let start = AppShortcutEntry.letters.firstIndex(of: letter) else { return nil }
-        for l in AppShortcutEntry.letters[start...] {
-            if let first = current.first(where: { $0.letter == l })?.items.first { return first.id }
+        for l in AppShortcutEntry.letters[start...] where present.contains(l) {
+            return Self.headerID(l)
         }
-        return current.last?.items.first?.id
+        return groups.last.map { Self.headerID($0.letter) }
     }
 
     // MARK: - Rows

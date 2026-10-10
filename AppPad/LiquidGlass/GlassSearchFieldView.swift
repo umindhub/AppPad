@@ -1,5 +1,6 @@
 import AppKit
 import QuartzCore
+import SwiftUI
 
 // MARK: - GlassSearchFieldView
 //
@@ -338,5 +339,62 @@ final class SearchGlowView: NSView {
         CATransaction.setDisableActions(true)
         fill.colors = [c, c]                 // uniform: brightness only
         CATransaction.commit()
+    }
+}
+
+// MARK: - GlassSearchField (SwiftUI bridge)
+
+// Same chrome as the clipboard panel search, for SwiftUI settings pages.
+// Fills the proposed width; height is fixed at GlassSearchFieldView.height.
+struct GlassSearchField: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var isGlass: Bool
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
+
+    func makeNSView(context: Context) -> GlassSearchFieldView {
+        let view = GlassSearchFieldView()
+        view.field.placeholderString = placeholder
+        view.field.focusRingType = .none
+        view.field.delegate = context.coordinator
+        view.field.stringValue = text
+        view.isGlass = isGlass
+        return view
+    }
+
+    func updateNSView(_ view: GlassSearchFieldView, context: Context) {
+        context.coordinator.text = $text
+        view.isGlass = isGlass
+        if view.field.placeholderString != placeholder { view.field.placeholderString = placeholder }
+        // Only push external changes; never fight the field editor while typing.
+        if view.field.stringValue != text { view.field.stringValue = text }
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: GlassSearchFieldView, context: Context) -> CGSize? {
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? 240
+        return CGSize(width: width, height: GlassSearchFieldView.height)
+    }
+
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        var text: Binding<String>
+        init(text: Binding<String>) { self.text = text }
+
+        func controlTextDidChange(_ obj: Notification) {
+            guard let field = obj.object as? NSSearchField else { return }
+            if text.wrappedValue != field.stringValue { text.wrappedValue = field.stringValue }
+        }
+
+        // Esc clears the text first, then drops focus.
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+            guard selector == #selector(NSResponder.cancelOperation(_:)) else { return false }
+            if textView.string.isEmpty {
+                control.window?.makeFirstResponder(nil)
+            } else {
+                textView.selectAll(nil)
+                textView.delete(nil)
+            }
+            return true
+        }
     }
 }

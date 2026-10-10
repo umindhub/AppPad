@@ -68,30 +68,8 @@ struct SettingsView: View {
     // Outer padding left / right of the glass tab list.
     private static let sidebarHPadding: CGFloat = 10
 
-    // Column width minus the width the sidebar content really gets
-    // (floating glass sidebar margins on macOS 26); measured at runtime.
-    @State private var sidebarChrome: CGFloat = 0
-
-    // Sidebar width = widest row (icon box + gap + title) + row padding + outer padding * 2,
-    // so the selected pill covers the whole label. Measured like GlassSegmentedNSView
-    // renders labels; title at the lens weight (one step heavier) to stay safe.
-    private var sidebarWidth: CGFloat {
-        let m = GlassSegmentMetrics.settingsSidebar
-        let titleFont = NSFont.systemFont(ofSize: m.nsFont.pointSize, weight: .semibold)
-        let symbolConfig = NSImage.SymbolConfiguration(pointSize: m.iconPointSize ?? m.nsFont.pointSize,
-                                                       weight: .medium)
-        let widest = SettingsTab.allCases.map { item -> CGFloat in
-            let title = (item.title as NSString).size(withAttributes: [.font: titleFont]).width
-            let icon = item.iconImage != nil
-                ? (m.iconPointSize ?? m.nsFont.pointSize)
-                : [item.icon, item.selectedIcon].compactMap {
-                    NSImage(systemSymbolName: $0, accessibilityDescription: nil)?
-                        .withSymbolConfiguration(symbolConfig)?.size.width
-                }.max() ?? 0
-            return max(icon, m.iconColumnWidth ?? 0) + m.iconSpacing + title
-        }.max() ?? 0
-        return ceil(widest + m.labelHPadding * 2 + m.inset * 2 + Self.sidebarHPadding * 2)
-    }
+    // Fixed sidebar column width (no runtime measuring).
+    private static let sidebarWidth: CGFloat = 300
 
     // Split view: Liquid Glass vertical tabs in the sidebar, selected page on the right.
     // Same control as YouMindHub's Settings sidebar (GlassSegmentedControl, axis .vertical);
@@ -118,13 +96,7 @@ struct SettingsView: View {
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity)
-            // Content width < column width → add the difference back, so the
-            // tab list itself is exactly `sidebarWidth` wide.
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
-                let chrome = max(0, sidebarWidth + sidebarChrome - width)
-                if abs(chrome - sidebarChrome) > 0.5 { sidebarChrome = chrome }
-            }
-            .navigationSplitViewColumnWidth(sidebarWidth + sidebarChrome)
+            .navigationSplitViewColumnWidth(Self.sidebarWidth)
             .toolbar(removing: .sidebarToggle)
         } detail: {
             detail

@@ -139,4 +139,13 @@ struct ShortcutRecorder: NSViewRepresentable {
         let binding = $combo
         view.onChange = { binding.wrappedValue = $0 }
     }
+
+    // Take the .frame size; otherwise the 170 pt intrinsic width overflows narrower frames
+    // and the recording box draws under neighbouring buttons.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: ShortcutRecorderView, context: Context) -> CGSize? {
+        let natural = nsView.intrinsicContentSize
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? natural.width
+        let height = proposal.height.flatMap { $0.isFinite ? $0 : nil } ?? natural.height
+        return CGSize(width: width, height: height)
+    }
 }

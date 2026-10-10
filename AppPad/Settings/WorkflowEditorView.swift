@@ -419,7 +419,10 @@ private struct StepEditor: View {
                 }
                 .labelsHidden()
                 .fixedSize()
-                TextField("https://api.example.com/path", text: $step.http.url)
+                // Grouped Form shows a TextField title as a leading label; the sample URL belongs in prompt.
+                TextField("URL", text: $step.http.url,
+                          prompt: Text(verbatim: "https://api.example.com/path"))
+                    .labelsHidden()
                     .font(.system(.body, design: .monospaced))
             }
             Text("Headers, one per line (Name: Value). Use {{secret:NAME}} for tokens.")
