@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+
+// Beta shares the bundle id with Release
+PRODUCT_BUNDLE_IDENTIFIER = com.youmindhub.apppad
+APP_DISPLAY_NAME = AppPad
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) BETA

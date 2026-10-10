@@ -1,0 +1,5 @@
+#include "Shared.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = com.youmindhub.devapppad
+APP_DISPLAY_NAME = AppPad Dev
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEV
