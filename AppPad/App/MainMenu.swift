@@ -1,6 +1,7 @@
 import AppKit
 
-// Hidden main menu: agent apps still need Edit items so ⌘C/⌘V/⌘A work in text fields.
+// Main menu: hidden in agent mode (Edit items keep ⌘C/⌘V/⌘A working in text fields),
+// visible while Settings is open and the app is regular.
 enum MainMenu {
     static func build() -> NSMenu {
         let main = NSMenu()
@@ -12,6 +13,13 @@ enum MainMenu {
             withTitle: String(localized: "Settings…"),
             action: #selector(AppDelegate.openSettingsFromMenu(_:)),
             keyEquivalent: ","
+        )
+        appMenu.addItem(.separator())
+        // Enabled only while Settings is open (see AppDelegate.validateMenuItem).
+        appMenu.addItem(
+            withTitle: String(localized: "Quit AppPad"),
+            action: #selector(AppDelegate.quitFromMenu(_:)),
+            keyEquivalent: "q"
         )
         appItem.submenu = appMenu
 

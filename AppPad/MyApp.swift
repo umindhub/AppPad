@@ -2,7 +2,7 @@ import AppKit
 
 // App entry point: menu-bar-only agent app with AppKit lifecycle.
 @main
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private let launchpad: LaunchpadController
     private let clipboard: ClipboardController
     private let workflows: WorkflowPanelController
@@ -72,14 +72,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
+    // Dock icon click (only exists while Settings is open) brings Settings forward.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        launchpad.show()
+        if let settings, settings.isVisible {
+            settings.show()
+        } else {
+            launchpad.show()
+        }
         return false
     }
 
     // Target of the ⌘, main menu item.
     @objc func openSettingsFromMenu(_ sender: Any?) {
         showSettings()
+    }
+
+    // Target of the ⌘Q main menu item (visible menu bar while Settings is open).
+    @objc func quitFromMenu(_ sender: Any?) {
+        NSApp.terminate(nil)
+    }
+
+    // ⌘Q in the main menu only works in regular mode, so it never fires from the panels.
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(quitFromMenu(_:)) {
+            return NSApp.activationPolicy() == .regular
+        }
+        return true
     }
 
     private func showSettings() {

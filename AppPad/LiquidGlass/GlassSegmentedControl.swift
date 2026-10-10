@@ -13,6 +13,8 @@ struct GlassSegment<Value: Hashable> {
     var icon:         String? = nil
     /// Icon of the accent (selected) copy; nil → `icon`.
     var selectedIcon: String? = nil
+    /// Custom template icon (e.g. the menu bar glyph); wins over `icon` / `selectedIcon`.
+    var iconImage:    NSImage? = nil
 }
 
 // MARK: - GlassSegmentAxis
@@ -41,6 +43,8 @@ struct GlassSegmentMetrics {
     var iconSpacing:    CGFloat = 6
     /// Fixed icon column width; aligns titles across rows (vertical lists).
     var iconColumnWidth: CGFloat? = nil
+    /// SF Symbol point size; nil → same as the font size.
+    var iconPointSize:   CGFloat? = nil
 
     // Computed (not stored statics): NSFont isn't Sendable.
 
@@ -115,7 +119,8 @@ struct GlassSegmentedControl<Value: Hashable>: View {
     private var glassBody: some View {
         GlassSegmentedRepresentable(
             items: segments.map {
-                .init(title: $0.title, icon: $0.icon, selectedIcon: $0.selectedIcon)
+                .init(title: $0.title, icon: $0.icon, selectedIcon: $0.selectedIcon,
+                      iconImage: $0.iconImage)
             },
             selectedIndex: segments.firstIndex { $0.value == selection } ?? 0,
             metrics:       metrics,
@@ -202,8 +207,19 @@ struct GlassSegmentedControl<Value: Hashable>: View {
 
     private func legacyContent(_ seg: GlassSegment<Value>, filled: Bool) -> some View {
         let icon = filled ? (seg.selectedIcon ?? seg.icon) : seg.icon
+        let side = metrics.iconPointSize ?? metrics.nsFont.pointSize
         return HStack(spacing: metrics.iconSpacing) {
-            if let icon { Image(systemName: icon) }
+            if let image = seg.iconImage {
+                Image(nsImage: image)
+                    .renderingMode(.template)
+                    .resizable()
+                    .frame(width: side, height: side)
+                    .frame(width: metrics.iconColumnWidth)
+            } else if let icon {
+                Image(systemName: icon)
+                    .font(metrics.iconPointSize.map { Font.system(size: $0, weight: .medium) } ?? metrics.font)
+                    .frame(width: metrics.iconColumnWidth)
+            }
             Text(seg.title).lineLimit(1)
         }
         .font(metrics.font)
@@ -249,6 +265,7 @@ private struct GlassSegmentedRepresentable: NSViewRepresentable {
               inset:         metrics.inset,
               iconSpacing:   metrics.iconSpacing,
               iconColumnWidth: metrics.iconColumnWidth,
+              iconPointSize: metrics.iconPointSize,
               axis:          axis,
               labelColor:    labelColor,
               accentColor:   accentColor,
@@ -336,6 +353,7 @@ final class GlassSegmentedNSView: NSView {
         let title:        String
         let icon:         String?
         let selectedIcon: String?
+        var iconImage:    NSImage? = nil
     }
 
     struct Config: Equatable {
@@ -346,6 +364,7 @@ final class GlassSegmentedNSView: NSView {
         var inset:         CGFloat  = 2
         var iconSpacing:   CGFloat  = 6
         var iconColumnWidth: CGFloat? = nil
+        var iconPointSize: CGFloat? = nil
         var axis:          GlassSegmentAxis = .horizontal
         var labelColor:    NSColor  = .labelColor
         var accentColor:   NSColor  = .controlAccentColor
@@ -929,13 +948,15 @@ final class GlassSegmentedNSView: NSView {
 
     private func renderLabel(_ item: Item, color: NSColor, filled: Bool, font: NSFont) -> NSImage {
         let name = filled ? (item.selectedIcon ?? item.icon) : item.icon
-        let symbol: NSImage? = name.flatMap {
-            NSImage(systemSymbolName: $0, accessibilityDescription: nil)?
-                .withSymbolConfiguration(
-                    NSImage.SymbolConfiguration(pointSize: font.pointSize,
-                                                weight: Self.weight(of: font))
-                        .applying(NSImage.SymbolConfiguration(paletteColors: [color])))
-        }
+        let iconSide = config.iconPointSize ?? font.pointSize
+        let symbol: NSImage? = item.iconImage.map { Self.tinted($0, color: color, side: iconSide) }
+            ?? name.flatMap {
+                NSImage(systemSymbolName: $0, accessibilityDescription: nil)?
+                    .withSymbolConfiguration(
+                        NSImage.SymbolConfiguration(pointSize: iconSide,
+                                                    weight: Self.weight(of: font))
+                            .applying(NSImage.SymbolConfiguration(paletteColors: [color])))
+            }
         let text = NSAttributedString(string: item.title,
                                       attributes: [.font: font, .foregroundColor: color])
         let textSize = text.size()
@@ -954,6 +975,16 @@ final class GlassSegmentedNSView: NSView {
                          respectFlipped: true, hints: nil)
             text.draw(at: CGPoint(x: iconBox + gap,
                                   y: (size.height - textSize.height) / 2))
+            return true
+        }
+    }
+
+    /// Template image drawn at side × side, filled with `color`.
+    private static func tinted(_ image: NSImage, color: NSColor, side: CGFloat) -> NSImage {
+        NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            image.draw(in: rect)
+            color.set()
+            rect.fill(using: .sourceAtop)
             return true
         }
     }

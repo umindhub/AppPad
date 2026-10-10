@@ -27,6 +27,14 @@ enum SettingsTab: String, CaseIterable {
         }
     }
 
+    // Launchpad tab uses the menu bar glyph instead of an SF Symbol.
+    // Cached: segment items compare images by identity.
+    @MainActor private static let appPadGlyph = StatusBarController.makeIcon(padded: false)
+
+    @MainActor var iconImage: NSImage? {
+        self == .launchpad ? Self.appPadGlyph : nil
+    }
+
     var selectedIcon: String {
         switch self {
         case .launchpad: return "square.grid.3x3.fill"
@@ -39,13 +47,12 @@ enum SettingsTab: String, CaseIterable {
 }
 
 extension GlassSegmentMetrics {
-    // Same as YouMindHub's floating picker tabs: 30 pt slots + 4 pt inset = 38 pt capsule.
-    static var settingsTab: GlassSegmentMetrics {
-        GlassSegmentMetrics(font: .system(size: 13, weight: .medium),
-                            nsFont: .systemFont(ofSize: 13, weight: .medium),
-                            selectedWeight: .semibold,
-                            segmentHeight: 30, labelHPadding: 14, inset: 4,
-                            iconSpacing: 6)
+    // Settings sidebar: sized like a system sidebar List (larger text, bigger icons, taller rows).
+    static var settingsSidebar: GlassSegmentMetrics {
+        GlassSegmentMetrics(font: .system(size: 14, weight: .medium),
+                            nsFont: .systemFont(ofSize: 14, weight: .medium),
+                            segmentHeight: 34, labelHPadding: 12, inset: 2,
+                            iconSpacing: 10, iconColumnWidth: 24, iconPointSize: 17)
     }
 }
 
@@ -58,55 +65,91 @@ struct SettingsView: View {
 
     private var tab: SettingsTab { SettingsTab(rawValue: tabRaw) ?? .launchpad }
 
-    // Tab bar spacing; the reserve keeps the form below the bar at rest.
-    private static let tabTop: CGFloat = 16
-    private static let tabBottom: CGFloat = 4
-    private static var tabReserve: CGFloat {
-        let m = GlassSegmentMetrics.settingsTab
-        return tabTop + m.segmentHeight + m.inset * 2 + tabBottom
+    // Outer padding left / right of the glass tab list.
+    private static let sidebarHPadding: CGFloat = 10
+
+    // Column width minus the width the sidebar content really gets
+    // (floating glass sidebar margins on macOS 26); measured at runtime.
+    @State private var sidebarChrome: CGFloat = 0
+
+    // Sidebar width = widest row (icon box + gap + title) + row padding + outer padding * 2,
+    // so the selected pill covers the whole label. Measured like GlassSegmentedNSView
+    // renders labels; title at the lens weight (one step heavier) to stay safe.
+    private var sidebarWidth: CGFloat {
+        let m = GlassSegmentMetrics.settingsSidebar
+        let titleFont = NSFont.systemFont(ofSize: m.nsFont.pointSize, weight: .semibold)
+        let symbolConfig = NSImage.SymbolConfiguration(pointSize: m.iconPointSize ?? m.nsFont.pointSize,
+                                                       weight: .medium)
+        let widest = SettingsTab.allCases.map { item -> CGFloat in
+            let title = (item.title as NSString).size(withAttributes: [.font: titleFont]).width
+            let icon = item.iconImage != nil
+                ? (m.iconPointSize ?? m.nsFont.pointSize)
+                : [item.icon, item.selectedIcon].compactMap {
+                    NSImage(systemSymbolName: $0, accessibilityDescription: nil)?
+                        .withSymbolConfiguration(symbolConfig)?.size.width
+                }.max() ?? 0
+            return max(icon, m.iconColumnWidth ?? 0) + m.iconSpacing + title
+        }.max() ?? 0
+        return ceil(widest + m.labelHPadding * 2 + m.inset * 2 + Self.sidebarHPadding * 2)
     }
 
-    // Own tab bar (YouMindHub GlassSegmentedControl): floating capsule on top,
-    // glass lens when "Liquid Glass controls" is on, pill otherwise.
-    // The bar is an overlay so the lifted lens (overhangs ~12 pt) draws above
-    // the form instead of being covered by it.
+    // Split view: Liquid Glass vertical tabs in the sidebar, selected page on the right.
+    // Same control as YouMindHub's Settings sidebar (GlassSegmentedControl, axis .vertical);
+    // pill layout when "Liquid Glass controls" is off.
     var body: some View {
-        VStack(spacing: 0) {
-            Color.clear.frame(height: Self.tabReserve)
-
-            switch tab {
-            case .launchpad:
-                launchpadForm
-            case .clipboard:
-                ClipboardSettingsView(prefs: prefs, maintenance: clipboard)
-            case .shortcuts:
-                AppShortcutsSettingsView(prefs: prefs)
-            case .windows:
-                WindowControlSettingsView(prefs: prefs)
-            case .workflows:
-                WorkflowSettingsView(prefs: prefs)
+        NavigationSplitView {
+            VStack(spacing: 0) {
+                GlassSegmentedControl(
+                    segments: SettingsTab.allCases.map {
+                        GlassSegment(value: $0, title: $0.title, icon: $0.icon,
+                                     selectedIcon: $0.selectedIcon, iconImage: $0.iconImage)
+                    },
+                    selection:          tab,
+                    metrics:            .settingsSidebar,
+                    fillsWidth:         true,
+                    selectedLabelColor: .accentColor,
+                    axis:               .vertical,
+                    glass:              prefs.glassControls,
+                    onSelect:           { tabRaw = $0.rawValue }
+                )
+                // Room for the lifted lens (grows along the list, slightly across).
+                .padding(.horizontal, Self.sidebarHPadding)
+                .padding(.top, 10)
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity)
+            // Content width < column width → add the difference back, so the
+            // tab list itself is exactly `sidebarWidth` wide.
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
+                let chrome = max(0, sidebarWidth + sidebarChrome - width)
+                if abs(chrome - sidebarChrome) > 0.5 { sidebarChrome = chrome }
+            }
+            .navigationSplitViewColumnWidth(sidebarWidth + sidebarChrome)
+            .toolbar(removing: .sidebarToggle)
+        } detail: {
+            detail
+                .navigationTitle(tab.title)
         }
-        .overlay(alignment: .top) {
-            GlassSegmentedControl(
-                segments: SettingsTab.allCases.map {
-                    GlassSegment(value: $0, title: $0.title, icon: $0.icon, selectedIcon: $0.selectedIcon)
-                },
-                selection:          tab,
-                metrics:            .settingsTab,
-                fillsWidth:         false,
-                selectedLabelColor: .accentColor,
-                glass:              prefs.glassControls,
-                onSelect:           { tabRaw = $0.rawValue }
-            )
-            .fixedSize()
-            .padding(.top, Self.tabTop)
-            .zIndex(1)
-        }
-        .frame(width: 600, height: 720)
+        .frame(minWidth: 800, minHeight: 560)
         // Login item may be toggled from the menu bar while Settings stays open.
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
             launchAtLogin = LoginItem.isEnabled
+        }
+    }
+
+    @ViewBuilder
+    private var detail: some View {
+        switch tab {
+        case .launchpad:
+            launchpadForm
+        case .clipboard:
+            ClipboardSettingsView(prefs: prefs, maintenance: clipboard)
+        case .shortcuts:
+            AppShortcutsSettingsView(prefs: prefs)
+        case .windows:
+            WindowControlSettingsView(prefs: prefs)
+        case .workflows:
+            WorkflowSettingsView(prefs: prefs)
         }
     }
 

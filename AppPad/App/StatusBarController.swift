@@ -85,12 +85,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     // 2×2 rounded squares, drawn as a template image (tinted by the menu bar).
-    private static func makeIcon() -> NSImage {
-        let canvas: CGFloat = 18
+    // Also used as the AppPad tab icon in Settings (padded: false → glyph fills the canvas).
+    static func makeIcon(padded: Bool = true) -> NSImage {
         let tile: CGFloat = 6.5
         let gap: CGFloat = 2
         let radius: CGFloat = 1.8
-        let inset = (canvas - tile * 2 - gap) / 2
+        let content = tile * 2 + gap
+        let canvas: CGFloat = padded ? 18 : content
+        let inset = (canvas - content) / 2
         let image = NSImage(size: NSSize(width: canvas, height: canvas), flipped: false) { _ in
             NSColor.black.setFill()
             for row in 0..<2 {
