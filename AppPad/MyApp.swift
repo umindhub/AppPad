@@ -13,6 +13,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private var appHotKeyIDs: [UInt32] = []
     private var windowHotKeyIDs: [UInt32] = []
     private var prefsTask: Task<Void, Never>?
+    // Last other app that was frontmost (gets focus back after a Dock click).
+    private let frontmost = FrontmostAppTracker()
+    // Dock click → focus handed back to the previous app, then this runs.
+    private var handoffAction: (() -> Void)?
+    private var handoffObserver: NSObjectProtocol?
+    private var handoffToken = 0
 
     override init() {
         launchpad = LaunchpadController()
@@ -72,14 +78,68 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         )
     }
 
-    // Dock icon click (only exists while Settings is open) brings Settings forward.
+    // Click on AppPad pinned in the Dock (app already running) toggles Launchpad.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if let settings, settings.isVisible {
-            settings.show()
-        } else {
-            launchpad.show()
-        }
+        toggleLaunchpadFromDock()
         return false
+    }
+
+    // The Dock click activates AppPad. Without Settings open, focus goes back to the previous
+    // app first, so the panel opens non-activating (same state as pinch / menu bar).
+    private func toggleLaunchpadFromDock() {
+        let settingsOpen = settings?.isVisible == true
+        // Panel may already have closed on resign key from the same click.
+        if launchpad.isShown || launchpad.didJustCloseFromOutsideClick {
+            launchpad.hide()
+            if !settingsOpen { handOffActivation() }
+            return
+        }
+        clipboard.hide()
+        workflows.hide()
+        if settingsOpen {
+            launchpad.show()
+        } else {
+            handOffActivation { [weak self] in self?.launchpad.show() }
+        }
+    }
+
+    // Activate the previous app, run the action once AppPad resigned active (or after a timeout).
+    private func handOffActivation(then action: (() -> Void)? = nil) {
+        handoffToken &+= 1
+        clearHandoffObserver()
+        let target = frontmost.last.flatMap { $0.isTerminated ? nil : $0 } ?? FrontmostAppTracker.finder
+        guard NSApp.isActive, let target else {
+            handoffAction = nil
+            action?()
+            return
+        }
+        handoffAction = action
+        let token = handoffToken
+        handoffObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification, object: NSApp, queue: .main
+        ) { [weak self] _ in
+            // Next run loop: let the other app finish taking key before the panel does.
+            DispatchQueue.main.async { self?.finishHandoff(token) }
+        }
+        _ = target.activate(from: NSRunningApplication.current, options: [])
+        // Fallback if the activation is refused.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.finishHandoff(token)
+        }
+    }
+
+    private func finishHandoff(_ token: Int) {
+        guard token == handoffToken else { return }   // stale or already done
+        handoffToken &+= 1
+        clearHandoffObserver()
+        let action = handoffAction
+        handoffAction = nil
+        action?()
+    }
+
+    private func clearHandoffObserver() {
+        if let handoffObserver { NotificationCenter.default.removeObserver(handoffObserver) }
+        handoffObserver = nil
     }
 
     // Target of the ⌘, main menu item.
@@ -87,15 +147,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         showSettings()
     }
 
-    // Target of the ⌘Q main menu item (visible menu bar while Settings is open).
+    // Target of the ⌘Q main menu item (works while Settings has focus).
     @objc func quitFromMenu(_ sender: Any?) {
         NSApp.terminate(nil)
     }
 
-    // ⌘Q in the main menu only works in regular mode, so it never fires from the panels.
+    // ⌘Q only while the Settings window is key, so it never fires from the panels.
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(quitFromMenu(_:)) {
-            return NSApp.activationPolicy() == .regular
+            return settings?.isKey == true
         }
         return true
     }
@@ -224,5 +284,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         if !ok { NSLog("Workflow panel hotkey could not be registered (taken by another app?)") }
         statusBar?.hotKeyAvailable = ok
         statusBar?.refresh()
+    }
+}
+
+// Tracks the last frontmost app other than AppPad.
+private final class FrontmostAppTracker {
+    private(set) var last: NSRunningApplication?
+    private var observer: NSObjectProtocol?
+
+    init() {
+        record(NSWorkspace.shared.frontmostApplication)
+        observer = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { [weak self] note in
+            self?.record(note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)
+        }
+    }
+
+    deinit {
+        if let observer { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
+    }
+
+    private func record(_ app: NSRunningApplication?) {
+        guard let app, app.processIdentifier != NSRunningApplication.current.processIdentifier else { return }
+        last = app
+    }
+
+    // Always running; fallback when the previous app is gone.
+    static var finder: NSRunningApplication? {
+        NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first
     }
 }

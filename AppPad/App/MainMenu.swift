@@ -1,7 +1,7 @@
 import AppKit
 
-// Main menu: hidden in agent mode (Edit items keep ⌘C/⌘V/⌘A working in text fields),
-// visible while Settings is open and the app is regular.
+// Main menu: never shown (agent app), but its key equivalents still work:
+// Edit items keep ⌘C/⌘V/⌘A working in text fields, ⌘, / ⌘Q in Settings.
 enum MainMenu {
     static func build() -> NSMenu {
         let main = NSMenu()

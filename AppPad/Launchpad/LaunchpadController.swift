@@ -28,6 +28,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var rescanDebounce: Task<Void, Never>?
     private var lastCapacity = 0
     private var isHiding = false
+    // When the panel last closed because it lost key (click outside).
+    private var lastOutsideClose: TimeInterval = -1
     private var didWarmUp = false
     private var isWarmingUp = false
 
@@ -215,6 +217,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Visible and focused (what toggle / gestures treat as "open").
     var isShown: Bool { panel.isVisible && panel.isKeyWindow }
 
+    // A Dock click can close the panel (resign key) just before the reopen event arrives;
+    // the Dock toggle treats that as "was open".
+    var didJustCloseFromOutsideClick: Bool {
+        ProcessInfo.processInfo.systemUptime - lastOutsideClose < 0.5
+    }
+
     func toggle() {
         if isShown {
             hide()
@@ -384,6 +392,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // Click outside the panel → close.
     func windowDidResignKey(_ notification: Notification) {
+        if panel.isVisible, !isHiding {
+            lastOutsideClose = ProcessInfo.processInfo.systemUptime
+        }
         hide()
     }
 
