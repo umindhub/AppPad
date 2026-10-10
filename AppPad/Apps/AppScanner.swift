@@ -10,6 +10,20 @@ nonisolated enum AppScanner {
         ]
     }
 
+    // Extra apps for the shortcuts list only (not the launcher grid).
+    // Xcode / Xcode-beta share a bundle id, so scanAll() keeps only one of them.
+    private static let extraAppPaths = [
+        "/System/Library/CoreServices/Finder.app",
+        "/Applications/Xcode.app",
+        "/Applications/Xcode-beta.app",
+    ]
+
+    static func scanExtraLocations() -> [AppInfo] {
+        extraAppPaths
+            .filter { FileManager.default.fileExists(atPath: $0) }
+            .compactMap { makeInfo(URL(fileURLWithPath: $0)) }
+    }
+
     private static let systemBundleIDsOutsideSystem: Set<String> = ["com.apple.Safari"]
 
     static func scanAll() -> [AppInfo] {

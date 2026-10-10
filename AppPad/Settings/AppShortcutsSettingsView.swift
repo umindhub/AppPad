@@ -2,25 +2,157 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
+// One scanned app with its Contacts-style index letter (CJK → Latin, e.g. 访达 → F).
+nonisolated struct AppShortcutEntry: Identifiable, Sendable {
+    let app: AppInfo
+    let letter: String      // "A"…"Z" or "#"
+    let sortKey: String     // latinized, lowercased
+    let searchKey: String   // name + bundle name + latinized (no spaces)
+
+    var id: String { app.key }
+
+    static let letters: [String] = (65...90).map { String(UnicodeScalar(UInt8($0))) } + ["#"]
+
+    init(app: AppInfo) {
+        self.app = app
+        let latin = Self.latinize(app.name)
+        sortKey = latin.lowercased()
+        letter = Self.indexLetter(latin)
+        searchKey = (app.name + " " + app.bundleName + " " + latin.replacingOccurrences(of: " ", with: "")).lowercased()
+    }
+
+    private static func latinize(_ s: String) -> String {
+        let latin = s.applyingTransform(.toLatin, reverse: false) ?? s
+        return latin.applyingTransform(.stripDiacritics, reverse: false) ?? latin
+    }
+
+    private static func indexLetter(_ latin: String) -> String {
+        guard let first = latin.trimmingCharacters(in: .whitespaces).first else { return "#" }
+        let upper = String(first).uppercased()
+        guard upper.unicodeScalars.count == 1, let v = upper.unicodeScalars.first?.value, (65...90).contains(v) else {
+            return "#"
+        }
+        return upper
+    }
+
+    // Scan system + installed apps + extra locations, sorted by index letter then name ("#" last).
+    static func loadAll() -> [AppShortcutEntry] {
+        // One entry per path; a bundle id installed twice (Xcode + Xcode-beta) gets path keys
+        // so each copy has its own shortcut.
+        var seenPaths = Set<String>()
+        let unique = (AppScanner.scanAll() + AppScanner.scanExtraLocations())
+            .filter { seenPaths.insert($0.url.standardizedFileURL.path).inserted }
+        let idCounts = Dictionary(grouping: unique, by: { $0.key }).mapValues(\.count)
+        let apps = unique.map { app -> AppInfo in
+            guard idCounts[app.key, default: 0] > 1 else { return app }
+            return AppInfo(key: app.url.standardizedFileURL.path, bundleID: app.bundleID, url: app.url,
+                           name: app.name, bundleName: app.bundleName, category: app.category,
+                           isSystem: app.isSystem, isUtility: app.isUtility, isAppStore: app.isAppStore)
+        }
+        return apps
+            .map(AppShortcutEntry.init)
+            .sorted { a, b in
+                if a.letter != b.letter {
+                    if a.letter == "#" { return false }
+                    if b.letter == "#" { return true }
+                    return a.letter < b.letter
+                }
+                return a.sortKey.localizedStandardCompare(b.sortKey) == .orderedAscending
+            }
+    }
+}
+
+// Apps of one index letter.
+private struct LetterGroup: Identifiable {
+    let letter: String
+    var items: [AppShortcutEntry]
+    var id: String { letter }
+}
+
+// Scan result kept across tab switches (the tab view is rebuilt each time).
+@MainActor
+private enum ShortcutAppsCache {
+    static var entries: [AppShortcutEntry]?
+}
+
+// Small icon cache for this tab (rows re-render often).
+@MainActor
+private final class ShortcutIconCache {
+    static let shared = ShortcutIconCache()
+    private var cache: [String: NSImage] = [:]
+
+    func icon(path: String) -> NSImage {
+        if let image = cache[path] { return image }
+        let image = NSWorkspace.shared.icon(forFile: path)
+        image.size = NSSize(width: 44, height: 44)
+        cache[path] = image
+        return image
+    }
+}
+
 // Settings → App Shortcuts tab: per-app global hotkeys (Raycast style).
+// Top: apps with a shortcut. Below: every other app, grouped A–Z like Contacts, with a letter index.
 struct AppShortcutsSettingsView: View {
     @ObservedObject var prefs: Preferences
+    @State private var entries: [AppShortcutEntry] = ShortcutAppsCache.entries ?? []
+    @State private var loaded = ShortcutAppsCache.entries != nil
+    @State private var query = ""
 
     var body: some View {
+        VStack(spacing: 0) {
+            TextField("Search apps", text: $query)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
+            ScrollViewReader { proxy in
+                form
+                    .overlay(alignment: .trailing) {
+                        LetterIndexBar(letters: AppShortcutEntry.letters,
+                                       available: Set(groups.map(\.letter))) { letter in
+                            guard let target = scrollTarget(for: letter) else { return }
+                            proxy.scrollTo(target, anchor: .top)
+                        }
+                        .padding(.trailing, 2)
+                    }
+            }
+        }
+        .task {
+            // Show the cached list at once, then refresh (apps may have been installed / removed).
+            let fresh = await Task.detached(priority: .userInitiated) { AppShortcutEntry.loadAll() }.value
+            ShortcutAppsCache.entries = fresh
+            entries = fresh
+            loaded = true
+        }
+        .onDisappear {
+            // Rows added via "Set Shortcut…" but never recorded.
+            if prefs.appHotKeys.contains(where: { $0.combo == nil }) {
+                prefs.appHotKeys.removeAll { $0.combo == nil }
+            }
+        }
+    }
+
+    private var form: some View {
         Form {
             Section {
-                if prefs.appHotKeys.isEmpty {
-                    Text("No app shortcuts yet. Add an app, or right-click an app in AppPad › Set Shortcut….")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                if assigned.isEmpty {
+                    Group {
+                        if query.isEmpty {
+                            Text("No app shortcuts yet. Click a field below to record one.")
+                        } else {
+                            Text("No apps match.")
+                        }
+                    }
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
                 } else {
-                    ForEach($prefs.appHotKeys) { $item in
-                        row(for: $item)
+                    ForEach(assigned, id: \.key) { item in
+                        assignedRow(item)
                     }
                 }
             } header: {
                 HStack {
-                    Text("Apps")
+                    Text("With Shortcuts")
                     Spacer()
                     Text("\(assignedCount) of \(prefs.appHotKeys.count) assigned")
                         .font(.caption)
@@ -36,20 +168,88 @@ struct AppShortcutsSettingsView: View {
                 }
                 .padding(.top, 4)
             }
+
+            if !loaded {
+                Section {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Scanning apps…").foregroundStyle(.secondary)
+                    }
+                }
+            } else if groups.isEmpty, !query.isEmpty, !assigned.isEmpty {
+                Section {
+                    Text("No apps match.").foregroundStyle(.secondary)
+                }
+            }
+
+            ForEach(groups) { group in
+                Section(group.letter) {
+                    ForEach(group.items) { entry in
+                        unassignedRow(entry).id(entry.id)
+                    }
+                }
+            }
         }
         .formStyle(.grouped)
+    }
+
+    // MARK: - Data
+
+    private var normalizedQuery: String {
+        query.trimmingCharacters(in: .whitespaces).lowercased()
+    }
+
+    // Assigned (and pending "Set Shortcut…") rows, sorted by name.
+    private var assigned: [AppHotKey] {
+        let q = normalizedQuery
+        return prefs.appHotKeys
+            .filter { q.isEmpty || $0.name.lowercased().contains(q) || searchKey(for: $0.key)?.contains(q) == true }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     private var assignedCount: Int {
         prefs.appHotKeys.filter { $0.combo != nil }.count
     }
 
-    private func row(for item: Binding<AppHotKey>) -> some View {
-        let value = item.wrappedValue
-        let conflict = conflictName(for: value)
+    private func searchKey(for key: String) -> String? {
+        entries.first { $0.app.key == key }?.searchKey
+    }
+
+    // Apps without an entry in prefs, grouped by letter.
+    private var groups: [LetterGroup] {
+        let taken = Set(prefs.appHotKeys.map(\.key))
+        let q = normalizedQuery.replacingOccurrences(of: " ", with: "")
+        let visible = entries.filter { entry in
+            !taken.contains(entry.app.key) && (q.isEmpty || entry.searchKey.replacingOccurrences(of: " ", with: "").contains(q))
+        }
+        var result: [LetterGroup] = []
+        for entry in visible {
+            if result.last?.letter == entry.letter {
+                result[result.count - 1].items.append(entry)
+            } else {
+                result.append(LetterGroup(letter: entry.letter, items: [entry]))
+            }
+        }
+        return result
+    }
+
+    // Letter tapped → its first row, or the next letter that has rows.
+    private func scrollTarget(for letter: String) -> String? {
+        let current = groups
+        guard let start = AppShortcutEntry.letters.firstIndex(of: letter) else { return nil }
+        for l in AppShortcutEntry.letters[start...] {
+            if let first = current.first(where: { $0.letter == l })?.items.first { return first.id }
+        }
+        return current.last?.items.first?.id
+    }
+
+    // MARK: - Rows
+
+    private func assignedRow(_ value: AppHotKey) -> some View {
+        let conflict = prefs.conflictName(for: value.combo, excluding: .app(value.key))
         let missing = AppActivator.resolveURL(value) == nil
         return HStack(spacing: 8) {
-            Image(nsImage: NSWorkspace.shared.icon(forFile: value.path))
+            Image(nsImage: ShortcutIconCache.shared.icon(path: value.path))
                 .resizable()
                 .frame(width: 22, height: 22)
                 .opacity(missing ? 0.4 : 1)
@@ -72,7 +272,7 @@ struct AppShortcutsSettingsView: View {
                     .foregroundStyle(.orange)
                     .help(Text("Only one of them will work."))
             }
-            ShortcutRecorder(combo: item.combo)
+            ShortcutRecorder(combo: assignedBinding(value.key))
                 .frame(width: 150, height: 22)
             Button {
                 prefs.appHotKeys.removeAll { $0.key == value.key }
@@ -85,11 +285,46 @@ struct AppShortcutsSettingsView: View {
         }
     }
 
-    // Name of the first other owner of the same key + modifiers, if any.
-    private func conflictName(for item: AppHotKey) -> String? {
-        prefs.conflictName(for: item.combo, excluding: .app(item.key))
+    private func unassignedRow(_ entry: AppShortcutEntry) -> some View {
+        HStack(spacing: 8) {
+            Image(nsImage: ShortcutIconCache.shared.icon(path: entry.app.url.path))
+                .resizable()
+                .frame(width: 22, height: 22)
+            Text(entry.app.name)
+                .lineLimit(1)
+            Spacer()
+            ShortcutRecorder(combo: unassignedBinding(entry.app))
+                .frame(width: 150, height: 22)
+        }
     }
 
+    // Clearing a shortcut moves the app back to the A–Z list.
+    private func assignedBinding(_ key: String) -> Binding<KeyCombo?> {
+        Binding(
+            get: { prefs.appHotKeys.first { $0.key == key }?.combo },
+            set: { newValue in
+                guard let index = prefs.appHotKeys.firstIndex(where: { $0.key == key }) else { return }
+                if let newValue {
+                    prefs.appHotKeys[index].combo = newValue
+                } else {
+                    prefs.appHotKeys.remove(at: index)
+                }
+            }
+        )
+    }
+
+    // Recording a shortcut moves the app up into "With Shortcuts".
+    private func unassignedBinding(_ app: AppInfo) -> Binding<KeyCombo?> {
+        Binding(
+            get: { nil },
+            set: { newValue in
+                guard let newValue, !prefs.appHotKeys.contains(where: { $0.key == app.key }) else { return }
+                prefs.appHotKeys.append(AppHotKey(key: app.key, path: app.url.path, name: app.name, combo: newValue))
+            }
+        )
+    }
+
+    // For apps outside the scanned folders.
     private func addApps() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.application]
@@ -106,5 +341,39 @@ struct AppShortcutsSettingsView: View {
         }
         // Single assignment → one save / one hotkey re-registration.
         if added.count != prefs.appHotKeys.count { prefs.appHotKeys = added }
+    }
+}
+
+// Contacts-style A–Z index: click or drag along it to jump.
+private struct LetterIndexBar: View {
+    let letters: [String]
+    let available: Set<String>
+    let onSelect: (String) -> Void
+    @State private var last: String?
+
+    private let rowHeight: CGFloat = 14
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(letters, id: \.self) { letter in
+                Text(verbatim: letter)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(available.contains(letter) ? Color.accentColor : Color.secondary.opacity(0.4))
+                    .frame(width: 16, height: rowHeight)
+            }
+        }
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    let index = Int(value.location.y / rowHeight)
+                    guard letters.indices.contains(index) else { return }
+                    let letter = letters[index]
+                    guard letter != last else { return }
+                    last = letter
+                    onSelect(letter)
+                }
+                .onEnded { _ in last = nil }
+        )
     }
 }

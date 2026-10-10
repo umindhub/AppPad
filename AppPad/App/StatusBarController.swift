@@ -2,17 +2,28 @@ import AppKit
 import Carbon.HIToolbox
 
 // Menu bar icon + menu (the app has no Dock icon).
-// Shortcuts use real key equivalents so AppKit draws them right-aligned.
+// Shortcuts and the login state are drawn in the title with one shared right-aligned
+// tab stop, so their right edges line up exactly (AppKit's own key column does not).
+// Real key equivalents live on hidden twin items, so ⌘Q / ⌘, still work while the menu is open.
 final class StatusBarController: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
     private let openItem = NSMenuItem()
     private let clipboardItem = NSMenuItem()
+    private let settingsItem = NSMenuItem()
     private let loginItem = NSMenuItem()
+    private let quitItem = NSMenuItem()
+    // Hidden twins carrying the key equivalents.
+    private let openKeyItem = NSMenuItem()
+    private let clipboardKeyItem = NSMenuItem()
     var hotKeyAvailable = true
     private let onOpen: () -> Void
     private let onClipboard: () -> Void
     private let onSettings: () -> Void
+
+    // Title + right-hand text for each visible row.
+    private var rows: [(item: NSMenuItem, title: String, trailing: String)] = []
+    private weak var highlighted: NSMenuItem?
 
     init(onOpen: @escaping () -> Void, onClipboard: @escaping () -> Void, onSettings: @escaping () -> Void) {
         self.onOpen = onOpen
@@ -22,35 +33,49 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
         item.button?.image = Self.makeIcon()
 
-        openItem.target = self
-        openItem.action = #selector(openLaunchpad)
+        configure(openItem, action: #selector(openLaunchpad))
+        configure(clipboardItem, action: #selector(openClipboard))
+        configure(settingsItem, action: #selector(openSettings))
+        configure(loginItem, action: #selector(toggleLogin))
+        configure(quitItem, action: #selector(quit))
+
         menu.addItem(openItem)
-
-        clipboardItem.title = String(localized: "Open Clipboard")
-        clipboardItem.target = self
-        clipboardItem.action = #selector(openClipboard)
         menu.addItem(clipboardItem)
-
-        let settingsItem = NSMenuItem(title: String(localized: "Settings…"), action: #selector(openSettings), keyEquivalent: ",")
-        settingsItem.keyEquivalentModifierMask = .command
-        settingsItem.target = self
         menu.addItem(settingsItem)
-
-        // Checkmark sits in the shortcut column (right side) instead of the left state column.
-        loginItem.title = String(localized: "Launch at Login")
-        loginItem.target = self
-        loginItem.action = #selector(toggleLogin)
         menu.addItem(loginItem)
-
         menu.addItem(.separator())
         let info = NSMenuItem(title: AppEnvironment.versionDescription, action: nil, keyEquivalent: "")
         info.isEnabled = false
         menu.addItem(info)
-        menu.addItem(NSMenuItem(title: String(localized: "Quit AppPad"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(quitItem)
 
+        // Hidden key-equivalent twins.
+        configure(openKeyItem, action: #selector(openLaunchpad))
+        configure(clipboardKeyItem, action: #selector(openClipboard))
+        let settingsKey = NSMenuItem(title: "", action: #selector(openSettings), keyEquivalent: ",")
+        settingsKey.keyEquivalentModifierMask = .command
+        settingsKey.target = self
+        let quitKey = NSMenuItem(title: "", action: #selector(quit), keyEquivalent: "q")
+        quitKey.keyEquivalentModifierMask = .command
+        quitKey.target = self
+        for twin in [openKeyItem, clipboardKeyItem, settingsKey, quitKey] {
+            twin.isHidden = true
+            twin.allowsKeyEquivalentWhenHidden = true
+            menu.addItem(twin)
+        }
+
+        // No system-provided symbols (macOS 27 keeps one on Settings by default).
+        if #available(macOS 27.0, *) {
+            for menuItem in menu.items { menuItem.preferredImageVisibility = .hidden }
+        }
         menu.delegate = self
         item.menu = menu
         refresh()
+    }
+
+    private func configure(_ menuItem: NSMenuItem, action: Selector) {
+        menuItem.target = self
+        menuItem.action = action
     }
 
     // 2×2 rounded squares, drawn as a template image (tinted by the menu bar).
@@ -79,18 +104,53 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func refresh() {
         let prefs = Preferences.shared
-
-        openItem.title = String(localized: "Open AppPad") + (hotKeyAvailable ? "" : "  ⚠︎")
+        let openTitle = String(localized: "Open AppPad") + (hotKeyAvailable ? "" : "  ⚠︎")
         openItem.toolTip = hotKeyAvailable ? nil : String(localized: "The shortcut could not be registered. It may be used by another app.")
-        apply(prefs.launcherHotKey, to: openItem)
 
-        apply(prefs.clipboardHotKey, to: clipboardItem)
+        apply(prefs.launcherHotKey, to: openKeyItem)
+        apply(prefs.clipboardHotKey, to: clipboardKeyItem)
         clipboardItem.isHidden = !prefs.clipboardEnabled
+        clipboardKeyItem.allowsKeyEquivalentWhenHidden = prefs.clipboardEnabled
 
-        let enabled = LoginItem.isEnabled
-        loginItem.state = .off
-        loginItem.keyEquivalent = enabled ? "✓" : ""
-        loginItem.keyEquivalentModifierMask = []
+        rows = [
+            (openItem, openTitle, prefs.launcherHotKey?.displayString ?? ""),
+            (clipboardItem, String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString ?? ""),
+            (settingsItem, String(localized: "Settings"), "⌘,"),
+            (loginItem, String(localized: "Launch at Login"), LoginItem.isEnabled ? "✓" : "✕"),
+            (quitItem, String(localized: "Quit AppPad"), "⌘Q"),
+        ]
+        renderTitles()
+    }
+
+    // One right-aligned tab stop shared by all rows → trailing texts end at the same x.
+    private func renderTitles() {
+        let font = NSFont.menuFont(ofSize: 0)
+        let measure: (String) -> CGFloat = { ($0 as NSString).size(withAttributes: [.font: font]).width }
+        let visible = rows.filter { !$0.item.isHidden }
+        let titleWidth = visible.map { measure($0.title) }.max() ?? 0
+        let trailingWidth = visible.map { measure($0.trailing) }.max() ?? 0
+        let tabLocation = ceil(titleWidth + 36 + trailingWidth)
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.tabStops = [NSTextTab(textAlignment: .right, location: tabLocation)]
+
+        for row in rows {
+            let isHighlighted = row.item === highlighted
+            let text = NSMutableAttributedString(string: row.title, attributes: [
+                .font: font,
+                .foregroundColor: isHighlighted ? NSColor.selectedMenuItemTextColor : NSColor.labelColor,
+                .paragraphStyle: paragraph,
+            ])
+            text.append(NSAttributedString(string: "\t" + row.trailing, attributes: [
+                .font: font,
+                .foregroundColor: isHighlighted ? NSColor.selectedMenuItemTextColor : NSColor.tertiaryLabelColor,
+                .paragraphStyle: paragraph,
+            ]))
+            row.item.title = row.title   // accessibility / type-select
+            row.item.attributedTitle = text
+            row.item.keyEquivalent = ""
+            row.item.keyEquivalentModifierMask = []
+        }
     }
 
     private func apply(_ combo: KeyCombo?, to menuItem: NSMenuItem) {
@@ -103,6 +163,18 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
     }
 
+    // Explicit colors don't follow the selection, so re-render on highlight change.
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        guard item !== highlighted else { return }
+        highlighted = item
+        renderTitles()
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        highlighted = nil
+        renderTitles()
+    }
+
     func menuWillOpen(_ menu: NSMenu) {
         refresh()
     }
@@ -110,6 +182,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func openLaunchpad() { onOpen() }
     @objc private func openClipboard() { onClipboard() }
     @objc private func openSettings() { onSettings() }
+    @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func toggleLogin() {
         LoginItem.setEnabled(!LoginItem.isEnabled)

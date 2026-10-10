@@ -14,9 +14,16 @@ nonisolated struct AppHotKey: Codable, Equatable, Identifiable, Sendable {
 enum AppActivator {
     // Raycast-like toggle: frontmost → hide, otherwise open or bring to front.
     static func toggle(_ hotKey: AppHotKey) {
-        if !hotKey.key.hasPrefix("/"),
-           let running = NSRunningApplication.runningApplications(withBundleIdentifier: hotKey.key).first,
-           running.isActive {
+        // Path keys (e.g. Xcode-beta next to Xcode) match the running copy by bundle path.
+        let running: NSRunningApplication?
+        if hotKey.key.hasPrefix("/") {
+            running = NSWorkspace.shared.runningApplications.first {
+                $0.bundleURL?.standardizedFileURL.path == hotKey.key
+            }
+        } else {
+            running = NSRunningApplication.runningApplications(withBundleIdentifier: hotKey.key).first
+        }
+        if let running, running.isActive {
             running.hide()
             return
         }

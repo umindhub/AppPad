@@ -240,7 +240,13 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
             conditions.append("id IN (SELECT rowid FROM clip_fts WHERE clip_fts MATCH ?)")
             arguments.append(ftsTerms.joined(separator: " AND "))
         }
-        let order = query.scope == .saved ? "savedAt DESC" : "lastUsedAt DESC"
+        // While searching / filtering history, saved-library items rank first.
+        let searching = !query.terms.isEmpty || query.bundleID != nil
+        let order: String
+        switch query.scope {
+        case .saved: order = "savedAt DESC"
+        case .history: order = searching ? "saved DESC, lastUsedAt DESC" : "lastUsedAt DESC"
+        }
         let sql = "SELECT \(ClipSummary.columns) FROM clip WHERE \(conditions.joined(separator: " AND ")) "
             + "ORDER BY \(order) LIMIT \(max(1, query.limit))"
         do {
