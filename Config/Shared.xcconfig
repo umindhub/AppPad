@@ -16,3 +16,7 @@ INFOPLIST_KEY_CFBundleDisplayName = $(APP_DISPLAY_NAME)
 INFOPLIST_KEY_LSUIElement = YES
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.productivity
 INFOPLIST_KEY_NSHumanReadableCopyright = © 2026 YouMindHub
+
+// Workflows: AppleScript steps / Empty Trash send Apple Events (hardened runtime needs the entitlement)
+CODE_SIGN_ENTITLEMENTS = Config/AppPad.entitlements
+INFOPLIST_KEY_NSAppleEventsUsageDescription = AppPad workflows control the apps you allow, for example Finder to empty the Trash.

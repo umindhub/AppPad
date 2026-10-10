@@ -2,7 +2,8 @@ import AppKit
 
 // Owns the clipboard panel, store and monitor. Panel style matches the launcher.
 final class ClipboardController: NSObject, NSWindowDelegate {
-    var onSwitchToLaunchpad: (() -> Void)?
+    // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
+    var onSwitchPanel: ((Int) -> Void)?
     var onOpenSettings: (() -> Void)?
 
     let store: ClipboardStore?
@@ -111,10 +112,10 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         hide()
     }
 
-    // ⌘⇧J / ⌘⇧K: Launchpad ⇄ Clipboard loop. Saved is a filter of the clipboard, not a view.
-    func switchToLaunchpad() {
+    // ⌘⇧J / ⌘⇧K: previous / next panel. Saved is a filter of the clipboard, not a panel.
+    func switchPanel(_ step: Int) {
         hide()
-        onSwitchToLaunchpad?()
+        onSwitchPanel?(step)
     }
 
     // MARK: - Paste

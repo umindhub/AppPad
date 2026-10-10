@@ -13,7 +13,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
     private var searchField: NSSearchField { searchChrome.field }
     private let scopeLabel = NSTextField(labelWithString: String(localized: "Clipboard"))
     private let savedToggle = SavedToggleView()
-    private let switchHint = NSTextField(labelWithString: String(localized: "⌘⇧J / ⌘⇧K  AppPad"))
+    private let switchHint = NSTextField(labelWithString: String(localized: "⌘⇧J / ⌘⇧K  Switch"))
     private let filterBar = AppFilterBarView()
     private let scrollView = NSScrollView()
     private let tableView = ClipTableView()
@@ -407,7 +407,8 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         let key = event.charactersIgnoringModifiers?.lowercased() ?? ""
         if flags == [.command, .shift] {
             switch key {
-            case "j", "k": controller?.switchToLaunchpad(); return true
+            case "j": controller?.switchPanel(-1); return true
+            case "k": controller?.switchPanel(1); return true
             default: return false
             }
         }

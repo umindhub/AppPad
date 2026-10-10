@@ -5,9 +5,10 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let launchpad: LaunchpadController
     private let clipboard: ClipboardController
+    private let workflows: WorkflowPanelController
     private var statusBar: StatusBarController?
     private var settings: SettingsWindowController?
-    private var launcherHotKeyID: UInt32?
+    private var workflowPanelHotKeyID: UInt32?
     private var clipboardHotKeyIDs: [UInt32] = []
     private var appHotKeyIDs: [UInt32] = []
     private var windowHotKeyIDs: [UInt32] = []
@@ -16,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     override init() {
         launchpad = LaunchpadController()
         clipboard = ClipboardController()
+        workflows = WorkflowPanelController(launchpad: launchpad)
         super.init()
     }
 
@@ -33,10 +35,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.mainMenu = MainMenu.build()
         launchpad.onOpenSettings = { [weak self] in self?.showSettings() }
         launchpad.onRequestShortcut = { [weak self] app in self?.addAppShortcut(for: app) }
-        // ⌘⇧J / ⌘⇧K move between Launchpad ⇄ Clipboard ⇄ Saved.
-        launchpad.onSwitchToClipboard = { [weak self] in self?.clipboard.show(.history) }
-        clipboard.onSwitchToLaunchpad = { [weak self] in self?.launchpad.show() }
+        // ⌘⇧J / ⌘⇧K: previous / next of Launchpad → Clipboard → Workflows (wraps around).
+        launchpad.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .launchpad, step: step) }
+        clipboard.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .clipboard, step: step) }
+        workflows.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .workflows, step: step) }
         clipboard.onOpenSettings = { [weak self] in self?.showSettings() }
+        workflows.onOpenSettings = { [weak self] in self?.showSettings() }
+        workflows.onEditWorkflow = { [weak self] id in self?.editWorkflow(id) }
         // Window shortcut without Accessibility permission → Settings › Windows (Grant Access).
         WindowManager.shared.onNeedsAccess = { [weak self] in
             UserDefaults.standard.set(SettingsTab.windows.rawValue, forKey: SettingsTab.storageKey)
@@ -44,10 +49,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         launchpad.start()
         clipboard.start()
+        workflows.start()
         statusBar = StatusBarController(
             onOpen: { [weak self] in self?.launchpad.show() },
             onClipboard: { [weak self] in self?.clipboard.show(.history) },
-            onSettings: { [weak self] in self?.showSettings() }
+            onSettings: { [weak self] in self?.showSettings() },
+            onWorkflows: { [weak self] in self?.workflows.show() }
         )
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
@@ -56,6 +63,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(1))
             PinchSetupGuide.showOnceIfNeeded()
+            // ⌘Space is Spotlight's until the user frees it.
+            SpotlightShortcut.showGuideOnceIfNeeded()
         }
         NotificationCenter.default.addObserver(
             self, selector: #selector(preferencesDidChange(_:)),
@@ -76,6 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showSettings() {
         launchpad.hide()
         clipboard.hide()
+        workflows.hide()
         if settings == nil {
             settings = SettingsWindowController(
                 onResetLayout: { [weak self] in self?.launchpad.confirmResetLayout() },
@@ -88,6 +98,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings?.show()
     }
 
+    private enum Panel: CaseIterable {
+        case launchpad, clipboard, workflows
+    }
+
+    // Clipboard is skipped while it is turned off in Settings.
+    private func switchPanel(from current: Panel, step: Int) {
+        let cycle = Panel.allCases.filter { $0 != .clipboard || Preferences.shared.clipboardEnabled }
+        guard let index = cycle.firstIndex(of: current) else { return }
+        let target = cycle[(index + step + cycle.count) % cycle.count]
+        switch target {
+        case .launchpad: launchpad.show()
+        case .clipboard: clipboard.show(.history)
+        case .workflows: workflows.show()
+        }
+    }
+
+    // ⌘↩ in the Workflow panel: Settings › Workflows with this workflow's editor open.
+    private func editWorkflow(_ id: UUID) {
+        UserDefaults.standard.set(SettingsTab.workflows.rawValue, forKey: SettingsTab.storageKey)
+        WorkflowStore.shared.requestEdit(id)
+        showSettings()
+    }
+
     // Pinch in opens, spread closes; the panel follows the fingers (macOS 15 Launchpad).
     private func handlePinch(_ event: PinchEvent) {
         switch event.phase {
@@ -96,6 +129,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case .pinchIn:
                 guard !launchpad.isShown else { return }
                 clipboard.hide()
+                workflows.hide()
                 launchpad.beginInteractiveOpen()
             case .spread:
                 launchpad.beginInteractiveClose()
@@ -133,8 +167,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func registerHotKeys() {
         let center = HotKeyCenter.shared
-        if let id = launcherHotKeyID { center.unregister(id) }
-        launcherHotKeyID = nil
+        if let id = workflowPanelHotKeyID { center.unregister(id) }
+        workflowPanelHotKeyID = nil
         appHotKeyIDs.forEach { center.unregister($0) }
         appHotKeyIDs = []
         clipboardHotKeyIDs.forEach { center.unregister($0) }
@@ -143,9 +177,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         windowHotKeyIDs = []
 
         let prefs = Preferences.shared
-        if let combo = prefs.launcherHotKey {
-            launcherHotKeyID = center.register(combo) { [weak self] in
-                self?.launchpad.toggle()
+        // ⌘Space → Workflow panel. Launchpad has no global shortcut (pinch / menu bar).
+        if let combo = prefs.workflowPanelHotKey {
+            workflowPanelHotKeyID = center.register(combo) { [weak self] in
+                self?.workflows.toggle()
             }
         }
         if prefs.clipboardEnabled {
@@ -167,8 +202,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             appHotKeyIDs.append(center.register(combo) { AppActivator.toggle(hotKey) })
         }
 
-        let ok = launcherHotKeyID.map { center.isInstalled($0) } ?? true
-        if !ok { NSLog("Launcher hotkey could not be registered (taken by another app?)") }
+        let ok = workflowPanelHotKeyID.map { center.isInstalled($0) } ?? true
+        if !ok { NSLog("Workflow panel hotkey could not be registered (taken by another app?)") }
         statusBar?.hotKeyAvailable = ok
         statusBar?.refresh()
     }

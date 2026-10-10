@@ -5,6 +5,8 @@ import AppKit
 // and closing it leaves the previous app frontmost.
 final class LaunchpadPanel: NSPanel {
     var keyHandler: ((NSEvent) -> Bool)?
+    // Sees every keyDown before the field editor (Workflow panel: ⌥ / ⌃ in-panel shortcuts).
+    var keyDownHandler: ((NSEvent) -> Bool)?
 
     override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         super.init(contentRect: contentRect, styleMask: style.union(.nonactivatingPanel), backing: backingStoreType, defer: flag)
@@ -35,6 +37,7 @@ final class LaunchpadPanel: NSPanel {
     private var isReplaying = false
 
     override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, let keyDownHandler, keyDownHandler(event) { return }
         if !isReplaying {
             switch event.type {
             case .leftMouseDown:

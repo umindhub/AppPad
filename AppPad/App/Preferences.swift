@@ -51,7 +51,7 @@ final class Preferences: ObservableObject {
         static let backgroundClick = "backgroundClickAction"
         static let englishInput = "switchToEnglishInput"
         static let halfLife = "frecencyHalfLifeDays"
-        static let hotKey = "launcherHotKey"
+        static let workflowHotKey = "workflowPanelHotKey"
         static let appHotKeys = "appHotKeys"
         static let glassControls = "glassControls"
         static let pinchToOpen = "pinchToOpen"
@@ -87,7 +87,8 @@ final class Preferences: ObservableObject {
     @Published var backgroundClickAction: BackgroundClickAction { didSet { save(backgroundClickAction.rawValue, Key.backgroundClick) } }
     @Published var switchToEnglishInput: Bool { didSet { save(switchToEnglishInput, Key.englishInput) } }
     @Published var frecencyHalfLifeDays: Int { didSet { save(frecencyHalfLifeDays, Key.halfLife) } }
-    @Published var launcherHotKey: KeyCombo? { didSet { saveCombo(launcherHotKey, Key.hotKey) } }
+    // Opens the Workflow panel (⌘Space). Launchpad has no global shortcut (pinch / menu bar).
+    @Published var workflowPanelHotKey: KeyCombo? { didSet { saveCombo(workflowPanelHotKey, Key.workflowHotKey) } }
     // Liquid Glass on controls (search field, page indicator).
     @Published var glassControls: Bool { didSet { save(glassControls, Key.glassControls) } }
     // Four-finger pinch in opens Launchpad, spread closes it.
@@ -143,7 +144,7 @@ final class Preferences: ObservableObject {
         frecencyHalfLifeDays = d.object(forKey: Key.halfLife) as? Int ?? 72
         glassControls = d.object(forKey: Key.glassControls) as? Bool ?? true
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true
-        launcherHotKey = Self.loadCombo(d, Key.hotKey, default: .defaultLauncher)
+        workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)
         clipboardSavedHotKey = Self.loadCombo(d, Key.clipSavedHotKey, default: .defaultClipboardSaved)

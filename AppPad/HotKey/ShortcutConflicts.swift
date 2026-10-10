@@ -2,7 +2,7 @@ import Foundation
 
 // Who owns a global shortcut (used to report duplicates in Settings).
 enum ShortcutOwner: Equatable {
-    case launcher, clipboard, clipboardSaved
+    case workflowPanel, clipboard, clipboardSaved
     case app(String)            // AppHotKey.key
     case window(WindowAction)
 }
@@ -15,7 +15,7 @@ extension Preferences {
             guard let other else { return false }
             return other.keyCode == combo.keyCode && other.modifiers == combo.modifiers
         }
-        if owner != .launcher, same(launcherHotKey) { return String(localized: "AppPad") }
+        if owner != .workflowPanel, same(workflowPanelHotKey) { return String(localized: "Workflows") }
         if clipboardEnabled {
             if owner != .clipboard, same(clipboardHotKey) { return String(localized: "Clipboard") }
             if owner != .clipboardSaved, same(clipboardSavedHotKey) { return String(localized: "Saved items") }

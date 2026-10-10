@@ -4,6 +4,21 @@
     "" : {
 
     },
+    "“%@” failed" : {
+
+    },
+    "“%@” wants to:" : {
+
+    },
+    "{{output}} is replaced by the final output, {{error}} by the error. Runs started from Settings show the result window instead." : {
+
+    },
+    "%@ Copy" : {
+
+    },
+    "%@ is used by Spotlight" : {
+
+    },
     "%@. Saved items are kept." : {
       "localizations" : {
         "de" : {
@@ -658,6 +673,9 @@
         }
       }
     },
+    "↩ Open" : {
+
+    },
     "↩ Paste   ⌘S Save   ⌘⌫ Delete" : {
       "localizations" : {
         "de" : {
@@ -715,6 +733,9 @@
           }
         }
       }
+    },
+    "↩ Run   ⌘↩ Edit in Settings" : {
+
     },
     "⌘↩ Show in Finder" : {
       "localizations" : {
@@ -775,6 +796,7 @@
       }
     },
     "⌘⇧J / ⌘⇧K  AppPad" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -831,6 +853,9 @@
           }
         }
       }
+    },
+    "⌘⇧J / ⌘⇧K  Switch" : {
+
     },
     "⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⌫ deletes. Type \"App::text\" to filter by app." : {
       "localizations" : {
@@ -1006,6 +1031,15 @@
         }
       }
     },
+    "Access the network from scripts" : {
+
+    },
+    "Action" : {
+
+    },
+    "Add" : {
+
+    },
     "Add App…" : {
       "localizations" : {
         "de" : {
@@ -1063,6 +1097,21 @@
           }
         }
       }
+    },
+    "Add at least one step." : {
+
+    },
+    "Add Secret" : {
+
+    },
+    "Add Secret…" : {
+
+    },
+    "Add Step" : {
+
+    },
+    "Added: %@" : {
+
     },
     "All history" : {
       "localizations" : {
@@ -1179,6 +1228,15 @@
           }
         }
       }
+    },
+    "Allow Once" : {
+
+    },
+    "Also copy the result to the clipboard" : {
+
+    },
+    "Always Allow" : {
+
     },
     "Always first page" : {
       "localizations" : {
@@ -1354,6 +1412,12 @@
         }
       }
     },
+    "AppleScript" : {
+
+    },
+    "Application" : {
+
+    },
     "AppPad" : {
       "localizations" : {
         "de" : {
@@ -1471,6 +1535,7 @@
       }
     },
     "AppPad shortcut" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1585,6 +1650,12 @@
           }
         }
       }
+    },
+    "Ask Every Time" : {
+
+    },
+    "Authorization" : {
+
     },
     "Back to the size and position before snapping" : {
       "localizations" : {
@@ -1760,6 +1831,12 @@
         }
       }
     },
+    "Body" : {
+
+    },
+    "Built-in Action" : {
+
+    },
     "Business" : {
       "localizations" : {
         "de" : {
@@ -1875,6 +1952,21 @@
           }
         }
       }
+    },
+    "Cancelled" : {
+
+    },
+    "Cancelled after %@ s" : {
+
+    },
+    "Choose after saving, or answer the prompt on the first run." : {
+
+    },
+    "Choose Image…" : {
+
+    },
+    "Choose…" : {
+
     },
     "Click on empty space" : {
       "localizations" : {
@@ -2282,6 +2374,12 @@
         }
       }
     },
+    "Control %@" : {
+
+    },
+    "Control apps (Apple Events)" : {
+
+    },
     "Copied" : {
       "localizations" : {
         "de" : {
@@ -2397,6 +2495,15 @@
           }
         }
       }
+    },
+    "Copy Output" : {
+
+    },
+    "Copy Sandbox Profile" : {
+
+    },
+    "Could not import %@." : {
+
     },
     "Couldn’t move “%@” to the Trash." : {
       "localizations" : {
@@ -2687,6 +2794,12 @@
           }
         }
       }
+    },
+    "Declare the missing paths or services under Declared Permissions." : {
+
+    },
+    "Declared Permissions" : {
+
     },
     "Delete" : {
       "localizations" : {
@@ -3196,6 +3309,9 @@
         }
       }
     },
+    "Detect from Steps" : {
+
+    },
     "Developer Tools" : {
       "localizations" : {
         "de" : {
@@ -3253,6 +3369,9 @@
           }
         }
       }
+    },
+    "Disabled" : {
+
     },
     "Do nothing" : {
       "localizations" : {
@@ -3312,6 +3431,12 @@
         }
       }
     },
+    "Don't Allow" : {
+
+    },
+    "Done" : {
+
+    },
     "Dots" : {
       "localizations" : {
         "de" : {
@@ -3369,6 +3494,9 @@
           }
         }
       }
+    },
+    "Duplicate" : {
+
     },
     "Edit" : {
       "localizations" : {
@@ -3428,6 +3556,9 @@
         }
       }
     },
+    "Edit…" : {
+
+    },
     "Education" : {
       "localizations" : {
         "de" : {
@@ -3485,6 +3616,12 @@
           }
         }
       }
+    },
+    "Empty the Trash" : {
+
+    },
+    "Empty Trash" : {
+
     },
     "Enable clipboard history" : {
       "localizations" : {
@@ -3602,6 +3739,9 @@
         }
       }
     },
+    "Enabled" : {
+
+    },
     "Entertainment" : {
       "localizations" : {
         "de" : {
@@ -3659,6 +3799,18 @@
           }
         }
       }
+    },
+    "Exit code %d" : {
+
+    },
+    "Export…" : {
+
+    },
+    "Failed" : {
+
+    },
+    "Failed after %@ s" : {
+
     },
     "Fill the screen without entering full screen" : {
       "localizations" : {
@@ -3775,6 +3927,9 @@
           }
         }
       }
+    },
+    "Finished in %@ s" : {
+
     },
     "Folder" : {
       "localizations" : {
@@ -4356,6 +4511,9 @@
         }
       }
     },
+    "Headers, one per line (Name: Value). Use {{secret:NAME}} for tokens." : {
+
+    },
     "Health & Fitness" : {
       "localizations" : {
         "de" : {
@@ -4646,6 +4804,21 @@
         }
       }
     },
+    "HTTP host %@" : {
+
+    },
+    "HTTP hosts" : {
+
+    },
+    "HTTP Request" : {
+
+    },
+    "https://api.example.com/path" : {
+
+    },
+    "Icon" : {
+
+    },
     "Ignored Apps" : {
       "localizations" : {
         "de" : {
@@ -4820,6 +4993,9 @@
         }
       }
     },
+    "Import…" : {
+
+    },
     "In System Settings › Trackpad › More Gestures, turn off in this order:" : {
       "localizations" : {
         "de" : {
@@ -4877,6 +5053,15 @@
           }
         }
       }
+    },
+    "Invalid URL" : {
+
+    },
+    "Its permissions are removed too." : {
+
+    },
+    "JavaScript" : {
+
     },
     "Keep for" : {
       "localizations" : {
@@ -5052,6 +5237,9 @@
         }
       }
     },
+    "Language" : {
+
+    },
     "Last 7 days" : {
       "localizations" : {
         "de" : {
@@ -5225,6 +5413,12 @@
           }
         }
       }
+    },
+    "Last Run" : {
+
+    },
+    "Last run failed" : {
+
     },
     "Last visited page" : {
       "localizations" : {
@@ -5922,6 +6116,15 @@
         }
       }
     },
+    "Message" : {
+
+    },
+    "Method" : {
+
+    },
+    "Move Down" : {
+
+    },
     "Move to Next Display" : {
       "localizations" : {
         "de" : {
@@ -6154,6 +6357,9 @@
         }
       }
     },
+    "Move Up" : {
+
+    },
     "Music" : {
       "localizations" : {
         "de" : {
@@ -6211,6 +6417,9 @@
           }
         }
       }
+    },
+    "Name" : {
+
     },
     "Needs Accessibility permission to move and resize windows." : {
       "localizations" : {
@@ -6327,6 +6536,18 @@
           }
         }
       }
+    },
+    "Network access" : {
+
+    },
+    "New AppleScript Workflow" : {
+
+    },
+    "New Shell Workflow" : {
+
+    },
+    "New Workflow" : {
+
     },
     "News" : {
       "localizations" : {
@@ -6619,6 +6840,9 @@
         }
       }
     },
+    "No notification" : {
+
+    },
     "No Results" : {
       "localizations" : {
         "de" : {
@@ -6677,6 +6901,33 @@
         }
       }
     },
+    "No sandbox denials were logged for this run." : {
+
+    },
+    "No secrets yet." : {
+
+    },
+    "No shortcuts found" : {
+
+    },
+    "No workflows yet. Add one to run shell scripts, AppleScript, Shortcuts or HTTP requests from the Workflow panel." : {
+
+    },
+    "None yet (add in Workflows › Secrets)" : {
+
+    },
+    "Not allowed for this run:" : {
+
+    },
+    "Not allowed: %@" : {
+
+    },
+    "Not run yet" : {
+
+    },
+    "Nothing new found." : {
+
+    },
     "Nothing saved yet — press ⌘S on an item to keep it here" : {
       "localizations" : {
         "de" : {
@@ -6734,6 +6985,9 @@
           }
         }
       }
+    },
+    "Notifications" : {
+
     },
     "Numbers" : {
       "localizations" : {
@@ -7200,6 +7454,12 @@
         }
       }
     },
+    "Open Keyboard Settings" : {
+
+    },
+    "Open Keyboard Settings…" : {
+
+    },
     "Open Trackpad Settings" : {
       "localizations" : {
         "de" : {
@@ -7315,6 +7575,12 @@
           }
         }
       }
+    },
+    "Open Workflows" : {
+
+    },
+    "open, pbcopy, say, launching apps… Always on for AppleScript." : {
+
     },
     "Other" : {
       "localizations" : {
@@ -7547,6 +7813,9 @@
           }
         }
       }
+    },
+    "Permissions" : {
+
     },
     "Photography" : {
       "localizations" : {
@@ -7896,6 +8165,9 @@
         }
       }
     },
+    "Put the displays to sleep" : {
+
+    },
     "Quit AppPad" : {
       "localizations" : {
         "de" : {
@@ -8011,6 +8283,27 @@
           }
         }
       }
+    },
+    "Read %@" : {
+
+    },
+    "Read access" : {
+
+    },
+    "Read and change %@" : {
+
+    },
+    "Read and change files in %@" : {
+
+    },
+    "Read and write access" : {
+
+    },
+    "Read files in %@" : {
+
+    },
+    "Reading Log…" : {
+
     },
     "Redo" : {
       "localizations" : {
@@ -8244,6 +8537,9 @@
         }
       }
     },
+    "Remove Step" : {
+
+    },
     "Rename…" : {
       "localizations" : {
         "de" : {
@@ -8301,6 +8597,12 @@
           }
         }
       }
+    },
+    "Replace Secret" : {
+
+    },
+    "Replace…" : {
+
     },
     "Reset" : {
       "localizations" : {
@@ -8708,6 +9010,21 @@
         }
       }
     },
+    "Run" : {
+
+    },
+    "Run GitHub Action" : {
+
+    },
+    "Run Shortcut" : {
+
+    },
+    "Run the shortcut “%@”" : {
+
+    },
+    "Running…" : {
+
+    },
     "Same as AppPad" : {
       "localizations" : {
         "de" : {
@@ -8823,6 +9140,9 @@
           }
         }
       }
+    },
+    "Sandbox denials" : {
+
     },
     "Save" : {
       "localizations" : {
@@ -9346,6 +9666,12 @@
         }
       }
     },
+    "Scripts may connect anywhere (curl, git, gh…)." : {
+
+    },
+    "Scripts run in a sandbox with only the permissions you grant." : {
+
+    },
     "Search" : {
       "localizations" : {
         "de" : {
@@ -9636,6 +9962,18 @@
         }
       }
     },
+    "Search workflows and apps" : {
+
+    },
+    "Secret “%@” is not set (Settings › Workflows › Secrets)." : {
+
+    },
+    "Secret %@" : {
+
+    },
+    "Secrets" : {
+
+    },
     "Select All" : {
       "localizations" : {
         "de" : {
@@ -9693,6 +10031,9 @@
           }
         }
       }
+    },
+    "Send HTTP requests to %@" : {
+
     },
     "Set Shortcut…" : {
       "localizations" : {
@@ -9868,6 +10209,24 @@
         }
       }
     },
+    "Shell and AppleScript steps run in a macOS sandbox that only allows what is declared and granted here. HTTP steps may only contact declared hosts." : {
+
+    },
+    "Shell Script" : {
+
+    },
+    "Shortcut" : {
+
+    },
+    "Shortcut in the Workflow panel" : {
+
+    },
+    "Shortcut in Workflow panel" : {
+
+    },
+    "Shortcut name" : {
+
+    },
     "Shortcuts" : {
       "localizations" : {
         "de" : {
@@ -9925,6 +10284,9 @@
           }
         }
       }
+    },
+    "Show a custom message" : {
+
     },
     "Show Desktop" : {
       "localizations" : {
@@ -10042,6 +10404,12 @@
         }
       }
     },
+    "Show Last Result" : {
+
+    },
+    "Show Sandbox Denials" : {
+
+    },
     "Show saved items only" : {
       "localizations" : {
         "de" : {
@@ -10100,6 +10468,12 @@
         }
       }
     },
+    "Show the error" : {
+
+    },
+    "Show the result" : {
+
+    },
     "Size" : {
       "localizations" : {
         "de" : {
@@ -10157,6 +10531,9 @@
           }
         }
       }
+    },
+    "Sleep Displays" : {
+
     },
     "Snap Left" : {
       "localizations" : {
@@ -10448,6 +10825,9 @@
         }
       }
     },
+    "Spotlight still uses this shortcut, so it opens Spotlight instead of AppPad." : {
+
+    },
     "Spread with thumb and three fingers" : {
       "localizations" : {
         "de" : {
@@ -10505,6 +10885,50 @@
           }
         }
       }
+    },
+    "Step %lld: add %@ to the declared HTTP hosts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld: add %2$@ to the declared HTTP hosts."
+          }
+        }
+      }
+    },
+    "Step %lld: choose a shortcut." : {
+
+    },
+    "Step %lld: declare the secret “%@”." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld: declare the secret “%2$@”."
+          }
+        }
+      }
+    },
+    "Step %lld: enter a valid http(s) URL." : {
+
+    },
+    "Step %lld: the script is empty." : {
+
+    },
+    "Steps" : {
+
+    },
+    "Steps run in order and stop at the first failure. Each step gets the previous output: stdin and $APPPAD_INPUT for shell, argv for AppleScript (on run argv), {{input}} in HTTP fields." : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stored in the Keychain. Use {{secret:NAME}} in HTTP steps; scripts never see them." : {
+
+    },
+    "Succeeded" : {
+
     },
     "Switch to English input when opened" : {
       "localizations" : {
@@ -10621,6 +11045,12 @@
           }
         }
       }
+    },
+    "System services" : {
+
+    },
+    "System Settings › Keyboard › Keyboard Shortcuts › Spotlight: turn off “Show Spotlight search” or give it another shortcut." : {
+
     },
     "The app and the checked related files will be moved to the Trash." : {
       "localizations" : {
@@ -10912,7 +11342,11 @@
         }
       }
     },
+    "The panel lists your workflows and apps. ↩ runs or opens, ⌘1–⌘0 picks a row, ⌘↩ edits the workflow here." : {
+
+    },
     "The shortcut could not be registered. It may be used by another app." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10969,6 +11403,30 @@
           }
         }
       }
+    },
+    "The shortcut could not be registered. It may be used by Spotlight or another app." : {
+
+    },
+    "The shortcut works only while the Workflow panel is open. ⌘1–⌘0 always run the row with that number." : {
+
+    },
+    "The Trash is already empty." : {
+
+    },
+    "This workflow needs no permissions." : {
+
+    },
+    "Timed out after %lld s" : {
+
+    },
+    "Timeout: %lld s" : {
+
+    },
+    "To open AppPad Workflows with %@, go to System Settings › Keyboard › Keyboard Shortcuts › Spotlight and turn off “Show Spotlight search” (or give it another shortcut)." : {
+
+    },
+    "Trash emptied." : {
+
     },
     "Travel" : {
       "localizations" : {
@@ -11260,6 +11718,9 @@
         }
       }
     },
+    "Use Default" : {
+
+    },
     "Use four-finger pinch for AppPad" : {
       "localizations" : {
         "de" : {
@@ -11318,6 +11779,21 @@
         }
       }
     },
+    "Use letters, digits, “-”, “_” or “.” only." : {
+
+    },
+    "Use secret “%@”" : {
+
+    },
+    "Use system services (open apps, clipboard, notifications)" : {
+
+    },
+    "Use the secret “%@” in HTTP requests" : {
+
+    },
+    "Used by the Workflow panel" : {
+
+    },
     "Utilities" : {
       "localizations" : {
         "de" : {
@@ -11375,6 +11851,9 @@
           }
         }
       }
+    },
+    "Value" : {
+
     },
     "Video" : {
       "localizations" : {
@@ -11491,6 +11970,12 @@
           }
         }
       }
+    },
+    "When it fails" : {
+
+    },
+    "When it succeeds" : {
+
     },
     "When opened" : {
       "localizations" : {
@@ -11898,6 +12383,18 @@
         }
       }
     },
+    "Workflow" : {
+
+    },
+    "Workflow (disabled)" : {
+
+    },
+    "Workflow Panel" : {
+
+    },
+    "Workflows" : {
+
+    },
     "Works on the focused window of the frontmost app. Click a field to record, Delete clears, Esc cancels." : {
       "localizations" : {
         "de" : {
@@ -11955,6 +12452,9 @@
           }
         }
       }
+    },
+    "zsh, runs sandboxed. Input on stdin and $APPPAD_INPUT." : {
+
     }
   },
   "version" : "1.0"

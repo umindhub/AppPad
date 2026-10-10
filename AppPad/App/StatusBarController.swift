@@ -10,37 +10,43 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let menu = NSMenu()
     private let openItem = NSMenuItem()
     private let clipboardItem = NSMenuItem()
+    private let workflowsItem = NSMenuItem()
     private let settingsItem = NSMenuItem()
     private let loginItem = NSMenuItem()
     private let quitItem = NSMenuItem()
     // Hidden twins carrying the key equivalents.
-    private let openKeyItem = NSMenuItem()
+    private let workflowsKeyItem = NSMenuItem()
     private let clipboardKeyItem = NSMenuItem()
     var hotKeyAvailable = true
     private let onOpen: () -> Void
     private let onClipboard: () -> Void
     private let onSettings: () -> Void
+    private let onWorkflows: () -> Void
 
     // Title + right-hand text for each visible row.
     private var rows: [(item: NSMenuItem, title: String, trailing: String)] = []
     private weak var highlighted: NSMenuItem?
 
-    init(onOpen: @escaping () -> Void, onClipboard: @escaping () -> Void, onSettings: @escaping () -> Void) {
+    init(onOpen: @escaping () -> Void, onClipboard: @escaping () -> Void, onSettings: @escaping () -> Void,
+         onWorkflows: @escaping () -> Void) {
         self.onOpen = onOpen
         self.onClipboard = onClipboard
         self.onSettings = onSettings
+        self.onWorkflows = onWorkflows
         super.init()
 
         item.button?.image = Self.makeIcon()
 
         configure(openItem, action: #selector(openLaunchpad))
         configure(clipboardItem, action: #selector(openClipboard))
+        configure(workflowsItem, action: #selector(openWorkflows))
         configure(settingsItem, action: #selector(openSettings))
         configure(loginItem, action: #selector(toggleLogin))
         configure(quitItem, action: #selector(quit))
 
         menu.addItem(openItem)
         menu.addItem(clipboardItem)
+        menu.addItem(workflowsItem)
         menu.addItem(settingsItem)
         menu.addItem(loginItem)
         menu.addItem(.separator())
@@ -50,7 +56,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         menu.addItem(quitItem)
 
         // Hidden key-equivalent twins.
-        configure(openKeyItem, action: #selector(openLaunchpad))
+        configure(workflowsKeyItem, action: #selector(openWorkflows))
         configure(clipboardKeyItem, action: #selector(openClipboard))
         let settingsKey = NSMenuItem(title: "", action: #selector(openSettings), keyEquivalent: ",")
         settingsKey.keyEquivalentModifierMask = .command
@@ -58,7 +64,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let quitKey = NSMenuItem(title: "", action: #selector(quit), keyEquivalent: "q")
         quitKey.keyEquivalentModifierMask = .command
         quitKey.target = self
-        for twin in [openKeyItem, clipboardKeyItem, settingsKey, quitKey] {
+        for twin in [workflowsKeyItem, clipboardKeyItem, settingsKey, quitKey] {
             twin.isHidden = true
             twin.allowsKeyEquivalentWhenHidden = true
             menu.addItem(twin)
@@ -104,17 +110,21 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func refresh() {
         let prefs = Preferences.shared
-        let openTitle = String(localized: "Open AppPad") + (hotKeyAvailable ? "" : "  ⚠︎")
-        openItem.toolTip = hotKeyAvailable ? nil : String(localized: "The shortcut could not be registered. It may be used by another app.")
+        // ⚠︎ on Workflows when its shortcut is taken (another app, or Spotlight still on ⌘Space;
+        // checked live, the user may change System Settings at any time).
+        let available = hotKeyAvailable && !SpotlightShortcut.conflicts(with: prefs.workflowPanelHotKey)
+        let workflowsTitle = String(localized: "Workflows") + (available ? "" : "  ⚠︎")
+        workflowsItem.toolTip = available ? nil : String(localized: "The shortcut could not be registered. It may be used by Spotlight or another app.")
 
-        apply(prefs.launcherHotKey, to: openKeyItem)
+        apply(prefs.workflowPanelHotKey, to: workflowsKeyItem)
         apply(prefs.clipboardHotKey, to: clipboardKeyItem)
         clipboardItem.isHidden = !prefs.clipboardEnabled
         clipboardKeyItem.allowsKeyEquivalentWhenHidden = prefs.clipboardEnabled
 
         rows = [
-            (openItem, openTitle, prefs.launcherHotKey?.displayString ?? ""),
+            (openItem, String(localized: "Open AppPad"), ""),
             (clipboardItem, String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString ?? ""),
+            (workflowsItem, workflowsTitle, prefs.workflowPanelHotKey?.displayString ?? ""),
             (settingsItem, String(localized: "Settings"), "⌘,"),
             (loginItem, String(localized: "Launch at Login"), LoginItem.isEnabled ? "✓" : "✕"),
             (quitItem, String(localized: "Quit AppPad"), "⌘Q"),
@@ -182,6 +192,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func openLaunchpad() { onOpen() }
     @objc private func openClipboard() { onClipboard() }
     @objc private func openSettings() { onSettings() }
+    @objc private func openWorkflows() { onWorkflows() }
     @objc private func quit() { NSApp.terminate(nil) }
 
     @objc private func toggleLogin() {

@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 enum SettingsTab: String, CaseIterable {
-    case launchpad, clipboard, shortcuts, windows
+    case launchpad, clipboard, shortcuts, windows, workflows
 
     // UserDefaults key shared with @AppStorage (also set from AppDelegate).
     static let storageKey = "settingsTab"
@@ -13,6 +13,7 @@ enum SettingsTab: String, CaseIterable {
         case .clipboard: return String(localized: "Clipboard")
         case .shortcuts: return String(localized: "App Shortcuts")
         case .windows: return String(localized: "Windows")
+        case .workflows: return String(localized: "Workflows")
         }
     }
 
@@ -22,6 +23,7 @@ enum SettingsTab: String, CaseIterable {
         case .clipboard: return "doc.on.clipboard"
         case .shortcuts: return "keyboard"
         case .windows: return "rectangle.split.2x1"
+        case .workflows: return "bolt"
         }
     }
 
@@ -31,6 +33,7 @@ enum SettingsTab: String, CaseIterable {
         case .clipboard: return "doc.on.clipboard.fill"
         case .shortcuts: return "keyboard.fill"
         case .windows: return "rectangle.split.2x1.fill"
+        case .workflows: return "bolt.fill"
         }
     }
 }
@@ -80,6 +83,8 @@ struct SettingsView: View {
                 AppShortcutsSettingsView(prefs: prefs)
             case .windows:
                 WindowControlSettingsView(prefs: prefs)
+            case .workflows:
+                WorkflowSettingsView(prefs: prefs)
             }
         }
         .overlay(alignment: .top) {
@@ -114,10 +119,6 @@ struct SettingsView: View {
                         LoginItem.setEnabled(newValue)
                         launchAtLogin = LoginItem.isEnabled
                     }
-                LabeledContent("AppPad shortcut") {
-                    ShortcutRecorder(combo: $prefs.launcherHotKey)
-                        .frame(width: 170, height: 24)
-                }
                 Toggle(isOn: $prefs.pinchToOpen) {
                     Text("Four-finger pinch opens AppPad")
                     Text("Pinch in to open, spread to close.")

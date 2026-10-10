@@ -9,7 +9,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     var onOpenSettings: (() -> Void)?
     var onRequestShortcut: ((AppInfo) -> Void)?
-    var onSwitchToClipboard: (() -> Void)?
+    // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
+    var onSwitchPanel: ((Int) -> Void)?
 
     private let prefs = Preferences.shared
     private let panel: LaunchpadPanel
@@ -178,6 +179,18 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     func folderApps(_ folder: FolderItem) -> [AppInfo] {
         folder.apps.compactMap { appsByKey[$0] }
+    }
+
+    // Every app, most used first (Workflow panel with an empty search).
+    func appsByFrecency() -> [AppInfo] {
+        let now = Date()
+        return apps
+            .map { (app: $0, score: stats.score(for: $0.key, now: now)) }
+            .sorted { a, b in
+                if a.score != b.score { return a.score > b.score }
+                return a.app.name.localizedStandardCompare(b.app.name) == .orderedAscending
+            }
+            .map(\.app)
     }
 
     // Rank: match quality, then frecency, then name.
@@ -417,10 +430,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private func handleKeyEquivalent(_ event: NSEvent) -> Bool {
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
         guard let key = event.charactersIgnoringModifiers?.lowercased() else { return false }
-        // ⌘⇧J / ⌘⇧K: Launchpad ⇄ Clipboard loop.
+        // ⌘⇧J / ⌘⇧K: previous / next panel.
         if flags == [.command, .shift], key == "j" || key == "k" {
             hide()
-            onSwitchToClipboard?()
+            onSwitchPanel?(key == "j" ? -1 : 1)
             return true
         }
         guard flags == .command else { return false }
