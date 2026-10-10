@@ -118,7 +118,7 @@ nonisolated private final class OutputBuffer: @unchecked Sendable {
     var string: String {
         lock.lock(); defer { lock.unlock() }
         let text = String(decoding: data, as: UTF8.self)
-        return truncated ? text + "\n… (output truncated)" : text
+        return truncated ? text + "\n" + String(localized: "… (output truncated)") : text
     }
 }
 

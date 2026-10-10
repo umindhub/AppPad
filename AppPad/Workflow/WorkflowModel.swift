@@ -145,7 +145,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = c.value(.id, UUID())
-        name = c.value(.name, "Workflow")
+        name = c.value(.name, String(localized: "Workflow"))
         enabled = c.value(.enabled, true)
         panelKey = try? c.decodeIfPresent(KeyCombo.self, forKey: .panelKey)
         icon = try? c.decodeIfPresent(Data.self, forKey: .icon)

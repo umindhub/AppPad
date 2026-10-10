@@ -119,7 +119,7 @@ struct WorkflowEditorView: View {
                 Text("No notification").tag(SuccessNotice.none)
             }
             if draft.successNotice == .custom {
-                TextField("Message", text: $draft.successMessage, prompt: Text(verbatim: "Done: {{output}}"))
+                TextField("Message", text: $draft.successMessage, prompt: Text("Done: {{output}}"))
             }
             Toggle("Also copy the result to the clipboard", isOn: $draft.copyOutput)
             Picker("When it fails", selection: $draft.failureNotice) {
@@ -127,7 +127,7 @@ struct WorkflowEditorView: View {
                 Text("Show a custom message").tag(FailureNotice.custom)
             }
             if draft.failureNotice == .custom {
-                TextField("Message", text: $draft.failureMessage, prompt: Text(verbatim: "Failed: {{error}}"))
+                TextField("Message", text: $draft.failureMessage, prompt: Text("Failed: {{error}}"))
             }
         } header: {
             Text("Notifications")
