@@ -27255,64 +27255,6 @@
         }
       }
     },
-    "Keyword" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schlüsselwort"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Palabra clave"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mot-clé"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parola chiave"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "キーワード"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "키워드"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trefwoord"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关键字"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關鍵字"
-          }
-        }
-      }
-    },
     "Group" : {
       "localizations" : {
         "de" : {
@@ -28063,64 +28005,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在工作流程面板中只搜尋第一個空格前的文字，其餘部分是參數。參數依類型解析後作為第一步的輸入（{{input}}、$APPPAD_INPUT、stdin、argv）。打開 App 時忽略參數。"
-          }
-        }
-      }
-    },
-    "The keyword can’t contain spaces." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Schlüsselwort darf keine Leerzeichen enthalten."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La palabra clave no puede contener espacios."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le mot-clé ne peut pas contenir d’espaces."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La parola chiave non può contenere spazi."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "キーワードにスペースは使えません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "키워드에는 공백을 포함할 수 없습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het trefwoord mag geen spaties bevatten."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关键字不能包含空格。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "關鍵字不能包含空格。"
           }
         }
       }
@@ -29985,6 +29869,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "向「提醒事項」加入提醒。寫上「明天下午3點」「10分鐘後」這類時間會設定提醒時間；! 到 !!! 設定優先順序，@列表名 指定列表。"
+          }
+        }
+      }
+    },
+    "Keywords" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüsselwörter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palabras clave"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots-clés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parole chiave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーワード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키워드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trefwoorden"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关键字"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關鍵字"
+          }
+        }
+      }
+    },
+    "Separate keywords with commas or spaces. An exact keyword ranks the workflow first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trenne Schlüsselwörter mit Kommas oder Leerzeichen. Ein exakt passendes Schlüsselwort setzt den Workflow an die erste Stelle."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separa las palabras clave con comas o espacios. Una palabra clave exacta pone el flujo de trabajo en primer lugar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séparez les mots-clés par des virgules ou des espaces. Un mot-clé exact place le workflow en premier."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separa le parole chiave con virgole o spazi. Una parola chiave esatta mette il workflow al primo posto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーワードはカンマまたはスペースで区切ります。キーワードに完全一致するとワークフローが先頭に表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키워드는 쉼표나 공백으로 구분합니다. 키워드와 정확히 일치하면 워크플로가 맨 위에 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheid trefwoorden met komma’s of spaties. Een exact trefwoord zet de workflow bovenaan."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多个关键字用逗号或空格分隔。与任一关键字完全一致时，该工作流排在第一位。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多個關鍵字以逗號或空格分隔。與任一關鍵字完全一致時，該工作流程排在第一位。"
           }
         }
       }

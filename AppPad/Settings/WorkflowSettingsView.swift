@@ -216,7 +216,7 @@ struct WorkflowSettingsView: View {
                     }
                     .buttonStyle(.plain)
                 } else {
-                    Text(verbatim: (workflow.keyword.isEmpty ? "" : workflow.keyword + " · ")
+                    Text(verbatim: (workflow.keywords.isEmpty ? "" : workflow.keywords.joined(separator: ", ") + " · ")
                          + "\(workflow.identifier) · \(workflow.version)")
                         .font(.caption)
                         .foregroundStyle(.secondary)

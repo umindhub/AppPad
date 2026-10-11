@@ -1,6 +1,6 @@
 import AppKit
 
-// Workflows shipped with AppPad (group "system"). Installed on launch; a higher version here
+// Workflows shipped with AppPad (group "system"). Bump a version to push changes to installed copies. Installed on launch; a higher version here
 // replaces the installed one; workflows the user deleted are never re-added.
 // Names / descriptions / hints are English keys; translations come from Localizable.
 enum BuiltinWorkflows {
@@ -16,66 +16,66 @@ enum BuiltinWorkflows {
     static var all: [Workflow] {
         [
             make("com.youmindhub.emptytrash", "Empty Trash", "Empty the Trash.",
-                 keyword: "trash", symbol: "trash", notice: .output,
+                 version: "1.1", keywords: ["trash", "emptytrash", "bin"], symbol: "trash", notice: .output,
                  steps: [WorkflowStep(builtin: .emptyTrash, timeout: 300)]),
             make("com.youmindhub.timer", "Set Timer", "Start a timer in the Clock app.",
-                 version: "1.1", keyword: "time", symbol: "timer",
+                 version: "1.2", keywords: ["time", "timer", "countdown"], symbol: "timer",
                  argument: .required, type: .duration, hint: "duration",
                  steps: [shortcutStep(clockShortcut, input: "timer\\n{{input}}")]),
             make("com.youmindhub.alarm", "Set Alarm", "Create an alarm in the Clock app.",
-                 version: "1.1", keyword: "alarm", symbol: "alarm",
+                 version: "1.2", keywords: ["alarm", "wake", "clock"], symbol: "alarm",
                  argument: .required, type: .time, hint: "time [label]",
                  steps: [shortcutStep(clockShortcut, input: "alarm\\n{{input}}")]),
             make("com.youmindhub.reminder", "Set Reminder",
                  "Add a reminder to the Reminders app. Dates like “tomorrow 3pm” set an alert; !–!!! sets the priority, @List picks a list.",
-                 keyword: "remind", symbol: "checklist", notice: .output,
+                 version: "1.1", keywords: ["remind", "reminder", "todo"], symbol: "checklist", notice: .output,
                  argument: .required, type: .reminder, hint: "reminder",
                  steps: [WorkflowStep(builtin: .createReminder, timeout: 30)]),
             make("com.youmindhub.shutdown", "Shut Down", "Show the system’s Shut Down dialog.",
-                 keyword: "shutdown", symbol: "power",
+                 version: "1.1", keywords: ["shutdown", "poweroff", "halt"], symbol: "power",
                  steps: [WorkflowStep(builtin: .shutDown, timeout: 20)]),
             make("com.youmindhub.restart", "Restart", "Show the system’s Restart dialog.",
-                 keyword: "restart", symbol: "restart",
+                 version: "1.1", keywords: ["restart", "reboot"], symbol: "restart",
                  steps: [WorkflowStep(builtin: .restart, timeout: 20)]),
             make("com.youmindhub.sleepdisplays", "Sleep Displays", "Turn off the displays now.",
-                 keyword: "display", symbol: "display",
+                 version: "1.1", keywords: ["display", "displayoff", "screenoff"], symbol: "display",
                  steps: [WorkflowStep(builtin: .sleepDisplays, timeout: 10)]),
             make("com.youmindhub.sleep", "Sleep Mac", "Put the Mac to sleep now.",
-                 keyword: "sleep", symbol: "moon.zzz",
+                 version: "1.1", keywords: ["sleep", "suspend"], symbol: "moon.zzz",
                  steps: [WorkflowStep(builtin: .sleepMac, timeout: 10)]),
             make("com.youmindhub.keepawake", "Keep Awake", "Keep the Mac awake; without a duration until you stop it.",
-                 keyword: "awake", symbol: "cup.and.saucer", notice: .output,
+                 version: "1.1", keywords: ["awake", "caffeinate", "nosleep"], symbol: "cup.and.saucer", notice: .output,
                  argument: .optional, type: .duration, hint: "duration",
                  steps: [WorkflowStep(builtin: .keepAwake)]),
             make("com.youmindhub.darkmode", "Toggle Light/Dark Mode", "Switch between light and dark appearance.",
-                 version: "1.1", keyword: "dark", symbol: "circle.lefthalf.filled",
+                 version: "1.2", keywords: ["dark", "light", "theme", "appearance"], symbol: "circle.lefthalf.filled",
                  steps: [WorkflowStep(builtin: .toggleDarkMode, timeout: 20)]),
             make("com.youmindhub.volume", "Set Volume", "Set the output volume.",
-                 keyword: "vol", symbol: "speaker.wave.2", notice: .output,
+                 version: "1.1", keywords: ["vol", "volume", "sound"], symbol: "speaker.wave.2", notice: .output,
                  argument: .required, type: .number, hint: "0–100",
                  steps: [WorkflowStep(builtin: .setVolume, timeout: 10)]),
             make("com.youmindhub.mute", "Toggle Mute", "Mute or unmute the sound output.",
-                 keyword: "mute", symbol: "speaker.slash", notice: .output,
+                 version: "1.1", keywords: ["mute", "unmute"], symbol: "speaker.slash", notice: .output,
                  steps: [WorkflowStep(builtin: .toggleMute, timeout: 10)]),
             make("com.youmindhub.eject", "Eject All Disks", "Eject external disks and disk images.",
-                 keyword: "eject", symbol: "eject", notice: .output,
+                 version: "1.1", keywords: ["eject", "unmount"], symbol: "eject", notice: .output,
                  steps: [WorkflowStep(builtin: .ejectDisks, timeout: 120)]),
             make("com.youmindhub.hiddenfiles", "Toggle Hidden Files", "Show or hide hidden files in Finder.",
-                 keyword: "hidden", symbol: "eye", notice: .output,
+                 version: "1.1", keywords: ["hidden", "dotfiles", "showhidden"], symbol: "eye", notice: .output,
                  steps: [WorkflowStep(builtin: .toggleHiddenFiles, timeout: 20)]),
             make("com.youmindhub.quit", "Quit App", "Quit a running app by name.",
-                 keyword: "quit", symbol: "xmark.app",
+                 version: "1.1", keywords: ["quit", "close"], symbol: "xmark.app",
                  argument: .required, type: .text, hint: "app name",
                  steps: [WorkflowStep(builtin: .quitApp, timeout: 10)]),
             make("com.youmindhub.websearch", "Google Search", "Search the web. Duplicate it and change the URL for other sites.",
-                 keyword: "g", symbol: "magnifyingglass",
+                 version: "1.1", keywords: ["g", "google", "search"], symbol: "magnifyingglass",
                  argument: .required, type: .text, hint: "keywords",
                  steps: [openURLStep("https://www.google.com/search?q={{input}}")]),
             make("com.youmindhub.ipaddress", "Copy IP Address", "Copy the local IP address and show the public one.",
-                 keyword: "ip", symbol: "network", notice: .output,
+                 version: "1.1", keywords: ["ip", "ipaddress", "myip"], symbol: "network", notice: .output,
                  steps: [WorkflowStep(builtin: .copyIPAddress, timeout: 10)]),
             make("com.youmindhub.uuid", "Generate UUID", "Copy a new UUID to the clipboard.",
-                 keyword: "uuid", symbol: "number", notice: .output, copy: true,
+                 version: "1.1", keywords: ["uuid", "guid"], symbol: "number", notice: .output, copy: true,
                  steps: [WorkflowStep(builtin: .generateUUID, timeout: 5)]),
         ]
     }
@@ -143,14 +143,14 @@ enum BuiltinWorkflows {
     // MARK: - Helpers
 
     private static func make(_ identifier: String, _ name: String, _ summary: String, version: String = "1.0",
-                             keyword: String, symbol: String, notice: SuccessNotice = .none, copy: Bool = false,
+                             keywords: [String], symbol: String, notice: SuccessNotice = .none, copy: Bool = false,
                              argument: ArgumentMode = .off, type: ArgumentType = .text, hint: String = "",
                              steps: [WorkflowStep]) -> Workflow {
         var w = Workflow(name: name, identifier: identifier, steps: steps)
         w.version = version
         w.summary = summary
         w.group = group
-        w.keyword = keyword
+        w.keywords = keywords
         w.symbol = symbol
         w.successNotice = notice
         w.copyOutput = copy

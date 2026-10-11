@@ -29,10 +29,12 @@ struct WorkflowEditorView: View {
     @State private var iconStatus: String?
     @State private var loadingIcon = false
     private let savedIconURL: String
+    @State private var keywordText: String
 
     init(workflow: Workflow, isNew: Bool, onSave: @escaping (Workflow) -> Void, onCancel: @escaping () -> Void) {
         _draft = State(initialValue: workflow)
         savedIconURL = workflow.iconURL
+        _keywordText = State(initialValue: workflow.keywords.joined(separator: ", "))
         self.isNew = isNew
         self.onSave = onSave
         self.onCancel = onCancel
@@ -100,11 +102,13 @@ struct WorkflowEditorView: View {
             TextField("Description", text: $draft.summary, axis: .vertical)
                 .lineLimit(1...4)
             VStack(alignment: .leading, spacing: 2) {
-                TextField("Keyword", text: $draft.keyword, prompt: Text(verbatim: "time"))
+                // Own text state: rebuilding the list on each keystroke would eat the comma being typed.
+                TextField("Keywords", text: $keywordText, prompt: Text(verbatim: "shutdown, poweroff"))
                     .font(.system(.body, design: .monospaced))
-                if let keywordError {
-                    Text(verbatim: keywordError).font(.caption).foregroundStyle(.orange)
-                }
+                    .onChange(of: keywordText) { _, text in draft.keywords = Workflow.cleanKeywords([text]) }
+                Text("Separate keywords with commas or spaces. An exact keyword ranks the workflow first.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             TextField("Group", text: $draft.group, prompt: Text("None"))
             LabeledContent("Icon") {
@@ -399,7 +403,7 @@ struct WorkflowEditorView: View {
 
     private var canSave: Bool {
         !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
-            && identifierError == nil && versionError == nil && iconURLError == nil && keywordError == nil
+            && identifierError == nil && versionError == nil && iconURLError == nil
     }
 
     private var identifierError: String? {
@@ -412,11 +416,6 @@ struct WorkflowEditorView: View {
             return String(localized: "Another workflow already uses this ID.")
         }
         return nil
-    }
-
-    private var keywordError: String? {
-        draft.keyword.trimmingCharacters(in: .whitespaces).contains(where: \.isWhitespace)
-            ? String(localized: "The keyword can’t contain spaces.") : nil
     }
 
     private var versionError: String? {
@@ -508,7 +507,7 @@ struct WorkflowEditorView: View {
         w.name = w.name.trimmingCharacters(in: .whitespaces)
         w.identifier = WorkflowIdentity.normalizeIdentifier(w.identifier)
         w.version = w.version.trimmingCharacters(in: .whitespaces)
-        w.keyword = w.keyword.trimmingCharacters(in: .whitespaces).lowercased()
+        w.keywords = Workflow.cleanKeywords(w.keywords)
         w.group = w.group.trimmingCharacters(in: .whitespaces)
         w.argumentHint = w.argumentHint.trimmingCharacters(in: .whitespaces)
         w.summary = w.summary.trimmingCharacters(in: .whitespacesAndNewlines)

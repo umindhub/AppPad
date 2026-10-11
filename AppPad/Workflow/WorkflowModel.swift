@@ -219,7 +219,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     var summary = ""                      // English description
     var localizations: [String: WorkflowLocalization] = [:]   // "zh-Hans" → overrides
     var group = ""                        // "system" = AppPad's built-in group, else free text
-    var keyword = ""                      // exact match ranks first in the panel ("time")
+    var keywords: [String] = []           // exact match ranks first in the panel ("shutdown", "poweroff")
     var argument: ArgumentMode = .off
     var argumentType: ArgumentType = .text
     var argumentHint = ""                 // English, shown as "time ‹minutes›"
@@ -239,7 +239,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case uid, id, version, name, localizations, enabled, panelKey, icon, iconURL
-        case group, keyword, argument, argumentType, argumentHint, symbol
+        case group, keywords, keyword, argument, argumentType, argumentHint, symbol
         case summary = "description"
         case successNotice, successMessage, failureNotice, failureMessage, copyOutput
         case steps, permissions, formatVersion
@@ -274,7 +274,8 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         summary = c.value(.summary, "")
         localizations = c.value(.localizations, [:])
         group = c.value(.group, "")
-        keyword = c.value(.keyword, "")
+        // "keywords": [...]; early files had one "keyword" string.
+        keywords = Workflow.cleanKeywords(c.value(.keywords, [String]()) + [c.value(.keyword, "")])
         argument = c.value(.argument, ArgumentMode.off)
         argumentType = c.value(.argumentType, .text)
         argumentHint = c.value(.argumentHint, "")
@@ -313,7 +314,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         if !summary.isEmpty { try c.encode(summary, forKey: .summary) }
         if !localizations.isEmpty { try c.encode(localizations, forKey: .localizations) }
         if !group.isEmpty { try c.encode(group, forKey: .group) }
-        if !keyword.isEmpty { try c.encode(keyword, forKey: .keyword) }
+        if !keywords.isEmpty { try c.encode(keywords, forKey: .keywords) }
         if argument != .off {
             try c.encode(argument, forKey: .argument)
             try c.encode(argumentType, forKey: .argumentType)
@@ -349,6 +350,30 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     var displayArgumentHint: String {
         let localized = WorkflowLanguage.pick(localizations)?.argumentHint.trimmingCharacters(in: .whitespaces) ?? ""
         return localized.isEmpty ? argumentHint : localized
+    }
+
+    // First keyword: shown in usage hints ("time ‹duration›").
+    var keyword: String { keywords.first ?? "" }
+
+    // Every name the panel matches: localized, English, and all translations.
+    var searchNames: [String] {
+        var names = [displayName, name]
+        for entry in localizations.values where !entry.name.isEmpty && !names.contains(entry.name) {
+            names.append(entry.name)
+        }
+        return names
+    }
+
+    // Lowercased, no spaces, no duplicates; commas / spaces separate ("shutdown, poweroff").
+    static func cleanKeywords(_ list: [String]) -> [String] {
+        var result: [String] = []
+        for item in list {
+            for word in item.lowercased().split(whereSeparator: { $0.isWhitespace || $0 == "," || $0 == "，" }) {
+                let w = String(word)
+                if !result.contains(w) { result.append(w) }
+            }
+        }
+        return result
     }
 
     // Frecency key shared with apps (LaunchStats).
