@@ -377,7 +377,33 @@ final class WorkflowRunner: ObservableObject {
             r.success = true
             r.output = UUID().uuidString
             return r
+        case .shutDown, .restart:
+            // The system's own dialog (Enter confirms, Esc cancels, auto after 60 s): a mistyped
+            // panel search never powers off the Mac directly.
+            let event = step.builtin == .shutDown ? "«event aevtrsdn»" : "«event aevtrrst»"
+            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", "tell application \"loginwindow\" to \(event)"],
+                                              timeout: 20)
+            return makeResult(step, index, from: out)
+        case .createReminder:
+            return await createReminder(step, index, input: input)
         }
+    }
+
+    // Reminders via JXA (like Alfred): JSON from the reminder argument, or plain text parsed here.
+    private func createReminder(_ step: WorkflowStep, _ index: Int, input: String) async -> StepResult {
+        guard let request = ReminderRequest.decode(input) ?? ReminderParser.parse(input), let json = request.json else {
+            return failure(step, index, String(localized: "Add the reminder text."))
+        }
+        let out = await ProcessRunner.run("/usr/bin/osascript", ["-l", "JavaScript", "-e", Self.reminderScript, json],
+                                          timeout: step.timeout)
+        var r = makeResult(step, index, from: out)
+        if r.success, r.output == "nolist" {
+            r.success = false
+            r.message = String(localized: "No Reminders list named “\(request.list)”.")
+        } else if r.success {
+            r.output = String(localized: "Reminder added: \(request.summary)")
+        }
+        return r
     }
 
     private func failure(_ step: WorkflowStep, _ index: Int, _ message: String) -> StepResult {
@@ -528,6 +554,28 @@ final class WorkflowRunner: ObservableObject {
         end tell
     end tell
     return "light"
+    """
+
+    // argv[0] = ReminderRequest JSON. Quits Reminders again if it was not running.
+    private static let reminderScript = """
+    function run(argv) {
+        const data = JSON.parse(argv[0]);
+        const app = Application('Reminders');
+        const wasRunning = app.running();
+        let list = app.defaultList();
+        if (data.list) {
+            const names = app.lists.name();
+            const i = names.findIndex(n => n.toLowerCase() === data.list.toLowerCase());
+            if (i < 0) return 'nolist';
+            list = app.lists[i];
+        }
+        const props = { name: data.title };
+        if (data.date) props.remindMeDate = new Date(data.date);
+        if (data.priority) props.priority = data.priority;
+        list.reminders.push(app.Reminder(props));
+        if (!wasRunning) app.quit();
+        return 'ok';
+    }
     """
 
     private static let muteScript = """

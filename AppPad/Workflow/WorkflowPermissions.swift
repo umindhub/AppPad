@@ -178,6 +178,9 @@ extension BuiltinAction {
         case .openURL: return String(localized: "Open URL")
         case .copyIPAddress: return String(localized: "Copy IP Address")
         case .generateUUID: return String(localized: "Generate UUID")
+        case .shutDown: return String(localized: "Shut Down…")
+        case .restart: return String(localized: "Restart…")
+        case .createReminder: return String(localized: "Add Reminder")
         }
     }
 
@@ -196,6 +199,9 @@ extension BuiltinAction {
         case .openURL: return String(localized: "Open web pages and links")
         case .copyIPAddress: return String(localized: "Look up the public IP address (api.ipify.org)")
         case .generateUUID: return String(localized: "Generate UUIDs")
+        case .shutDown: return String(localized: "Show the Shut Down dialog")
+        case .restart: return String(localized: "Show the Restart dialog")
+        case .createReminder: return String(localized: "Add reminders to the Reminders app")
         }
     }
 
@@ -214,13 +220,16 @@ extension BuiltinAction {
         case .openURL: return "safari"
         case .copyIPAddress: return "network"
         case .generateUUID: return "number"
+        case .shutDown: return "power"
+        case .restart: return "restart"
+        case .createReminder: return "checklist"
         }
     }
 
     // Actions that read the step input (the panel argument for the first step).
     var usesInput: Bool {
         switch self {
-        case .keepAwake, .setVolume, .quitApp, .openURL: return true
+        case .keepAwake, .setVolume, .quitApp, .openURL, .createReminder: return true
         default: return false
         }
     }

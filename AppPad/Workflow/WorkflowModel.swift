@@ -14,6 +14,7 @@ nonisolated enum ScriptLanguage: String, Codable, CaseIterable, Sendable {
 nonisolated enum BuiltinAction: String, Codable, CaseIterable, Sendable {
     case emptyTrash, sleepDisplays, sleepMac, keepAwake, toggleDarkMode, setVolume, toggleMute
     case ejectDisks, toggleHiddenFiles, quitApp, openURL, copyIPAddress, generateUUID
+    case shutDown, restart, createReminder
 }
 
 // Whether a workflow takes the text after the first space in the panel search.
@@ -28,6 +29,7 @@ nonisolated enum ArgumentType: String, Codable, CaseIterable, Sendable {
     case duration   // 10, 90s, 1h30m, 1:30 → seconds
     case time       // 7:30, 730, 7pm → HH:mm
     case number     // integer
+    case reminder   // "tomorrow 3pm Call Mom !! @Work" → JSON ReminderRequest
 }
 
 nonisolated enum HTTPMethod: String, Codable, CaseIterable, Sendable {

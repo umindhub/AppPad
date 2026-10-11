@@ -182,6 +182,7 @@ struct WorkflowEditorView: View {
                     Text("Duration (→ seconds)").tag(ArgumentType.duration)
                     Text("Time of day (→ HH:mm)").tag(ArgumentType.time)
                     Text("Number").tag(ArgumentType.number)
+                    Text("Reminder (date, !priority, @list)").tag(ArgumentType.reminder)
                 }
                 TextField("Hint", text: $draft.argumentHint, prompt: Text(verbatim: "minutes"))
                 let examples = WorkflowArguments.examples(for: draft.argumentType)

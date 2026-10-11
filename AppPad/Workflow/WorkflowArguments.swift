@@ -37,6 +37,11 @@ nonisolated enum WorkflowArguments {
         switch type {
         case .text:
             return .success(ParsedArgument(value: text, summary: text))
+        case .reminder:
+            guard let request = ReminderParser.parse(text), let json = request.json else {
+                return .failure(ArgumentError(message: String(localized: "Add the reminder text.")))
+            }
+            return .success(ParsedArgument(value: json, summary: request.summary))
         case .number:
             guard let number = Int(text) else {
                 return .failure(ArgumentError(message: String(localized: "Not a number.")))
@@ -66,6 +71,9 @@ nonisolated enum WorkflowArguments {
         case .time: return ["7:30", "19:30", "7pm"]
         case .number: return ["30"]
         case .text: return []
+        case .reminder:
+            return [String(localized: "tomorrow 3pm Call Mom"), String(localized: "in 2 hours Pay bills !!"),
+                    String(localized: "Buy milk @Shopping")]
         }
     }
 
@@ -189,5 +197,190 @@ nonisolated enum WorkflowArguments {
         formatter.dateStyle = .none
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Reminders
+
+// What "remind" creates in the Reminders app (passed as JSON to the builtin step).
+nonisolated struct ReminderRequest: Codable, Sendable {
+    var title: String
+    var date: Double?          // alert time, ms since 1970 (JXA new Date(ms))
+    var priority = 0           // Reminders: 0 none, 1 high, 5 medium, 9 low
+    var list = ""              // empty = default list
+
+    var json: String? {
+        (try? JSONEncoder().encode(self)).map { String(decoding: $0, as: UTF8.self) }
+    }
+
+    static func decode(_ text: String) -> ReminderRequest? {
+        guard text.hasPrefix("{") else { return nil }
+        return try? JSONDecoder().decode(ReminderRequest.self, from: Data(text.utf8))
+    }
+
+    // "Call Mom · Tomorrow at 3:00 PM · High · @Work"
+    var summary: String {
+        var parts = [title]
+        if let date {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            formatter.doesRelativeDateFormatting = true
+            parts.append(formatter.string(from: Date(timeIntervalSince1970: date / 1000)))
+        }
+        switch priority {
+        case 1: parts.append(String(localized: "High priority"))
+        case 5: parts.append(String(localized: "Medium priority"))
+        case 9: parts.append(String(localized: "Low priority"))
+        default: break
+        }
+        if !list.isEmpty { parts.append("@" + list) }
+        return parts.joined(separator: " · ")
+    }
+}
+
+// Like Alfred's "r": text with an optional date, "!"/"!!"/"!!!" priority (start or end) and "@List" (end).
+// Dates: Chinese rules first (明天下午3点, 10分钟后, 下周五), then NSDataDetector (tomorrow 3pm, in 2 hours…).
+nonisolated enum ReminderParser {
+    static func parse(_ input: String, now: Date = Date()) -> ReminderRequest? {
+        var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        var request = ReminderRequest(title: "")
+
+        // Priority: leading or trailing run of 1–3 "!" (also full-width "！").
+        let bangs = #"[!！]{1,3}"#
+        if let range = text.range(of: "^" + bangs + #"(?=\s|$)"#, options: .regularExpression)
+            ?? text.range(of: #"(?<=\s|^)"# + bangs + "$", options: .regularExpression) {
+            request.priority = [1: 9, 2: 5, 3: 1][text[range].count] ?? 0
+            text.removeSubrange(range)
+            text = text.trimmingCharacters(in: .whitespaces)
+        }
+        // List: trailing "@Name".
+        if let range = text.range(of: #"(?<=\s|^)[@＠]\S+$"#, options: .regularExpression) {
+            request.list = String(text[range].dropFirst())
+            text.removeSubrange(range)
+            text = text.trimmingCharacters(in: .whitespaces)
+        }
+        // Date: remove the matched words from the title.
+        if let found = chineseDate(in: text, now: now) ?? relativeEnglishDate(in: text, now: now)
+            ?? detectedDate(in: text, now: now) {
+            request.date = (found.date.timeIntervalSince1970 * 1000).rounded()
+            text.removeSubrange(found.range)
+        }
+        request.title = text
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: ",，、")))
+        return request.title.isEmpty ? nil : request
+    }
+
+    // MARK: Chinese
+
+    private static let dayWords = #"今天|今晚|明天|明早|明晚|后天|後天|大后天|大後天|(?:下|这|這|本)?(?:周|週|星期|礼拜|禮拜)[一二三四五六日天]"#
+    private static let periods = #"凌晨|早上|上午|中午|下午|傍晚|晚上"#
+
+    private static func chineseDate(in text: String, now: Date) -> (date: Date, range: Range<String.Index>)? {
+        let calendar = Calendar.current
+        // 10分钟后 / 半小时后 / 2个小时后 / 3天后
+        let relative = #"(\d+|半)\s*个?\s*(分钟|分鐘|小时|小時|钟头|鐘頭|天|周|週|星期)\s*(之)?后|(\d+|半)\s*个?\s*(分钟|分鐘|小时|小時|钟头|鐘頭|天|周|週|星期)\s*(之)?後"#
+        if let range = text.range(of: relative, options: .regularExpression) {
+            let match = String(text[range])
+            let amount: Double = match.hasPrefix("半") ? 0.5
+                : Double(match.prefix(while: \.isNumber)) ?? 0
+            let seconds: Double
+            if match.contains("分") { seconds = 60 }
+            else if match.contains("小") || match.contains("钟头") || match.contains("鐘頭") { seconds = 3600 }
+            else if match.contains("天") { seconds = 86_400 }
+            else { seconds = 7 * 86_400 }
+            return (now.addingTimeInterval(amount * seconds), range)
+        }
+
+        // [day] [period] H[:MM | 点[MM分|半]]   or   day alone
+        let timed = "(" + dayWords + #")?\s*("# + periods + #")?\s*(\d{1,2})(?:[:：](\d{2})|[点點時](?:(\d{1,2})分?|(半))?)"#
+        let regex = try? NSRegularExpression(pattern: timed)
+        let ns = text as NSString
+        if let m = regex?.firstMatch(in: text, range: NSRange(location: 0, length: ns.length)),
+           let range = Range(m.range, in: text) {
+            func group(_ i: Int) -> String? {
+                let r = m.range(at: i)
+                return r.location == NSNotFound ? nil : ns.substring(with: r)
+            }
+            // A bare "3:30" (no 明天 / 下午 …) is left to NSDataDetector ("tomorrow at 3:30pm").
+            if group(1) == nil, group(2) == nil, group(4) != nil { return detectedOnlyChinese(text, now: now) }
+            var hour = Int(group(3) ?? "") ?? 0
+            let minute = group(6) != nil ? 30 : Int(group(4) ?? group(5) ?? "0") ?? 0
+            let day = group(1)
+            let period = group(2) ?? ""
+            let evening = ["下午", "傍晚", "晚上"].contains(period) || day == "今晚" || day == "明晚"
+            if evening && hour < 12 { hour += 12 }
+            if period == "中午" && hour < 11 { hour += 12 }
+            guard hour < 24, minute < 60 else { return nil }
+            guard var date = dayStart(day, now: now) else { return nil }
+            date = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: date) ?? date
+            if day == nil, date <= now { date = calendar.date(byAdding: .day, value: 1, to: date) ?? date }
+            return (date, range)
+        }
+        return detectedOnlyChinese(text, now: now)
+    }
+
+    // A Chinese day word alone: 明天 → 9:00, 今晚 / 明晚 → 20:00.
+    private static func detectedOnlyChinese(_ text: String, now: Date) -> (date: Date, range: Range<String.Index>)? {
+        guard let range = text.range(of: dayWords, options: .regularExpression),
+              let start = dayStart(String(text[range]), now: now) else { return nil }
+        let word = String(text[range])
+        let hour = word == "今晚" || word == "明晚" ? 20 : 9
+        return (Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: start) ?? start, range)
+    }
+
+    // Start of the day a Chinese day word means (nil word = today).
+    private static func dayStart(_ word: String?, now: Date) -> Date? {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        guard let word else { return today }
+        let offsets = ["今天": 0, "今晚": 0, "明天": 1, "明早": 1, "明晚": 1, "后天": 2, "後天": 2, "大后天": 3, "大後天": 3]
+        if let offset = offsets[word] { return calendar.date(byAdding: .day, value: offset, to: today) }
+        // 周X / 下周X: Monday = 0 … Sunday = 6
+        let names: [Character: Int] = ["一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6, "天": 6]
+        guard let last = word.last, let target = names[last] else { return nil }
+        let current = (calendar.component(.weekday, from: now) + 5) % 7
+        var days = target - current
+        if word.hasPrefix("下") {
+            days += 7
+        } else if days < 0 {
+            days += 7
+        }
+        return calendar.date(byAdding: .day, value: days, to: today)
+    }
+
+    // MARK: English / other languages
+
+    // "in 5 minutes", "in 2 hours", "in 3 days" (NSDataDetector misses some of these).
+    private static func relativeEnglishDate(in text: String, now: Date) -> (date: Date, range: Range<String.Index>)? {
+        let pattern = #"(?i)\bin\s+(\d+|an?|half an)\s*(min|mins|minutes?|hrs?|hours?|days?|weeks?)\b"#
+        guard let range = text.range(of: pattern, options: .regularExpression) else { return nil }
+        let words = text[range].lowercased().split(separator: " ").dropFirst()
+        let first = words.first.map(String.init) ?? ""
+        let amount: Double = first == "half" ? 0.5 : (first == "a" || first == "an") ? 1 : Double(first) ?? 1
+        let unit = text[range].lowercased()
+        let seconds: Double = unit.contains("min") ? 60 : (unit.contains("h") && !unit.contains("week")) ? 3600
+            : unit.contains("day") ? 86_400 : 7 * 86_400
+        return (now.addingTimeInterval(amount * seconds), range)
+    }
+
+    // Apple's natural-language date detection ("tomorrow at 3pm", "next Thursday 15:30", "on 24 Dec").
+    private static func detectedDate(in text: String, now: Date) -> (date: Date, range: Range<String.Index>)? {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue),
+              let match = detector.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+              var date = match.date, let range = Range(match.range, in: text) else { return nil }
+        let words = text[range].lowercased()
+        // A day without a time ("tomorrow") → 9:00.
+        let hasTime = words.contains(where: \.isNumber)
+            || ["noon", "midnight", "morning", "afternoon", "evening", "night"].contains { words.contains($0) }
+        if !hasTime {
+            date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: date) ?? date
+        }
+        // "at 2pm" when it is already 5pm → tomorrow.
+        if date < now, now.timeIntervalSince(date) < 86_400 {
+            date = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
+        }
+        return (date, range)
     }
 }
