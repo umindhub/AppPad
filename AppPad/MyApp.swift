@@ -38,6 +38,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Read while the launch Apple Event is still current.
+        let openedByUser = LaunchOrigin.isUserOpen()
         NSApp.mainMenu = MainMenu.build()
         launchpad.onOpenSettings = { [weak self] in self?.showSettings() }
         launchpad.onRequestShortcut = { [weak self] app in self?.addAppShortcut(for: app) }
@@ -76,6 +78,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             self, selector: #selector(preferencesDidChange(_:)),
             name: .preferencesDidChange, object: nil
         )
+        if openedByUser { openLaunchpadAfterColdLaunch() }
+    }
+
+    // Dock / Finder click while not running: no reopen event comes, so open Launchpad here
+    // once apps and wallpaper are loaded (login-item launches stay silent).
+    private func openLaunchpadAfterColdLaunch() {
+        launchpad.showWhenReady { [weak self] in
+            guard let self, !self.launchpad.isShown, self.settings?.isVisible != true else { return }
+            self.clipboard.hide()
+            self.workflows.hide()
+            self.handOffActivation { [weak self] in self?.launchpad.show() }
+        }
     }
 
     // Click on AppPad pinned in the Dock (app already running) toggles Launchpad.
@@ -88,9 +102,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     // app first, so the panel opens non-activating (same state as pinch / menu bar).
     private func toggleLaunchpadFromDock() {
         let settingsOpen = settings?.isVisible == true
+        // Second click while the cold-launch show is still loading: cancel it.
+        if launchpad.cancelPendingShow() {
+            if !settingsOpen { handOffActivation() }
+            return
+        }
         // Panel may already have closed on resign key from the same click.
         if launchpad.isShown || launchpad.didJustCloseFromOutsideClick {
-            launchpad.hide()
+            launchpad.hide(animated: true)
             if !settingsOpen { handOffActivation() }
             return
         }
@@ -313,5 +332,40 @@ private final class FrontmostAppTracker {
     // Always running; fallback when the previous app is gone.
     static var finder: NSRunningApplication? {
         NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first
+    }
+}
+
+// How this process was started: Dock / Finder open vs. login item.
+private enum LaunchOrigin {
+    // Login launches within this many seconds of the Dock starting (= user login).
+    private static let loginGrace: TimeInterval = 60
+
+    static func isUserOpen() -> Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent,
+              event.eventClass == AEEventClass(kCoreEventClass),
+              event.eventID == AEEventID(kAEOpenApplication)
+        else { return false }   // Xcode / launchd: no open event
+        if event.paramDescriptor(forKeyword: AEKeyword(keyAEPropData))?.enumCodeValue == OSType(keyAELaunchedAsLogInItem) {
+            return false
+        }
+        // SMAppService login launches may not carry the login-item flag: also treat
+        // a launch right after the session started as a login launch.
+        if LoginItem.isEnabled, let started = dockStartDate(),
+           Date().timeIntervalSince(started) < loginGrace {
+            return false
+        }
+        return true
+    }
+
+    // Dock starts with the user session.
+    private static func dockStartDate() -> Date? {
+        guard let pid = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first?.processIdentifier
+        else { return nil }
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
+        guard sysctl(&mib, u_int(mib.count), &info, &size, nil, 0) == 0, size > 0 else { return nil }
+        let start = info.kp_proc.p_starttime
+        return Date(timeIntervalSince1970: TimeInterval(start.tv_sec) + TimeInterval(start.tv_usec) / 1_000_000)
     }
 }

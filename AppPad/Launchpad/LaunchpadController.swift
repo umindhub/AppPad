@@ -32,6 +32,14 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var lastOutsideClose: TimeInterval = -1
     private var didWarmUp = false
     private var isWarmingUp = false
+    // Catalog scanned + wallpaper blurred (a cold launch must not open an empty grid).
+    private var isReady = false
+    private var pendingReadyShow: (() -> Void)?
+    // Animated hide in flight (Dock toggle / click outside).
+    private var isFadingOut = false
+
+    private static let showDuration: TimeInterval = 0.25
+    private static let hideDuration: TimeInterval = 0.2
 
     var capacity: Int { max(1, prefs.gridColumns * prefs.gridRows) }
 
@@ -127,9 +135,17 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard !didWarmUp else { return }
         didWarmUp = true
         Task { [weak self] in
-            guard let screen = NSScreen.main else { return }
-            _ = await WallpaperBlurCache.shared.image(for: screen)
-            guard let self, !self.panel.isVisible else { return }
+            let screen = NSScreen.main
+            if let screen { _ = await WallpaperBlurCache.shared.image(for: screen) }
+            guard let self else { return }
+            self.isReady = true
+            // Cold launch from the Dock: show right away, no hidden warm-up pass.
+            if let pending = self.pendingReadyShow {
+                self.pendingReadyShow = nil
+                pending()
+                return
+            }
+            guard let screen, !self.panel.isVisible else { return }
             self.isWarmingUp = true
             self.applyAppearance()
             self.applyFrame(self.targetFrame(on: screen), on: screen, display: false)
@@ -215,7 +231,24 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // MARK: - Show / hide
 
     // Visible and focused (what toggle / gestures treat as "open").
-    var isShown: Bool { panel.isVisible && panel.isKeyWindow }
+    var isShown: Bool { panel.isVisible && panel.isKeyWindow && !isFadingOut }
+
+    // Runs action once apps and wallpaper are loaded (immediately if already ready).
+    func showWhenReady(_ action: @escaping () -> Void) {
+        if isReady {
+            action()
+        } else {
+            pendingReadyShow = action
+        }
+    }
+
+    // Drops a waiting cold-launch show; true if one was pending.
+    @discardableResult
+    func cancelPendingShow() -> Bool {
+        guard pendingReadyShow != nil else { return false }
+        pendingReadyShow = nil
+        return true
+    }
 
     // A Dock click can close the panel (resign key) just before the reopen event arrives;
     // the Dock toggle treats that as "was open".
@@ -243,17 +276,59 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             return
         }
         finishShow()
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.12
-            self.panel.animator().alphaValue = 1
+        animateIn()
+    }
+
+    // Fade in + icons settle from slightly larger (same look as the pinch open).
+    private func animateIn() {
+        setContentScale(scale(forVisibility: 0), duration: nil)
+        // Commit the first frame first, so the fade doesn't run during backing-store setup.
+        container.layoutSubtreeIfNeeded()
+        panel.displayIfNeeded()
+        CATransaction.flush()
+        let token = transitionToken
+        DispatchQueue.main.async { [weak self] in
+            guard let self, token == self.transitionToken, self.panel.isVisible else { return }
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = Self.showDuration
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                self.panel.animator().alphaValue = 1
+                self.setContentScale(1, duration: Self.showDuration)
+            }
         }
     }
 
-    func hide() {
+    // animated: fade out + icons grow, then order out. A show() meanwhile cancels it.
+    func hide(animated: Bool = false) {
+        guard panel.isVisible, !isHiding else { return }
+        guard animated else {
+            hideNow()
+            return
+        }
+        guard !isFadingOut else { return }
+        cancelTransition()
+        isFadingOut = true
+        panel.ignoresMouseEvents = true
+        PinchGestureMonitor.shared.setTapEnabled(false)
+        let token = transitionToken
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Self.hideDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            self.panel.animator().alphaValue = 0
+            self.setContentScale(self.scale(forVisibility: 0), duration: Self.hideDuration, timing: .easeIn)
+        } completionHandler: { [weak self] in
+            guard let self, token == self.transitionToken else { return }
+            self.hideNow()
+        }
+    }
+
+    private func hideNow() {
         guard panel.isVisible, !isHiding else { return }
         isHiding = true
         cancelTransition()
+        isFadingOut = false
         panel.orderOut(nil)
+        panel.ignoresMouseEvents = false
         PinchGestureMonitor.shared.setTapEnabled(false)
         setContentScale(1, duration: nil)
         viewController.didHide()
@@ -267,6 +342,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         let mouse = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return false }
         endWarmUp(orderOut: false)
+        // Interrupts an animated hide.
+        isFadingOut = false
+        panel.ignoresMouseEvents = false
         applyAppearance()
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow(resetToFirstPage: prefs.openPagePolicy == .firstPage)
@@ -376,7 +454,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     }
 
     // Scales the icon layer (not the wallpaper) around its center.
-    private func setContentScale(_ scale: CGFloat, duration: TimeInterval?) {
+    private func setContentScale(_ scale: CGFloat, duration: TimeInterval?,
+                                 timing: CAMediaTimingFunctionName = .easeOut) {
         guard let layer = viewController.view.layer else { return }
         let size = layer.bounds.size
         let dx = (0.5 - layer.anchorPoint.x) * size.width
@@ -392,7 +471,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             animation.fromValue = NSValue(caTransform3D: layer.presentation()?.transform ?? layer.transform)
             animation.toValue = NSValue(caTransform3D: target)
             animation.duration = duration
-            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            animation.timingFunction = CAMediaTimingFunction(name: timing)
             layer.add(animation, forKey: "launchpadZoom")
         } else {
             layer.removeAnimation(forKey: "launchpadZoom")
@@ -404,10 +483,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Click outside the panel → close.
     func windowDidResignKey(_ notification: Notification) {
         guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
-        if panel.isVisible, !isHiding {
+        if panel.isVisible, !isHiding, !isFadingOut {
             lastOutsideClose = ProcessInfo.processInfo.systemUptime
         }
-        hide()
+        hide(animated: true)
     }
 
     // Wallpaper → dark appearance (white labels); white → light appearance.
