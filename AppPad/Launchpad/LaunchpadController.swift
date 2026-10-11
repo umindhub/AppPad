@@ -211,6 +211,43 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             .map(\.app)
     }
 
+    // MARK: - Frecency shared with workflows
+
+    // Workflow panel: every app with its match score (0 = no match; empty query → all match).
+    func scoredApps(matching query: String) -> [(app: AppInfo, match: Int)] {
+        let normalized = SearchIndex.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !normalized.isEmpty else { return apps.map { (app: $0, match: 1) } }
+        // "final-cut-pro" (a name completed in the panel) also matches as "final cut pro".
+        let spaced = normalized.contains("-") ? normalized.replacingOccurrences(of: "-", with: " ") : nil
+        var result: [(app: AppInfo, match: Int)] = []
+        for app in apps {
+            var match = searchIndex.matchScore(app.key, query: normalized)
+            if let spaced {
+                if SearchIndex.normalize(app.name.split(whereSeparator: \.isWhitespace).joined(separator: "-")) == normalized {
+                    match = 130   // exact completed name
+                } else {
+                    match = max(match, searchIndex.matchScore(app.key, query: spaced))
+                }
+            }
+            if match > 0 { result.append((app: app, match: match)) }
+        }
+        return result
+    }
+
+    func frecency(_ key: String, now: Date = Date()) -> Double {
+        stats.score(for: key, now: now)
+    }
+
+    // A workflow run from the panel counts like an app launch.
+    func recordUse(_ key: String) {
+        stats.record(key, manual: true)
+    }
+
+    // New workflows start like user-installed apps (2) so they aren't buried below the apps.
+    func seedWorkflows(_ keys: [String]) {
+        stats.seedIfNeeded(keys: keys, score: 2)
+    }
+
     // Rank: match quality, then frecency, then name.
     func search(_ query: String) -> [AppInfo] {
         let normalized = SearchIndex.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))

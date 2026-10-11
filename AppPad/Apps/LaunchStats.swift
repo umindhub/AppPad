@@ -69,6 +69,18 @@ final class LaunchStats: NSObject {
         if changed { scheduleSave() }
     }
 
+    // Same once-only seeding for non-app keys (workflows: "workflow:<id>").
+    func seedIfNeeded(keys: [String], score: Double) {
+        let now = Date()
+        var changed = false
+        for key in keys where !seeded.contains(key) {
+            seeded.insert(key)
+            changed = true
+            if entries[key] == nil { entries[key] = Entry(score: score, updatedAt: now) }
+        }
+        if changed { scheduleSave() }
+    }
+
     // manual = launched from AppPad; suppresses the duplicate system notification.
     func record(_ key: String, manual: Bool = false) {
         let now = Date()

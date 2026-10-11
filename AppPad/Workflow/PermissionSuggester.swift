@@ -100,36 +100,31 @@ enum PermissionSuggester {
     }
 }
 
-// Starting points offered by "Add".
+// Starting points offered by "Add" (Empty Trash is now a built-in workflow).
 enum WorkflowTemplate: CaseIterable {
-    case blankShell, blankAppleScript, emptyTrash, githubAction, runShortcut
+    case blankShell, blankAppleScript, githubAction, runShortcut
 
     var title: String {
         switch self {
         case .blankShell: return String(localized: "Shell Script")
         case .blankAppleScript: return String(localized: "AppleScript")
-        case .emptyTrash: return String(localized: "Empty Trash")
         case .githubAction: return String(localized: "Run GitHub Action")
         case .runShortcut: return String(localized: "Run Shortcut")
         }
     }
 
+    // Names are the English base; translations go in the workflow's localizations.
+    // Blank templates leave the identifier empty so it is the first thing to fill in.
     func make() -> Workflow {
         switch self {
         case .blankShell:
             var step = WorkflowStep(kind: .shell)
             step.script = "echo \"Hello from AppPad\"\n"
-            return Workflow(name: String(localized: "New Shell Workflow"), steps: [step])
+            return Self.named("New Shell Workflow", steps: [step])
         case .blankAppleScript:
             var step = WorkflowStep(kind: .appleScript)
             step.script = "on run argv\n\treturn \"Hello from AppPad\"\nend run\n"
-            return Workflow(name: String(localized: "New AppleScript Workflow"), steps: [step])
-        case .emptyTrash:
-            var step = WorkflowStep(kind: .builtin)
-            step.builtin = .emptyTrash
-            step.timeout = 300
-            // The step reports "emptied" / "already empty" as its output.
-            return Workflow(name: String(localized: "Empty Trash"), steps: [step])
+            return Self.named("New AppleScript Workflow", steps: [step])
         case .githubAction:
             var step = WorkflowStep(kind: .http)
             step.http.method = .POST
@@ -141,12 +136,19 @@ enum WorkflowTemplate: CaseIterable {
             Content-Type: application/json
             """
             step.http.body = "{\"ref\": \"main\"}"
-            var workflow = Workflow(name: String(localized: "Run GitHub Action"), steps: [step])
+            var workflow = Self.named("Run GitHub Action", identifier: "com.youmindhub.github-action", steps: [step])
             workflow.permissions.httpHosts = ["api.github.com"]
             workflow.permissions.secrets = ["github-token"]
             return workflow
         case .runShortcut:
-            return Workflow(name: String(localized: "Run Shortcut"), steps: [WorkflowStep(kind: .shortcut)])
+            return Self.named("Run Shortcut", identifier: "com.youmindhub.run-shortcut", steps: [WorkflowStep(kind: .shortcut)])
         }
+    }
+
+    // English base name plus the app's own translations of that key as localizations.
+    private static func named(_ key: String, identifier: String = "", steps: [WorkflowStep]) -> Workflow {
+        var workflow = Workflow(name: key, identifier: identifier, steps: steps)
+        workflow.localizations = WorkflowLanguage.translations(of: key)
+        return workflow
     }
 }

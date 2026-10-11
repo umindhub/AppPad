@@ -39,7 +39,7 @@ enum WorkflowPanelKeys {
         if let other = WorkflowStore.shared.workflows.first(where: {
             $0.id != id && $0.panelKey?.keyCode == combo.keyCode && $0.panelKey?.modifiers == combo.modifiers
         }) {
-            return String(localized: "Same shortcut as \(other.name)")
+            return String(localized: "Same shortcut as \(other.displayName)")
         }
         return nil
     }

@@ -8,24 +8,99 @@ enum WorkflowIcon {
     nonisolated private static let cornerRatio: CGFloat = 0.225
 
     private static var cache: [String: NSImage] = [:]
+    private static var revision = 0          // bumped when a downloaded icon changes
 
-    // Custom PNG if set, otherwise a generated icon (step-kind color + SF Symbol).
+    // Custom PNG if set, else the downloaded iconURL file, otherwise a generated icon.
     static func image(for workflow: Workflow) -> NSImage {
         let key: String
+        var file: URL?
         if let data = workflow.icon {
             // Cheap fingerprint (rows re-render often; don't hash the whole PNG).
             var hasher = Hasher()
             hasher.combine(data.prefix(128))
             hasher.combine(data.dropFirst(data.count / 2).prefix(128))
             key = "png:\(workflow.id.uuidString):\(data.count):\(hasher.finalize())"
+        } else if !workflow.iconURL.isEmpty, !workflow.identifier.isEmpty,
+                  FileManager.default.fileExists(atPath: fileURL(for: workflow.identifier).path) {
+            file = fileURL(for: workflow.identifier)
+            key = "url:\(workflow.identifier):\(revision)"
         } else {
             key = "gen:\(workflow.symbolName):\(workflow.steps.first?.kind.rawValue ?? "")"
         }
         if let cached = cache[key] { return cached }
-        let image = workflow.icon.flatMap { NSImage(data: $0) } ?? generated(for: workflow)
+        let image = workflow.icon.flatMap { NSImage(data: $0) }
+            ?? file.flatMap { NSImage(contentsOf: $0) }
+            ?? generated(for: workflow)
         if cache.count > 200 { cache.removeAll() }
         cache[key] = image
         return image
+    }
+
+    // MARK: - Downloaded icons (Workflows/Icons/<identifier>.png)
+
+    static var directory: URL {
+        let dir = AppEnvironment.supportDirectory
+            .appendingPathComponent("Workflows", isDirectory: true)
+            .appendingPathComponent("Icons", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    static func fileURL(for identifier: String) -> URL {
+        directory.appendingPathComponent(identifier + ".png")
+    }
+
+    private static let maxDownloadBytes = 10 * 1024 * 1024
+    private static var fetched: [String: Data] = [:]   // url → PNG, reused by editor preview and save
+
+    // Downloads an https image and converts it to the 512×512 icon PNG; nil on any failure.
+    static func fetchPNG(from urlString: String) async -> Data? {
+        let trimmed = urlString.trimmingCharacters(in: .whitespaces)
+        if let hit = fetched[trimmed] { return hit }
+        guard WorkflowIdentity.isValidIconURL(trimmed), let url = URL(string: trimmed) else { return nil }
+        var request = URLRequest(url: url, timeoutInterval: 20)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+                  !data.isEmpty, data.count <= maxDownloadBytes,
+                  let png = makePNG(data: data) else { return nil }
+            if fetched.count > 20 { fetched.removeAll() }
+            fetched[trimmed] = png
+            return png
+        } catch {
+            NSLog("Workflow icon download failed: \(trimmed) \(error)")
+            return nil
+        }
+    }
+
+    // Writes the downloaded icon for an identifier; returns false if the download failed.
+    @discardableResult
+    static func download(_ urlString: String, for identifier: String) async -> Bool {
+        guard let png = await fetchPNG(from: urlString) else { return false }
+        do {
+            try png.write(to: fileURL(for: identifier), options: .atomic)
+            revision += 1
+            return true
+        } catch {
+            NSLog("Saving workflow icon failed: \(error)")
+            return false
+        }
+    }
+
+    static func removeFile(for identifier: String) {
+        guard !identifier.isEmpty else { return }
+        if (try? FileManager.default.removeItem(at: fileURL(for: identifier))) != nil { revision += 1 }
+    }
+
+    static func moveFile(from old: String, to new: String) {
+        guard !old.isEmpty, !new.isEmpty, old != new else { return }
+        let source = fileURL(for: old)
+        guard FileManager.default.fileExists(atPath: source.path) else { return }
+        let target = fileURL(for: new)
+        try? FileManager.default.removeItem(at: target)
+        try? FileManager.default.moveItem(at: source, to: target)
+        revision += 1
     }
 
     // MARK: - Generated
@@ -81,8 +156,15 @@ enum WorkflowIcon {
     // Any image → 512×512 PNG. Images that already have transparent corners (exported app icons)
     // are only scaled; everything else is center-cropped into the rounded body.
     static func makePNG(from url: URL) -> Data? {
-        guard let source = NSImage(contentsOf: url),
-              let cg = source.cgImage(forProposedRect: nil, context: nil, hints: nil),
+        NSImage(contentsOf: url).flatMap { makePNG(image: $0) }
+    }
+
+    static func makePNG(data: Data) -> Data? {
+        NSImage(data: data).flatMap { makePNG(image: $0) }
+    }
+
+    private static func makePNG(image source: NSImage) -> Data? {
+        guard let cg = source.cgImage(forProposedRect: nil, context: nil, hints: nil),
               cg.width > 0, cg.height > 0,
               let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixels, pixelsHigh: pixels,
                                          bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,

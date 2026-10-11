@@ -78,7 +78,7 @@ extension Workflow {
             switch step.kind {
             case .shortcut where !step.shortcutName.isEmpty:
                 items.append(PermissionItem(kind: .shortcut, value: step.shortcutName))
-            case .builtin:
+            case .builtin where step.unsupportedBuiltin == nil:
                 items.append(PermissionItem(kind: .builtin, value: step.builtin.rawValue))
             default:
                 break
@@ -117,13 +117,18 @@ extension Workflow {
                     errors.append(String(localized: "Step \(n): declare the secret “\(name)”."))
                 }
             case .builtin:
-                break
+                if let raw = step.unsupportedBuiltin {
+                    errors.append(String(localized: "Step \(n): “\(raw)” needs a newer version of AppPad."))
+                } else if step.builtin == .openURL, step.url.trimmingCharacters(in: .whitespaces).isEmpty {
+                    errors.append(String(localized: "Step \(n): enter the URL to open."))
+                }
             }
         }
         return errors
     }
 
     var symbolName: String {
+        if !symbol.isEmpty { return symbol }
         switch steps.first?.kind {
         case .shell: return "terminal"
         case .appleScript: return "applescript"
@@ -162,6 +167,17 @@ extension BuiltinAction {
         switch self {
         case .emptyTrash: return String(localized: "Empty Trash")
         case .sleepDisplays: return String(localized: "Sleep Displays")
+        case .sleepMac: return String(localized: "Sleep Mac")
+        case .keepAwake: return String(localized: "Keep Awake")
+        case .toggleDarkMode: return String(localized: "Toggle Light/Dark Mode")
+        case .setVolume: return String(localized: "Set Volume")
+        case .toggleMute: return String(localized: "Toggle Mute")
+        case .ejectDisks: return String(localized: "Eject All Disks")
+        case .toggleHiddenFiles: return String(localized: "Toggle Hidden Files")
+        case .quitApp: return String(localized: "Quit App")
+        case .openURL: return String(localized: "Open URL")
+        case .copyIPAddress: return String(localized: "Copy IP Address")
+        case .generateUUID: return String(localized: "Generate UUID")
         }
     }
 
@@ -169,6 +185,17 @@ extension BuiltinAction {
         switch self {
         case .emptyTrash: return String(localized: "Empty the Trash")
         case .sleepDisplays: return String(localized: "Put the displays to sleep")
+        case .sleepMac: return String(localized: "Put the Mac to sleep")
+        case .keepAwake: return String(localized: "Keep the Mac awake")
+        case .toggleDarkMode: return String(localized: "Switch between light and dark appearance")
+        case .setVolume: return String(localized: "Change the output volume")
+        case .toggleMute: return String(localized: "Mute or unmute the sound")
+        case .ejectDisks: return String(localized: "Eject disks")
+        case .toggleHiddenFiles: return String(localized: "Change Finder’s hidden files setting and relaunch Finder")
+        case .quitApp: return String(localized: "Quit running apps")
+        case .openURL: return String(localized: "Open web pages and links")
+        case .copyIPAddress: return String(localized: "Look up the public IP address (api.ipify.org)")
+        case .generateUUID: return String(localized: "Generate UUIDs")
         }
     }
 
@@ -176,6 +203,25 @@ extension BuiltinAction {
         switch self {
         case .emptyTrash: return "trash"
         case .sleepDisplays: return "display"
+        case .sleepMac: return "moon.zzz"
+        case .keepAwake: return "cup.and.saucer"
+        case .toggleDarkMode: return "circle.lefthalf.filled"
+        case .setVolume: return "speaker.wave.2"
+        case .toggleMute: return "speaker.slash"
+        case .ejectDisks: return "eject"
+        case .toggleHiddenFiles: return "eye"
+        case .quitApp: return "xmark.app"
+        case .openURL: return "safari"
+        case .copyIPAddress: return "network"
+        case .generateUUID: return "number"
+        }
+    }
+
+    // Actions that read the step input (the panel argument for the first step).
+    var usesInput: Bool {
+        switch self {
+        case .keepAwake, .setVolume, .quitApp, .openURL: return true
+        default: return false
         }
     }
 }

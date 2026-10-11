@@ -3,8 +3,12 @@ import Carbon.HIToolbox
 import Combine
 
 // Layout: title + hint, search field, list (2/3) | preview (1/3) — same as the clipboard panel.
-// Rows: enabled workflows first, then apps (most used first; ranked by match while searching).
-// Keys: ↩ run / open, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
+// Rows: workflows and apps mixed, most used first (shared frecency); while searching, match quality first.
+// Search: only the text before the first space is matched; the rest is the workflow argument.
+// Typing after the first space only changes the argument: rows and selection stay.
+// Picking a row (Tab, arrows, ⌘J/K, mouse) writes its name into the field with spaces as "-"
+// ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
+// Keys: ↩ run / open, ⇥ complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc clears / closes.
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
@@ -14,7 +18,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private let searchChrome = GlassSearchFieldView()
     private var searchField: NSSearchField { searchChrome.field }
     private let titleLabel = NSTextField(labelWithString: String(localized: "Workflows"))
-    private let hintLabel = NSTextField(labelWithString: String(localized: "⌘⇧J / ⌘⇧K  Switch"))
+    private let hintLabel = NSTextField(labelWithString: String(localized: "⇥ Complete   ⌘⇧J / ⌘⇧K  Switch"))
     private let scrollView = NSScrollView()
     private let tableView = ClipTableView()
     private let divider = NSBox()
@@ -22,6 +26,9 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
     private var items: [WorkflowPanelItem] = []
+    private var argument = ""                       // text after the first space
+    private var lastTerm = ""                       // normalized search term the rows were built for
+    private var installedShortcuts: Set<String>?    // nil = not known yet
     private var listFont = NSFont.systemFont(ofSize: 15)
     private var cancellables = Set<AnyCancellable>()
 
@@ -129,6 +136,13 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         _ = view
         searchField.stringValue = ""
         reload(selectFirst: true)
+        // Shortcuts may have been added since the last show.
+        Task { [weak self] in
+            let names = await ShortcutsCatalog.names()
+            guard let self else { return }
+            self.installedShortcuts = names.isEmpty ? nil : Set(names)   // empty = lookup failed, don't block
+            self.updatePreview()
+        }
     }
 
     func focusSearch() {
@@ -161,26 +175,79 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     private func reload(selectFirst: Bool) {
         let previousRow = tableView.selectedRow
-        let query = SearchIndex.normalize(searchField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines))
+        let previousKey = selectedItem.map(Self.identity)
+        let parts = WorkflowArguments.split(searchField.stringValue)
+        let term = SearchIndex.normalize(parts.term)
+        argument = parts.argument
+        lastTerm = term
         let workflows = WorkflowStore.shared.workflows.filter(\.enabled)
-        let apps: [AppInfo]
-        if query.isEmpty {
-            items = workflows.map { .workflow($0) }
-            apps = controller?.launchpad.appsByFrecency() ?? []
+
+        if let launchpad = controller?.launchpad {
+            launchpad.seedWorkflows(workflows.map(\.statsKey))
+            let now = Date()
+            var ranked: [(item: WorkflowPanelItem, match: Int, frecency: Double, name: String)] = []
+            for workflow in workflows {
+                let match = term.isEmpty ? 1 : Self.score(workflow, query: term)
+                guard match > 0 else { continue }
+                ranked.append((item: WorkflowPanelItem.workflow(workflow), match: match,
+                               frecency: launchpad.frecency(workflow.statsKey, now: now), name: workflow.displayName))
+            }
+            for (app, match) in launchpad.scoredApps(matching: term) {
+                ranked.append((item: WorkflowPanelItem.app(app), match: match,
+                               frecency: launchpad.frecency(app.key, now: now), name: app.name))
+            }
+            ranked.sort { a, b in
+                if a.match != b.match { return a.match > b.match }
+                if a.frecency != b.frecency { return a.frecency > b.frecency }
+                return a.name.localizedStandardCompare(b.name) == .orderedAscending
+            }
+            items = ranked.map(\.item)
         } else {
-            items = workflows
-                .map { (workflow: $0, score: Self.score($0.name, query: query)) }
-                .filter { $0.score > 0 }
-                .sorted { $0.score > $1.score }
-                .map { .workflow($0.workflow) }
-            apps = controller?.launchpad.search(query) ?? []
+            items = workflows.map { .workflow($0) }
         }
-        items += apps.map { .app($0) }
 
         tableView.reloadData()
-        let row = selectFirst || previousRow < 0 ? 0 : min(previousRow, items.count - 1)
+        var row = 0
+        if !selectFirst {
+            // Same item as before (rows may have moved), else the same row number.
+            if let previousKey, let index = items.firstIndex(where: { Self.identity($0) == previousKey }) {
+                row = index
+            } else if previousRow >= 0 {
+                row = min(previousRow, items.count - 1)
+            }
+        }
         select(row: items.isEmpty ? -1 : row)
         emptyLabel.isHidden = !items.isEmpty
+    }
+
+    private static func identity(_ item: WorkflowPanelItem) -> String {
+        switch item {
+        case .workflow(let workflow): return "w:" + workflow.id.uuidString
+        case .app(let app): return "a:" + app.key
+        }
+    }
+
+    // One-word form of a name for the search field: "Set Timer" → "Set-Timer".
+    static func token(_ name: String) -> String {
+        name.split(whereSeparator: \.isWhitespace).joined(separator: "-")
+    }
+
+    // Keyword exact > keyword prefix > name tiers (localized and English name).
+    // Completed name ("set-timer") > keyword exact > keyword prefix > name tiers.
+    private static func score(_ workflow: Workflow, query: String) -> Int {
+        let names = [workflow.displayName, workflow.name]
+        if names.contains(where: { SearchIndex.normalize(token($0)) == query }) { return 130 }
+        let keyword = SearchIndex.normalize(workflow.keyword)
+        if !keyword.isEmpty {
+            if keyword == query { return 120 }
+            if keyword.hasPrefix(query) { return 95 }
+        }
+        var best = names.map { score($0, query: query) }.max() ?? 0
+        if query.contains("-") {
+            let spaced = query.replacingOccurrences(of: "-", with: " ")
+            best = max(best, names.map { score($0, query: spaced) }.max() ?? 0)
+        }
+        return best
     }
 
     // Same tiers as app search: prefix > word prefix > acronym / pinyin > contains.
@@ -230,12 +297,29 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private func hoverSelect(_ row: Int) {
         guard items.indices.contains(row), row != tableView.selectedRow else { return }
         tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+        fillSearchField()
     }
 
+    // Arrows, ⌘J/K, page keys: a picked row also fills the field.
     private func moveSelection(_ delta: Int) {
         guard !items.isEmpty else { return }
         let current = max(0, tableView.selectedRow)
         select(row: min(max(current + delta, 0), items.count - 1))
+        fillSearchField()
+    }
+
+    // Field = "<Name-With-Dashes> <argument>"; rows stay (lastTerm follows the new name),
+    // so typing the argument next keeps the selection. The automatic first row is not filled.
+    private func fillSearchField() {
+        guard let item = selectedItem else { return }
+        let name = Self.token(item.title)
+        var text = name
+        if case .workflow = item { text += " " }
+        if !argument.isEmpty { text = name + " " + argument }
+        searchField.stringValue = text
+        lastTerm = SearchIndex.normalize(name)
+        focusSearch()   // caret to the end
+        updatePreview()
     }
 
     private func updatePreview() {
@@ -245,7 +329,8 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         }
         if case .workflow(let workflow) = item {
             preview.show(item, isRunning: runner.running.contains(workflow.id),
-                         lastResult: runner.lastResults[workflow.id])
+                         lastResult: runner.lastResults[workflow.id],
+                         argument: argument, missingShortcut: missingShortcut(workflow))
         } else {
             preview.show(item)
         }
@@ -259,9 +344,62 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
             return
         }
         switch items[row] {
-        case .workflow(let workflow): controller?.run(workflow)
-        case .app(let app): controller?.open(app)
+        case .workflow(let workflow): run(workflow)
+        case .app(let app): controller?.open(app)   // the argument is ignored for apps
         }
+    }
+
+    // Missing shortcut → install / create it; bad argument → stay open (the preview says why).
+    private func run(_ workflow: Workflow, argument: String? = nil) {
+        let value = argument ?? self.argument
+        if let name = missingShortcut(workflow) {
+            controller?.installShortcut(name)
+            return
+        }
+        if case .failure = WorkflowArguments.parse(value, type: workflow.argumentType, mode: workflow.argument) {
+            NSSound.beep()
+            updatePreview()
+            return
+        }
+        controller?.run(workflow, argument: value)
+    }
+
+    // In-panel shortcut for a workflow that takes an argument: select it and put its name in the
+    // field, ready for the argument (the text typed for another row is not reused).
+    private func selectForArgument(_ workflow: Workflow) {
+        let name = Self.token(workflow.displayName)
+        if let index = items.firstIndex(where: { if case .workflow(let w) = $0 { return w.id == workflow.id }; return false }) {
+            select(row: index)
+            scrollRowToTop(index)
+            argument = ""
+            searchField.stringValue = name + " "
+            lastTerm = SearchIndex.normalize(name)   // rows stay, typing the argument keeps the selection
+            focusSearch()
+            updatePreview()
+        } else {
+            // Not in the current rows: search for its exact name (ranked first).
+            searchField.stringValue = name + " "
+            reload(selectFirst: true)
+            scrollRowToTop(0)
+            focusSearch()
+        }
+    }
+
+    // Put the row at the top of the list (rows near the end: scrolled to the bottom instead).
+    private func scrollRowToTop(_ row: Int) {
+        guard items.indices.contains(row) else { return }
+        tableView.layoutSubtreeIfNeeded()
+        let clip = scrollView.contentView
+        let maxY = max(0, tableView.bounds.height - clip.bounds.height)
+        let y = min(tableView.rect(ofRow: row).minY, maxY)
+        clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: y))
+        scrollView.reflectScrolledClipView(clip)
+    }
+
+    private func missingShortcut(_ workflow: Workflow) -> String? {
+        guard let installedShortcuts else { return nil }
+        return workflow.steps.first { $0.kind == .shortcut && !$0.shortcutName.isEmpty
+            && !installedShortcuts.contains($0.shortcutName) }?.shortcutName
     }
 
     private func editSelected() {
@@ -283,8 +421,24 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     // MARK: - Keyboard
 
+    // Only a changed search term (text before the first space) rebuilds the rows and selects the first.
     func controlTextDidChange(_ obj: Notification) {
+        let parts = WorkflowArguments.split(searchField.stringValue)
+        if SearchIndex.normalize(parts.term) == lastTerm {
+            argument = parts.argument
+            updatePreview()
+            return
+        }
         reload(selectFirst: true)
+    }
+
+    // Tab: the selected row's localized name ("Set-Timer ") in the field, ready for the argument.
+    private func completeSelected() {
+        guard selectedItem != nil else {
+            NSSound.beep()
+            return
+        }
+        fillSearchField()
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
@@ -293,6 +447,8 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
             handleEscape()
         case #selector(NSResponder.insertNewline(_:)):
             activate(row: tableView.selectedRow)
+        case #selector(NSResponder.insertTab(_:)):
+            completeSelected()
         case #selector(NSResponder.moveUp(_:)):
             moveSelection(-1)
         case #selector(NSResponder.moveDown(_:)):
@@ -317,7 +473,12 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         guard let workflow = WorkflowStore.shared.workflows.first(where: {
             $0.enabled && $0.panelKey?.keyCode == combo.keyCode && $0.panelKey?.modifiers == combo.modifiers
         }) else { return false }
-        controller?.run(workflow)
+        // No argument → run now; with an argument (optional or required) → select it first.
+        if workflow.argument == .off {
+            run(workflow, argument: "")
+        } else {
+            selectForArgument(workflow)
+        }
         return true
     }
 

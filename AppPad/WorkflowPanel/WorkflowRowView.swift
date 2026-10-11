@@ -7,7 +7,7 @@ enum WorkflowPanelItem {
 
     var title: String {
         switch self {
-        case .workflow(let workflow): return workflow.name
+        case .workflow(let workflow): return workflow.displayName
         case .app(let app): return app.name
         }
     }
@@ -74,8 +74,12 @@ final class WorkflowRowView: NSView {
         needsLayout = true
     }
 
-    // "Shell Script · HTTP Request"
+    // Description if set, else "Shell Script · HTTP Request"
     private static func summary(_ workflow: Workflow) -> String {
+        let description = workflow.displaySummary
+            .split(whereSeparator: \.isNewline).first.map(String.init)?
+            .trimmingCharacters(in: .whitespaces) ?? ""
+        if !description.isEmpty { return description }
         var kinds: [String] = []
         for step in workflow.steps where !kinds.contains(step.kind.title) {
             kinds.append(step.kind.title)

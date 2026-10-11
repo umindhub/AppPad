@@ -50,13 +50,13 @@ final class WorkflowRunner: ObservableObject {
     private var tasks: [UUID: Task<WorkflowRunResult?, Never>] = [:]
     private let session = URLSession(configuration: .ephemeral)
 
-    // Workflow panel entry point (Enter / ⌘N / in-panel shortcut).
-    func start(id: UUID, trigger: RunTrigger) {
+    // Workflow panel entry point (Enter / ⌘N / in-panel shortcut). argument = text after the first space.
+    func start(id: UUID, trigger: RunTrigger, argument: String = "") {
         guard let workflow = WorkflowStore.shared.workflow(id: id), workflow.enabled else {
             NSSound.beep()
             return
         }
-        Task { await run(workflow, trigger: trigger) }
+        Task { await run(workflow, trigger: trigger, argument: argument) }
     }
 
     func cancel(id: UUID) {
@@ -65,13 +65,13 @@ final class WorkflowRunner: ObservableObject {
 
     // nil when it did not run (already running).
     @discardableResult
-    func run(_ workflow: Workflow, trigger: RunTrigger) async -> WorkflowRunResult? {
+    func run(_ workflow: Workflow, trigger: RunTrigger, argument: String = "") async -> WorkflowRunResult? {
         guard !running.contains(workflow.id) else {
             NSSound.beep()
             return nil
         }
         running.insert(workflow.id)
-        let task = Task { await self.execute(workflow, trigger: trigger) }
+        let task = Task { await self.execute(workflow, trigger: trigger, argument: argument) }
         tasks[workflow.id] = task
         let result = await task.value
         tasks[workflow.id] = nil
@@ -81,19 +81,27 @@ final class WorkflowRunner: ObservableObject {
 
     // MARK: - Run
 
-    private func execute(_ workflow: Workflow, trigger: RunTrigger) async -> WorkflowRunResult? {
-        var result = WorkflowRunResult(workflowID: workflow.id, workflowName: workflow.name,
+    private func execute(_ workflow: Workflow, trigger: RunTrigger, argument: String) async -> WorkflowRunResult? {
+        var result = WorkflowRunResult(workflowID: workflow.id, workflowName: workflow.displayName,
                                        startedAt: Date(), finishedAt: Date())
         let errors = workflow.validationErrors
         guard errors.isEmpty else {
             result.message = errors.joined(separator: "\n")
             return finish(result, workflow, trigger)
         }
+        // The parsed argument is the first step's input.
+        var input = ""
+        switch WorkflowArguments.parse(argument, type: workflow.argumentType, mode: workflow.argument) {
+        case .success(let parsed):
+            input = parsed.value
+        case .failure(let error):
+            result.message = error.message
+            return finish(result, workflow, trigger)
+        }
         let allowed = resolvePermissions(workflow, result: &result)
         let tempDir = makeTempDir()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        var input = ""
         for (index, step) in workflow.steps.enumerated() {
             if Task.isCancelled {
                 result.cancelled = true
@@ -112,7 +120,7 @@ final class WorkflowRunner: ObservableObject {
             case .http:
                 stepResult = await runHTTP(step, index: index, allowed: allowed, input: input)
             case .builtin:
-                stepResult = await runBuiltin(step, index: index, allowed: allowed)
+                stepResult = await runBuiltin(step, index: index, allowed: allowed, input: input)
             }
             stepResult.duration = Date().timeIntervalSince(started)
             result.steps.append(stepResult)
@@ -154,7 +162,7 @@ final class WorkflowRunner: ObservableObject {
         let detail: String
         switch step.kind {
         case .shortcut: detail = " “\(step.shortcutName)”"
-        case .builtin: detail = " · " + step.builtin.title
+        case .builtin: detail = " · " + (step.unsupportedBuiltin ?? step.builtin.title)
         case .http: detail = " · " + step.http.method.rawValue + " " + (step.http.host ?? "")
         default: detail = ""
         }
@@ -221,9 +229,13 @@ final class WorkflowRunner: ObservableObject {
         let item = PermissionItem(kind: .shortcut, value: step.shortcutName)
         guard allowed.contains(item) else { return denied(step, index, item) }
         var arguments = ["run", step.shortcutName]
-        if !input.isEmpty {
+        // Template: "timer\n{{input}}" → two lines; empty template = the step input as is.
+        let payload = step.shortcutInput.isEmpty ? input : step.shortcutInput
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .replacingOccurrences(of: WorkflowPlaceholders.input, with: input)
+        if !payload.isEmpty {
             let inputFile = tempDir.appendingPathComponent("shortcut-input-\(index + 1).txt")
-            try? input.write(to: inputFile, atomically: true, encoding: .utf8)
+            try? payload.write(to: inputFile, atomically: true, encoding: .utf8)
             arguments += ["--input-path", inputFile.path]
         }
         let outputFile = tempDir.appendingPathComponent("shortcut-output-\(index + 1).txt")
@@ -306,25 +318,197 @@ final class WorkflowRunner: ObservableObject {
     }
 
     // AppPad's own trusted actions (not sandboxed, still permission-gated).
-    private func runBuiltin(_ step: WorkflowStep, index: Int, allowed: [PermissionItem]) async -> StepResult {
+    private func runBuiltin(_ step: WorkflowStep, index: Int, allowed: [PermissionItem], input: String) async -> StepResult {
+        if let raw = step.unsupportedBuiltin {
+            return failure(step, index, String(localized: "“\(raw)” needs a newer version of AppPad."))
+        }
         let item = PermissionItem(kind: .builtin, value: step.builtin.rawValue)
         guard allowed.contains(item) else { return denied(step, index, item) }
-        let out: ProcessOutput
         switch step.builtin {
         case .emptyTrash:
             // Needs Automation permission for Finder (macOS asks once).
             // Finder answers an empty Trash with error -128, so check first.
-            out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.emptyTrashScript], timeout: step.timeout)
+            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.emptyTrashScript], timeout: step.timeout)
+            var r = makeResult(step, index, from: out)
+            if r.success {
+                r.output = r.output == "empty"
+                    ? String(localized: "The Trash is already empty.")
+                    : String(localized: "Trash emptied.")
+            }
+            return r
         case .sleepDisplays:
-            out = await ProcessRunner.run("/usr/bin/pmset", ["displaysleepnow"], timeout: 10)
+            return makeResult(step, index, from: await ProcessRunner.run("/usr/bin/pmset", ["displaysleepnow"], timeout: 10))
+        case .sleepMac:
+            return makeResult(step, index, from: await ProcessRunner.run("/usr/bin/pmset", ["sleepnow"], timeout: 10))
+        case .keepAwake:
+            return await keepAwake(step, index, seconds: Int(input) ?? 0)
+        case .toggleDarkMode:
+            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.darkModeScript], timeout: step.timeout)
+            var r = makeResult(step, index, from: out)
+            if r.success {
+                r.output = r.output == "dark" ? String(localized: "Dark appearance") : String(localized: "Light appearance")
+            }
+            return r
+        case .setVolume:
+            guard let level = Int(input.trimmingCharacters(in: .whitespaces)), (0...100).contains(level) else {
+                return failure(step, index, String(localized: "Enter a volume from 0 to 100."))
+            }
+            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", "set volume output volume \(level)"], timeout: 10)
+            var r = makeResult(step, index, from: out)
+            if r.success { r.output = String(localized: "Volume \(level)%") }
+            return r
+        case .toggleMute:
+            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.muteScript], timeout: 10)
+            var r = makeResult(step, index, from: out)
+            if r.success { r.output = r.output == "muted" ? String(localized: "Sound muted") : String(localized: "Sound on") }
+            return r
+        case .ejectDisks:
+            return await ejectDisks(step, index)
+        case .toggleHiddenFiles:
+            return await toggleHiddenFiles(step, index)
+        case .quitApp:
+            return quitApp(step, index, name: input)
+        case .openURL:
+            return openURL(step, index, input: input)
+        case .copyIPAddress:
+            return await copyIPAddress(step, index)
+        case .generateUUID:
+            var r = StepResult(title: stepTitle(step, index))
+            r.success = true
+            r.output = UUID().uuidString
+            return r
         }
-        var r = makeResult(step, index, from: out)
-        if step.builtin == .emptyTrash, r.success {
-            r.output = r.output == "empty"
-                ? String(localized: "The Trash is already empty.")
-                : String(localized: "Trash emptied.")
-        }
+    }
+
+    private func failure(_ step: WorkflowStep, _ index: Int, _ message: String) -> StepResult {
+        var r = StepResult(title: stepTitle(step, index))
+        r.message = message
         return r
+    }
+
+    private func success(_ step: WorkflowStep, _ index: Int, _ output: String) -> StepResult {
+        var r = StepResult(title: stepTitle(step, index))
+        r.success = true
+        r.output = output
+        return r
+    }
+
+    // caffeinate -di; seconds 0 = until cancelled (Stop in the panel or Settings).
+    private func keepAwake(_ step: WorkflowStep, _ index: Int, seconds: Int) async -> StepResult {
+        var arguments = ["-di"]
+        if seconds > 0 { arguments += ["-t", String(seconds)] }
+        let limit: TimeInterval = seconds > 0 ? TimeInterval(seconds) + 10 : 7 * 86_400
+        let out = await ProcessRunner.run("/usr/bin/caffeinate", arguments, timeout: limit)
+        var r = makeResult(step, index, from: out)
+        if r.success { r.output = String(localized: "Keep Awake ended.") }
+        return r
+    }
+
+    // External disks and disk images; network volumes are unmounted.
+    private func ejectDisks(_ step: WorkflowStep, _ index: Int) async -> StepResult {
+        let keys: [URLResourceKey] = [.volumeIsEjectableKey, .volumeIsInternalKey, .volumeIsRootFileSystemKey]
+        let volumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: keys,
+                                                            options: [.skipHiddenVolumes]) ?? []
+        let targets = volumes.filter { url in
+            guard let values = try? url.resourceValues(forKeys: Set(keys)),
+                  values.volumeIsRootFileSystem != true else { return false }
+            return values.volumeIsEjectable == true || values.volumeIsInternal == false
+        }
+        guard !targets.isEmpty else { return success(step, index, String(localized: "No disks to eject.")) }
+        var failed: [String] = []
+        for url in targets {
+            var out = await ProcessRunner.run("/usr/sbin/diskutil", ["eject", url.path], timeout: 60)
+            if !out.succeeded {
+                out = await ProcessRunner.run("/usr/sbin/diskutil", ["unmount", url.path], timeout: 60)
+            }
+            if !out.succeeded { failed.append(url.lastPathComponent) }
+        }
+        if failed.isEmpty {
+            return success(step, index, String(localized: "Ejected \(targets.count) disk(s)."))
+        }
+        return failure(step, index, String(localized: "Could not eject: \(failed.joined(separator: ", "))"))
+    }
+
+    private func toggleHiddenFiles(_ step: WorkflowStep, _ index: Int) async -> StepResult {
+        let read = await ProcessRunner.run("/usr/bin/defaults", ["read", "com.apple.finder", "AppleShowAllFiles"], timeout: 10)
+        let current = ["1", "yes", "true"].contains(read.stdout.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+        let write = await ProcessRunner.run("/usr/bin/defaults",
+                                            ["write", "com.apple.finder", "AppleShowAllFiles", "-bool", current ? "false" : "true"],
+                                            timeout: 10)
+        guard write.succeeded else { return makeResult(step, index, from: write) }
+        _ = await ProcessRunner.run("/usr/bin/killall", ["Finder"], timeout: 10)
+        return success(step, index, current ? String(localized: "Hidden files are hidden.")
+                                            : String(localized: "Hidden files are shown."))
+    }
+
+    // Exact name first, then prefix; never AppPad itself. Normal quit (apps may ask to save).
+    private func quitApp(_ step: WorkflowStep, _ index: Int, name: String) -> StepResult {
+        let query = SearchIndex.normalize(name.trimmingCharacters(in: .whitespaces))
+        guard !query.isEmpty else { return failure(step, index, String(localized: "Type the app name after a space.")) }
+        let apps = NSWorkspace.shared.runningApplications.filter {
+            $0.activationPolicy == .regular && $0.processIdentifier != ProcessInfo.processInfo.processIdentifier
+        }
+        func normalized(_ app: NSRunningApplication) -> String { SearchIndex.normalize(app.localizedName ?? "") }
+        guard let app = apps.first(where: { normalized($0) == query })
+                ?? apps.first(where: { normalized($0).hasPrefix(query) }) else {
+            return failure(step, index, String(localized: "No running app named “\(name)”."))
+        }
+        let display = app.localizedName ?? name
+        guard app.terminate() else { return failure(step, index, String(localized: "“\(display)” did not quit.")) }
+        return success(step, index, String(localized: "Quit \(display)."))
+    }
+
+    // {{input}} is percent-encoded (RFC 3986 unreserved characters stay as they are).
+    private func openURL(_ step: WorkflowStep, _ index: Int, input: String) -> StepResult {
+        var unreserved = CharacterSet.alphanumerics
+        unreserved.insert(charactersIn: "-._~")
+        let encoded = input.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
+        let text = step.url.trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: WorkflowPlaceholders.input, with: encoded)
+        guard let url = URL(string: text), url.scheme != nil else {
+            return failure(step, index, String(localized: "Invalid URL"))
+        }
+        guard NSWorkspace.shared.open(url) else { return failure(step, index, String(localized: "Could not open \(text)")) }
+        return success(step, index, text)
+    }
+
+    // Copies the LAN address (or the public one when offline from a LAN); output shows both.
+    private func copyIPAddress(_ step: WorkflowStep, _ index: Int) async -> StepResult {
+        let local = Self.localIPv4()
+        var publicIP: String?
+        if let url = URL(string: "https://api.ipify.org"),
+           let reply = try? await session.data(for: URLRequest(url: url, timeoutInterval: 5)),
+           (reply.1 as? HTTPURLResponse)?.statusCode == 200 {
+            let text = String(decoding: reply.0.prefix(64), as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty { publicIP = text }
+        }
+        guard let copy = local ?? publicIP else { return failure(step, index, String(localized: "No network connection.")) }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(copy, forType: .string)
+        var lines: [String] = []
+        if let local { lines.append(String(localized: "Local: \(local)")) }
+        if let publicIP { lines.append(String(localized: "Public: \(publicIP)")) }
+        return success(step, index, lines.joined(separator: "\n"))
+    }
+
+    // First IPv4 address of an active en* interface (Wi-Fi / Ethernet).
+    nonisolated private static func localIPv4() -> String? {
+        var list: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&list) == 0, let first = list else { return nil }
+        defer { freeifaddrs(list) }
+        var found: [(name: String, address: String)] = []
+        for pointer in sequence(first: first, next: { $0.pointee.ifa_next }) {
+            let entry = pointer.pointee
+            let flags = Int32(entry.ifa_flags)
+            guard let address = entry.ifa_addr, address.pointee.sa_family == UInt8(AF_INET),
+                  flags & (IFF_UP | IFF_RUNNING) == (IFF_UP | IFF_RUNNING), flags & IFF_LOOPBACK == 0 else { continue }
+            var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            guard getnameinfo(address, socklen_t(address.pointee.sa_len), &host, socklen_t(host.count),
+                              nil, 0, NI_NUMERICHOST) == 0 else { continue }
+            let text = host.withUnsafeBufferPointer { String(cString: $0.baseAddress!) }
+            found.append((String(cString: entry.ifa_name), text))
+        }
+        return (found.first { $0.name.hasPrefix("en") } ?? found.first)?.address
     }
 
     // Returns a token; the user-facing text is localized in Swift.
@@ -334,6 +518,23 @@ final class WorkflowRunner: ObservableObject {
         empty trash
     end tell
     return "emptied"
+    """
+
+    private static let darkModeScript = """
+    tell application "System Events"
+        tell appearance preferences
+            set dark mode to not dark mode
+            if dark mode then return "dark"
+        end tell
+    end tell
+    return "light"
+    """
+
+    private static let muteScript = """
+    set wasMuted to output muted of (get volume settings)
+    set volume output muted (not wasMuted)
+    if wasMuted then return "unmuted"
+    return "muted"
     """
 
     // MARK: - Delivery
@@ -349,7 +550,7 @@ final class WorkflowRunner: ObservableObject {
             case .error: body = error
             case .custom: body = Self.fill(workflow.failureMessage, placeholder: "{{error}}", with: error, fallback: error)
             }
-            notifier.post(title: String(localized: "“\(workflow.name)” failed"), body: body)
+            notifier.post(title: String(localized: "“\(workflow.displayName)” failed"), body: body)
             return
         }
         let output = result.finalOutput
@@ -359,11 +560,11 @@ final class WorkflowRunner: ObservableObject {
         }
         switch workflow.successNotice {
         case .output:
-            notifier.post(title: workflow.name, body: output.isEmpty ? String(localized: "Done") : output)
+            notifier.post(title: workflow.displayName, body: output.isEmpty ? String(localized: "Done") : output)
         case .custom:
             let body = Self.fill(workflow.successMessage, placeholder: "{{output}}", with: output,
                                  fallback: String(localized: "Done"))
-            notifier.post(title: workflow.name, body: body)
+            notifier.post(title: workflow.displayName, body: body)
         case .none:
             break
         }

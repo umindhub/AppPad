@@ -25,9 +25,14 @@ struct WorkflowEditorView: View {
     @State private var shortcutNames: [String] = []
     @State private var secretNames: [String] = []
     @State private var detectNote: String?
+    @State private var iconPreview: NSImage?      // downloaded from draft.iconURL, not saved yet
+    @State private var iconStatus: String?
+    @State private var loadingIcon = false
+    private let savedIconURL: String
 
     init(workflow: Workflow, isNew: Bool, onSave: @escaping (Workflow) -> Void, onCancel: @escaping () -> Void) {
         _draft = State(initialValue: workflow)
+        savedIconURL = workflow.iconURL
         self.isNew = isNew
         self.onSave = onSave
         self.onCancel = onCancel
@@ -37,6 +42,8 @@ struct WorkflowEditorView: View {
         VStack(spacing: 0) {
             Form {
                 generalSection
+                argumentSection
+                languagesSection
                 noticeSection
                 stepsSection
                 permissionsSection
@@ -60,7 +67,7 @@ struct WorkflowEditorView: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save") { onSave(normalized(draft)) }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(draft.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(!canSave)
             }
             .padding(12)
         }
@@ -75,19 +82,67 @@ struct WorkflowEditorView: View {
 
     private var generalSection: some View {
         Section {
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("ID", text: $draft.identifier, prompt: Text(verbatim: "com.example.my-workflow"))
+                    .font(.system(.body, design: .monospaced))
+                if let identifierError {
+                    Text(verbatim: identifierError).font(.caption).foregroundStyle(.orange)
+                }
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("Version", text: $draft.version, prompt: Text(verbatim: "1.0"))
+                    .font(.system(.body, design: .monospaced))
+                if let versionError {
+                    Text(verbatim: versionError).font(.caption).foregroundStyle(.orange)
+                }
+            }
+            TextField("Name", text: $draft.name)
+            TextField("Description", text: $draft.summary, axis: .vertical)
+                .lineLimit(1...4)
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("Keyword", text: $draft.keyword, prompt: Text(verbatim: "time"))
+                    .font(.system(.body, design: .monospaced))
+                if let keywordError {
+                    Text(verbatim: keywordError).font(.caption).foregroundStyle(.orange)
+                }
+            }
+            TextField("Group", text: $draft.group, prompt: Text("None"))
             LabeledContent("Icon") {
                 HStack(spacing: 10) {
-                    Image(nsImage: WorkflowIcon.image(for: draft))
+                    Image(nsImage: iconImage)
                         .resizable()
                         .interpolation(.high)
                         .frame(width: 48, height: 48)
                     Button("Choose Image…", action: chooseIcon)
-                    if draft.icon != nil {
-                        Button("Use Default") { draft.icon = nil }
+                    if draft.icon != nil || !draft.iconURL.isEmpty {
+                        Button("Use Default") {
+                            draft.icon = nil
+                            draft.iconURL = ""
+                        }
                     }
                 }
             }
-            TextField("Name", text: $draft.name)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    TextField("Icon URL", text: $draft.iconURL, prompt: Text(verbatim: "https://example.com/icon.png"))
+                        .onSubmit(loadIcon)
+                    if loadingIcon {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Button("Load", action: loadIcon)
+                            .disabled(!WorkflowIdentity.isValidIconURL(draft.iconURL))
+                    }
+                }
+                if let iconURLError {
+                    Text(verbatim: iconURLError).font(.caption).foregroundStyle(.orange)
+                } else if let iconStatus {
+                    Text(verbatim: iconStatus).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .onChange(of: draft.iconURL) { _, _ in
+                iconPreview = nil
+                iconStatus = nil
+            }
             Toggle("Enabled", isOn: $draft.enabled)
             LabeledContent("Shortcut in Workflow panel") {
                 VStack(alignment: .trailing, spacing: 2) {
@@ -103,7 +158,97 @@ struct WorkflowEditorView: View {
         } header: {
             Text(isNew ? LocalizedStringKey("New Workflow") : LocalizedStringKey("Workflow"))
         } footer: {
-            Text("The shortcut works only while the Workflow panel is open. ⌘1–⌘0 always run the row with that number.")
+            VStack(alignment: .leading, spacing: 4) {
+                Text("The ID is unique. Importing a workflow with the same ID and a higher version replaces this one; the icon URL is downloaded and stored with the ID.")
+                Text("The shortcut works only while the Workflow panel is open. ⌘1–⌘0 always run the row with that number.")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Argument
+
+    private var argumentSection: some View {
+        Section {
+            Picker("Argument", selection: $draft.argument) {
+                Text("None").tag(ArgumentMode.off)
+                Text("Optional").tag(ArgumentMode.optional)
+                Text("Required").tag(ArgumentMode.required)
+            }
+            if draft.argument != .off {
+                Picker("Type", selection: $draft.argumentType) {
+                    Text("Text").tag(ArgumentType.text)
+                    Text("Duration (→ seconds)").tag(ArgumentType.duration)
+                    Text("Time of day (→ HH:mm)").tag(ArgumentType.time)
+                    Text("Number").tag(ArgumentType.number)
+                }
+                TextField("Hint", text: $draft.argumentHint, prompt: Text(verbatim: "minutes"))
+                let examples = WorkflowArguments.examples(for: draft.argumentType)
+                if !examples.isEmpty {
+                    let word = draft.keyword.isEmpty ? draft.name : draft.keyword
+                    LabeledContent("Examples") {
+                        Text(verbatim: examples.map { "\(word) \($0)" }.joined(separator: "   "))
+                            .font(.system(.callout, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        } header: {
+            Text("Argument")
+        } footer: {
+            Text("In the Workflow panel only the text before the first space is searched; the rest is the argument. It is parsed by its type and becomes the first step’s input ({{input}}, $APPPAD_INPUT, stdin, argv). Apps ignore it.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Languages
+
+    private var languagesSection: some View {
+        Section {
+            ForEach(draft.localizations.keys.sorted(), id: \.self) { code in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text(verbatim: WorkflowLanguage.displayName(code))
+                            .font(.headline)
+                        Text(verbatim: code)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button {
+                            draft.localizations[code] = nil
+                        } label: {
+                            Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                        .help(Text("Remove Language"))
+                    }
+                    TextField("Name", text: localizedBinding(code, \.name), prompt: Text(verbatim: draft.name))
+                    TextField("Description", text: localizedBinding(code, \.summary),
+                              prompt: Text(verbatim: draft.summary), axis: .vertical)
+                        .lineLimit(1...4)
+                    if draft.argument != .off {
+                        TextField("Hint", text: localizedBinding(code, \.argumentHint),
+                                  prompt: Text(verbatim: draft.argumentHint))
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            let missing = WorkflowLanguage.editable.filter { draft.localizations[$0] == nil }
+            Menu("Add Language") {
+                ForEach(missing, id: \.self) { code in
+                    Button(WorkflowLanguage.displayName(code)) {
+                        draft.localizations[code] = WorkflowLocalization()
+                    }
+                }
+            }
+            .fixedSize()
+            .disabled(missing.isEmpty)
+        } header: {
+            Text("Languages")
+        } footer: {
+            Text("Name and Description above are English, the default language. Empty translated fields fall back to English.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -249,7 +394,80 @@ struct WorkflowEditorView: View {
         }
     }
 
+    // MARK: - Validation
+
+    private var canSave: Bool {
+        !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
+            && identifierError == nil && versionError == nil && iconURLError == nil && keywordError == nil
+    }
+
+    private var identifierError: String? {
+        let id = WorkflowIdentity.normalizeIdentifier(draft.identifier)
+        if id.isEmpty { return String(localized: "Enter an ID first, e.g. com.example.my-workflow.") }
+        if !WorkflowIdentity.isValidIdentifier(id) {
+            return String(localized: "Use a reverse-DNS ID: lowercase letters, digits and “-”, separated by dots.")
+        }
+        if WorkflowStore.shared.isIdentifierTaken(id, excluding: draft.id) {
+            return String(localized: "Another workflow already uses this ID.")
+        }
+        return nil
+    }
+
+    private var keywordError: String? {
+        draft.keyword.trimmingCharacters(in: .whitespaces).contains(where: \.isWhitespace)
+            ? String(localized: "The keyword can’t contain spaces.") : nil
+    }
+
+    private var versionError: String? {
+        WorkflowIdentity.isValidVersion(draft.version.trimmingCharacters(in: .whitespaces))
+            ? nil : String(localized: "Use a version like 1.0 or 1.2.3.")
+    }
+
+    private var iconURLError: String? {
+        let url = draft.iconURL.trimmingCharacters(in: .whitespaces)
+        if url.isEmpty || WorkflowIdentity.isValidIconURL(url) { return nil }
+        return String(localized: "The icon URL must start with https://.")
+    }
+
+    // Preview: freshly loaded URL image, else what is stored (the downloaded file only matches the saved URL).
+    private var iconImage: NSImage {
+        if let iconPreview { return iconPreview }
+        var shown = draft
+        if draft.iconURL != savedIconURL { shown.iconURL = "" }
+        return WorkflowIcon.image(for: shown)
+    }
+
     // MARK: - Helpers
+
+    private func localizedBinding(_ code: String, _ field: WritableKeyPath<WorkflowLocalization, String>) -> Binding<String> {
+        Binding(
+            get: { draft.localizations[code]?[keyPath: field] ?? "" },
+            set: { value in
+                var entry = draft.localizations[code] ?? WorkflowLocalization()
+                entry[keyPath: field] = value
+                draft.localizations[code] = entry
+            }
+        )
+    }
+
+    private func loadIcon() {
+        let url = draft.iconURL.trimmingCharacters(in: .whitespaces)
+        guard WorkflowIdentity.isValidIconURL(url), !loadingIcon else { return }
+        loadingIcon = true
+        iconStatus = nil
+        Task {
+            let png = await WorkflowIcon.fetchPNG(from: url)
+            loadingIcon = false
+            guard draft.iconURL.trimmingCharacters(in: .whitespaces) == url else { return }
+            if let png, let image = NSImage(data: png) {
+                iconPreview = image
+                draft.icon = nil
+                iconStatus = String(localized: "Loaded. It is stored when you save.")
+            } else {
+                iconStatus = String(localized: "Could not load an image from this URL.")
+            }
+        }
+    }
 
     private func decisionBinding(_ item: PermissionItem) -> Binding<PermissionDecision?> {
         let id = draft.id
@@ -287,6 +505,19 @@ struct WorkflowEditorView: View {
     private func normalized(_ workflow: Workflow) -> Workflow {
         var w = workflow
         w.name = w.name.trimmingCharacters(in: .whitespaces)
+        w.identifier = WorkflowIdentity.normalizeIdentifier(w.identifier)
+        w.version = w.version.trimmingCharacters(in: .whitespaces)
+        w.keyword = w.keyword.trimmingCharacters(in: .whitespaces).lowercased()
+        w.group = w.group.trimmingCharacters(in: .whitespaces)
+        w.argumentHint = w.argumentHint.trimmingCharacters(in: .whitespaces)
+        w.summary = w.summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        w.iconURL = w.iconURL.trimmingCharacters(in: .whitespaces)
+        w.localizations = w.localizations.compactMapValues { entry in
+            let cleaned = WorkflowLocalization(name: entry.name.trimmingCharacters(in: .whitespaces),
+                                               summary: entry.summary.trimmingCharacters(in: .whitespacesAndNewlines),
+                                               argumentHint: entry.argumentHint.trimmingCharacters(in: .whitespaces))
+            return cleaned.isEmpty ? nil : cleaned
+        }
         func clean(_ list: [String]) -> [String] {
             var seen = Set<String>()
             return list.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty && seen.insert($0).inserted }
@@ -299,12 +530,14 @@ struct WorkflowEditorView: View {
     }
 
     // Any image → 512×512 PNG stored in the workflow (travels with export / import).
+    // The last one set wins: choosing a file clears the icon URL.
     private func chooseIcon() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.image]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         if let data = WorkflowIcon.makePNG(from: url) {
+            draft.iconURL = ""
             draft.icon = data
         } else {
             NSSound.beep()
@@ -412,6 +645,11 @@ private struct StepEditor: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
             }
+            TextField("Input", text: $step.shortcutInput, prompt: Text(verbatim: "{{input}}"))
+                .font(.system(.body, design: .monospaced))
+            Text("Sent to the shortcut. Empty = the step input; {{input}} inserts it, \\n starts a new line.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         case .http:
             HStack {
                 Picker("Method", selection: $step.http.method) {
@@ -440,6 +678,19 @@ private struct StepEditor: View {
                 ForEach(BuiltinAction.allCases, id: \.self) { action in
                     Label(action.title, systemImage: action.symbolName).tag(action)
                 }
+            }
+            if step.builtin == .openURL {
+                TextField("URL", text: $step.url,
+                          prompt: Text(verbatim: "https://www.google.com/search?q={{input}}"))
+                    .labelsHidden()
+                    .font(.system(.body, design: .monospaced))
+                Text("{{input}} is replaced by the argument (URL-encoded).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else if step.builtin.usesInput {
+                Text("Uses the step input (the panel argument for the first step).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }

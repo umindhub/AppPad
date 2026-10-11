@@ -54,7 +54,9 @@ final class WorkflowPreviewView: FlippedView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func show(_ item: WorkflowPanelItem?, isRunning: Bool = false, lastResult: WorkflowRunResult? = nil) {
+    // argument = text after the first space; missingShortcut = a shortcut step not found in Shortcuts.
+    func show(_ item: WorkflowPanelItem?, isRunning: Bool = false, lastResult: WorkflowRunResult? = nil,
+              argument: String = "", missingShortcut: String? = nil) {
         let views: [NSView] = [iconView, titleLabel, subtitleLabel, textScroll, hintLabel]
         guard let item else {
             views.forEach { $0.isHidden = true }
@@ -66,11 +68,18 @@ final class WorkflowPreviewView: FlippedView {
 
         switch item {
         case .workflow(let workflow):
-            subtitleLabel.stringValue = workflow.enabled
+            let kind = workflow.enabled
                 ? String(localized: "Workflow")
                 : String(localized: "Workflow (disabled)")
-            textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult))
+            subtitleLabel.stringValue = "\(kind) · \(workflow.identifier) · \(workflow.version)"
+            textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult,
+                                                              argument: argument, missingShortcut: missingShortcut))
             var hint = String(localized: "↩ Run   ⌘↩ Edit in Settings")
+            if let missingShortcut {
+                hint = BuiltinWorkflows.bundledShortcut(missingShortcut) != nil
+                    ? String(localized: "↩ Install Shortcut   ⌘↩ Edit in Settings")
+                    : String(localized: "↩ Open Shortcuts   ⌘↩ Edit in Settings")
+            }
             if let key = workflow.panelKey?.displayString { hint += "   " + key }
             hintLabel.stringValue = hint
         case .app(let app):
@@ -84,8 +93,23 @@ final class WorkflowPreviewView: FlippedView {
 
     // MARK: - Text
 
-    private func details(_ workflow: Workflow, isRunning: Bool, lastResult: WorkflowRunResult?) -> NSAttributedString {
+    private func details(_ workflow: Workflow, isRunning: Bool, lastResult: WorkflowRunResult?,
+                         argument: String, missingShortcut: String?) -> NSAttributedString {
         let text = NSMutableAttributedString()
+        let description = workflow.displaySummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !description.isEmpty { line(description, in: text) }
+
+        if let missingShortcut {
+            section(String(localized: "Setup"), in: text)
+            let help = BuiltinWorkflows.setupText(for: missingShortcut)
+                ?? String(localized: "The shortcut “\(missingShortcut)” is not in the Shortcuts app.")
+            line(help, in: text, color: .systemOrange)
+        }
+
+        if workflow.argument != .off {
+            usage(workflow, argument: argument, in: text)
+        }
+
         section(String(localized: "Steps"), in: text)
         for (index, step) in workflow.steps.enumerated() {
             line("\(index + 1). " + Self.stepDetail(step), in: text)
@@ -140,7 +164,7 @@ final class WorkflowPreviewView: FlippedView {
     private static func stepDetail(_ step: WorkflowStep) -> String {
         switch step.kind {
         case .shortcut: return step.kind.title + " “\(step.shortcutName)”"
-        case .builtin: return step.builtin.title
+        case .builtin: return step.builtin == .openURL ? step.builtin.title + " · " + step.url : step.builtin.title
         case .http: return step.kind.title + " · " + step.http.method.rawValue + " " + (step.http.host ?? "")
         case .appleScript: return step.language == .javaScript ? "JavaScript (JXA)" : step.kind.title
         case .shell: return step.kind.title
@@ -161,6 +185,27 @@ final class WorkflowPreviewView: FlippedView {
             ? .monospacedSystemFont(ofSize: 12, weight: .regular)
             : .systemFont(ofSize: 13)
         text.append(NSAttributedString(string: string + "\n", attributes: [.font: font, .foregroundColor: color]))
+    }
+
+    // "time ‹duration›", examples, and what the typed argument parses to.
+    private func usage(_ workflow: Workflow, argument: String, in text: NSMutableAttributedString) {
+        section(String(localized: "Usage"), in: text)
+        let word = workflow.keyword.isEmpty ? WorkflowPanelViewController.token(workflow.displayName) : workflow.keyword
+        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument") : workflow.displayArgumentHint
+        let slot = workflow.argument == .optional ? "[‹\(hint)›]" : "‹\(hint)›"
+        line("\(word) \(slot)", in: text, monospaced: true)
+        let examples = WorkflowArguments.examples(for: workflow.argumentType)
+        if !examples.isEmpty {
+            line(examples.map { "\(word) \($0)" }.joined(separator: "   "), in: text,
+                 color: .secondaryLabelColor, monospaced: true)
+        }
+        let typed = argument.trimmingCharacters(in: .whitespaces)
+        switch WorkflowArguments.parse(typed, type: workflow.argumentType, mode: workflow.argument) {
+        case .success(let parsed):
+            if !parsed.summary.isEmpty { line("→ " + parsed.summary, in: text, color: .systemGreen) }
+        case .failure(let error):
+            line(error.message, in: text, color: typed.isEmpty ? .secondaryLabelColor : .systemRed)
+        }
     }
 
     // MARK: - Layout

@@ -57,7 +57,7 @@ enum PermissionPrompt {
     static func ask(workflow: Workflow, items: [PermissionItem]) -> PermissionAnswer {
         NSApp.activate()
         let alert = NSAlert()
-        alert.messageText = String(localized: "“\(workflow.name)” wants to:")
+        alert.messageText = String(localized: "“\(workflow.displayName)” wants to:")
         alert.informativeText = items.map { "• " + $0.title }.joined(separator: "\n")
         alert.icon = NSImage(systemSymbolName: "lock.shield", accessibilityDescription: nil)
         alert.addButton(withTitle: String(localized: "Allow Once"))

@@ -113,14 +113,26 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
 
     // MARK: - Actions
 
-    func run(_ workflow: Workflow) {
+    // argument = text after the first space in the search field (apps ignore it).
+    func run(_ workflow: Workflow, argument: String) {
         hide()
-        WorkflowRunner.shared.start(id: workflow.id, trigger: .panel)
+        launchpad.recordUse(workflow.statsKey)   // same frecency as app launches
+        WorkflowRunner.shared.start(id: workflow.id, trigger: .panel, argument: argument)
     }
 
     func open(_ app: AppInfo) {
         hide()
-        launchpad.launch(app)
+        launchpad.launch(app)   // records the launch
+    }
+
+    // A workflow's shortcut is missing: import the bundled one, or open Shortcuts to create it.
+    func installShortcut(_ name: String) {
+        hide()
+        if let file = BuiltinWorkflows.bundledShortcut(name) {
+            NSWorkspace.shared.open(file)
+        } else {
+            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Shortcuts.app"))
+        }
     }
 
     func edit(_ workflow: Workflow) {

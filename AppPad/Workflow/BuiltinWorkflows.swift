@@ -1,0 +1,166 @@
+import AppKit
+
+// Workflows shipped with AppPad (group "system"). Installed on launch; a higher version here
+// replaces the installed one; workflows the user deleted are never re-added.
+// Names / descriptions / hints are English keys; translations come from Localizable.
+enum BuiltinWorkflows {
+    static let group = "system"
+    // One shortcut for both (same approach as Alfred): input "timer\n<seconds>" or "alarm\n<HH:mm>[\n<label>]".
+    // Shipped signed in the app bundle; imported once, then run in the background via `shortcuts run`.
+    static let clockShortcut = "AppPad Clock"
+
+    private static let removedKey = "AppPad.removedBuiltinWorkflows"
+
+    static var identifiers: Set<String> { Set(all.map(\.identifier)) }
+
+    static var all: [Workflow] {
+        [
+            make("com.youmindhub.emptytrash", "Empty Trash", "Empty the Trash.",
+                 keyword: "trash", symbol: "trash", notice: .output,
+                 steps: [WorkflowStep(builtin: .emptyTrash, timeout: 300)]),
+            make("com.youmindhub.timer", "Set Timer", "Start a timer in the Clock app.",
+                 version: "1.1", keyword: "time", symbol: "timer",
+                 argument: .required, type: .duration, hint: "duration",
+                 steps: [shortcutStep(clockShortcut, input: "timer\\n{{input}}")]),
+            make("com.youmindhub.alarm", "Set Alarm", "Create an alarm in the Clock app.",
+                 version: "1.1", keyword: "alarm", symbol: "alarm",
+                 argument: .required, type: .time, hint: "time [label]",
+                 steps: [shortcutStep(clockShortcut, input: "alarm\\n{{input}}")]),
+            make("com.youmindhub.sleepdisplays", "Sleep Displays", "Turn off the displays now.",
+                 keyword: "display", symbol: "display",
+                 steps: [WorkflowStep(builtin: .sleepDisplays, timeout: 10)]),
+            make("com.youmindhub.sleep", "Sleep Mac", "Put the Mac to sleep now.",
+                 keyword: "sleep", symbol: "moon.zzz",
+                 steps: [WorkflowStep(builtin: .sleepMac, timeout: 10)]),
+            make("com.youmindhub.keepawake", "Keep Awake", "Keep the Mac awake; without a duration until you stop it.",
+                 keyword: "awake", symbol: "cup.and.saucer", notice: .output,
+                 argument: .optional, type: .duration, hint: "duration",
+                 steps: [WorkflowStep(builtin: .keepAwake)]),
+            make("com.youmindhub.darkmode", "Toggle Light/Dark Mode", "Switch between light and dark appearance.",
+                 version: "1.1", keyword: "dark", symbol: "circle.lefthalf.filled",
+                 steps: [WorkflowStep(builtin: .toggleDarkMode, timeout: 20)]),
+            make("com.youmindhub.volume", "Set Volume", "Set the output volume.",
+                 keyword: "vol", symbol: "speaker.wave.2", notice: .output,
+                 argument: .required, type: .number, hint: "0–100",
+                 steps: [WorkflowStep(builtin: .setVolume, timeout: 10)]),
+            make("com.youmindhub.mute", "Toggle Mute", "Mute or unmute the sound output.",
+                 keyword: "mute", symbol: "speaker.slash", notice: .output,
+                 steps: [WorkflowStep(builtin: .toggleMute, timeout: 10)]),
+            make("com.youmindhub.eject", "Eject All Disks", "Eject external disks and disk images.",
+                 keyword: "eject", symbol: "eject", notice: .output,
+                 steps: [WorkflowStep(builtin: .ejectDisks, timeout: 120)]),
+            make("com.youmindhub.hiddenfiles", "Toggle Hidden Files", "Show or hide hidden files in Finder.",
+                 keyword: "hidden", symbol: "eye", notice: .output,
+                 steps: [WorkflowStep(builtin: .toggleHiddenFiles, timeout: 20)]),
+            make("com.youmindhub.quit", "Quit App", "Quit a running app by name.",
+                 keyword: "quit", symbol: "xmark.app",
+                 argument: .required, type: .text, hint: "app name",
+                 steps: [WorkflowStep(builtin: .quitApp, timeout: 10)]),
+            make("com.youmindhub.websearch", "Google Search", "Search the web. Duplicate it and change the URL for other sites.",
+                 keyword: "g", symbol: "magnifyingglass",
+                 argument: .required, type: .text, hint: "keywords",
+                 steps: [openURLStep("https://www.google.com/search?q={{input}}")]),
+            make("com.youmindhub.ipaddress", "Copy IP Address", "Copy the local IP address and show the public one.",
+                 keyword: "ip", symbol: "network", notice: .output,
+                 steps: [WorkflowStep(builtin: .copyIPAddress, timeout: 10)]),
+            make("com.youmindhub.uuid", "Generate UUID", "Copy a new UUID to the clipboard.",
+                 keyword: "uuid", symbol: "number", notice: .output, copy: true,
+                 steps: [WorkflowStep(builtin: .generateUUID, timeout: 5)]),
+        ]
+    }
+
+    // MARK: - Install
+
+    // Called once after the store loaded its files.
+    static func install(into store: WorkflowStore) {
+        let removed = removedIdentifiers
+        for builtin in all where !removed.contains(builtin.identifier) {
+            if let existing = store.workflow(identifier: builtin.identifier) {
+                guard WorkflowIdentity.compareVersions(builtin.version, existing.version) == .orderedDescending else { continue }
+                store.install(builtin)
+            } else {
+                store.install(builtin)
+                // AppPad's own workflows are trusted: grant what they declare once.
+                if let installed = store.workflow(identifier: builtin.identifier) {
+                    PermissionStore.shared.set(.allow, for: installed.requiredPermissions, workflow: installed.id)
+                }
+            }
+        }
+    }
+
+    static func noteDeleted(_ identifier: String) {
+        guard identifiers.contains(identifier) else { return }
+        var removed = removedIdentifiers
+        removed.insert(identifier)
+        UserDefaults.standard.set(removed.sorted(), forKey: removedKey)
+    }
+
+    // "Restore Built-in Workflows" in Settings.
+    static func restoreDeleted(into store: WorkflowStore) {
+        UserDefaults.standard.removeObject(forKey: removedKey)
+        install(into: store)
+    }
+
+    static var hasDeleted: Bool { !removedIdentifiers.isEmpty }
+
+    private static var removedIdentifiers: Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: removedKey) ?? [])
+    }
+
+    // MARK: - Groups
+
+    static func groupTitle(_ group: String) -> String {
+        group == Self.group ? String(localized: "System") : group
+    }
+
+    // MARK: - Clock shortcuts
+
+    // Shown when the shortcut a built-in workflow calls is missing (nil for other shortcuts).
+    static func setupText(for shortcut: String) -> String? {
+        guard shortcut == clockShortcut else { return nil }
+        if bundledShortcut(shortcut) != nil {
+            return String(localized: "Timers and alarms use the “AppPad Clock” shortcut. Press ↩ to add it once; after that it runs in the background.")
+        }
+        return String(localized: "Timers and alarms need the “AppPad Clock” shortcut, which is not included in this build.")
+    }
+
+    // A signed .shortcut file shipped in the app bundle, if any (opening it imports the shortcut).
+    static func bundledShortcut(_ name: String) -> URL? {
+        Bundle.main.url(forResource: name, withExtension: "shortcut")
+    }
+
+    // MARK: - Helpers
+
+    private static func make(_ identifier: String, _ name: String, _ summary: String, version: String = "1.0",
+                             keyword: String, symbol: String, notice: SuccessNotice = .none, copy: Bool = false,
+                             argument: ArgumentMode = .off, type: ArgumentType = .text, hint: String = "",
+                             steps: [WorkflowStep]) -> Workflow {
+        var w = Workflow(name: name, identifier: identifier, steps: steps)
+        w.version = version
+        w.summary = summary
+        w.group = group
+        w.keyword = keyword
+        w.symbol = symbol
+        w.successNotice = notice
+        w.copyOutput = copy
+        w.argument = argument
+        w.argumentType = type
+        w.argumentHint = hint
+        w.localizations = WorkflowLanguage.translations(of: name, summary: summary, hint: hint)
+        return w
+    }
+
+    private static func shortcutStep(_ name: String, input: String) -> WorkflowStep {
+        var step = WorkflowStep(kind: .shortcut)
+        step.shortcutName = name
+        step.shortcutInput = input
+        step.timeout = 30
+        return step
+    }
+
+    private static func openURLStep(_ template: String) -> WorkflowStep {
+        var step = WorkflowStep(builtin: .openURL, timeout: 10)
+        step.url = template
+        return step
+    }
+}

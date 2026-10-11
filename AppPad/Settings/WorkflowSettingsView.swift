@@ -16,11 +16,17 @@ struct WorkflowSettingsView: View {
     @State private var editingSecret: SecretDraft?
     @State private var errorMessage: String?
     @State private var spotlightConflict = false
+    @State private var pendingReplace: [WorkflowImportItem] = []   // same version: ask first
+    @State private var importNotes: [String] = []                  // shown after the import
+    @State private var importReport: String?
 
     var body: some View {
         Form {
             panelSection
             workflowsSection
+            ForEach(groupKeys, id: \.self) { group in
+                groupSection(group)
+            }
             secretsSection
         }
         .formStyle(.grouped)
@@ -58,7 +64,7 @@ struct WorkflowSettingsView: View {
             }
         }
         .confirmationDialog(
-            Text("Delete “\(pendingDelete?.name ?? "")”?"),
+            Text("Delete “\(pendingDelete?.displayName ?? "")”?"),
             isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
             presenting: pendingDelete
         ) { workflow in
@@ -68,6 +74,20 @@ struct WorkflowSettingsView: View {
         }
         .alert(Text(errorMessage ?? ""), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK") { errorMessage = nil }
+        }
+        .alert(Text("Replace workflows with the same version?"),
+               isPresented: Binding(get: { !pendingReplace.isEmpty }, set: { if !$0 { finishReplace(false) } })) {
+            Button("Replace") { finishReplace(true) }
+            Button("Skip", role: .cancel) { finishReplace(false) }
+        } message: {
+            Text(verbatim: pendingReplace.map { "\($0.workflow.displayName)  (\($0.workflow.identifier) \($0.workflow.version))" }
+                .joined(separator: "\n"))
+        }
+        .alert(Text("Some workflows were not imported"),
+               isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
+            Button("OK") { importReport = nil }
+        } message: {
+            Text(verbatim: importReport ?? "")
         }
     }
 
@@ -108,14 +128,47 @@ struct WorkflowSettingsView: View {
 
     // MARK: - Workflows
 
+    // Named groups after "Workflows" (ungrouped); AppPad's built-in group last.
+    private var groupKeys: [String] {
+        let groups = Set(store.workflows.map(\.group)).subtracting([""])
+        return groups.sorted { a, b in
+            if (a == BuiltinWorkflows.group) != (b == BuiltinWorkflows.group) { return b == BuiltinWorkflows.group }
+            return a.localizedStandardCompare(b) == .orderedAscending
+        }
+    }
+
+    private func groupSection(_ group: String) -> some View {
+        Section {
+            ForEach(store.workflows.filter { $0.group == group }) { workflow in
+                row(workflow)
+            }
+        } header: {
+            Text(verbatim: BuiltinWorkflows.groupTitle(group))
+        } footer: {
+            if group == BuiltinWorkflows.group {
+                HStack {
+                    Text("Built-in workflows are updated with AppPad. Deleted ones stay deleted.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 12)
+                    if BuiltinWorkflows.hasDeleted {
+                        Button("Restore Deleted") { BuiltinWorkflows.restoreDeleted(into: store) }
+                    }
+                }
+                .padding(.top, 4)
+            }
+        }
+    }
+
     private var workflowsSection: some View {
         Section {
-            if store.workflows.isEmpty {
+            let own = store.workflows.filter { $0.group.isEmpty }
+            if own.isEmpty {
                 Text("No workflows yet. Add one to run shell scripts, AppleScript, Shortcuts or HTTP requests from the Workflow panel.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(store.workflows) { workflow in
+                ForEach(own) { workflow in
                     row(workflow)
                 }
             }
@@ -149,7 +202,7 @@ struct WorkflowSettingsView: View {
                 .interpolation(.high)
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 1) {
-                Text(verbatim: workflow.name)
+                Text(verbatim: workflow.displayName)
                     .lineLimit(1)
                 if !workflow.enabled {
                     Text("Disabled").font(.caption).foregroundStyle(.secondary)
@@ -162,6 +215,13 @@ struct WorkflowSettingsView: View {
                         Text("Last run failed").font(.caption).foregroundStyle(.red)
                     }
                     .buttonStyle(.plain)
+                } else {
+                    Text(verbatim: (workflow.keyword.isEmpty ? "" : workflow.keyword + " · ")
+                         + "\(workflow.identifier) · \(workflow.version)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                 }
             }
             .opacity(workflow.enabled ? 1 : 0.5)
@@ -218,11 +278,34 @@ struct WorkflowSettingsView: View {
     }
 
     private func run(_ workflow: Workflow) {
+        var argument = ""
+        if workflow.argument != .off {
+            guard let value = askArgument(workflow) else { return }
+            argument = value
+        }
         Task {
-            if let result = await runner.run(workflow, trigger: .settings) {
+            if let result = await runner.run(workflow, trigger: .settings, argument: argument) {
                 shownResult = result
             }
         }
+    }
+
+    // Settings has no search field: ask for the argument (an invalid one shows in the result sheet).
+    private func askArgument(_ workflow: Workflow) -> String? {
+        let word = workflow.keyword.isEmpty ? workflow.displayName : workflow.keyword
+        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument") : workflow.displayArgumentHint
+        let examples = WorkflowArguments.examples(for: workflow.argumentType)
+        let alert = NSAlert()
+        alert.messageText = workflow.displayName
+        alert.informativeText = "\(word) ‹\(hint)›" + (examples.isEmpty ? "" : "\n" + examples.map { "\(word) \($0)" }.joined(separator: "   "))
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        field.placeholderString = examples.first ?? hint
+        alert.accessoryView = field
+        alert.addButton(withTitle: String(localized: "Run"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        alert.window.initialFirstResponder = field
+        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
+        return field.stringValue
     }
 
     private func importWorkflows() {
@@ -230,19 +313,53 @@ struct WorkflowSettingsView: View {
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = true
         guard panel.runModal() == .OK else { return }
+        var notes: [String] = []
+        var replace: [WorkflowImportItem] = []
         for url in panel.urls {
             do {
-                try store.importFile(url)
+                for item in try store.prepareImport(url) {
+                    switch item.action {
+                    case .add, .upgrade:
+                        store.install(item.workflow)
+                    case .sameVersion:
+                        replace.append(item)
+                    case .older(let installed):
+                        notes.append(String(localized: "“\(item.workflow.displayName)” \(item.workflow.version) is older than the installed \(installed.version) and was skipped."))
+                    }
+                }
+            } catch let error as WorkflowImportError {
+                notes.append(url.lastPathComponent + ": " + (error.errorDescription ?? ""))
             } catch {
-                errorMessage = String(localized: "Could not import \(url.lastPathComponent).")
+                notes.append(String(localized: "Could not import \(url.lastPathComponent)."))
             }
         }
+        importNotes = notes
+        if replace.isEmpty {
+            showImportNotes()
+        } else {
+            pendingReplace = replace
+        }
+    }
+
+    private func finishReplace(_ replace: Bool) {
+        guard !pendingReplace.isEmpty else { return }
+        if replace { pendingReplace.forEach { store.install($0.workflow) } }
+        pendingReplace = []
+        showImportNotes()
+    }
+
+    private func showImportNotes() {
+        guard !importNotes.isEmpty else { return }
+        let report = importNotes.joined(separator: "\n")
+        importNotes = []
+        // Let the previous alert finish dismissing first.
+        DispatchQueue.main.async { importReport = report }
     }
 
     private func export(_ workflow: Workflow) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = workflow.name + ".json"
+        panel.nameFieldStringValue = workflow.identifier + ".json"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try store.export(workflow, to: url)
