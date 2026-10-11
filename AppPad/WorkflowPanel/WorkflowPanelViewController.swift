@@ -232,12 +232,12 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         name.split(whereSeparator: \.isWhitespace).joined(separator: "-")
     }
 
-    // Completed name ("set-timer") > any keyword exact > keyword prefix > name tiers.
+    // Completed name ("set-timer") > any keyword exact (current language + English) > keyword prefix > name tiers.
     // Names: localized, English and every translation ("关机" works in an English UI too).
     private static func score(_ workflow: Workflow, query: String) -> Int {
         let names = workflow.searchNames
         if names.contains(where: { SearchIndex.normalize(token($0)) == query }) { return 130 }
-        let keywords = workflow.keywords.map(SearchIndex.normalize)
+        let keywords = workflow.matchKeywords.map(SearchIndex.normalize)   // current language + English
         if keywords.contains(query) { return 120 }
         if keywords.contains(where: { $0.hasPrefix(query) }) { return 95 }
         var best = names.map { score($0, query: query) }.max() ?? 0

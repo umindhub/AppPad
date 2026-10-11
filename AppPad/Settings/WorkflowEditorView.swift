@@ -30,11 +30,13 @@ struct WorkflowEditorView: View {
     @State private var loadingIcon = false
     private let savedIconURL: String
     @State private var keywordText: String
+    @State private var localizedKeywordText: [String: String]   // per language, edited as text
 
     init(workflow: Workflow, isNew: Bool, onSave: @escaping (Workflow) -> Void, onCancel: @escaping () -> Void) {
         _draft = State(initialValue: workflow)
         savedIconURL = workflow.iconURL
         _keywordText = State(initialValue: workflow.keywords.joined(separator: ", "))
+        _localizedKeywordText = State(initialValue: workflow.localizations.mapValues { $0.keywords.joined(separator: ", ") })
         self.isNew = isNew
         self.onSave = onSave
         self.onCancel = onCancel
@@ -223,6 +225,7 @@ struct WorkflowEditorView: View {
                         Spacer()
                         Button {
                             draft.localizations[code] = nil
+                            localizedKeywordText[code] = nil
                         } label: {
                             Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
                         }
@@ -237,6 +240,9 @@ struct WorkflowEditorView: View {
                         TextField("Hint", text: localizedBinding(code, \.argumentHint),
                                   prompt: Text(verbatim: draft.argumentHint))
                     }
+                    TextField("Keywords", text: localizedKeywordBinding(code),
+                              prompt: Text(verbatim: draft.keywords.joined(separator: ", ")))
+                        .font(.system(.body, design: .monospaced))
                 }
                 .padding(.vertical, 2)
             }
@@ -253,7 +259,7 @@ struct WorkflowEditorView: View {
         } header: {
             Text("Languages")
         } footer: {
-            Text("Name and Description above are English, the default language. Empty translated fields fall back to English.")
+            Text("Name and Description above are English, the default language. Empty translated fields fall back to English. Keywords of the current language and the English ones both work.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -450,6 +456,18 @@ struct WorkflowEditorView: View {
         )
     }
 
+    private func localizedKeywordBinding(_ code: String) -> Binding<String> {
+        Binding(
+            get: { localizedKeywordText[code] ?? "" },
+            set: { text in
+                localizedKeywordText[code] = text
+                var entry = draft.localizations[code] ?? WorkflowLocalization()
+                entry.keywords = Workflow.cleanKeywords([text])
+                draft.localizations[code] = entry
+            }
+        )
+    }
+
     private func loadIcon() {
         let url = draft.iconURL.trimmingCharacters(in: .whitespaces)
         guard WorkflowIdentity.isValidIconURL(url), !loadingIcon else { return }
@@ -515,7 +533,8 @@ struct WorkflowEditorView: View {
         w.localizations = w.localizations.compactMapValues { entry in
             let cleaned = WorkflowLocalization(name: entry.name.trimmingCharacters(in: .whitespaces),
                                                summary: entry.summary.trimmingCharacters(in: .whitespacesAndNewlines),
-                                               argumentHint: entry.argumentHint.trimmingCharacters(in: .whitespaces))
+                                               argumentHint: entry.argumentHint.trimmingCharacters(in: .whitespaces),
+                                               keywords: Workflow.cleanKeywords(entry.keywords))
             return cleaned.isEmpty ? nil : cleaned
         }
         func clean(_ list: [String]) -> [String] {

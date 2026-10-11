@@ -175,16 +175,18 @@ nonisolated struct WorkflowLocalization: Codable, Equatable, Sendable {
     var name = ""
     var summary = ""
     var argumentHint = ""
+    var keywords: [String] = []           // matched together with the English keywords
 
     private enum CodingKeys: String, CodingKey {
-        case name, argumentHint
+        case name, argumentHint, keywords
         case summary = "description"
     }
 
-    init(name: String = "", summary: String = "", argumentHint: String = "") {
+    init(name: String = "", summary: String = "", argumentHint: String = "", keywords: [String] = []) {
         self.name = name
         self.summary = summary
         self.argumentHint = argumentHint
+        self.keywords = keywords
     }
 
     init(from decoder: Decoder) throws {
@@ -192,6 +194,7 @@ nonisolated struct WorkflowLocalization: Codable, Equatable, Sendable {
         name = c.value(.name, "")
         summary = c.value(.summary, "")
         argumentHint = c.value(.argumentHint, "")
+        keywords = Workflow.cleanKeywords(c.value(.keywords, [String]()))
     }
 
     func encode(to encoder: Encoder) throws {
@@ -199,10 +202,11 @@ nonisolated struct WorkflowLocalization: Codable, Equatable, Sendable {
         if !name.isEmpty { try c.encode(name, forKey: .name) }
         if !summary.isEmpty { try c.encode(summary, forKey: .summary) }
         if !argumentHint.isEmpty { try c.encode(argumentHint, forKey: .argumentHint) }
+        if !keywords.isEmpty { try c.encode(keywords, forKey: .keywords) }
     }
 
     var isEmpty: Bool {
-        [name, summary, argumentHint].allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty }
+        keywords.isEmpty && [name, summary, argumentHint].allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 }
 
@@ -352,8 +356,13 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         return localized.isEmpty ? argumentHint : localized
     }
 
-    // First keyword: shown in usage hints ("time ‹duration›").
-    var keyword: String { keywords.first ?? "" }
+    // Keywords that trigger it: current language first, then English ("关机", "shutdown", "poweroff").
+    var matchKeywords: [String] {
+        Workflow.cleanKeywords((WorkflowLanguage.pick(localizations)?.keywords ?? []) + keywords)
+    }
+
+    // First matching keyword: shown in usage hints ("倒计时 ‹时长›").
+    var keyword: String { matchKeywords.first ?? "" }
 
     // Every name the panel matches: localized, English, and all translations.
     var searchNames: [String] {
@@ -524,7 +533,9 @@ nonisolated enum WorkflowLanguage {
     }
 
     // Translations of an app string key (Localizable) for every editable language.
-    static func translations(of key: String, summary: String = "", hint: String = "") -> [String: WorkflowLocalization] {
+    // keywords = the English list joined by ", " (its translation is split the same way).
+    static func translations(of key: String, summary: String = "", hint: String = "",
+                             keywords: String = "") -> [String: WorkflowLocalization] {
         var table: [String: WorkflowLocalization] = [:]
         for code in editable {
             guard let path = Bundle.main.path(forResource: code, ofType: "lproj"),
@@ -534,7 +545,8 @@ nonisolated enum WorkflowLanguage {
                 let value = bundle.localizedString(forKey: k, value: nil, table: nil)
                 return value == k ? "" : value
             }
-            let entry = WorkflowLocalization(name: look(key), summary: look(summary), argumentHint: look(hint))
+            let entry = WorkflowLocalization(name: look(key), summary: look(summary), argumentHint: look(hint),
+                                             keywords: Workflow.cleanKeywords([look(keywords)]))
             if !entry.isEmpty { table[code] = entry }
         }
         return table
