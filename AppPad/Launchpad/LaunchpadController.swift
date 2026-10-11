@@ -234,7 +234,14 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Non-activating panel: becomes key without activating AppPad.
     func show() {
         cancelTransition()
-        guard presentPanel() else { return }
+        let handOff = PanelSwitch.prepareIncoming(panel)
+        guard presentPanel(opaque: handOff) else { return }
+        if handOff {
+            // ⌘⇧J/K switch: opaque over the previous panel; input switch after its hide().
+            viewController.focusSearch()
+            PanelSwitch.takeOver(panel) { [weak self] in self?.switchInputIfNeeded() }
+            return
+        }
         finishShow()
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.12
@@ -254,9 +261,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         isHiding = false
     }
 
-    // Frame + content ready, ordered in at alpha 0.
+    // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over).
     @discardableResult
-    private func presentPanel() -> Bool {
+    private func presentPanel(opaque: Bool = false) -> Bool {
         let mouse = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return false }
         endWarmUp(orderOut: false)
@@ -264,7 +271,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow(resetToFirstPage: prefs.openPagePolicy == .firstPage)
         setContentScale(1, duration: nil)
-        panel.alphaValue = 0
+        panel.alphaValue = opaque ? 1 : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
         PinchGestureMonitor.shared.setTapEnabled(true)
@@ -285,8 +292,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // Input source + search focus, once the panel is really open.
     private func finishShow() {
-        if prefs.switchToEnglishInput { InputSourceSwitcher.switchToASCII() }
+        switchInputIfNeeded()
         viewController.focusSearch()
+    }
+
+    private func switchInputIfNeeded() {
+        if prefs.switchToEnglishInput { InputSourceSwitcher.switchToASCII() }
     }
 
     // MARK: - Interactive pinch transition (macOS 15 Launchpad style)
@@ -392,6 +403,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // Click outside the panel → close.
     func windowDidResignKey(_ notification: Notification) {
+        guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
         if panel.isVisible, !isHiding {
             lastOutsideClose = ProcessInfo.processInfo.systemUptime
         }
@@ -443,7 +455,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard let key = event.charactersIgnoringModifiers?.lowercased() else { return false }
         // ⌘⇧J / ⌘⇧K: previous / next panel.
         if flags == [.command, .shift], key == "j" || key == "k" {
-            hide()
+            PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
             onSwitchPanel?(key == "j" ? -1 : 1)
             return true
         }

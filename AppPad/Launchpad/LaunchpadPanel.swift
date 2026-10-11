@@ -156,3 +156,69 @@ final class LaunchpadRootView: FlippedView {
         }
     }
 }
+
+// MARK: - Panel switch (⌘⇧J / ⌘⇧K)
+// Gap-free hand-over: the outgoing panel stays on screen until the incoming one is drawn
+// opaque on top of it, then orders out on the next run-loop turn.
+// (Hiding first and fading in from alpha 0 briefly showed the desktop → flash.)
+@MainActor
+enum PanelSwitch {
+    private static var outgoing: NSWindow?
+    private static var hideOutgoing: (() -> Void)?
+    private static var token = 0
+    private static let fallbackDelay: TimeInterval = 0.3
+
+    // Outgoing panel: call instead of hide(), then ask for the next panel.
+    static func begin(from window: NSWindow, hide: @escaping () -> Void) {
+        finish()
+        token += 1
+        let current = token
+        outgoing = window
+        hideOutgoing = hide
+        // Next panel never showed (e.g. unavailable): close anyway.
+        DispatchQueue.main.asyncAfter(deadline: .now() + fallbackDelay) {
+            if current == token { finish() }
+        }
+    }
+
+    // Outgoing panel ignores its own resign-key while handing over.
+    static func isOutgoing(_ window: NSWindow) -> Bool {
+        outgoing === window
+    }
+
+    // Incoming panel, before ordering in: true → show opaque, no fade.
+    // Switching to the same panel just cancels the hand-over.
+    static func prepareIncoming(_ window: NSWindow) -> Bool {
+        guard let outgoing else { return false }
+        if outgoing === window {
+            token += 1
+            self.outgoing = nil
+            hideOutgoing = nil
+            return false
+        }
+        return true
+    }
+
+    // Incoming panel, right after makeKeyAndOrderFront.
+    // afterHandOff runs once the old panel is gone (keeps input restore → switch order).
+    static func takeOver(_ window: NSWindow, afterHandOff: @escaping () -> Void = {}) {
+        token += 1
+        let current = token
+        // Commit the new panel's first frame before the old one leaves.
+        window.contentView?.layoutSubtreeIfNeeded()
+        window.displayIfNeeded()
+        CATransaction.flush()
+        DispatchQueue.main.async {
+            guard current == token else { return }
+            finish()
+            afterHandOff()
+        }
+    }
+
+    private static func finish() {
+        let hide = hideOutgoing
+        outgoing = nil
+        hideOutgoing = nil
+        hide?()
+    }
+}

@@ -64,6 +64,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     }
 
     func show() {
+        let handOff = PanelSwitch.prepareIncoming(panel)
         if panel.isVisible {
             panel.makeKeyAndOrderFront(nil)
             viewController.focusSearch()
@@ -75,15 +76,25 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow()
 
-        panel.alphaValue = 0
+        // ⌘⇧J/K switch: appear opaque over the previous panel, no fade.
+        panel.alphaValue = handOff ? 1 : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
-        if prefs.switchToEnglishInput { InputSourceSwitcher.switchToASCII() }
         viewController.focusSearch()
+        if handOff {
+            // After the old panel's hide() restored the input source.
+            PanelSwitch.takeOver(panel) { [weak self] in self?.switchInputIfNeeded() }
+            return
+        }
+        switchInputIfNeeded()
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.12
             self.panel.animator().alphaValue = 1
         }
+    }
+
+    private func switchInputIfNeeded() {
+        if prefs.switchToEnglishInput { InputSourceSwitcher.switchToASCII() }
     }
 
     func hide() {
@@ -96,6 +107,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     }
 
     func windowDidResignKey(_ notification: Notification) {
+        guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
         hide()
     }
 
@@ -117,7 +129,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     }
 
     func switchPanel(_ step: Int) {
-        hide()
+        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
         onSwitchPanel?(step)
     }
 

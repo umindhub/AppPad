@@ -78,6 +78,7 @@ final class ClipboardController: NSObject, NSWindowDelegate {
             NSSound.beep()
             return
         }
+        let handOff = PanelSwitch.prepareIncoming(panel)
         if panel.isVisible {
             viewController.setScope(scope)
             panel.makeKeyAndOrderFront(nil)
@@ -90,10 +91,15 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow(scope: scope)
 
-        panel.alphaValue = 0
+        // ⌘⇧J/K switch: appear opaque over the previous panel, no fade.
+        panel.alphaValue = handOff ? 1 : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
         viewController.focusSearch()
+        if handOff {
+            PanelSwitch.takeOver(panel)
+            return
+        }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.12
             self.panel.animator().alphaValue = 1
@@ -109,12 +115,13 @@ final class ClipboardController: NSObject, NSWindowDelegate {
     }
 
     func windowDidResignKey(_ notification: Notification) {
+        guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
         hide()
     }
 
     // ⌘⇧J / ⌘⇧K: previous / next panel. Saved is a filter of the clipboard, not a panel.
     func switchPanel(_ step: Int) {
-        hide()
+        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
         onSwitchPanel?(step)
     }
 
