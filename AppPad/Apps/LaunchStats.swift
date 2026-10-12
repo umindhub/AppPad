@@ -3,16 +3,9 @@ import AppKit
 // Frecency with exponential half-life decay (default 72 days).
 // score_now = score_saved * 0.5^(elapsedDays / halfLife); each launch adds 1.
 // Apps seen for the first time get a seed score: common system app 3, other system app 1, installed app 2.
+// Ranking reads an in-memory cache; every change is written through to SQLite (FrecencyStore).
 final class LaunchStats: NSObject {
-    nonisolated struct Entry: Codable, Sendable {
-        var score: Double
-        var updatedAt: Date
-    }
-
-    nonisolated private struct StoreFile: Codable, Sendable {
-        var entries: [String: Entry]
-        var seeded: [String]
-    }
+    typealias Entry = FrecencyEntry
 
     // Edit freely: system apps most people open often.
     static let commonSystemApps: Set<String> = [
@@ -25,20 +18,26 @@ final class LaunchStats: NSObject {
     private var entries: [String: Entry] = [:]
     private var seeded = Set<String>()
     private var lastManual: [String: Date] = [:]
-    private let fileURL: URL
-    private var saveTask: Task<Void, Never>?
+    private let store: FrecencyStore?   // nil → DB failed to open, stats live in memory only
 
-    init(fileURL: URL) {
-        self.fileURL = fileURL
-        super.init()
-        if let data = try? Data(contentsOf: fileURL) {
-            if let file = try? JSONDecoder().decode(StoreFile.self, from: data) {
-                entries = file.entries
-                seeded = Set(file.seeded)
-            } else if let legacy = try? JSONDecoder().decode([String: Entry].self, from: data) {
-                entries = legacy   // v1 format
-            }
+    init(directory: URL) {
+        do {
+            store = try FrecencyStore(directory: directory,
+                                      legacyJSON: directory.appendingPathComponent("launch-stats.json"))
+        } catch {
+            NSLog("LaunchStats: database unavailable, keeping stats in memory: \(error)")
+            store = nil
         }
+        super.init()
+        do {
+            if let snapshot = try store?.load() {
+                entries = snapshot.entries
+                seeded = snapshot.seeded
+            }
+        } catch {
+            NSLog("LaunchStats: load failed: \(error)")
+        }
+        pruneStale()
         // Count launches from anywhere (Dock, Finder, Spotlight...), not only AppPad.
         NSWorkspace.shared.notificationCenter.addObserver(
             self, selector: #selector(appDidLaunch(_:)),
@@ -57,28 +56,29 @@ final class LaunchStats: NSObject {
 
     // Give each app a starting score once; never re-seeds after decay or deletion.
     func seedIfNeeded(_ apps: [AppInfo]) {
-        let now = Date()
-        var changed = false
-        for app in apps where !seeded.contains(app.key) {
-            seeded.insert(app.key)
-            changed = true
-            if entries[app.key] == nil {
-                entries[app.key] = Entry(score: Self.seedScore(for: app), updatedAt: now)
-            }
-        }
-        if changed { scheduleSave() }
+        seed(apps.map { (key: $0.key, score: Self.seedScore(for: $0)) })
     }
 
     // Same once-only seeding for non-app keys (workflows: "workflow:<id>").
     func seedIfNeeded(keys: [String], score: Double) {
+        seed(keys.map { (key: $0, score: score) })
+    }
+
+    private func seed(_ items: [(key: String, score: Double)]) {
         let now = Date()
-        var changed = false
-        for key in keys where !seeded.contains(key) {
-            seeded.insert(key)
-            changed = true
-            if entries[key] == nil { entries[key] = Entry(score: score, updatedAt: now) }
+        var newSeeds: [String] = []
+        var newEntries: [String: Entry] = [:]
+        for item in items where !seeded.contains(item.key) {
+            seeded.insert(item.key)
+            newSeeds.append(item.key)
+            if entries[item.key] == nil {
+                let entry = Entry(score: item.score, updatedAt: now)
+                entries[item.key] = entry
+                newEntries[item.key] = entry
+            }
         }
-        if changed { scheduleSave() }
+        guard !newSeeds.isEmpty else { return }
+        store?.seed(keys: newSeeds, entries: newEntries)
     }
 
     // manual = launched from AppPad; suppresses the duplicate system notification.
@@ -86,8 +86,9 @@ final class LaunchStats: NSObject {
         let now = Date()
         if !manual, let last = lastManual[key], now.timeIntervalSince(last) < 10 { return }
         if manual { lastManual[key] = now }
-        entries[key] = Entry(score: score(for: key, now: now) + 1, updatedAt: now)
-        scheduleSave()
+        let entry = Entry(score: score(for: key, now: now) + 1, updatedAt: now)
+        entries[key] = entry
+        store?.upsert(key: key, entry: entry)
     }
 
     func score(for key: String, now: Date = Date()) -> Double {
@@ -102,21 +103,12 @@ final class LaunchStats: NSObject {
         record(key)
     }
 
-    private func scheduleSave() {
-        saveTask?.cancel()
-        saveTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(1))
-            guard !Task.isCancelled, let self else { return }
-            self.pruneAndSave()
-        }
-    }
-
-    private func pruneAndSave() {
+    // Entries decayed to ~0 are dropped at launch (seeds are kept).
+    private func pruneStale() {
         let now = Date()
-        entries = entries.filter { score(for: $0.key, now: now) > 0.001 }
-        let file = StoreFile(entries: entries, seeded: seeded.sorted())
-        if let data = try? JSONEncoder().encode(file) {
-            try? data.write(to: fileURL, options: .atomic)
-        }
+        let stale = entries.keys.filter { score(for: $0, now: now) <= 0.001 }
+        guard !stale.isEmpty else { return }
+        for key in stale { entries[key] = nil }
+        store?.delete(keys: stale)
     }
 }

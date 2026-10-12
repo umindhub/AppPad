@@ -46,7 +46,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     override init() {
         let dir = AppEnvironment.supportDirectory
         layoutStore = LayoutStore(fileURL: dir.appendingPathComponent("layout.json"))
-        stats = LaunchStats(fileURL: dir.appendingPathComponent("launch-stats.json"))
+        stats = LaunchStats(directory: dir)
         panel = LaunchpadPanel(
             contentRect: NSRect(x: 0, y: 0, width: 1200, height: 800),
             styleMask: [.borderless],
