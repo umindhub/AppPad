@@ -50,6 +50,8 @@ final class Preferences: ObservableObject {
         static let background = "backgroundStyle"
         static let backgroundClick = "backgroundClickAction"
         static let englishInput = "switchToEnglishInput"
+        static let clipEnglishInput = "clipboardSwitchToEnglishInput"
+        static let workflowEnglishInput = "workflowPanelSwitchToEnglishInput"
         static let halfLife = "frecencyHalfLifeDays"
         static let workflowHotKey = "workflowPanelHotKey"
         static let appHotKeys = "appHotKeys"
@@ -85,7 +87,10 @@ final class Preferences: ObservableObject {
     @Published var customHeight: Int { didSet { save(customHeight, Key.height) } }
     @Published var backgroundStyle: PanelBackgroundStyle { didSet { save(backgroundStyle.rawValue, Key.background) } }
     @Published var backgroundClickAction: BackgroundClickAction { didSet { save(backgroundClickAction.rawValue, Key.backgroundClick) } }
-    @Published var switchToEnglishInput: Bool { didSet { save(switchToEnglishInput, Key.englishInput) } }
+    // Switch to an English (ASCII) input source while a panel is open; off by default for each panel.
+    @Published var switchToEnglishInput: Bool { didSet { save(switchToEnglishInput, Key.englishInput) } }   // Launchpad
+    @Published var clipboardSwitchToEnglishInput: Bool { didSet { save(clipboardSwitchToEnglishInput, Key.clipEnglishInput) } }
+    @Published var workflowSwitchToEnglishInput: Bool { didSet { save(workflowSwitchToEnglishInput, Key.workflowEnglishInput) } }
     @Published var frecencyHalfLifeDays: Int { didSet { save(frecencyHalfLifeDays, Key.halfLife) } }
     // Opens the Workflow panel (⌘Space). Launchpad has no global shortcut (pinch / menu bar).
     @Published var workflowPanelHotKey: KeyCombo? { didSet { saveCombo(workflowPanelHotKey, Key.workflowHotKey) } }
@@ -140,7 +145,9 @@ final class Preferences: ObservableObject {
         customHeight = d.object(forKey: Key.height) as? Int ?? 800
         backgroundStyle = PanelBackgroundStyle(rawValue: d.string(forKey: Key.background) ?? "") ?? .wallpaper
         backgroundClickAction = BackgroundClickAction(rawValue: d.string(forKey: Key.backgroundClick) ?? "") ?? .closePanel
-        switchToEnglishInput = d.object(forKey: Key.englishInput) as? Bool ?? true
+        switchToEnglishInput = d.object(forKey: Key.englishInput) as? Bool ?? false
+        clipboardSwitchToEnglishInput = d.object(forKey: Key.clipEnglishInput) as? Bool ?? false
+        workflowSwitchToEnglishInput = d.object(forKey: Key.workflowEnglishInput) as? Bool ?? false
         frecencyHalfLifeDays = d.object(forKey: Key.halfLife) as? Int ?? 72
         glassControls = d.object(forKey: Key.glassControls) as? Bool ?? true
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true

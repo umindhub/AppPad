@@ -39,6 +39,7 @@ struct ClipboardSettingsView: View {
                     ShortcutRecorder(combo: $prefs.clipboardSavedHotKey)
                         .frame(width: 170, height: 24)
                 }
+                Toggle("Switch to English input when opened", isOn: $prefs.clipboardSwitchToEnglishInput)
                 Toggle("Paste directly into the active app", isOn: $prefs.clipboardAutoPaste)
                 if prefs.clipboardAutoPaste && !trusted {
                     HStack {

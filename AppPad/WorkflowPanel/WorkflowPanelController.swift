@@ -94,7 +94,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     }
 
     private func switchInputIfNeeded() {
-        if prefs.switchToEnglishInput { InputSourceSwitcher.switchToASCII() }
+        if prefs.workflowSwitchToEnglishInput { InputSourceSwitcher.switchToASCII() }
     }
 
     func hide() {

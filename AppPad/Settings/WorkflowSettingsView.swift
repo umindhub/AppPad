@@ -117,6 +117,7 @@ struct WorkflowSettingsView: View {
                     Button("Open Keyboard Settings…", action: SpotlightShortcut.openKeyboardShortcuts)
                 }
             }
+            Toggle("Switch to English input when opened", isOn: $prefs.workflowSwitchToEnglishInput)
         } header: {
             Text("Workflow Panel")
         } footer: {

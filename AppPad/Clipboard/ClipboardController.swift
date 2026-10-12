@@ -97,13 +97,19 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         panel.invalidateShadow()
         viewController.focusSearch()
         if handOff {
-            PanelSwitch.takeOver(panel)
+            // After the old panel's hide() restored the input source.
+            PanelSwitch.takeOver(panel) { [weak self] in self?.switchInputIfNeeded() }
             return
         }
+        switchInputIfNeeded()
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.12
             self.panel.animator().alphaValue = 1
         }
+    }
+
+    private func switchInputIfNeeded() {
+        if prefs.clipboardSwitchToEnglishInput { InputSourceSwitcher.switchToASCII() }
     }
 
     func hide() {
@@ -111,6 +117,7 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         isHiding = true
         panel.orderOut(nil)
         viewController.didHide()
+        InputSourceSwitcher.restore()   // no-op unless we switched on show
         isHiding = false
     }
 
