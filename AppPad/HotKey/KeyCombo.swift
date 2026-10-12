@@ -14,7 +14,7 @@ nonisolated struct KeyCombo: Codable, Equatable, Sendable {
         keyLabel: "Space"
     )
 
-    // Clipboard history: ⌘.   Saved items only: ⇧⌘.
+    // Clipboard history: ⌘.   Saved items only: ⌥⌘. (⇧⌘. is Finder's "show hidden files")
     static let defaultClipboard = KeyCombo(
         keyCode: UInt32(kVK_ANSI_Period),
         modifiers: UInt32(cmdKey),
@@ -22,7 +22,7 @@ nonisolated struct KeyCombo: Codable, Equatable, Sendable {
     )
     static let defaultClipboardSaved = KeyCombo(
         keyCode: UInt32(kVK_ANSI_Period),
-        modifiers: UInt32(cmdKey | shiftKey),
+        modifiers: UInt32(cmdKey | optionKey),
         keyLabel: "."
     )
 
