@@ -4,11 +4,13 @@ import AppKit
 enum WorkflowPanelItem {
     case workflow(Workflow)
     case app(AppInfo)
+    case calculator(expression: String, result: Calculator.Result)   // pinned first row while typing math
 
     var title: String {
         switch self {
         case .workflow(let workflow): return workflow.displayName
         case .app(let app): return app.name
+        case .calculator(_, let result): return "= " + result.display
         }
     }
 
@@ -16,8 +18,33 @@ enum WorkflowPanelItem {
         switch self {
         case .workflow(let workflow): return WorkflowIcon.image(for: workflow)
         case .app(let app): return IconCache.shared.icon(for: app)
+        case .calculator: return Self.calculatorIcon
         }
     }
+
+    var isCalculator: Bool {
+        if case .calculator = self { return true }
+        return false
+    }
+
+    // Rounded orange tile with a white symbol, same footprint as app icons.
+    private static let calculatorIcon: NSImage = {
+        let size = NSSize(width: 512, height: 512)
+        return NSImage(size: size, flipped: false) { rect in
+            let tile = rect.insetBy(dx: 40, dy: 40)
+            NSColor.systemOrange.setFill()
+            NSBezierPath(roundedRect: tile, xRadius: 100, yRadius: 100).fill()
+            let config = NSImage.SymbolConfiguration(pointSize: 240, weight: .semibold)
+                .applying(.init(paletteColors: [.white]))
+            if let symbol = NSImage(systemSymbolName: "plus.forwardslash.minus", accessibilityDescription: nil)?
+                .withSymbolConfiguration(config) {
+                let s = symbol.size
+                symbol.draw(in: NSRect(x: tile.midX - s.width / 2, y: tile.midY - s.height / 2,
+                                       width: s.width, height: s.height))
+            }
+            return true
+        }
+    }()
 }
 
 // Icon, title + subtitle, in-panel shortcut, ⌘n badge (same metrics as the clipboard rows).
@@ -70,6 +97,13 @@ final class WorkflowRowView: NSView {
         case .app:
             subtitleLabel.stringValue = String(localized: "Application")
             keyLabel.stringValue = ""
+        case .calculator(let expression, _):
+            subtitleLabel.stringValue = expression
+            keyLabel.stringValue = ""
+        }
+        // Result in monospaced digits so columns of numbers read cleanly.
+        if item.isCalculator {
+            titleLabel.font = .monospacedDigitSystemFont(ofSize: font.pointSize, weight: .semibold)
         }
         needsLayout = true
     }

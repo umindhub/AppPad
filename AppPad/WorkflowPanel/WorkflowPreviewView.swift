@@ -1,6 +1,7 @@
 import AppKit
 
 // Right-hand side of the Workflow panel: icon, name, details (steps, permissions, last run) and key hints.
+// Calculator row: expression and result, ↩ copies (flashCopied shows a short confirmation).
 final class WorkflowPreviewView: FlippedView {
     var onEscape: (() -> Void)?
 
@@ -10,6 +11,8 @@ final class WorkflowPreviewView: FlippedView {
     private let textScroll = NSScrollView()
     private let textView = PreviewTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 300))
     private let hintLabel = NSTextField(labelWithString: "")
+    private var titleText = ""
+    private var copiedTask: Task<Void, Never>?
 
     private static let outputLimit = 4000
     private static let relativeFormatter: RelativeDateTimeFormatter = {
@@ -63,8 +66,10 @@ final class WorkflowPreviewView: FlippedView {
             return
         }
         views.forEach { $0.isHidden = false }
+        copiedTask?.cancel()
         iconView.image = item.icon
-        titleLabel.stringValue = item.title
+        titleText = item.title
+        titleLabel.stringValue = titleText
 
         switch item {
         case .workflow(let workflow):
@@ -86,6 +91,10 @@ final class WorkflowPreviewView: FlippedView {
             subtitleLabel.stringValue = (app.url.path as NSString).abbreviatingWithTildeInPath
             textView.textStorage?.setAttributedString(details(app))
             hintLabel.stringValue = String(localized: "↩ Open")
+        case .calculator(let expression, let result):
+            subtitleLabel.stringValue = String(localized: "Calculator")
+            textView.textStorage?.setAttributedString(details(expression: expression, result: result))
+            hintLabel.stringValue = String(localized: "↩ Copy")
         }
         textView.scrollToBeginningOfDocument(nil)
         needsLayout = true
@@ -149,6 +158,30 @@ final class WorkflowPreviewView: FlippedView {
             if !output.isEmpty { line(output, in: text, monospaced: true) }
         } else {
             line(String(localized: "Not run yet"), in: text, color: .secondaryLabelColor)
+        }
+        return text
+    }
+
+    // Briefly replaces the title with "Copied" (calculator row).
+    func flashCopied() {
+        copiedTask?.cancel()
+        titleLabel.stringValue = String(localized: "Copied")
+        copiedTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(900))
+            guard !Task.isCancelled, let self else { return }
+            self.titleLabel.stringValue = self.titleText
+        }
+    }
+
+    private func details(expression: String, result: Calculator.Result) -> NSAttributedString {
+        let text = NSMutableAttributedString()
+        line(expression, in: text, color: .secondaryLabelColor, monospaced: true)
+        text.append(NSAttributedString(string: "= " + result.display + "\n", attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 24, weight: .semibold),
+            .foregroundColor: NSColor.labelColor,
+        ]))
+        if result.copyText != result.display {
+            line(result.copyText, in: text, color: .secondaryLabelColor, monospaced: true)
         }
         return text
     }

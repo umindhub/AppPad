@@ -8,7 +8,9 @@ import Combine
 // Typing after the first space only changes the argument: rows and selection stay.
 // Picking a row (Tab, arrows, ⌘J/K, mouse) writes its name into the field with spaces as "-"
 // ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
-// Keys: ↩ run / open, ⇥ complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
+// Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
+// While it shows, moving between rows does not rewrite the expression; ⇥ on another row still does.
+// Keys: ↩ run / open / copy, ⇥ complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc clears / closes.
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
@@ -181,6 +183,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         argument = parts.argument
         lastTerm = term
         let workflows = WorkflowStore.shared.workflows.filter(\.enabled)
+        let calculation = Self.calculation(searchField.stringValue)
 
         if let launchpad = controller?.launchpad {
             launchpad.seedWorkflows(workflows.map(\.statsKey))
@@ -205,6 +208,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         } else {
             items = workflows.map { .workflow($0) }
         }
+        if let calculation { items.insert(calculation, at: 0) }
 
         tableView.reloadData()
         var row = 0
@@ -224,7 +228,19 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         switch item {
         case .workflow(let workflow): return "w:" + workflow.id.uuidString
         case .app(let app): return "a:" + app.key
+        case .calculator: return "c"
         }
+    }
+
+    // Whole field (spaces included) as math, e.g. "2 + 3", "sqrt(2)", "6.02e23".
+    private static func calculation(_ text: String) -> WorkflowPanelItem? {
+        let expression = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let result = Calculator.evaluateIfExpression(expression) else { return nil }
+        return .calculator(expression: expression, result: result)
+    }
+
+    private var hasCalculatorRow: Bool {
+        items.first?.isCalculator == true
     }
 
     // One-word form of a name for the search field: "Set Timer" → "Set-Timer".
@@ -295,7 +311,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private func hoverSelect(_ row: Int) {
         guard items.indices.contains(row), row != tableView.selectedRow else { return }
         tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
-        fillSearchField()
+        fillSearchField(explicit: false)
     }
 
     // Arrows, ⌘J/K, page keys: a picked row also fills the field.
@@ -303,19 +319,24 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         guard !items.isEmpty else { return }
         let current = max(0, tableView.selectedRow)
         select(row: min(max(current + delta, 0), items.count - 1))
-        fillSearchField()
+        fillSearchField(explicit: false)
     }
 
     // Field = "<Name-With-Dashes> <argument>"; rows stay (lastTerm follows the new name),
     // so typing the argument next keeps the selection. The automatic first row is not filled.
-    private func fillSearchField() {
-        guard let item = selectedItem else { return }
+    // explicit: Tab. With a calculator row only Tab rewrites the field (the expression is kept otherwise);
+    // the rows are then rebuilt without the calculator, keeping the picked item selected.
+    private func fillSearchField(explicit: Bool) {
+        guard let item = selectedItem, !item.isCalculator else { return }
+        let hadCalculator = hasCalculatorRow
+        if hadCalculator && !explicit { return }
         let name = Self.token(item.title)
         var text = name
         if case .workflow = item { text += " " }
         if !argument.isEmpty { text = name + " " + argument }
         searchField.stringValue = text
         lastTerm = SearchIndex.normalize(name)
+        if hadCalculator { reload(selectFirst: false) }
         focusSearch()   // caret to the end
         updatePreview()
     }
@@ -344,7 +365,15 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         switch items[row] {
         case .workflow(let workflow): run(workflow)
         case .app(let app): controller?.open(app)   // the argument is ignored for apps
+        case .calculator(_, let result): copy(result)
         }
+    }
+
+    // Plain, machine-readable result to the pasteboard; the panel stays open.
+    private func copy(_ result: Calculator.Result) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(result.copyText, forType: .string)
+        preview.flashCopied()
     }
 
     // Missing shortcut → install / create it; bad argument → stay open (the preview says why).
@@ -366,7 +395,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     // field, ready for the argument (the text typed for another row is not reused).
     private func selectForArgument(_ workflow: Workflow) {
         let name = Self.token(workflow.displayName)
-        if let index = items.firstIndex(where: { if case .workflow(let w) = $0 { return w.id == workflow.id }; return false }) {
+        if !hasCalculatorRow, let index = items.firstIndex(where: { if case .workflow(let w) = $0 { return w.id == workflow.id }; return false }) {
             select(row: index)
             scrollRowToTop(index)
             argument = ""
@@ -420,7 +449,12 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     // MARK: - Keyboard
 
     // Only a changed search term (text before the first space) rebuilds the rows and selects the first.
+    // Math is the exception: the whole field counts, so any change while it is (or was) math rebuilds.
     func controlTextDidChange(_ obj: Notification) {
+        if hasCalculatorRow || Self.calculation(searchField.stringValue) != nil {
+            reload(selectFirst: true)
+            return
+        }
         let parts = WorkflowArguments.split(searchField.stringValue)
         if SearchIndex.normalize(parts.term) == lastTerm {
             argument = parts.argument
@@ -432,11 +466,11 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     // Tab: the selected row's localized name ("Set-Timer ") in the field, ready for the argument.
     private func completeSelected() {
-        guard selectedItem != nil else {
+        guard let item = selectedItem, !item.isCalculator else {
             NSSound.beep()
             return
         }
-        fillSearchField()
+        fillSearchField(explicit: true)
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {

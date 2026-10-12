@@ -1,7 +1,7 @@
 import AppKit
 
-// Layout (top → bottom): search field, page indicator (centered between search and first icon row),
-// [calculator row], grid.
+// Layout (top → bottom): search field, page indicator (centered between search and first icon row), grid.
+// The calculator lives in the Workflow panel now.
 // Edit mode / grid delegate live in +Edit.swift, drag & drop in +Drag.swift.
 final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     weak var controller: LaunchpadController?
@@ -26,14 +26,12 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var edgeTask: Task<Void, Never>?
     var edgeDirection = 0
 
-    private let calcView = CalcResultView()
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
     private(set) var isSearching = false
     private var results: [AppInfo] = []
     private var resultPages: [PageGridView] = []
-    private var calcResult: Calculator.Result?
-    private var selection = 0   // index into results; -1 = calculator row
+    private var selection = 0   // index into results
 
     var prefs: Preferences { .shared }
     var capacity: Int { max(1, prefs.gridColumns * prefs.gridRows) }
@@ -63,7 +61,6 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         emptyLabel.font = .systemFont(ofSize: 15)
         emptyLabel.isHidden = true
         resultsPager.isHidden = true
-        calcView.isHidden = true
 
         dragImageView.imageScaling = .scaleProportionallyUpOrDown
         dragImageView.wantsLayer = true
@@ -73,7 +70,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         shadow.shadowOffset = NSSize(width: 0, height: -4)
         dragImageView.shadow = shadow
 
-        [pager, resultsPager, searchChrome, indicator, calcView, emptyLabel].forEach {
+        [pager, resultsPager, searchChrome, indicator, emptyLabel].forEach {
             root.addSubview($0)
         }
 
@@ -88,7 +85,6 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         indicator.onSelect = { [weak self] index in
             self?.activePager.scrollTo(page: index, animated: true)
         }
-        calcView.onClick = { [weak self] in self?.copyCalcResult() }
     }
 
     override func viewDidLayout() {
@@ -102,24 +98,18 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
                                     width: fieldWidth, height: fieldHeight)
         let searchBottom = searchChrome.frame.maxY
 
-        var top: CGFloat = 76
+        let top: CGFloat = 76
         // Breathing room under the last icon row (labels no longer hug the bottom edge).
         let bottom = b.height - Self.bottomPadding
-        if !calcView.isHidden {
-            let width = min(440, b.width - 2 * pad)
-            calcView.frame = NSRect(x: (b.width - width) / 2, y: top, width: width, height: 46)
-            top += 56
-        }
         // Each page adds a small side margin so pages are 1.5× the icon gap apart (PageGridView.pageGapFactor).
         let gridRect = NSRect(x: pad, y: top, width: b.width - 2 * pad, height: max(0, bottom - top))
         pager.frame = gridRect
         resultsPager.frame = gridRect
 
-        // Indicator sits halfway between the search field and the first icon row (or calculator row).
+        // Indicator sits halfway between the search field and the first icon row.
         let firstIconTop = gridRect.minY + PageGridView.firstIconTop(
             size: gridRect.size, columns: prefs.gridColumns, rows: prefs.gridRows)
-        let anchor = calcView.isHidden ? firstIconTop : calcView.frame.minY
-        let center = (searchBottom + anchor) / 2
+        let center = (searchBottom + firstIconTop) / 2
         indicator.frame = NSRect(x: pad, y: (center - 12).rounded(), width: b.width - 2 * pad, height: 24)
 
         emptyLabel.frame = NSRect(x: pad, y: top + 40, width: b.width - 2 * pad, height: 22)
@@ -321,9 +311,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         }
 
         isSearching = true
-        calcResult = Calculator.evaluateIfExpression(text)
         results = controller.search(text)
-        selection = calcResult != nil ? -1 : 0
+        selection = 0
 
         let cap = capacity
         resultPages = stride(from: 0, to: results.count, by: cap).map { start in
@@ -336,11 +325,9 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         resultsPager.setPages(resultPages)
         resultsPager.scrollTo(page: 0, animated: false)
 
-        if let calcResult { calcView.set(expression: text, result: calcResult.display) }
         pager.isHidden = true
         resultsPager.isHidden = false
-        calcView.isHidden = calcResult == nil
-        emptyLabel.isHidden = !(results.isEmpty && calcResult == nil)
+        emptyLabel.isHidden = !results.isEmpty
         applySelection()
         syncIndicator()
         view.needsLayout = true
@@ -351,29 +338,23 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         isSearching = false
         results = []
         resultPages = []
-        calcResult = nil
         selection = 0
         resultsPager.setPages([])
         resultsPager.isHidden = true
         pager.isHidden = false
-        calcView.isHidden = true
         emptyLabel.isHidden = true
         syncIndicator()
         view.needsLayout = true
     }
 
     private func applySelection() {
-        calcView.isSelected = selection == -1
         let cap = capacity
         for (pageIndex, page) in resultPages.enumerated() {
-            let inPage = selection >= 0 && selection / cap == pageIndex
-            page.setSelectedIndex(inPage ? selection % cap : nil)
+            page.setSelectedIndex(selection / cap == pageIndex ? selection % cap : nil)
         }
-        if selection >= 0 {
-            let page = selection / cap
-            if page != resultsPager.currentPage {
-                resultsPager.scrollTo(page: page, animated: true)
-            }
+        let page = selection / cap
+        if page != resultsPager.currentPage {
+            resultsPager.scrollTo(page: page, animated: true)
         }
     }
 
@@ -381,19 +362,17 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         guard isSearching else { return }
         let columns = prefs.gridColumns
         let count = results.count
-        let hasCalc = calcResult != nil
         var s = selection
         switch direction {
         case .left:
-            if s > 0 { s -= 1 } else if s == 0 && hasCalc { s = -1 }
+            if s > 0 { s -= 1 }
         case .right:
             if s + 1 < count { s += 1 }
         case .up:
-            if s >= columns { s -= columns } else if s >= 0 && hasCalc { s = -1 }
+            if s >= columns { s -= columns }
         case .down:
-            if s == -1 { s = count > 0 ? 0 : -1 } else if s + columns < count { s += columns }
+            if s + columns < count { s += columns }
         }
-        if s == -1 && !hasCalc { s = 0 }
         selection = s
         applySelection()
     }
@@ -461,12 +440,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             confirmOverlay.confirm()
             return
         }
-        guard isSearching else { return }
-        if selection == -1 {
-            copyCalcResult()
-        } else if results.indices.contains(selection) {
-            controller?.launch(results[selection])
-        }
+        guard isSearching, results.indices.contains(selection) else { return }
+        controller?.launch(results[selection])
     }
 
     // Empty area click: leave edit mode first; otherwise close the panel (macOS 15 Launchpad)
@@ -491,7 +466,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         var node: NSView? = hit
         while let current = node {
             switch current {
-            case is GridCellView, is NSControl, is NSText, is PageIndicatorView, is CalcResultView,
+            case is GridCellView, is NSControl, is NSText, is PageIndicatorView,
                  is ConfirmOverlayView, is GlassSearchFieldView:
                 return false
             default:
@@ -499,12 +474,5 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             }
         }
         return true
-    }
-
-    private func copyCalcResult() {
-        guard let calcResult else { return }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(calcResult.copyText, forType: .string)
-        calcView.flashCopied()
     }
 }
