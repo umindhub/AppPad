@@ -259,10 +259,12 @@ enum PanelSwitch {
 }
 
 // MARK: - Panel morph
-// Launchpad ⇄ Clipboard / Workflows (different size, same center). Only the larger panel moves:
-// its frame (content layer scale + corner radius) goes between its own frame and the smaller one's,
+// Launchpad ⇄ Clipboard / Workflows (different size, same center). The larger panel's frame
+// (content layer scale + corner radius) goes between its own frame and the smaller one's,
 // its wallpaper slice follows so the blur always matches what is under it.
-// The frame lands exactly on the other frame; the content inside scales uniformly (no squashed icons).
+// Both contents scale uniformly with that frame: Launchpad's icons shrink into the panel's frame,
+// the panel's content comes in from Launchpad size (or leaves growing to it). To draw that without
+// clipping, the smaller panel's window spans the large frame during the morph, its views centered.
 // Content never overlaps: one panel's content fades out, then the other's fades in.
 // The smaller panel sits above the larger one the whole time, its background only shows while the
 // frames (nearly) coincide: last quarter when shrinking, first quarter when expanding.
@@ -274,7 +276,10 @@ final class PanelMorph {
     // Content hand-over point (fraction of duration).
     private static let shrinkSwap: Double = 2.0 / 3
     private static let expandSwap: Double = 1.0 / 3
-    private static let frameCurve = CAMediaTimingFunction(controlPoints: 0.4, 0, 0.2, 1)
+    // Shrink keeps moving late (panel content still visibly shrinking after ⅔);
+    // expand moves early (panel content visibly growing before ⅓).
+    private static let shrinkCurve = CAMediaTimingFunction(controlPoints: 0.42, 0, 0.58, 1)
+    private static let expandCurve = CAMediaTimingFunction(controlPoints: 0.4, 0, 0.2, 1)
     private static let transformKey = "panelMorph"
     private static let radiusKey = "panelMorphRadius"
     private static let fadeKey = "panelMorphFade"
@@ -284,6 +289,9 @@ final class PanelMorph {
     let outgoing: NSWindow
     private let incomingIsLarge: Bool
     private let ratio: CGSize          // small frame / large frame
+    private let smallFrame: NSRect
+    private let largeFrame: NSRect
+    private var smallWindowSpread = false
     private let incomingRadius: CGFloat
     private let outgoingRadius: CGFloat
     private var incomingHadShadow = false
@@ -316,6 +324,8 @@ final class PanelMorph {
         self.incomingIsLarge = incomingIsLarge
         ratio = CGSize(width: min(1, smallFrame.width / largeFrame.width),
                        height: min(1, smallFrame.height / largeFrame.height))
+        self.smallFrame = smallFrame
+        self.largeFrame = largeFrame
         // Radii as set by each controller's applyFrame (filled 12 / floating 26).
         incomingRadius = incoming.contentView?.layer?.cornerRadius ?? LaunchpadController.cornerRadius
         outgoingRadius = outgoing.contentView?.layer?.cornerRadius ?? LaunchpadController.cornerRadius
@@ -332,6 +342,11 @@ final class PanelMorph {
     }
     private var largeAtRest: Pose { Pose(scale: Self.identity, radius: largeRadius) }
     private static let identity = CGSize(width: 1, height: 1)
+    // Small panel's content at the large frame: uniform, inside the large frame.
+    private var smallContentAtLarge: CGSize {
+        let grow = 1 / max(ratio.width, ratio.height, 0.01)
+        return CGSize(width: grow, height: grow)
+    }
 
     private static func parts(_ window: NSWindow) -> (background: LaunchpadBackgroundView?, content: NSView?) {
         let panel = window as? LaunchpadPanel
@@ -350,10 +365,54 @@ final class PanelMorph {
         views.content?.alphaValue = 0
         if incomingIsLarge {
             Self.apply(incoming, largeAtSmall, duration: nil)
-            views.background?.setWallpaperSlice(onScreen: small.frame, duration: nil)
+            views.background?.setWallpaperSlice(onScreen: smallFrame, duration: nil)
         } else {
             views.background?.alphaValue = 0
         }
+        spreadSmallWindow()
+        if !incomingIsLarge, let content = Self.parts(small).content?.layer {
+            Self.setTransform(content, scale: smallContentAtLarge, key: Self.contentKey, duration: nil, timing: nil)
+        }
+    }
+
+    // Small panel's window → large frame, background + content kept where they were (centered),
+    // rounded corners moved from the container to the background.
+    private func spreadSmallWindow() {
+        guard let container = small.contentView else { return }
+        let views = Self.parts(small)
+        small.disableScreenUpdatesUntilFlush()
+        container.autoresizesSubviews = false
+        small.setFrame(largeFrame, display: false)
+        let origin = NSPoint(x: ((largeFrame.width - smallFrame.width) / 2).rounded(),
+                             y: ((largeFrame.height - smallFrame.height) / 2).rounded())
+        for view in [views.background as NSView?, views.content] { view?.setFrameOrigin(origin) }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        container.layer?.cornerRadius = 0
+        container.layer?.masksToBounds = false
+        views.background?.layer?.cornerRadius = smallRadius
+        views.background?.layer?.masksToBounds = true
+        CATransaction.commit()
+        smallWindowSpread = true
+    }
+
+    // Back to its own frame; on screen nothing moves.
+    private func gatherSmallWindow() {
+        guard smallWindowSpread, let container = small.contentView else { return }
+        smallWindowSpread = false
+        let views = Self.parts(small)
+        small.disableScreenUpdatesUntilFlush()
+        small.setFrame(smallFrame, display: false)
+        for view in [views.background as NSView?, views.content] { view?.setFrameOrigin(.zero) }
+        container.autoresizesSubviews = true
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        container.layer?.cornerRadius = smallRadius
+        container.layer?.masksToBounds = true
+        views.background?.layer?.cornerRadius = 0
+        views.background?.layer?.masksToBounds = false
+        CATransaction.commit()
+        if small.isVisible { small.displayIfNeeded() }
     }
 
     func run(completion: @escaping () -> Void) {
@@ -363,19 +422,27 @@ final class PanelMorph {
         if incomingIsLarge {
             // Expand: panel stays on top while its content and background leave.
             let swap = d * Self.expandSwap
+            let curve = Self.expandCurve
             outgoing.order(.above, relativeTo: incoming.windowNumber)
             incoming.alphaValue = 1
-            Self.apply(incoming, largeAtRest, duration: d, timing: Self.frameCurve)
-            largeParts.background?.setWallpaperSlice(onScreen: nil, duration: d, timing: Self.frameCurve)
+            Self.apply(incoming, largeAtRest, duration: d, timing: curve)
+            largeParts.background?.setWallpaperSlice(onScreen: nil, duration: d, timing: curve)
+            if let content = smallParts.content?.layer {
+                Self.setTransform(content, scale: smallContentAtLarge, key: Self.contentKey, duration: d, timing: curve)
+            }
             Self.fade(smallParts.content, to: 0, delay: 0, length: swap, timing: .easeIn)
             Self.fade(smallParts.background, to: 0, delay: 0, length: d / 4, timing: .easeIn)
             Self.fade(largeParts.content, to: 1, delay: swap, length: d - swap, timing: .easeOut)
         } else {
             // Shrink: panel (on top, still invisible) fills in as Launchpad arrives.
             let swap = d * Self.shrinkSwap
+            let curve = Self.shrinkCurve
             incoming.alphaValue = 1
-            Self.apply(outgoing, largeAtSmall, duration: d, timing: Self.frameCurve)
-            largeParts.background?.setWallpaperSlice(onScreen: incoming.frame, duration: d, timing: Self.frameCurve)
+            Self.apply(outgoing, largeAtSmall, duration: d, timing: curve)
+            largeParts.background?.setWallpaperSlice(onScreen: smallFrame, duration: d, timing: curve)
+            if let content = smallParts.content?.layer {
+                Self.setTransform(content, scale: Self.identity, key: Self.contentKey, duration: d, timing: curve)
+            }
             Self.fade(largeParts.content, to: 0, delay: 0, length: swap, timing: .easeIn)
             Self.fade(smallParts.content, to: 1, delay: swap, length: d - swap, timing: .easeOut)
             Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .easeOut)
@@ -385,6 +452,7 @@ final class PanelMorph {
 
     // Incoming at its final look (also when cut short).
     func settleIncoming() {
+        if !incomingIsLarge { gatherSmallWindow() }
         Self.restore(incoming, radius: incomingRadius)
         // A panel already closing on its own (lost key) keeps its fade-out.
         if !incoming.isVisible || incoming.isKeyWindow { Self.setAlpha(incoming, 1) }
@@ -394,6 +462,7 @@ final class PanelMorph {
 
     // Outgoing after its hide(): back to normal for its next show.
     func resetOutgoing() {
+        if incomingIsLarge { gatherSmallWindow() }
         Self.restore(outgoing, radius: outgoingRadius)
         Self.setAlpha(outgoing, 1)
         outgoing.ignoresMouseEvents = false
