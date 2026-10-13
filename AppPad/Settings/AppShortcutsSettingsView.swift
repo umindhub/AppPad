@@ -98,6 +98,7 @@ struct AppShortcutsSettingsView: View {
     @State private var entries: [AppShortcutEntry] = ShortcutAppsCache.entries ?? []
     @State private var loaded = ShortcutAppsCache.entries != nil
     @State private var query = ""
+    @State private var scrollAnchor = ScrollAnchor()
 
     // Extra scroll-content margin so the index bar fits between the cards and the scroller.
     private static let formInset: CGFloat = 24
@@ -179,6 +180,8 @@ struct AppShortcutsSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                // Grab the Form's NSScrollView for scroll anchoring.
+                .background(EnclosingScrollViewFinder { scrollAnchor.attach($0) })
             } footer: {
                 HStack {
                     Text("Press the shortcut to open or focus the app; press again while it is in front to hide it. Click a field to record, Delete clears, Esc cancels.")
@@ -302,7 +305,8 @@ struct AppShortcutsSettingsView: View {
                 prefs.appHotKeys.removeAll { $0.key == value.key }
             } label: {
                 Image(systemName: "minus.circle.fill")
-                    .foregroundStyle(.secondary)
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, .red)
             }
             .buttonStyle(.borderless)
             .help(Text("Remove"))
@@ -336,16 +340,24 @@ struct AppShortcutsSettingsView: View {
             get: { prefs.appHotKeys.first { $0.key == key }?.combo },
             set: { newValue in
                 let index = prefs.appHotKeys.firstIndex { $0.key == key }
-                switch (newValue, index) {
-                case let (combo?, index?):
-                    prefs.appHotKeys[index].combo = combo
-                case let (combo?, nil):
-                    guard let app else { return }
-                    prefs.appHotKeys.append(AppHotKey(key: app.key, path: app.url.path, name: app.name, combo: combo))
-                case let (nil, index?):
-                    prefs.appHotKeys.remove(at: index)
-                case (nil, nil):
-                    break
+                // A–Z edit that adds/removes a top row → keep the edited row where it is on screen.
+                if app != nil, (newValue != nil) != (index != nil) {
+                    scrollAnchor.hold()
+                }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    switch (newValue, index) {
+                    case let (combo?, index?):
+                        prefs.appHotKeys[index].combo = combo
+                    case let (combo?, nil):
+                        guard let app else { return }
+                        prefs.appHotKeys.append(AppHotKey(key: app.key, path: app.url.path, name: app.name, combo: combo))
+                    case let (nil, index?):
+                        prefs.appHotKeys.remove(at: index)
+                    case (nil, nil):
+                        break
+                    }
                 }
             }
         )
@@ -402,5 +414,84 @@ private struct LetterIndexBar: View {
                 }
                 .onEnded { _ in last = nil }
         )
+    }
+}
+
+// Keeps the viewport still while rows above it are inserted/removed:
+// shifts the scroll offset by however much the document height changed.
+@MainActor
+private final class ScrollAnchor: NSObject {
+    private weak var scrollView: NSScrollView?
+    private var baseHeight: CGFloat?
+    private var token = 0
+
+    func attach(_ view: NSScrollView) {
+        guard view !== scrollView, let doc = view.documentView else { return }
+        if let old = scrollView?.documentView {
+            NotificationCenter.default.removeObserver(self, name: NSView.frameDidChangeNotification, object: old)
+        }
+        scrollView = view
+        doc.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(documentFrameChanged(_:)),
+            name: NSView.frameDidChangeNotification, object: doc
+        )
+    }
+
+    // Call right before the change; compensation stays armed briefly (update may take a few layout passes).
+    func hold() {
+        guard let doc = scrollView?.documentView, doc.isFlipped else { return }
+        baseHeight = doc.frame.height
+        token += 1
+        let current = token
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard let self, self.token == current else { return }
+            self.baseHeight = nil
+        }
+    }
+
+    @objc private func documentFrameChanged(_ note: Notification) {
+        guard let base = baseHeight, let sv = scrollView, let doc = sv.documentView else { return }
+        let delta = doc.frame.height - base
+        baseHeight = doc.frame.height
+        guard delta != 0 else { return }
+        let clip = sv.contentView
+        var origin = clip.bounds.origin
+        origin.y += delta
+        let rect = clip.constrainBoundsRect(NSRect(origin: origin, size: clip.bounds.size))
+        clip.scroll(to: rect.origin)
+        sv.reflectScrolledClipView(clip)
+    }
+}
+
+// Reports the NSScrollView this view ends up inside (the Form's scroller).
+private struct EnclosingScrollViewFinder: NSViewRepresentable {
+    let onFind: (NSScrollView) -> Void
+
+    func makeNSView(context: Context) -> FinderView {
+        let view = FinderView()
+        view.onFind = onFind
+        return view
+    }
+
+    func updateNSView(_ view: FinderView, context: Context) {
+        view.onFind = onFind
+    }
+
+    final class FinderView: NSView {
+        var onFind: ((NSScrollView) -> Void)?
+
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard window != nil else { return }
+            // Hierarchy may still be attaching; look it up on the next turn.
+            Task { @MainActor [weak self] in
+                guard let self, let sv = self.enclosingScrollView else { return }
+                self.onFind?(sv)
+            }
+        }
     }
 }
