@@ -385,14 +385,16 @@ struct GlassSearchField: NSViewRepresentable {
             if text.wrappedValue != field.stringValue { text.wrappedValue = field.stringValue }
         }
 
-        // Esc clears the text first, then drops focus.
+        // Esc while focused clears the search (binding and × button synced); on an empty field it drops focus.
         func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
             guard selector == #selector(NSResponder.cancelOperation(_:)) else { return false }
             if textView.string.isEmpty {
                 control.window?.makeFirstResponder(nil)
             } else {
                 textView.selectAll(nil)
-                textView.delete(nil)
+                textView.delete(nil)   // undoable
+                if !control.stringValue.isEmpty { control.stringValue = "" }
+                if !text.wrappedValue.isEmpty { text.wrappedValue = "" }
             }
             return true
         }

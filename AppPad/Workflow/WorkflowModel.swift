@@ -13,7 +13,7 @@ nonisolated enum ScriptLanguage: String, Codable, CaseIterable, Sendable {
 // Actions implemented by AppPad itself (trusted code, still permission-gated).
 nonisolated enum BuiltinAction: String, Codable, CaseIterable, Sendable {
     case emptyTrash, sleepDisplays, sleepMac, keepAwake, toggleDarkMode, setVolume, toggleMute
-    case ejectDisks, toggleHiddenFiles, quitApp, openURL, copyIPAddress, generateUUID
+    case ejectDisks, toggleHiddenFiles, quitApp, quitAllApps, openURL, copyIPAddress, generateUUID
     case shutDown, restart, createReminder
 }
 

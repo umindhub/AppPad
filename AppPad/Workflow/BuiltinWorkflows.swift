@@ -15,8 +15,9 @@ enum BuiltinWorkflows {
 
     static var all: [Workflow] {
         [
+            // No success notice: Finder plays its own empty-trash sound.
             make("com.youmindhub.emptytrash", "Empty Trash", "Empty the Trash.",
-                 version: "1.2", keywords: ["trash", "emptytrash", "bin"], symbol: "trash", notice: .output,
+                 version: "1.3", keywords: ["trash", "emptytrash", "bin"], symbol: "trash",
                  steps: [WorkflowStep(builtin: .emptyTrash, timeout: 300)]),
             make("com.youmindhub.timer", "Set Timer", "Start a timer in the Clock app.",
                  version: "1.3", keywords: ["time", "timer", "countdown"], symbol: "timer",
@@ -35,7 +36,7 @@ enum BuiltinWorkflows {
                  version: "1.2", keywords: ["shutdown", "poweroff", "halt"], symbol: "power",
                  steps: [WorkflowStep(builtin: .shutDown, timeout: 20)]),
             make("com.youmindhub.restart", "Restart", "Show the system’s Restart dialog.",
-                 version: "1.2", keywords: ["restart", "reboot"], symbol: "restart",
+                 version: "1.4", keywords: ["restart", "reboot"], symbol: "arrow.clockwise",
                  steps: [WorkflowStep(builtin: .restart, timeout: 20)]),
             make("com.youmindhub.sleepdisplays", "Sleep Displays", "Turn off the displays now.",
                  version: "1.2", keywords: ["display", "displayoff", "screenoff"], symbol: "display",
@@ -63,10 +64,10 @@ enum BuiltinWorkflows {
             make("com.youmindhub.hiddenfiles", "Toggle Hidden Files", "Show or hide hidden files in Finder.",
                  version: "1.2", keywords: ["hidden", "dotfiles", "showhidden"], symbol: "eye", notice: .output,
                  steps: [WorkflowStep(builtin: .toggleHiddenFiles, timeout: 20)]),
-            make("com.youmindhub.quit", "Quit App", "Quit a running app by name.",
-                 version: "1.2", keywords: ["quit", "close"], symbol: "xmark.app",
-                 argument: .required, type: .text, hint: "app name",
-                 steps: [WorkflowStep(builtin: .quitApp, timeout: 10)]),
+            // Same identifier as the old "Quit App" (by name): the higher version replaces installed copies.
+            make("com.youmindhub.quit", "Quit All Apps", "Quit all running apps. Finder and AppPad stay open.",
+                 version: "1.3", keywords: ["quit", "close"], symbol: "xmark.app", notice: .output,
+                 steps: [WorkflowStep(builtin: .quitAllApps, timeout: 30)]),
             make("com.youmindhub.websearch", "Google Search", "Search the web. Duplicate it and change the URL for other sites.",
                  version: "1.2", keywords: ["g", "google", "search"], symbol: "magnifyingglass",
                  argument: .required, type: .text, hint: "keywords",
@@ -88,15 +89,21 @@ enum BuiltinWorkflows {
         for builtin in all where !removed.contains(builtin.identifier) {
             if let existing = store.workflow(identifier: builtin.identifier) {
                 guard WorkflowIdentity.compareVersions(builtin.version, existing.version) == .orderedDescending else { continue }
-                store.install(builtin)
-            } else {
-                store.install(builtin)
-                // AppPad's own workflows are trusted: grant what they declare once.
-                if let installed = store.workflow(identifier: builtin.identifier) {
-                    PermissionStore.shared.set(.allow, for: installed.requiredPermissions, workflow: installed.id)
-                }
             }
+            store.install(builtin)
+            grantUndecided(builtin.identifier, in: store)
         }
+    }
+
+    // AppPad's own workflows are trusted: allow what they declare once. Upgrades may add a new
+    // permission (e.g. a different built-in action); answers the user already gave are kept.
+    private static func grantUndecided(_ identifier: String, in store: WorkflowStore) {
+        guard let installed = store.workflow(identifier: identifier) else { return }
+        let undecided = installed.requiredPermissions.filter {
+            PermissionStore.shared.decision(for: $0, workflow: installed.id) == nil
+        }
+        guard !undecided.isEmpty else { return }
+        PermissionStore.shared.set(.allow, for: undecided, workflow: installed.id)
     }
 
     static func noteDeleted(_ identifier: String) {

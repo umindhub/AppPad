@@ -1,17 +1,35 @@
 import AppKit
 import SwiftUI
 
-// ⌘W closes Settings (the agent app has no File menu).
+// ⌘W closes Settings (the agent app has no File menu); ⌘F focuses the visible search field.
 // super runs first so text fields and the shortcut recorder still get ⌘-keys.
 private final class SettingsWindow: NSWindow {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if super.performKeyEquivalent(with: event) { return true }
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
-        if flags == .command, event.charactersIgnoringModifiers?.lowercased() == "w" {
+        guard flags == .command else { return false }
+        switch event.charactersIgnoringModifiers?.lowercased() {
+        case "w":
             performClose(nil)
             return true
+        case "f":
+            guard let search = contentView.flatMap(Self.visibleSearchField(in:)) else { return false }
+            search.field.selectText(nil)   // focus + select existing text, like ⌘F elsewhere
+            return true
+        default:
+            return false
         }
-        return false
+    }
+
+    // First on-screen GlassSearchFieldView of the current tab (e.g. App Shortcuts).
+    private static func visibleSearchField(in view: NSView) -> GlassSearchFieldView? {
+        if let search = view as? GlassSearchFieldView, !search.isHiddenOrHasHiddenAncestor, search.field.isEnabled {
+            return search
+        }
+        for sub in view.subviews {
+            if let found = visibleSearchField(in: sub) { return found }
+        }
+        return nil
     }
 }
 

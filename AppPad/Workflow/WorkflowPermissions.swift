@@ -181,6 +181,7 @@ extension BuiltinAction {
         case .shutDown: return String(localized: "Shut Down…")
         case .restart: return String(localized: "Restart…")
         case .createReminder: return String(localized: "Add Reminder")
+        case .quitAllApps: return String(localized: "Quit All Apps")
         }
     }
 
@@ -202,6 +203,7 @@ extension BuiltinAction {
         case .shutDown: return String(localized: "Show the Shut Down dialog")
         case .restart: return String(localized: "Show the Restart dialog")
         case .createReminder: return String(localized: "Add reminders to the Reminders app")
+        case .quitAllApps: return String(localized: "Quit all running apps")
         }
     }
 
@@ -223,6 +225,7 @@ extension BuiltinAction {
         case .shutDown: return "power"
         case .restart: return "restart"
         case .createReminder: return "checklist"
+        case .quitAllApps: return "xmark.app"
         }
     }
 

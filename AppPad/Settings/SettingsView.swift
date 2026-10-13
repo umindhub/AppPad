@@ -3,7 +3,7 @@ import AppKit
 
 // Case order = sidebar order.
 enum SettingsTab: String, CaseIterable {
-    case general, launchpad, clipboard, workflows, shortcuts, windows
+    case general, launchpad, clipboard, workflows, shortcuts, windows, about
 
     // UserDefaults key shared with @AppStorage (also set from AppDelegate).
     static let storageKey = "settingsTab"
@@ -16,6 +16,7 @@ enum SettingsTab: String, CaseIterable {
         case .shortcuts: return String(localized: "App Shortcuts")
         case .windows: return String(localized: "Windows")
         case .workflows: return String(localized: "Workflows")
+        case .about: return String(localized: "About")
         }
     }
 
@@ -27,6 +28,7 @@ enum SettingsTab: String, CaseIterable {
         case .shortcuts: return "keyboard"
         case .windows: return "rectangle.split.2x1"
         case .workflows: return "bolt"
+        case .about: return "info.circle"
         }
     }
 
@@ -46,6 +48,9 @@ enum SettingsTab: String, CaseIterable {
         case .shortcuts: return "keyboard.fill"
         case .windows: return "rectangle.split.2x1.fill"
         case .workflows: return "bolt.fill"
+        // Outline on purpose: the sidebar draws symbols with one palette color, so the
+        // knocked-out "i" of info.circle.fill would vanish (solid blue disc).
+        case .about: return "info.circle"
         }
     }
 }
@@ -123,6 +128,8 @@ struct SettingsView: View {
             AppShortcutsSettingsView(prefs: prefs)
         case .windows:
             WindowControlSettingsView(prefs: prefs)
+        case .about:
+            AboutSettingsView()
         }
     }
 

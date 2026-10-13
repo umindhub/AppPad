@@ -364,6 +364,8 @@ final class WorkflowRunner: ObservableObject {
             return await toggleHiddenFiles(step, index)
         case .quitApp:
             return quitApp(step, index, name: input)
+        case .quitAllApps:
+            return quitAllApps(step, index)
         case .openURL:
             return openURL(step, index, input: input)
         case .copyIPAddress:
@@ -478,6 +480,21 @@ final class WorkflowRunner: ObservableObject {
         let display = app.localizedName ?? name
         guard app.terminate() else { return failure(step, index, String(localized: "“\(display)” did not quit.")) }
         return success(step, index, String(localized: "Quit \(display)."))
+    }
+
+    // Every regular app except AppPad and Finder. Normal quit: apps with unsaved changes still ask.
+    private func quitAllApps(_ step: WorkflowStep, _ index: Int) -> StepResult {
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        let targets = NSWorkspace.shared.runningApplications.filter {
+            $0.activationPolicy == .regular && $0.processIdentifier != ownPID
+                && $0.bundleIdentifier != "com.apple.finder" && !$0.isTerminated
+        }
+        guard !targets.isEmpty else { return success(step, index, String(localized: "No apps to quit.")) }
+        let failed = targets.filter { !$0.terminate() }.map { $0.localizedName ?? $0.bundleIdentifier ?? "?" }
+        guard failed.isEmpty else {
+            return failure(step, index, String(localized: "Could not quit: \(failed.joined(separator: ", "))"))
+        }
+        return success(step, index, String(localized: "Quit \(targets.count) app(s)."))
     }
 
     // {{input}} is percent-encoded (RFC 3986 unreserved characters stay as they are).
