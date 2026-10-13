@@ -286,9 +286,14 @@ final class WorkflowPreviewView: FlippedView {
         return p
     }()
 
+    // Inner left padding of a pill; the result line is indented by it so its text lines up with the pill text.
+    private static let pillPadX: CGFloat = 12
+
     private static let resultStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
         p.paragraphSpacingBefore = 10
+        p.firstLineHeadIndent = pillPadX
+        p.headIndent = pillPadX
         return p
     }()
 
@@ -325,7 +330,7 @@ final class WorkflowPreviewView: FlippedView {
         ]))
         label.addAttribute(.paragraphStyle, value: truncating, range: NSRange(location: 0, length: label.length))
 
-        let padX: CGFloat = 12, padY: CGFloat = 5
+        let padX = pillPadX, padY: CGFloat = 5
         let textSize = label.size()
         var width = ceil(textSize.width) + 2 * padX
         if maxWidth > 0 { width = min(width, maxWidth) }
