@@ -72,7 +72,8 @@ struct GlassSegmentMetrics {
 
 // MARK: - GlassSegmentedControl (SwiftUI entry point)
 //
-//   < macOS 26 : SwiftUI flat track + sliding accent pill.
+//   < macOS 26 : SwiftUI flat track + sliding accent pill
+//                (vertical: no track, draggable pill).
 //   ≥ macOS 26 : AppKit GlassSegmentedNSView (NSGlassEffectView track +
 //                lifting glass lens), bridged via NSViewRepresentable.
 //
@@ -104,6 +105,9 @@ struct GlassSegmentedControl<Value: Hashable>: View {
     // Legacy
     @Namespace private var pillNS
     @State private var hoverIndex: Int? = nil
+    // Legacy vertical: drag the selected pill along the list.
+    @State private var pressIndex: Int? = nil      // row selected on mouse down (drag origin)
+    @State private var dragTop:    CGFloat? = nil  // pill offset (from first row) while dragging
 
     var body: some View {
         if #available(macOS 26.0, *), glass {
@@ -148,39 +152,112 @@ struct GlassSegmentedControl<Value: Hashable>: View {
 
     // MARK: - < macOS 26 (pill)
 
-    private var legacyLayout: AnyLayout {
-        axis == .vertical
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: metrics.spacing))
-            : AnyLayout(HStackLayout(spacing: metrics.spacing))
+    @ViewBuilder
+    private var legacyBody: some View {
+        if axis == .vertical {
+            legacyVerticalBody
+        } else {
+            legacyHorizontalBody
+        }
     }
 
-    private var legacyBody: some View {
-        legacyLayout {
+    private var legacyHorizontalBody: some View {
+        HStack(spacing: metrics.spacing) {
             ForEach(segments.indices, id: \.self) { i in
-                legacyLabel(i)
+                let isActive = segments[i].value == selection
+                legacyLabel(i, isActive: isActive, showsHover: true)
                     .background {
-                        if segments[i].value == selection {
+                        if isActive {
                             Capsule()
                                 .fill(theme.accent.opacity(0.18))
                                 .matchedGeometryEffect(id: "pill", in: pillNS)
                         }
                     }
                     .onTapGesture { onSelect(segments[i].value) }
-                    .onHover { inside in
-                        if inside { hoverIndex = i }
-                        else if hoverIndex == i { hoverIndex = nil }
-                    }
+                    .onHover { inside in trackHover(i, inside) }
             }
         }
         .padding(metrics.inset)
-        // Radius = half the horizontal bar height → capsule when horizontal.
+        // Radius = half the bar height → capsule track.
         .background(RoundedRectangle(cornerRadius: metrics.segmentHeight / 2 + metrics.inset,
                                      style: .continuous).fill(theme.hover))
         .animation(.easeInOut(duration: 0.2), value: selection)
     }
 
-    private func legacyLabel(_ i: Int) -> some View {
-        let isActive = segments[i].value == selection
+    // Sidebar list: no track; one pill that slides between rows and can be dragged.
+    private var legacyVerticalBody: some View {
+        let selected = segments.firstIndex { $0.value == selection } ?? 0
+        // Row under the dragged pill (label highlight follows it).
+        let current = dragTop.map { hotIndex(for: $0) } ?? selected
+        return VStack(alignment: .leading, spacing: metrics.spacing) {
+            ForEach(segments.indices, id: \.self) { i in
+                legacyLabel(i, isActive: i == current, showsHover: dragTop == nil)
+                    .onHover { inside in trackHover(i, inside) }
+            }
+        }
+        .padding(metrics.inset)
+        .background(alignment: .topLeading) {
+            Capsule()
+                .fill(theme.accent.opacity(0.18))
+                .frame(height: metrics.segmentHeight)
+                .padding(.horizontal, metrics.inset)
+                .offset(y: metrics.inset + (dragTop ?? CGFloat(selected) * rowPitch))
+        }
+        .contentShape(Rectangle())
+        .gesture(verticalDrag(selected: selected))
+        .animation(.easeInOut(duration: 0.2), value: selection)
+    }
+
+    // Mouse down selects the pressed row at once (no wait for mouse up);
+    // keep holding and drag → the pill follows 1:1, the row it lands on is selected.
+    private func verticalDrag(selected: Int) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { v in
+                if pressIndex == nil {
+                    guard let i = rowIndex(atY: v.startLocation.y) else { return }
+                    pressIndex = i
+                    if i != selected { onSelect(segments[i].value) }
+                    return
+                }
+                guard let base = pressIndex else { return }
+                if dragTop == nil && abs(v.translation.height) < 2 { return }
+                let maxTop = CGFloat(max(segments.count - 1, 0)) * rowPitch
+                dragTop = min(max(CGFloat(base) * rowPitch + v.translation.height, 0), maxTop)
+            }
+            .onEnded { _ in
+                let base = pressIndex
+                let landed = dragTop.map { hotIndex(for: $0) }
+                pressIndex = nil
+                guard let landed else { return }   // plain click: already selected on press
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    dragTop = nil
+                    if landed != base, segments.indices.contains(landed) {
+                        onSelect(segments[landed].value)
+                    }
+                }
+            }
+    }
+
+    private var rowPitch: CGFloat { metrics.segmentHeight + metrics.spacing }
+
+    private func hotIndex(for top: CGFloat) -> Int {
+        min(max(Int((top / rowPitch).rounded()), 0), max(segments.count - 1, 0))
+    }
+
+    // nil = outside the rows (inset / below the list).
+    private func rowIndex(atY y: CGFloat) -> Int? {
+        let local = y - metrics.inset
+        guard local >= 0 else { return nil }
+        let i = Int(local / rowPitch)
+        return segments.indices.contains(i) ? i : nil
+    }
+
+    private func trackHover(_ i: Int, _ inside: Bool) {
+        if inside { hoverIndex = i }
+        else if hoverIndex == i { hoverIndex = nil }
+    }
+
+    private func legacyLabel(_ i: Int, isActive: Bool, showsHover: Bool) -> some View {
         let vertical = axis == .vertical
         return ZStack(alignment: vertical ? .leading : .center) {
             // Hidden copies reserve the widest label → equal widths.
@@ -198,7 +275,7 @@ struct GlassSegmentedControl<Value: Hashable>: View {
                alignment: vertical ? .leading : .center)
         .frame(height: metrics.segmentHeight)
         .background {
-            if hoverIndex == i && !isActive {
+            if showsHover && hoverIndex == i && !isActive {
                 Capsule().fill(theme.accent.opacity(0.06))
             }
         }

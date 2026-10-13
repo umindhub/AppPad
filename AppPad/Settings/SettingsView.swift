@@ -1,14 +1,16 @@
 import SwiftUI
 import AppKit
 
+// Case order = sidebar order.
 enum SettingsTab: String, CaseIterable {
-    case launchpad, clipboard, shortcuts, windows, workflows
+    case general, launchpad, clipboard, workflows, shortcuts, windows
 
     // UserDefaults key shared with @AppStorage (also set from AppDelegate).
     static let storageKey = "settingsTab"
 
     var title: String {
         switch self {
+        case .general: return String(localized: "General")
         case .launchpad: return String(localized: "AppPad")
         case .clipboard: return String(localized: "Clipboard")
         case .shortcuts: return String(localized: "App Shortcuts")
@@ -19,6 +21,7 @@ enum SettingsTab: String, CaseIterable {
 
     var icon: String {
         switch self {
+        case .general: return "gearshape"
         case .launchpad: return "square.grid.3x3"
         case .clipboard: return "doc.on.clipboard"
         case .shortcuts: return "keyboard"
@@ -37,6 +40,7 @@ enum SettingsTab: String, CaseIterable {
 
     var selectedIcon: String {
         switch self {
+        case .general: return "gearshape.fill"
         case .launchpad: return "square.grid.3x3.fill"
         case .clipboard: return "doc.on.clipboard.fill"
         case .shortcuts: return "keyboard.fill"
@@ -60,10 +64,9 @@ struct SettingsView: View {
     @ObservedObject var prefs: Preferences
     var onResetLayout: () -> Void
     var clipboard: ClipboardMaintenance
-    @State private var launchAtLogin = LoginItem.isEnabled
-    @AppStorage(SettingsTab.storageKey) private var tabRaw = SettingsTab.launchpad.rawValue
+    @AppStorage(SettingsTab.storageKey) private var tabRaw = SettingsTab.general.rawValue
 
-    private var tab: SettingsTab { SettingsTab(rawValue: tabRaw) ?? .launchpad }
+    private var tab: SettingsTab { SettingsTab(rawValue: tabRaw) ?? .general }
 
     // Outer padding left / right of the glass tab list.
     private static let sidebarHPadding: CGFloat = 10
@@ -103,37 +106,29 @@ struct SettingsView: View {
                 .navigationTitle(tab.title)
         }
         .frame(minWidth: 800, minHeight: 560)
-        // Login item may be toggled from the menu bar while Settings stays open.
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
-            launchAtLogin = LoginItem.isEnabled
-        }
     }
 
     @ViewBuilder
     private var detail: some View {
         switch tab {
+        case .general:
+            GeneralSettingsView(prefs: prefs)
         case .launchpad:
             launchpadForm
         case .clipboard:
             ClipboardSettingsView(prefs: prefs, maintenance: clipboard)
+        case .workflows:
+            WorkflowSettingsView(prefs: prefs)
         case .shortcuts:
             AppShortcutsSettingsView(prefs: prefs)
         case .windows:
             WindowControlSettingsView(prefs: prefs)
-        case .workflows:
-            WorkflowSettingsView(prefs: prefs)
         }
     }
 
     private var launchpadForm: some View {
         Form {
-            Section("General") {
-                Toggle("Launch at login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
-                        guard newValue != LoginItem.isEnabled else { return }
-                        LoginItem.setEnabled(newValue)
-                        launchAtLogin = LoginItem.isEnabled
-                    }
+            Section("Behavior") {
                 Toggle(isOn: $prefs.pinchToOpen) {
                     Text("Four-finger pinch opens AppPad")
                     Text("Pinch in to open, spread to close.")
@@ -150,10 +145,6 @@ struct SettingsView: View {
                     Text("Do nothing").tag(BackgroundClickAction.nothing)
                 }
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
-                Toggle(isOn: $prefs.panelsFollowMouseScreen) {
-                    Text("Open on the display with the pointer")
-                    Text("Applies to AppPad, Clipboard and Workflows. When off, they open on the main display.")
-                }
             }
 
             Section("Window") {
@@ -161,7 +152,6 @@ struct SettingsView: View {
                     Text("Blurred wallpaper").tag(PanelBackgroundStyle.wallpaper)
                     Text("White").tag(PanelBackgroundStyle.white)
                 }
-                Toggle("Liquid Glass controls (search, page indicator)", isOn: $prefs.glassControls)
                 Picker("Size", selection: $prefs.windowSizeMode) {
                     Text("Follow screen size").tag(WindowSizeMode.screenPercent)
                     Text("Custom").tag(WindowSizeMode.custom)
