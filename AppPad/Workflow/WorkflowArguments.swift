@@ -47,6 +47,15 @@ nonisolated enum WorkflowArguments {
                 return .failure(ArgumentError(message: String(localized: "Not a number.")))
             }
             return .success(ParsedArgument(value: String(number), summary: String(number)))
+        case .percent:
+            // "50", "50%", "-5" → 0, "150" → 100; no range error.
+            var digits = text
+            if digits.hasSuffix("%") { digits = String(digits.dropLast()).trimmingCharacters(in: .whitespaces) }
+            guard let number = Double(digits), number.isFinite else {
+                return .failure(ArgumentError(message: String(localized: "Not a number.")))
+            }
+            let level = Int(min(max(number, 0), 100).rounded())
+            return .success(ParsedArgument(value: String(level), summary: percentText(level)))
         case .duration:
             guard let seconds = durationSeconds(text), seconds > 0, seconds < 86_400 else {
                 return .failure(ArgumentError(message: String(localized: "Not a duration. Try 10, 90s or 1h30m.")))
@@ -70,11 +79,24 @@ nonisolated enum WorkflowArguments {
         case .duration: return ["10", "90s", "1h30m"]
         case .time: return ["7:30", "19:30", "7pm"]
         case .number: return ["30"]
+        case .percent: return ["30", "75", "100"]
         case .text: return []
         case .reminder:
             return [String(localized: "tomorrow 3pm Call Mom"), String(localized: "in 2 hours Pay bills !!"),
                     String(localized: "Buy milk @Shopping")]
         }
+    }
+
+    // 50 → "50%" (locale-aware, e.g. "50 %" in French).
+    static func percentText(_ level: Int) -> String {
+        (Double(level) / 100).formatted(.percent.precision(.fractionLength(0)))
+    }
+
+    // What an example parses to ("1h30m" → "1 hour, 30 minutes"); nil when empty or invalid.
+    static func exampleSummary(_ example: String, type: ArgumentType) -> String? {
+        guard case .success(let parsed) = parse(example, type: type, mode: .required),
+              !parsed.summary.isEmpty else { return nil }
+        return parsed.summary
     }
 
     // MARK: - Duration

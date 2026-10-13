@@ -350,18 +350,14 @@ final class WorkflowRunner: ObservableObject {
             }
             return r
         case .setVolume:
-            guard let level = Int(input.trimmingCharacters(in: .whitespaces)), (0...100).contains(level) else {
+            // Out-of-range values are clamped (older copies may still pass "150" as a plain number).
+            guard let raw = Double(input.trimmingCharacters(in: .whitespaces)), raw.isFinite else {
                 return failure(step, index, String(localized: "Enter a volume from 0 to 100."))
             }
-            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", "set volume output volume \(level)"], timeout: 10)
-            var r = makeResult(step, index, from: out)
-            if r.success { r.output = String(localized: "Volume \(level)%") }
-            return r
+            let level = Int(min(max(raw, 0), 100).rounded())
+            return await setVolume(step, index, level: level)
         case .toggleMute:
-            let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.muteScript], timeout: 10)
-            var r = makeResult(step, index, from: out)
-            if r.success { r.output = r.output == "muted" ? String(localized: "Sound muted") : String(localized: "Sound on") }
-            return r
+            return await toggleMute(step, index)
         case .ejectDisks:
             return await ejectDisks(step, index)
         case .toggleHiddenFiles:
@@ -578,6 +574,45 @@ final class WorkflowRunner: ObservableObject {
     }
     """
 
+    // MARK: - Volume / mute
+
+    // AppleScript `set volume` changes the level silently; only volume keys show the system HUD.
+    // So we start one key step away from the target, press the key (HUD appears), then pin the exact level.
+    private func setVolume(_ step: WorkflowStep, _ index: Int, level: Int) async -> StepResult {
+        let exact = "set volume output volume \(level)"
+        guard MediaKeys.canPost() else {
+            var r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", exact], timeout: 10))
+            if r.success { r.output = String(localized: "Volume \(level)%") }
+            return r
+        }
+        // One key = 1/16 (6.25). Below 7 there is no room under the target, so come down from above.
+        let up = level >= 7
+        let start = up ? level - 6 : level + 6
+        let prep = await ProcessRunner.run("/usr/bin/osascript", ["-e", "set volume output volume \(start)"], timeout: 10)
+        var r = makeResult(step, index, from: prep)
+        guard r.success else { return r }
+        MediaKeys.press(up ? .soundUp : .soundDown)      // also unmutes, like the hardware key
+        try? await Task.sleep(for: .milliseconds(150))
+        r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", exact], timeout: 10))
+        if r.success { r.output = String(localized: "Volume \(level)%") }
+        return r
+    }
+
+    // Mute key when allowed (system HUD), otherwise the silent AppleScript toggle.
+    private func toggleMute(_ step: WorkflowStep, _ index: Int) async -> StepResult {
+        guard MediaKeys.canPost() else {
+            var r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.muteScript], timeout: 10))
+            if r.success { r.output = r.output == "muted" ? String(localized: "Sound muted") : String(localized: "Sound on") }
+            return r
+        }
+        MediaKeys.press(.mute)
+        try? await Task.sleep(for: .milliseconds(150))
+        let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", "output muted of (get volume settings)"], timeout: 10)
+        var r = makeResult(step, index, from: out)
+        if r.success { r.output = r.output == "true" ? String(localized: "Sound muted") : String(localized: "Sound on") }
+        return r
+    }
+
     private static let muteScript = """
     set wasMuted to output muted of (get volume settings)
     set volume output muted (not wasMuted)
@@ -658,5 +693,38 @@ nonisolated private final class RedirectGuard: NSObject, URLSessionTaskDelegate,
         } else {
             completionHandler(nil)
         }
+    }
+}
+
+// MARK: - Media keys
+
+// Posts the same system-defined events as the keyboard's volume / mute keys, so macOS shows its own HUD.
+// Needs the Accessibility (post events) permission AppPad already uses for pasting. Main actor (AppKit events).
+private enum MediaKeys {
+    enum Key: Int {
+        case soundUp = 0      // NX_KEYTYPE_SOUND_UP
+        case soundDown = 1    // NX_KEYTYPE_SOUND_DOWN
+        case mute = 7         // NX_KEYTYPE_MUTE
+    }
+
+    // Asks once (system prompt) when not granted; callers fall back to AppleScript.
+    static func canPost() -> Bool {
+        if CGPreflightPostEventAccess() { return true }
+        _ = CGRequestPostEventAccess()
+        return false
+    }
+
+    static func press(_ key: Key) {
+        post(key, down: true)
+        post(key, down: false)
+    }
+
+    private static func post(_ key: Key, down: Bool) {
+        let state = down ? 0xA : 0xB
+        let event = NSEvent.otherEvent(with: .systemDefined, location: .zero,
+                                       modifierFlags: NSEvent.ModifierFlags(rawValue: UInt(state << 8)),
+                                       timestamp: 0, windowNumber: 0, context: nil,
+                                       subtype: 8, data1: (key.rawValue << 16) | (state << 8), data2: -1)
+        event?.cgEvent?.post(tap: .cghidEventTap)
     }
 }

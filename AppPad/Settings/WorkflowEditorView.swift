@@ -188,16 +188,21 @@ struct WorkflowEditorView: View {
                     Text("Duration (→ seconds)").tag(ArgumentType.duration)
                     Text("Time of day (→ HH:mm)").tag(ArgumentType.time)
                     Text("Number").tag(ArgumentType.number)
+                    Text("Percent (0–100)").tag(ArgumentType.percent)
                     Text("Reminder (date, !priority, @list)").tag(ArgumentType.reminder)
                 }
                 TextField("Hint", text: $draft.argumentHint, prompt: Text(verbatim: "minutes"))
                 let examples = WorkflowArguments.examples(for: draft.argumentType)
                 if !examples.isEmpty {
-                    let word = draft.keyword.isEmpty ? draft.name : draft.keyword
+                    let word = WorkflowPanelViewController.token(draft.displayName)
                     LabeledContent("Examples") {
-                        Text(verbatim: examples.map { "\(word) \($0)" }.joined(separator: "   "))
-                            .font(.system(.callout, design: .monospaced))
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(examples, id: \.self) { example in
+                                ArgumentExampleRow(
+                                    word: word, argument: example,
+                                    summary: WorkflowArguments.exampleSummary(example, type: draft.argumentType))
+                            }
+                        }
                     }
                 }
             }
@@ -770,5 +775,34 @@ private struct ValueListEditor: View {
         guard !value.isEmpty else { return }
         if !values.contains(value) { values.append(value) }
         newValue = ""
+    }
+}
+
+// Capsule "设置倒计时 1h30m" plus what it means, matching the Workflow panel preview.
+private struct ArgumentExampleRow: View {
+    let word: String
+    let argument: String
+    let summary: String?
+
+    var body: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 5) {
+                Text(verbatim: word).foregroundStyle(.secondary)
+                Text(verbatim: argument).fontWeight(.semibold)
+            }
+            .font(.system(size: 13, design: .monospaced))
+            .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color.accentColor.opacity(0.13)))
+            .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1))
+            if let summary {
+                Text(verbatim: "→ " + summary)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .textSelection(.enabled)
     }
 }

@@ -220,25 +220,136 @@ final class WorkflowPreviewView: FlippedView {
         text.append(NSAttributedString(string: string + "\n", attributes: [.font: font, .foregroundColor: color]))
     }
 
-    // "time ‹duration›", examples, and what the typed argument parses to.
+    // "设置倒计时 ‹时长›", one example pill per line with what it means, then the typed argument's result.
     private func usage(_ workflow: Workflow, argument: String, in text: NSMutableAttributedString) {
         section(String(localized: "Usage"), in: text)
-        let word = workflow.keyword.isEmpty ? WorkflowPanelViewController.token(workflow.displayName) : workflow.keyword
+        // Same word the field gets when the row is picked ("设置倒计时"), not the short keyword.
+        let word = WorkflowPanelViewController.token(workflow.displayName)
         let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument") : workflow.displayArgumentHint
         let slot = workflow.argument == .optional ? "[‹\(hint)›]" : "‹\(hint)›"
-        line("\(word) \(slot)", in: text, monospaced: true)
+        text.append(NSAttributedString(string: "\(word) \(slot)\n", attributes: [
+            .font: NSFont.monospacedSystemFont(ofSize: 14, weight: .semibold),
+            .foregroundColor: NSColor.labelColor,
+        ]))
+
         let examples = WorkflowArguments.examples(for: workflow.argumentType)
         if !examples.isEmpty {
-            line(examples.map { "\(word) \($0)" }.joined(separator: "   "), in: text,
-                 color: .secondaryLabelColor, monospaced: true)
+            text.append(NSAttributedString(string: String(localized: "Examples") + "\n", attributes: [
+                .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                .foregroundColor: NSColor.tertiaryLabelColor,
+                .paragraphStyle: Self.captionStyle,
+            ]))
+            let maxWidth = max(0, textScroll.contentSize.width - 12)
+            for example in examples {
+                let summary = WorkflowArguments.exampleSummary(example, type: workflow.argumentType)
+                text.append(exampleRow(word: word, argument: example, summary: summary, maxWidth: maxWidth))
+            }
         }
+
+        // Result of what was typed. Placeholder, result and error share one size so the page does not jump.
         let typed = argument.trimmingCharacters(in: .whitespaces)
         switch WorkflowArguments.parse(typed, type: workflow.argumentType, mode: workflow.argument) {
         case .success(let parsed):
-            if !parsed.summary.isEmpty { line("→ " + parsed.summary, in: text, color: .systemGreen) }
+            // Optional argument left empty: keep the line's height with a blank.
+            result(parsed.summary.isEmpty ? " " : parsed.summary, in: text, color: .systemGreen)
         case .failure(let error):
-            line(error.message, in: text, color: typed.isEmpty ? .secondaryLabelColor : .systemRed)
+            result(error.message, in: text, color: typed.isEmpty ? .secondaryLabelColor : .systemRed)
         }
+    }
+
+    // Same size as the title label, left-aligned.
+    private func result(_ string: String, in text: NSMutableAttributedString, color: NSColor) {
+        text.append(NSAttributedString(string: string + "\n", attributes: [
+            .font: NSFont.systemFont(ofSize: 17, weight: .semibold),
+            .foregroundColor: color,
+            .paragraphStyle: Self.resultStyle,
+        ]))
+    }
+
+    // MARK: - Example pills
+
+    // Example rows use the title size (17).
+    private static let rowFont = NSFont.systemFont(ofSize: 17)
+
+    private static let captionStyle: NSParagraphStyle = {
+        let p = NSMutableParagraphStyle()
+        p.paragraphSpacingBefore = 6
+        p.paragraphSpacing = 4
+        return p
+    }()
+
+    private static let exampleStyle: NSParagraphStyle = {
+        let p = NSMutableParagraphStyle()
+        p.paragraphSpacing = 8
+        p.headIndent = 12          // wrapped explanation sits slightly indented
+        p.lineBreakMode = .byWordWrapping
+        return p
+    }()
+
+    private static let resultStyle: NSParagraphStyle = {
+        let p = NSMutableParagraphStyle()
+        p.paragraphSpacingBefore = 10
+        return p
+    }()
+
+    // [pill "设置倒计时 1h30m"]  → 1 hour, 30 minutes
+    private func exampleRow(word: String, argument: String, summary: String?, maxWidth: CGFloat) -> NSAttributedString {
+        let row = NSMutableAttributedString(attachment: Self.pillAttachment(word: word, argument: argument,
+                                                                           maxWidth: maxWidth, alignTo: Self.rowFont))
+        if let summary {
+            row.append(NSAttributedString(string: "  →  ", attributes: [
+                .font: Self.rowFont, .foregroundColor: NSColor.tertiaryLabelColor,
+            ]))
+            row.append(NSAttributedString(string: summary, attributes: [
+                .font: Self.rowFont, .foregroundColor: NSColor.secondaryLabelColor,
+            ]))
+        }
+        row.append(NSAttributedString(string: "\n", attributes: [.font: Self.rowFont]))
+        row.addAttribute(.paragraphStyle, value: Self.exampleStyle, range: NSRange(location: 0, length: row.length))
+        return row
+    }
+
+    // Capsule image: keyword in secondary, argument in bold; tinted with the accent color.
+    // Drawn lazily so dynamic colors follow the current appearance.
+    private static func pillAttachment(word: String, argument: String, maxWidth: CGFloat,
+                                       alignTo font: NSFont) -> NSTextAttachment {
+        let truncating = NSMutableParagraphStyle()
+        truncating.lineBreakMode = .byTruncatingTail
+        let label = NSMutableAttributedString(string: word + " ", attributes: [
+            .font: NSFont.monospacedSystemFont(ofSize: 17, weight: .regular),
+            .foregroundColor: NSColor.secondaryLabelColor,
+        ])
+        label.append(NSAttributedString(string: argument, attributes: [
+            .font: NSFont.monospacedSystemFont(ofSize: 17, weight: .semibold),
+            .foregroundColor: NSColor.labelColor,
+        ]))
+        label.addAttribute(.paragraphStyle, value: truncating, range: NSRange(location: 0, length: label.length))
+
+        let padX: CGFloat = 12, padY: CGFloat = 5
+        let textSize = label.size()
+        var width = ceil(textSize.width) + 2 * padX
+        if maxWidth > 0 { width = min(width, maxWidth) }
+        let textHeight = ceil(textSize.height)
+        let height = textHeight + 2 * padY
+        let drawn = NSAttributedString(attributedString: label)  // immutable copy for the handler
+
+        let image = NSImage(size: NSSize(width: width, height: height), flipped: false) { rect in
+            let pill = rect.insetBy(dx: 0.5, dy: 0.5)
+            let path = NSBezierPath(roundedRect: pill, xRadius: pill.height / 2, yRadius: pill.height / 2)
+            NSColor.controlAccentColor.withAlphaComponent(0.13).setFill()
+            path.fill()
+            NSColor.controlAccentColor.withAlphaComponent(0.35).setStroke()
+            path.lineWidth = 1
+            path.stroke()
+            drawn.draw(in: NSRect(x: padX, y: padY, width: rect.width - 2 * padX, height: textHeight))
+            return true
+        }
+
+        let attachment = NSTextAttachment()
+        attachment.image = image
+        // Vertically center the capsule on the explanation text.
+        attachment.bounds = NSRect(x: 0, y: ((font.capHeight - height) / 2).rounded(), width: width, height: height)
+        return attachment
     }
 
     // MARK: - Layout

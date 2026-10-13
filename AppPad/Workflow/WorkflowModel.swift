@@ -29,6 +29,7 @@ nonisolated enum ArgumentType: String, Codable, CaseIterable, Sendable {
     case duration   // 10, 90s, 1h30m, 1:30 → seconds
     case time       // 7:30, 730, 7pm → HH:mm
     case number     // integer
+    case percent    // 0–100, out-of-range values are clamped (volume)
     case reminder   // "tomorrow 3pm Call Mom !! @Work" → JSON ReminderRequest
 }
 
