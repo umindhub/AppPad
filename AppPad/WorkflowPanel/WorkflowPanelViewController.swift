@@ -2,15 +2,15 @@ import AppKit
 import Carbon.HIToolbox
 import Combine
 
-// Layout: title + hint, search field, list (2/3) | preview (1/3) — same as the clipboard panel.
+// Layout: title (left, on the search line) + hint below it, search field, list (2/3) | preview (1/3).
 // Rows: workflows and apps mixed, most used first (shared frecency); while searching, match quality first.
 // Search: only the text before the first space is matched; the rest is the workflow argument.
 // Typing after the first space only changes the argument: rows and selection stay.
 // Picking a row (Tab, arrows, ⌘J/K, mouse) writes its name into the field with spaces as "-"
 // ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
 // Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
-// While it shows, moving between rows does not rewrite the expression; ⇥ on another row still does.
-// Keys: ↩ run / open / copy, ⇥ complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
+// While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
+// Keys: ↩ run / open / copy, Tab complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc clears / closes.
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
@@ -20,7 +20,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private let searchChrome = GlassSearchFieldView()
     private var searchField: NSSearchField { searchChrome.field }
     private let titleLabel = NSTextField(labelWithString: String(localized: "Workflows"))
-    private let hintLabel = NSTextField(labelWithString: String(localized: "⇥ Complete   ⌘⇧J / ⌘⇧K  Switch"))
+    private let hintLabel = NSTextField(labelWithString: String(localized: "Tab Complete   ⌘⇧J / ⌘⇧K  Switch"))
     private let scrollView = NSScrollView()
     private let tableView = ClipTableView()
     private let divider = NSBox()
@@ -116,11 +116,12 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         let fieldWidth = max(160, min(560, b.width - 2 * pad - 2 * side))
         searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: 18,
                                     width: fieldWidth, height: fieldHeight)
+        // Title centered on the search field's line, hint right below the title.
         let midY = searchChrome.frame.midY
-        titleLabel.frame = NSRect(x: pad, y: (midY - 19).rounded(), width: labelWidth, height: 18)
-        hintLabel.frame = NSRect(x: pad, y: (midY + 2).rounded(), width: hintWidth, height: 16)
+        titleLabel.frame = NSRect(x: pad, y: (midY - 9).rounded(), width: labelWidth, height: 18)
+        hintLabel.frame = NSRect(x: pad, y: titleLabel.frame.maxY + 2, width: hintWidth, height: 16)
 
-        let top = searchChrome.frame.maxY + 16
+        let top = max(searchChrome.frame.maxY + 16, hintLabel.frame.maxY + 8)
         let bottom = b.height - 18
         let inner = b.width - 2 * pad
         let listWidth = (inner * 2 / 3).rounded()

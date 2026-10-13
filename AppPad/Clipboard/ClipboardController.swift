@@ -19,6 +19,8 @@ final class ClipboardController: NSObject, NSWindowDelegate {
 
     var scope: ClipScope { viewController.scope }
     var isVisible: Bool { panel.isVisible }
+    // Open and focused (a global hotkey for another panel hands over from it).
+    var isActive: Bool { panel.isVisible && panel.isKeyWindow && !isHiding }
 
     override init() {
         let dir = AppEnvironment.supportDirectory.appendingPathComponent("Clipboard", isDirectory: true)
@@ -128,8 +130,13 @@ final class ClipboardController: NSObject, NSWindowDelegate {
 
     // ⌘⇧J / ⌘⇧K: previous / next panel. Saved is a filter of the clipboard, not a panel.
     func switchPanel(_ step: Int) {
-        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
+        beginHandOff()
         onSwitchPanel?(step)
+    }
+
+    // Next panel shows opaque on top, then this one closes (no flash).
+    func beginHandOff() {
+        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
     }
 
     // MARK: - Paste

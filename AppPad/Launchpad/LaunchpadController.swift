@@ -301,6 +301,11 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         }
     }
 
+    // Next panel shows opaque on top, then this one closes (no flash).
+    func beginHandOff() {
+        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
+    }
+
     // Non-activating panel: becomes key without activating AppPad.
     func show() {
         cancelTransition()
@@ -571,7 +576,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard let key = event.charactersIgnoringModifiers?.lowercased() else { return false }
         // ⌘⇧J / ⌘⇧K: previous / next panel.
         if flags == [.command, .shift], key == "j" || key == "k" {
-            PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
+            beginHandOff()
             onSwitchPanel?(key == "j" ? -1 : 1)
             return true
         }

@@ -1528,60 +1528,60 @@
         }
       }
     },
-    "⇥ Complete   ⌘⇧J / ⌘⇧K  Switch" : {
+    "Tab Complete   ⌘⇧J / ⌘⇧K  Switch" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ Vervollständigen   ⌘⇧J / ⌘⇧K  Wechseln"
+            "value" : "Tab Vervollständigen   ⌘⇧J / ⌘⇧K  Wechseln"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ Completar   ⌘⇧J / ⌘⇧K  Cambiar"
+            "value" : "Tab Completar   ⌘⇧J / ⌘⇧K  Cambiar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ Compléter   ⌘⇧J / ⌘⇧K  Changer"
+            "value" : "Tab Compléter   ⌘⇧J / ⌘⇧K  Changer"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ Completa   ⌘⇧J / ⌘⇧K  Cambia"
+            "value" : "Tab Completa   ⌘⇧J / ⌘⇧K  Cambia"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ 補完   ⌘⇧J / ⌘⇧K  切り替え"
+            "value" : "Tab 補完   ⌘⇧J / ⌘⇧K  切り替え"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ 자동 완성   ⌘⇧J / ⌘⇧K  전환"
+            "value" : "Tab 자동 완성   ⌘⇧J / ⌘⇧K  전환"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ Vul aan   ⌘⇧J / ⌘⇧K  Wissel"
+            "value" : "Tab Vul aan   ⌘⇧J / ⌘⇧K  Wissel"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ 补全   ⌘⇧J / ⌘⇧K  切换"
+            "value" : "Tab 补全   ⌘⇧J / ⌘⇧K  切换"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⇥ 補全   ⌘⇧J / ⌘⇧K  切換"
+            "value" : "Tab 補全   ⌘⇧J / ⌘⇧K  切換"
           }
         }
       }

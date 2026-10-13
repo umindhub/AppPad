@@ -199,6 +199,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         case launchpad, clipboard, workflows
     }
 
+    // Open and focused panel, if any.
+    private var activePanel: Panel? {
+        if launchpad.isShown { return .launchpad }
+        if clipboard.isActive { return .clipboard }
+        if workflows.isActive { return .workflows }
+        return nil
+    }
+
+    // Global hotkey for a panel while another one is open: hand over like ⌘⇧J/K
+    // (new panel opaque on top, old one closes after) instead of close + fade in.
+    private func handOffIfNeeded(to target: Panel) {
+        guard let current = activePanel, current != target else { return }
+        switch current {
+        case .launchpad: launchpad.beginHandOff()
+        case .clipboard: clipboard.beginHandOff()
+        case .workflows: workflows.beginHandOff()
+        }
+    }
+
     // Clipboard is skipped while it is turned off in Settings.
     private func switchPanel(from current: Panel, step: Int) {
         let cycle = Panel.allCases.filter { $0 != .clipboard || Preferences.shared.clipboardEnabled }
@@ -277,15 +296,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         // ⌘Space → Workflow panel. Launchpad has no global shortcut (pinch / menu bar).
         if let combo = prefs.workflowPanelHotKey {
             workflowPanelHotKeyID = center.register(combo) { [weak self] in
+                self?.handOffIfNeeded(to: .workflows)
                 self?.workflows.toggle()
             }
         }
         if prefs.clipboardEnabled {
             if let combo = prefs.clipboardHotKey {
-                clipboardHotKeyIDs.append(center.register(combo) { [weak self] in self?.clipboard.toggle(.history) })
+                clipboardHotKeyIDs.append(center.register(combo) { [weak self] in
+                    self?.handOffIfNeeded(to: .clipboard)
+                    self?.clipboard.toggle(.history)
+                })
             }
             if let combo = prefs.clipboardSavedHotKey {
-                clipboardHotKeyIDs.append(center.register(combo) { [weak self] in self?.clipboard.toggle(.saved) })
+                clipboardHotKeyIDs.append(center.register(combo) { [weak self] in
+                    self?.handOffIfNeeded(to: .clipboard)
+                    self?.clipboard.toggle(.saved)
+                })
             }
         }
         if prefs.windowControlEnabled {

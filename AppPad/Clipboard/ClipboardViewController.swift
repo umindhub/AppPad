@@ -1,7 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 
-// Layout: [scope label] search field, app filter chips, list (2/3) | preview (1/3).
+// Layout: title (left, on the search line) + hint below it, search field, app filter chips, list (2/3) | preview (1/3).
 // The search field always keeps focus; arrows, ⌘J/K, Enter and ⌘1–⌘0 drive the list.
 // Mouse: hovering a row selects it, a single click pastes it.
 final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
@@ -111,7 +111,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         let pad = Self.pad
 
         let fieldHeight = searchChrome.preferredHeight
-        // Left: "Clipboard" title + hint. Center: search field. Right of it: [★ Saved], same height and line.
+        // Left: "Clipboard" title on the search line, hint below it. Center: search field. Right of it: [★ Saved], same height and line.
         let labelWidth = ceil(scopeLabel.intrinsicContentSize.width)
         let hintWidth = ceil(switchHint.intrinsicContentSize.width)
         if savedToggle.height != fieldHeight { savedToggle.setHeight(fieldHeight) }
@@ -124,12 +124,12 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         savedToggle.frame = NSRect(x: searchChrome.frame.maxX + gap, y: searchChrome.frame.minY,
                                    width: toggleWidth, height: fieldHeight)
         let midY = searchChrome.frame.midY
-        scopeLabel.frame = NSRect(x: pad, y: (midY - 19).rounded(), width: labelWidth, height: 18)
-        switchHint.frame = NSRect(x: pad, y: (midY + 2).rounded(), width: hintWidth, height: 16)
+        scopeLabel.frame = NSRect(x: pad, y: (midY - 9).rounded(), width: labelWidth, height: 18)
+        switchHint.frame = NSRect(x: pad, y: scopeLabel.frame.maxY + 2, width: hintWidth, height: 16)
 
         filterBar.frame = NSRect(x: pad, y: searchChrome.frame.maxY + 8, width: b.width - 2 * pad,
                                  height: AppFilterBarView.chipSize + 4)
-        let top = filterBar.frame.maxY + 8
+        let top = max(filterBar.frame.maxY + 8, switchHint.frame.maxY + 8)
         let bottom = b.height - 18
         let inner = b.width - 2 * pad
         let listWidth = (inner * 2 / 3).rounded()

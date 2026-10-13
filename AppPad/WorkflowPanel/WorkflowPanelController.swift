@@ -17,6 +17,8 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     private var isHiding = false
 
     var isVisible: Bool { panel.isVisible }
+    // Open and focused (a global hotkey for another panel hands over from it).
+    var isActive: Bool { panel.isVisible && panel.isKeyWindow && !isHiding }
 
     init(launchpad: LaunchpadController) {
         self.launchpad = launchpad
@@ -141,8 +143,13 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     }
 
     func switchPanel(_ step: Int) {
-        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
+        beginHandOff()
         onSwitchPanel?(step)
+    }
+
+    // Next panel shows opaque on top, then this one closes (no flash).
+    func beginHandOff() {
+        PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
     }
 
     func openSettings() {

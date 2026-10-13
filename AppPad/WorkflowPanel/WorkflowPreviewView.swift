@@ -257,10 +257,10 @@ final class WorkflowPreviewView: FlippedView {
         }
     }
 
-    // Same size as the title label, left-aligned.
+    // Same size as the usage line (14), left-aligned with the pill text.
     private func result(_ string: String, in text: NSMutableAttributedString, color: NSColor) {
         text.append(NSAttributedString(string: string + "\n", attributes: [
-            .font: NSFont.systemFont(ofSize: 17, weight: .semibold),
+            .font: NSFont.systemFont(ofSize: 14, weight: .semibold),
             .foregroundColor: color,
             .paragraphStyle: Self.resultStyle,
         ]))
@@ -268,8 +268,8 @@ final class WorkflowPreviewView: FlippedView {
 
     // MARK: - Example pills
 
-    // Example rows use the title size (17).
-    private static let rowFont = NSFont.systemFont(ofSize: 17)
+    // Example rows use the usage line size (14).
+    private static let rowFont = NSFont.systemFont(ofSize: 14)
 
     private static let captionStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
@@ -280,14 +280,14 @@ final class WorkflowPreviewView: FlippedView {
 
     private static let exampleStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
-        p.paragraphSpacing = 8
-        p.headIndent = 12          // wrapped explanation sits slightly indented
+        p.paragraphSpacing = 6
+        p.headIndent = 10          // wrapped explanation sits slightly indented
         p.lineBreakMode = .byWordWrapping
         return p
     }()
 
     // Inner left padding of a pill; the result line is indented by it so its text lines up with the pill text.
-    private static let pillPadX: CGFloat = 12
+    private static let pillPadX: CGFloat = 10
 
     private static let resultStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
@@ -321,16 +321,16 @@ final class WorkflowPreviewView: FlippedView {
         let truncating = NSMutableParagraphStyle()
         truncating.lineBreakMode = .byTruncatingTail
         let label = NSMutableAttributedString(string: word + " ", attributes: [
-            .font: NSFont.monospacedSystemFont(ofSize: 17, weight: .regular),
+            .font: NSFont.monospacedSystemFont(ofSize: 14, weight: .regular),
             .foregroundColor: NSColor.secondaryLabelColor,
         ])
         label.append(NSAttributedString(string: argument, attributes: [
-            .font: NSFont.monospacedSystemFont(ofSize: 17, weight: .semibold),
+            .font: NSFont.monospacedSystemFont(ofSize: 14, weight: .semibold),
             .foregroundColor: NSColor.labelColor,
         ]))
         label.addAttribute(.paragraphStyle, value: truncating, range: NSRange(location: 0, length: label.length))
 
-        let padX = pillPadX, padY: CGFloat = 5
+        let padX = pillPadX, padY: CGFloat = 3
         let textSize = label.size()
         var width = ceil(textSize.width) + 2 * padX
         if maxWidth > 0 { width = min(width, maxWidth) }
