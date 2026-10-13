@@ -216,7 +216,10 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         pager.scrollTo(page: pager.currentPage + direction, animated: true)
     }
 
+    // The 2nd click of a double click on the folder tile lands here (same spot, clickCount ≥ 2):
+    // it belongs to the opening, so it must not close the folder again.
     override func mouseDown(with event: NSEvent) {
+        guard event.clickCount < 2 else { return }
         if !boxContains(windowPoint: event.locationInWindow) { onClose?() }
     }
 

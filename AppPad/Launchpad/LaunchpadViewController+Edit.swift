@@ -36,6 +36,8 @@ extension LaunchpadViewController: PageGridDelegate {
             guard !isEditingLayout else { return }
             controller?.launch(app)
         case .folder(let folder, let apps):
+            // A folder is already open / opening (2nd click of a double click): no second morph.
+            guard folderOverlay == nil else { return }
             openFolder(folder, apps: apps, fromTile: grid.cells[index], animated: true)
         }
     }
