@@ -91,7 +91,8 @@ private final class ShortcutIconCache {
 }
 
 // Settings → App Shortcuts tab: per-app global hotkeys (Raycast style).
-// Top: apps with a shortcut. Below: every other app, grouped A–Z like Contacts, with a letter index.
+// Top: apps with a shortcut. Below: every scanned app (assigned ones included), grouped A–Z like Contacts.
+// Both places edit the same prefs entry, so changes show up in both at once.
 struct AppShortcutsSettingsView: View {
     @ObservedObject var prefs: Preferences
     @State private var entries: [AppShortcutEntry] = ShortcutAppsCache.entries ?? []
@@ -239,12 +240,11 @@ struct AppShortcutsSettingsView: View {
         entries.first { $0.app.key == key }?.searchKey
     }
 
-    // Apps without an entry in prefs, grouped by letter.
+    // All scanned apps (assigned ones stay in place), grouped by letter.
     private var groups: [LetterGroup] {
-        let taken = Set(prefs.appHotKeys.map(\.key))
         let q = normalizedQuery.replacingOccurrences(of: " ", with: "")
         let visible = entries.filter { entry in
-            !taken.contains(entry.app.key) && (q.isEmpty || entry.searchKey.replacingOccurrences(of: " ", with: "").contains(q))
+            q.isEmpty || entry.searchKey.replacingOccurrences(of: " ", with: "").contains(q)
         }
         var result: [LetterGroup] = []
         for entry in visible {
@@ -296,7 +296,7 @@ struct AppShortcutsSettingsView: View {
                     .foregroundStyle(.orange)
                     .help(Text("Only one of them will work."))
             }
-            ShortcutRecorder(combo: assignedBinding(value.key))
+            ShortcutRecorder(combo: comboBinding(key: value.key))
                 .frame(width: 150, height: 22)
             Button {
                 prefs.appHotKeys.removeAll { $0.key == value.key }
@@ -310,40 +310,43 @@ struct AppShortcutsSettingsView: View {
     }
 
     private func unassignedRow(_ entry: AppShortcutEntry) -> some View {
-        HStack(spacing: 8) {
+        let combo = prefs.appHotKeys.first { $0.key == entry.app.key }?.combo
+        let conflict = prefs.conflictName(for: combo, excluding: .app(entry.app.key))
+        return HStack(spacing: 8) {
             Image(nsImage: ShortcutIconCache.shared.icon(path: entry.app.url.path))
                 .resizable()
                 .frame(width: 22, height: 22)
             Text(entry.app.name)
                 .lineLimit(1)
             Spacer()
-            ShortcutRecorder(combo: unassignedBinding(entry.app))
+            if let conflict {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .help(Text("Same shortcut as \(conflict)"))
+            }
+            ShortcutRecorder(combo: comboBinding(key: entry.app.key, app: entry.app))
                 .frame(width: 150, height: 22)
         }
     }
 
-    // Clearing a shortcut moves the app back to the A–Z list.
-    private func assignedBinding(_ key: String) -> Binding<KeyCombo?> {
+    // Shared by both lists. Recording adds/updates the prefs entry (shows in "With Shortcuts");
+    // clearing removes it from the top list, the A–Z row stays.
+    private func comboBinding(key: String, app: AppInfo? = nil) -> Binding<KeyCombo?> {
         Binding(
             get: { prefs.appHotKeys.first { $0.key == key }?.combo },
             set: { newValue in
-                guard let index = prefs.appHotKeys.firstIndex(where: { $0.key == key }) else { return }
-                if let newValue {
-                    prefs.appHotKeys[index].combo = newValue
-                } else {
+                let index = prefs.appHotKeys.firstIndex { $0.key == key }
+                switch (newValue, index) {
+                case let (combo?, index?):
+                    prefs.appHotKeys[index].combo = combo
+                case let (combo?, nil):
+                    guard let app else { return }
+                    prefs.appHotKeys.append(AppHotKey(key: app.key, path: app.url.path, name: app.name, combo: combo))
+                case let (nil, index?):
                     prefs.appHotKeys.remove(at: index)
+                case (nil, nil):
+                    break
                 }
-            }
-        )
-    }
-
-    // Recording a shortcut moves the app up into "With Shortcuts".
-    private func unassignedBinding(_ app: AppInfo) -> Binding<KeyCombo?> {
-        Binding(
-            get: { nil },
-            set: { newValue in
-                guard let newValue, !prefs.appHotKeys.contains(where: { $0.key == app.key }) else { return }
-                prefs.appHotKeys.append(AppHotKey(key: app.key, path: app.url.path, name: app.name, combo: newValue))
             }
         )
     }
