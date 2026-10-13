@@ -25,6 +25,13 @@ import QuartzCore
 //        drag → lens catches up with the pointer then tracks 1:1, and the page switches
 //               IMMEDIATELY whenever the pointer crosses into another dot (not on release);
 //        up   → lens settles on the current page and drops.
+// Force Touch: deep click (stage 2) keeps the lens lifted for forceHoldDelay after release,
+//        then eases back over ~1 s. After a deep click the press never turns into a drag
+//        (finger roll-back on release would pull the lens to the previous dot and back).
+//        Fallback without pressure events: a still press (held > pressDelay) needs a wider,
+//        sustained (dragConfirmDelay) movement to start a drag. Drag paging has hysteresis.
+//        Pressure / Look Up events are swallowed here.
+// Rendering happens only in the display-link tick (one Metal frame per vsync).
 // The lens stays a circle at all times (no squash & stretch).
 
 final class GlassDotIndicatorView: FlippedView {
@@ -76,7 +83,13 @@ final class GlassDotIndicatorView: FlippedView {
     private static let sheenAlphaLight: CGFloat = 0.85
     private static let sheenAlphaDark: CGFloat = 0.30
 
-    private static let dragThreshold: CGFloat = 2
+    private static let dragThreshold: CGFloat = 3
+    private static let forceDragThreshold: CGFloat = 12  // finger flattens under force → pointer drifts
+    private static let hardPressure: Float = 0.6          // stage-1 pressure treated as pressing hard
+    private static let forceHoldDelay: TimeInterval = 0.8 // deep click: stay lifted after release
+    private static let pressDelay: TimeInterval = 0.2     // held still this long → a press, not a scrub
+    private static let dragConfirmDelay: TimeInterval = 0.15 // press: movement must last this long to drag
+    private static let pageHysteresis: CGFloat = 0.2      // drag must pass the dot boundary by this (pages)
     private static let lockDistance: CGFloat = 0.02
     private static let velocityDecay: CGFloat = 10
 
@@ -87,6 +100,7 @@ final class GlassDotIndicatorView: FlippedView {
     private static let releaseLiftSpring = (duration: 0.7, bounce: 0.0)
     private static let glowOnSpring = (duration: 0.18, bounce: 0.0)
     private static let glowOffSpring = (duration: 0.7, bounce: 0.0)
+    private static let forceDropSpring = (duration: 1.0, bounce: 0.0)   // slow ease back after hold
 
     // MARK: State
 
@@ -128,8 +142,13 @@ final class GlassDotIndicatorView: FlippedView {
     private var isTracking = false
     private var isCatchingUp = false
     private var downX: CGFloat = 0
+    private var downTime: TimeInterval = 0
+    private var pendingDragSince: TimeInterval?   // press: first time past the threshold
     private var lastDragTime: TimeInterval = 0
     private var lastEmitted = 0
+    private var isPressingHard = false  // wide drag threshold until mouse up
+    private var didDeepClick = false    // stage 2 reached during this press
+    private var holdTask: Task<Void, Never>?
 
     // MARK: Init
 
@@ -251,7 +270,15 @@ final class GlassDotIndicatorView: FlippedView {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if window == nil { stopAnimating() } else { renderLabels() }
+        if window == nil {
+            cancelHold()
+            lift.snap(0)
+            glow.snap(0)
+            isSettling = false
+            stopAnimating()
+        } else {
+            renderLabels()
+        }
     }
 
     // MARK: Geometry
@@ -568,11 +595,16 @@ final class GlassDotIndicatorView: FlippedView {
         guard pageCount > 0 else { return }
         let x = localX(event)
         let i = index(at: x)
+        cancelHold()
         isPressed = true
         isSettling = false
         isTracking = false
         isCatchingUp = false
+        isPressingHard = false
+        didDeepClick = false
         downX = x
+        downTime = event.timestamp
+        pendingDragSince = nil
         lastEmitted = Int(clampedPage(progress).rounded())
 
         pos.configure(Self.travelSpring)
@@ -590,7 +622,21 @@ final class GlassDotIndicatorView: FlippedView {
         let x = localX(event)
 
         if !isTracking {
-            guard abs(x - downX) > Self.dragThreshold else { return }
+            // Deep click: the press is the gesture; release roll-back never drags the lens.
+            if didDeepClick { return }
+            // Works even if no pressure events arrive: a still press is a press.
+            let pressing = isPressingHard || event.timestamp - downTime > Self.pressDelay
+            let threshold = pressing ? Self.forceDragThreshold : Self.dragThreshold
+            guard abs(x - downX) > threshold else {
+                pendingDragSince = nil
+                return
+            }
+            if pressing {
+                // Release roll-back is brief; a real scrub keeps moving.
+                let since = pendingDragSince ?? event.timestamp
+                pendingDragSince = since
+                guard event.timestamp - since >= Self.dragConfirmDelay else { return }
+            }
             // Drag starts: lens heads for the pointer from wherever it is.
             isTracking = true
             isCatchingUp = true
@@ -612,19 +658,23 @@ final class GlassDotIndicatorView: FlippedView {
                 pos.velocity = pos.velocity * 0.5 + v * 0.5
             }
             pos.value = target
-            pos.target = target
-            applyFrame()
+            pos.target = target   // drawn by the next tick (no extra Metal frame here)
         }
         lastDragTime = event.timestamp
         startAnimating()
 
-        // Immediate paging: the dot under the pointer becomes the page now.
-        emit(Int(target.rounded()))
+        // Immediate paging: the dot under the pointer becomes the page now (with hysteresis,
+        // so jitter on a dot boundary can't flip pages back and forth).
+        let nearest = Int(target.rounded())
+        if nearest != lastEmitted, abs(target - CGFloat(lastEmitted)) > 0.5 + Self.pageHysteresis {
+            emit(nearest)
+        }
     }
 
     override func mouseUp(with event: NSEvent) {
         guard isPressed else { return }
-        let landed = isTracking ? lastEmitted : index(at: localX(event))
+        // Pressed / dragged-to dot; pointer drift while releasing force is ignored.
+        let landed = lastEmitted
         let wasDragging = isTracking
         isPressed = false
         isTracking = false
@@ -632,13 +682,55 @@ final class GlassDotIndicatorView: FlippedView {
         isSettling = true
 
         if wasDragging { pos.configure(Self.releaseSpring) }
-        lift.configure(Self.releaseLiftSpring)
-        glow.configure(Self.glowOffSpring)
         pos.target = CGFloat(landed)   // velocity kept → natural glide
+        if didDeepClick {
+            scheduleSlowDrop()         // stay lifted, then ease back
+        } else {
+            dropLens(lift: Self.releaseLiftSpring, glow: Self.glowOffSpring)
+        }
+        startAnimating()
+        emit(landed)
+    }
+
+    // MARK: Force Touch
+
+    // Pressure arrives on the view that took mouseDown. Not forwarded: nothing above reacts to force.
+    override func pressureChange(with event: NSEvent) {
+        guard isPressed else { return }
+        if event.stage >= 2 {
+            didDeepClick = true
+            isPressingHard = true
+        } else if event.stage == 1, event.pressure >= Self.hardPressure {
+            isPressingHard = true
+        }
+    }
+
+    // Force click Look Up: nothing to look up here; swallow so AppKit doesn't search for text.
+    override func quickLook(with event: NSEvent) {}
+
+    private func dropLens(lift liftSpec: (duration: Double, bounce: Double),
+                          glow glowSpec: (duration: Double, bounce: Double)) {
+        lift.configure(liftSpec)
+        glow.configure(glowSpec)
         lift.target = 0
         glow.target = 0
         startAnimating()
-        emit(landed)
+    }
+
+    private func scheduleSlowDrop() {
+        cancelHold()
+        let delay = Self.forceHoldDelay
+        holdTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled, let self, !self.isPressed else { return }
+            self.holdTask = nil
+            self.dropLens(lift: Self.forceDropSpring, glow: Self.forceDropSpring)
+        }
+    }
+
+    private func cancelHold() {
+        holdTask?.cancel()
+        holdTask = nil
     }
 
     private func emit(_ i: Int) {
