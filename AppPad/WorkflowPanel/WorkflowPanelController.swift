@@ -72,8 +72,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
             viewController.focusSearch()
             return
         }
-        let mouse = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return }
+        guard let screen = PanelScreen.target() else { return }
         applyAppearance()
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow()

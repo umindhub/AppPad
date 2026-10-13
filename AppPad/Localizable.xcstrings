@@ -352,6 +352,122 @@
         }
       }
     },
+    "Applies to AppPad, Clipboard and Workflows. When off, they open on the main display." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gilt für AppPad, Zwischenablage und Workflows. Wenn deaktiviert, werden sie auf dem Hauptbildschirm geöffnet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se aplica a AppPad, Portapapeles y Flujos de trabajo. Si está desactivado, se abren en la pantalla principal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’applique à AppPad, au Presse-papiers et aux Flux de travail. Si désactivé, ils s’ouvrent sur l’écran principal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si applica ad AppPad, Appunti e Flussi di lavoro. Se disattivato, si aprono sullo schermo principale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad、クリップボード、ワークフローに適用されます。オフの場合はメインディスプレイで開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad, 클립보드, 워크플로에 적용됩니다. 끄면 주 디스플레이에서 열립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geldt voor AppPad, Klembord en Workflows. Indien uit, openen ze op het hoofdscherm."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "适用于 AppPad、剪贴板和工作流。关闭后，它们都会在主显示器上打开。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "適用於 AppPad、剪貼簿和工作流程。關閉後，它們都會在主顯示器上打開。"
+          }
+        }
+      }
+    },
+    "Open on the display with the pointer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf dem Bildschirm mit dem Zeiger öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir en la pantalla donde está el puntero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir sur l’écran où se trouve le pointeur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri sullo schermo in cui si trova il puntatore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポインタのあるディスプレイで開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포인터가 있는 디스플레이에서 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Openen op het scherm met de aanwijzer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在鼠标所在的显示器上打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在滑鼠所在的顯示器上打開"
+          }
+        }
+      }
+    },
     "{{input}} is replaced by the argument (URL-encoded)." : {
       "localizations" : {
         "de" : {

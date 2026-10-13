@@ -135,7 +135,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard !didWarmUp else { return }
         didWarmUp = true
         Task { [weak self] in
-            let screen = NSScreen.main
+            let screen = PanelScreen.target()
             if let screen { _ = await WallpaperBlurCache.shared.image(for: screen) }
             guard let self else { return }
             self.isReady = true
@@ -381,8 +381,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over).
     @discardableResult
     private func presentPanel(opaque: Bool = false) -> Bool {
-        let mouse = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) ?? NSScreen.main else { return false }
+        guard let screen = PanelScreen.target() else { return false }
         endWarmUp(orderOut: false)
         // Interrupts an animated hide.
         isFadingOut = false

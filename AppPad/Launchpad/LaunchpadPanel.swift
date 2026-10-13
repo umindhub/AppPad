@@ -222,3 +222,20 @@ enum PanelSwitch {
         hide?()
     }
 }
+
+// MARK: - Target display
+// Shared by Launchpad, Clipboard and Workflow panel.
+@MainActor
+enum PanelScreen {
+    // Display under the mouse, or the main display (menu bar) when the setting is off.
+    static func target() -> NSScreen? {
+        if Preferences.shared.panelsFollowMouseScreen {
+            let mouse = NSEvent.mouseLocation
+            if let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) {
+                return screen
+            }
+        }
+        // screens[0] holds the menu bar; NSScreen.main is just the key window's screen.
+        return NSScreen.screens.first ?? NSScreen.main
+    }
+}

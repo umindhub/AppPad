@@ -57,6 +57,7 @@ final class Preferences: ObservableObject {
         static let appHotKeys = "appHotKeys"
         static let glassControls = "glassControls"
         static let pinchToOpen = "pinchToOpen"
+        static let followMouseScreen = "panelsFollowMouseScreen"
         static let clipEnabled = "clipboardEnabled"
         static let clipHotKey = "clipboardHotKey"
         static let clipSavedHotKey = "clipboardSavedHotKey"
@@ -98,6 +99,8 @@ final class Preferences: ObservableObject {
     @Published var glassControls: Bool { didSet { save(glassControls, Key.glassControls) } }
     // Four-finger pinch in opens Launchpad, spread closes it.
     @Published var pinchToOpen: Bool { didSet { save(pinchToOpen, Key.pinchToOpen) } }
+    // Launchpad / Clipboard / Workflow panel open on the display under the mouse; off = main display.
+    @Published var panelsFollowMouseScreen: Bool { didSet { save(panelsFollowMouseScreen, Key.followMouseScreen) } }
     @Published var appHotKeys: [AppHotKey] {
         didSet { save((try? JSONEncoder().encode(appHotKeys)) ?? Data(), Key.appHotKeys) }
     }
@@ -151,6 +154,7 @@ final class Preferences: ObservableObject {
         frecencyHalfLifeDays = d.object(forKey: Key.halfLife) as? Int ?? 72
         glassControls = d.object(forKey: Key.glassControls) as? Bool ?? true
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true
+        panelsFollowMouseScreen = d.object(forKey: Key.followMouseScreen) as? Bool ?? true
         workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)

@@ -150,6 +150,10 @@ struct SettingsView: View {
                     Text("Do nothing").tag(BackgroundClickAction.nothing)
                 }
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
+                Toggle(isOn: $prefs.panelsFollowMouseScreen) {
+                    Text("Open on the display with the pointer")
+                    Text("Applies to AppPad, Clipboard and Workflows. When off, they open on the main display.")
+                }
             }
 
             Section("Window") {
