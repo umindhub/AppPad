@@ -268,6 +268,7 @@ extension LaunchpadViewController {
         lastDragEvent = nil
 
         var target: DropTarget?
+        var mergeTileBefore: NSRect?   // merge tile frame (root) before the gap starts closing
         if case .folder(_, let sourceIndex) = state.source, !state.leftFolder {
             target = .reorderInFolder(index: state.folderInsert ?? sourceIndex)   // folder reopens on reload
         } else if let page = state.hoverPage, let grid = pageGrid(page) {
@@ -275,6 +276,11 @@ extension LaunchpadViewController {
             if pagerPoint.y > -60, pagerPoint.y < pager.bounds.height + 60 {
                 if let merge = state.mergeTarget {
                     target = .merge(page: page, index: merge)
+                    let tileIndex = cellIndex(forBase: merge, page: page, state: state)
+                    if grid.cells.indices.contains(tileIndex) {
+                        let tile = grid.cells[tileIndex]
+                        mergeTileBefore = root.convert(tile.bounds, from: tile)
+                    }
                     // The dragged icon's spot closes slowly while it flies into the target.
                     grid.applyArrangement(arrangement(forPage: page, grid: grid, placeholder: nil, state: state),
                                           animated: true, gentle: true)
@@ -299,7 +305,7 @@ extension LaunchpadViewController {
         // or to a mini-sized spot at the tile center (fading) when it will not be visible.
         var landing: (rect: NSRect?, fade: Bool) = (landingRect(for: finalTarget, state: state), false)
         if case .merge(let page, let index)? = finalTarget {
-            landing = prepareMergeLanding(page: page, index: index, state: state)
+            landing = prepareMergeLanding(page: page, index: index, state: state, tileBefore: mergeTileBefore)
         } else if finalTarget == nil, case .folder(let id, let appIndex) = state.source, state.leftFolder {
             landing = prepareFolderReturn(folderID: id, appIndex: appIndex)   // cancelled: back into its tile
         }
@@ -324,7 +330,7 @@ extension LaunchpadViewController {
     }
 
     static let landingMilliseconds = 240
-    static let mergeLandingMilliseconds = 340
+    static let mergeLandingMilliseconds = 400
     static let mergeCommitMilliseconds = 650
 
     // Final icon rect in root coordinates (nil → just fade out).
@@ -404,8 +410,9 @@ extension LaunchpadViewController {
     }
 
     // Merge drop: turn the target tile into its final look with the landing slot empty,
-    // and return that slot (root coordinates).
-    private func prepareMergeLanding(page: Int, index: Int, state: DragState) -> (rect: NSRect?, fade: Bool) {
+    // and return that slot in the coordinates of dragImageView's (possibly new) superview.
+    private func prepareMergeLanding(page: Int, index: Int, state: DragState,
+                                     tileBefore: NSRect?) -> (rect: NSRect?, fade: Bool) {
         guard let grid = pageGrid(page), case .app(let draggedKey) = state.item,
               let dragged = controller?.app(forKey: draggedKey) else { return (nil, true) }
         let tileIndex = cellIndex(forBase: index, page: page, state: state)
@@ -422,9 +429,22 @@ extension LaunchpadViewController {
         let visible = slot < 9
         tile.showFolderPreview(icons: apps.prefix(9).map { IconCache.shared.icon(for: $0) },
                                hiddenIndex: visible ? slot : nil)
-        // The tile also moves while the gap closes: aim at its final frame.
-        let finalTile = grid.slotRect(Self.slot(forBase: index, placeholder: nil))
         let mini = tile.folderMiniRect(index: visible ? slot : nil)
+
+        // Ride along: host the icon inside the tile, so it shrinks into its slot while the
+        // tile slides (and wiggles) to its final spot. The tile's model frame is already final
+        // and its slide transform starts at the old spot, so offset the start by that move.
+        if let tileBefore, tile.layer != nil {
+            let tileNow = root.convert(tile.bounds, from: tile)
+            let start = dragImageView.frame.offsetBy(dx: tileNow.minX - tileBefore.minX,
+                                                     dy: tileNow.minY - tileBefore.minY)
+            let host = tile.hostLandingView(dragImageView, cellFrame: tile.convert(start, from: root))
+            tile.layer?.zPosition = 1   // above neighbours while the icon still overlaps them
+            return (host.convert(mini, from: tile), !visible)
+        }
+
+        // Fallback: fly in root coordinates to the tile's final frame.
+        let finalTile = grid.slotRect(Self.slot(forBase: index, placeholder: nil))
         let rectInGrid = mini.offsetBy(dx: finalTile.minX, dy: finalTile.minY)
         return (root.convert(rectInGrid, from: grid), !visible)
     }

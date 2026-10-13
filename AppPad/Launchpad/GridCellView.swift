@@ -137,6 +137,16 @@ final class GridCellView: FlippedView {
         return convert(rect, from: folderIcon)
     }
 
+    // Hosts the icon flying into this tile (merge drop) so it follows the tile's slide and wiggle.
+    // cellFrame is in cell coordinates; returns the host view for converting further rects.
+    @discardableResult
+    func hostLandingView(_ view: NSView, cellFrame: NSRect) -> NSView {
+        view.removeFromSuperview()
+        view.frame = iconContainer.convert(cellFrame, from: self)
+        iconContainer.addSubview(view)
+        return iconContainer
+    }
+
     func setEditing(_ editing: Bool, badge kind: DeleteBadgeKind) {
         badgeKind = kind
         isEditing = editing
