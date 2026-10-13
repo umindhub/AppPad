@@ -13,6 +13,9 @@ import QuartzCore
 // - drags that start in a folder reorder inside it (hold at the sheet's side → folder page flips),
 //   or leave the box to go back to the pages
 // - an app dragged out of the panel becomes a system file drag (drop on the Dock to add it)
+// - landing: the drag shadow fades out over the last `landingGlowDistance` pt, then the floating
+//   snapshot dissolves into the real cell (no brightness pop when the layout is rebuilt)
+// - until the layout is committed, a click first commits it, then acts on the rebuilt grid
 struct DragState {
     let source: DragSource
     let sourceCell: GridCellView
@@ -35,6 +38,16 @@ extension LaunchpadViewController {
     static let mergeDwell: Duration = .milliseconds(250)
     static let reorderSpeedLimit: CGFloat = 40   // pt/s; reorder only when (almost) stopped
     static let reorderDwell: Duration = .milliseconds(280)
+    static let landingGlowDistance: CGFloat = 300   // pt before the landing spot where the shadow starts fading
+    static let landingDissolveSeconds = 0.16        // snapshot → real cell cross-fade
+
+    static let dragShadow: NSShadow = {
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
+        shadow.shadowBlurRadius = 10
+        shadow.shadowOffset = NSSize(width: 0, height: -4)
+        return shadow
+    }()
 
     func beginDrag(grid: PageGridView, index: Int, event: NSEvent, grabPoint: NSPoint) {
         // dragImageView still attached = previous drop is landing; wait for it.
@@ -63,6 +76,7 @@ extension LaunchpadViewController {
         dragImageView.image = cell.snapshotIcon()
         dragImageView.layer?.removeAllAnimations()   // clear a previous landing transform
         dragImageView.alphaValue = 1
+        dragImageView.shadow = Self.dragShadow       // removed for the landing dissolve
         dragImageView.frame = frame
         root.addSubview(dragImageView)
         cell.isDragSource = true
@@ -310,13 +324,18 @@ extension LaunchpadViewController {
             landing = prepareFolderReturn(folderID: id, appIndex: appIndex)   // cancelled: back into its tile
         }
         animateLanding(to: landing.rect, fade: landing.fade, milliseconds: duration)
-        // Merges wait for the gentle gap-closing spring so the reload does not cut it short.
-        let commitDelay = isMerge ? Self.mergeCommitMilliseconds : duration + 10
-        Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(commitDelay))
+
+        // The folder left behind is invisible now; clicks go to the pages under it.
+        if case .folder = state.source, state.leftFolder {
+            folderOverlay?.passesClicks = true
+        }
+
+        // Landing spot in root coordinates → dissolve into the real cell after the reload.
+        // Merges ride inside the target tile (and shrink to a mini icon): just removed.
+        let dissolveRect = (isMerge || landing.fade) ? nil : landing.rect
+        let token = UUID()
+        pendingDrop = (token: token, run: { [weak self] immediate in
             guard let self else { return }
-            self.dragImageView.removeFromSuperview()
-            self.dragImageView.layer?.removeAllAnimations()
             state.sourceCell.isDragSource = false
             if case .folder = state.source, state.leftFolder {
                 self.closeFolder()
@@ -326,7 +345,48 @@ extension LaunchpadViewController {
             } else {
                 self.reloadAll()                                       // cancelled: restore
             }
+            self.finishDragImage(dissolvingAt: immediate ? nil : dissolveRect)
+        })
+        // Merges wait for the gentle gap-closing spring so the reload does not cut it short.
+        let commitDelay = isMerge ? Self.mergeCommitMilliseconds : duration + 10
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(commitDelay))
+            self?.flushPendingDrop(token: token)
         }
+    }
+
+    // Commit a landed drop now (timer, or a click that must see the new layout).
+    // token: only that drop (the timer of an older drop does nothing).
+    func flushPendingDrop(token: UUID? = nil, immediate: Bool = false) {
+        guard let pending = pendingDrop, token == nil || pending.token == token else { return }
+        pendingDrop = nil
+        pending.run(immediate)
+    }
+
+    // After the reload: freeze the snapshot on its landing spot above everything (also above a
+    // reopened folder) and fade it out over the real cell. nil rect → remove right away.
+    private func finishDragImage(dissolvingAt rect: NSRect?) {
+        guard let rect, dragImageView.superview === root else {
+            dragImageView.removeFromSuperview()
+            dragImageView.layer?.removeAllAnimations()
+            return
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        dragImageView.shadow = nil
+        dragImageView.frame = rect                    // model = where the transform ended
+        dragImageView.layer?.removeAllAnimations()
+        root.addSubview(dragImageView)                // back to the front
+        CATransaction.commit()
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = Self.landingDissolveSeconds
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            self.dragImageView.animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            guard let self else { return }   // no new drag can start before this (superview check)
+            self.dragImageView.removeFromSuperview()
+            self.dragImageView.alphaValue = 1
+        })
     }
 
     static let landingMilliseconds = 240
@@ -393,6 +453,19 @@ extension LaunchpadViewController {
             move.fromValue = NSValue(caTransform3D: CATransform3DIdentity)
             move.toValue = NSValue(caTransform3D: CATransform3DScale(CATransform3DMakeTranslation(dx, dy, 0), scale, scale, 1))
             animations.append(move)
+
+            // Shadow fades out once the icon is within landingGlowDistance of its spot.
+            let distance = hypot(end.midX - start.midX, end.midY - start.midY)
+            let begin = Self.landingTime(remaining: Self.landingGlowDistance / max(distance, 1))
+            let shadow = CABasicAnimation(keyPath: "shadowOpacity")
+            shadow.fromValue = layer.shadowOpacity
+            shadow.toValue = 0
+            shadow.beginTime = layer.convertTime(CACurrentMediaTime(), from: nil) + begin * duration
+            shadow.duration = max(0.05, (1 - begin) * duration)
+            shadow.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            shadow.fillMode = .both
+            shadow.isRemovedOnCompletion = false
+            layer.add(shadow, forKey: "shadowOpacity")
         }
         if fade || rect == nil {
             let opacity = CABasicAnimation(keyPath: "opacity")
@@ -407,6 +480,22 @@ extension LaunchpadViewController {
             animation.isRemovedOnCompletion = false
             layer.add(animation, forKey: animation.keyPath)
         }
+    }
+
+    // Landing curve (cubic Bézier 0.2, 0.8, 0.2, 1): time fraction where the remaining
+    // distance first drops to `remaining` (fraction of the whole flight); 0 if already within.
+    static func landingTime(remaining: CGFloat) -> Double {
+        let target = 1 - Double(remaining)
+        guard target > 0 else { return 0 }
+        func bezier(_ s: Double, _ p1: Double, _ p2: Double) -> Double {
+            3 * (1 - s) * (1 - s) * s * p1 + 3 * (1 - s) * s * s * p2 + s * s * s
+        }
+        let steps = 100
+        for i in 0...steps {
+            let s = Double(i) / Double(steps)
+            if bezier(s, 0.8, 1) >= target { return bezier(s, 0.2, 0.2) }
+        }
+        return 1
     }
 
     // Merge drop: turn the target tile into its final look with the landing slot empty,

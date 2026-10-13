@@ -17,6 +17,19 @@ extension LaunchpadViewController: PageGridDelegate {
     // MARK: - PageGridDelegate
 
     func grid(_ grid: PageGridView, didClick index: Int) {
+        // A drop that landed but is not committed yet: this grid still shows the old layout
+        // (e.g. the old contents of a folder that just got an app). Commit, then click the
+        // rebuilt cell under the pointer.
+        if pendingDrop != nil {
+            let location = NSApp.currentEvent?.locationInWindow
+            flushPendingDrop(immediate: true)
+            view.layoutSubtreeIfNeeded()
+            guard let location, let content = view.window?.contentView,
+                  let cell = content.hitTest(content.superview?.convert(location, from: nil) ?? location) as? GridCellView,
+                  let fresh = cell.grid, fresh !== grid else { return }
+            self.grid(fresh, didClick: cell.index)
+            return
+        }
         guard grid.entries.indices.contains(index) else { return }
         switch grid.entries[index] {
         case .app(let app):

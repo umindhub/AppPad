@@ -10,7 +10,7 @@ import Combine
 // ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
 // Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
 // While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
-// Keys: ↩ run / open / copy, Tab complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
+// Keys: ↩ run / open / copy, Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc closes (or clears first, see General settings).
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
@@ -247,14 +247,18 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         name.split(whereSeparator: \.isWhitespace).joined(separator: "-")
     }
 
-    // Completed name ("set-timer") > any keyword exact (current language + English) > keyword prefix > name tiers.
+    // Completed name ("set-timer") > whole name typed without spaces ("settimer") > any keyword exact
+    // (current language + English) > keyword prefix > name tiers.
     // Names: localized, English and every translation ("关机" works in an English UI too).
     private static func score(_ workflow: Workflow, query: String) -> Int {
         let names = workflow.searchNames
         if names.contains(where: { SearchIndex.normalize(token($0)) == query }) { return 130 }
+        let compact = SearchIndex.compact(query)
+        if !compact.isEmpty, names.contains(where: { SearchIndex.compact(SearchIndex.normalize($0)) == compact }) { return 125 }
         let keywords = workflow.matchKeywords.map(SearchIndex.normalize)   // current language + English
         if keywords.contains(query) { return 120 }
         if keywords.contains(where: { $0.hasPrefix(query) }) { return 95 }
+        if !compact.isEmpty, keywords.contains(where: { SearchIndex.compact($0).hasPrefix(compact) }) { return 92 }
         var best = names.map { score($0, query: query) }.max() ?? 0
         if query.contains("-") {
             let spaced = query.replacingOccurrences(of: "-", with: " ")
@@ -263,13 +267,16 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         return best
     }
 
-    // Same tiers as app search: prefix > word prefix > acronym / pinyin > contains.
+    // Same tiers as app search: prefix > word prefix > compact prefix > acronym / pinyin > contains.
     private static func score(_ name: String, query: String) -> Int {
         let normalized = SearchIndex.normalize(name)
-        let compact = query.replacingOccurrences(of: " ", with: "")
+        let compact = SearchIndex.compact(query)
+        guard !compact.isEmpty else { return 0 }
+        let compactName = SearchIndex.compact(normalized)
         if normalized.hasPrefix(query) { return 100 }
         let words = normalized.split(whereSeparator: { " -_.".contains($0) })
         if words.contains(where: { $0.hasPrefix(query) }) { return 85 }
+        if compactName.hasPrefix(compact) { return 82 }   // "setvolume" → "Set Volume"
         if compact.count >= 2, SearchIndex.acronyms(of: name).contains(where: { $0.hasPrefix(compact) }) { return 75 }
         if let pinyin = SearchIndex.pinyin(of: name) {
             if pinyin.initials.hasPrefix(compact) { return 70 }
@@ -277,6 +284,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
             if pinyin.full.contains(compact) { return 30 }
         }
         if normalized.contains(query) { return 50 }
+        if compact.count >= 3, compactName.contains(compact) { return 45 }
         return 0
     }
 
@@ -464,13 +472,21 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         reload(selectFirst: true)
     }
 
-    // Tab: the selected row's localized name ("Set-Timer ") in the field, ready for the argument.
+    // Tab: nothing to complete for apps and workflows without an argument → run / open now;
+    // otherwise the selected row's localized name ("Set-Timer ") goes in the field, ready for the argument.
     private func completeSelected() {
         guard let item = selectedItem, !item.isCalculator else {
             NSSound.beep()
             return
         }
-        fillSearchField(explicit: true)
+        switch item {
+        case .app:
+            activate(row: tableView.selectedRow)
+        case .workflow(let workflow) where workflow.argument == .off:
+            run(workflow, argument: "")
+        default:
+            fillSearchField(explicit: true)
+        }
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {

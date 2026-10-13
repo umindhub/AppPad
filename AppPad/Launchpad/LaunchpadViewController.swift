@@ -26,6 +26,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var edgeTask: Task<Void, Never>?
     var edgeDirection = 0
     var optionHoldTask: Task<Void, Never>?   // hold ⌥ → edit mode (+Edit.swift)
+    // Drop landed visually but the layout is not committed yet (+Drag.swift); run(immediate).
+    var pendingDrop: (token: UUID, run: (Bool) -> Void)?
 
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
@@ -65,11 +67,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
         dragImageView.imageScaling = .scaleProportionallyUpOrDown
         dragImageView.wantsLayer = true
-        let shadow = NSShadow()
-        shadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
-        shadow.shadowBlurRadius = 10
-        shadow.shadowOffset = NSSize(width: 0, height: -4)
-        dragImageView.shadow = shadow
+        dragImageView.shadow = Self.dragShadow
 
         [pager, resultsPager, searchChrome, indicator, emptyLabel].forEach {
             root.addSubview($0)

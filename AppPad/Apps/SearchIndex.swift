@@ -6,12 +6,15 @@ import Foundation
 // - bundleName: CFBundleName (usually the English name)
 // - acronyms: word initials of those two names only — split on spaces/punctuation and on
 //   camelCase / digit boundaries ("as" → App Store, "ws" → WebStorm)
+// - compact: names without spaces / separators ("appstore" → App Store, "setvolume" → Set Volume)
 // - pinyin / pinyin initials for a CJK display name ("jsq" → 计算器)
 nonisolated struct SearchIndex: Sendable {
     nonisolated struct Entry: Sendable {
         let primary: String
         let primaryWords: [String]
+        let primaryCompact: String
         let bundleName: String
+        let bundleCompact: String
         let acronyms: [String]
         let pinyin: String
         let pinyinInitials: String
@@ -29,21 +32,33 @@ nonisolated struct SearchIndex: Sendable {
         s.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil).lowercased()
     }
 
+    // Normalized text without whitespace and word separators: "set-volume" / "Set Volume" → "setvolume".
+    static func compact(_ s: String) -> String {
+        String(s.filter { !$0.isWhitespace && !compactSeparators.contains($0) })
+    }
+
+    private static let compactSeparators: Set<Character> = ["-", "_", "."]
+
     // MARK: - Matching
 
     // Higher is better; 0 = no match. `query` must be normalized.
     func matchScore(_ key: String, query: String) -> Int {
         guard let e = entries[key] else { return 0 }
-        let compact = query.replacingOccurrences(of: " ", with: "")
+        let compact = Self.compact(query)
+        guard !compact.isEmpty else { return 0 }
         if e.primary.hasPrefix(query) { return 100 }
         if e.primaryWords.contains(where: { $0.hasPrefix(query) }) { return 85 }
+        if e.primaryCompact.hasPrefix(compact) { return 82 }      // "setvolume" → "Set Volume"
         if compact.count >= 2, e.acronyms.contains(compact) { return 80 }
         if e.bundleName.hasPrefix(query) { return 75 }
+        if e.bundleCompact.hasPrefix(compact) { return 74 }
         if compact.count >= 2, e.acronyms.contains(where: { $0.hasPrefix(compact) }) { return 72 }
         if !e.pinyinInitials.isEmpty, e.pinyinInitials.hasPrefix(compact) { return 70 }
         if !e.pinyin.isEmpty, e.pinyin.hasPrefix(compact) { return 65 }
         if e.primary.contains(query) { return 50 }
+        if compact.count >= 3, e.primaryCompact.contains(compact) { return 45 }
         if e.bundleName.contains(query) { return 40 }
+        if compact.count >= 3, e.bundleCompact.contains(compact) { return 38 }
         if !e.pinyin.isEmpty, e.pinyin.contains(compact) { return 30 }
         return 0
     }
@@ -61,10 +76,13 @@ nonisolated struct SearchIndex: Sendable {
         }
 
         let py = pinyin(of: app.name)
+        let bundle = normalize(app.bundleName)
         return Entry(
             primary: primary,
             primaryWords: words,
-            bundleName: normalize(app.bundleName),
+            primaryCompact: compact(primary),
+            bundleName: bundle,
+            bundleCompact: compact(bundle),
             acronyms: Array(acronymSet),
             pinyin: py?.full ?? "",
             pinyinInitials: py?.initials ?? ""

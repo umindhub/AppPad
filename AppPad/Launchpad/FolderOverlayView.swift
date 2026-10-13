@@ -10,7 +10,8 @@ import QuartzCore
 //   the same order as the launcher: search field, indicator, icons.
 // - Open: the backdrop grows out of the folder tile while the first 9 mini icons grow into
 //   their real positions (one continuous motion); the tile itself is hidden while open.
-// - Close: the reverse, ending exactly on the tile's mini icons.
+// - Close: the reverse, ending exactly on the tile's mini icons. Closing while the open morph
+//   still runs plays the open morph backwards from where it is (no second set of proxies).
 final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     var onClose: (() -> Void)?
     var onRename: ((String) -> Void)?
@@ -36,6 +37,12 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     var initialPage = 0                  // page to show on first layout (kept across reloads)
     var headerGap: CGFloat?              // title bottom → first icon top (set by the launcher)
     private var didApplyInitialPage = false
+    // Open morph in flight: its proxies and step function, so a close can run it backwards.
+    private var openFlights: [Flight]?
+    private var openStep: ((CGFloat) -> Void)?
+    private var openProgress: CGFloat = 0
+    // Leftover after a drag out of the folder ended: invisible, must not take clicks.
+    var passesClicks = false
 
     var currentPage: Int { pager.currentPage }
 
@@ -92,6 +99,10 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        passesClicks ? nil : super.hitTest(point)
     }
 
     func boxContains(windowPoint: NSPoint) -> Bool {
@@ -229,18 +240,25 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         isAnimating = true
         setChromeAlpha(0)
         outsideBlur.alphaValue = 0
-        run(duration: 0.46, curve: Self.springOut, step: { [weak self] p in
+        let step: (CGFloat) -> Void = { [weak self, weak tile] p in
             guard let self else { return }
+            self.openProgress = p
             self.backdrop.frame = Self.lerp(plate, box, p)
             self.backdrop.setCornerRadius(startRadius + (Self.cornerRadius - startRadius) * p)
             self.outsideBlur.alphaValue = min(1, p)
-            tile.concealedLabelAlpha = 1 - Self.smoothstep(0, 0.4, p)   // page name fades out
+            tile?.concealedLabelAlpha = 1 - Self.smoothstep(0, 0.4, p)   // page name fades out
             for flight in flights {
                 flight.view.frame = Self.lerp(flight.start, flight.end, p)
                 flight.view.alphaValue = flight.fade.alpha(p, opening: true)
             }
-        }, completion: { [weak self] in
+        }
+        openFlights = flights
+        openStep = step
+        openProgress = 0
+        run(duration: 0.46, curve: Self.springOut, step: step, completion: { [weak self] in
             guard let self else { return }
+            self.openFlights = nil
+            self.openStep = nil
             self.isAnimating = false
             self.backdrop.frame = box
             tile.concealedLabelAlpha = 0
@@ -255,6 +273,16 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         guard let tile = sourceTile else {
             completion()
             return
+        }
+        if let openStep, let openFlights {
+            self.openStep = nil
+            self.openFlights = nil
+            if excluded == nil {
+                reverseOpen(step: openStep, flights: openFlights, completion: completion)
+                return
+            }
+            // Drag out while opening (rare): drop the opening proxies, close from the real layout.
+            openFlights.forEach { $0.view.removeFromSuperview() }
         }
         let plate = convert(tile.visualIconRect, from: tile)
         let box = backdrop.frame
@@ -279,6 +307,25 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.sourceTile?.isConcealed = false
             self.sourceTile?.concealedLabelAlpha = 0
             self.backdrop.alphaValue = 0
+            flights.forEach { $0.view.removeFromSuperview() }
+            completion()
+        })
+    }
+
+    // Close during the open morph: run the open step from its current progress back to 0,
+    // so every proxy turns around where it is.
+    private func reverseOpen(step: @escaping (CGFloat) -> Void, flights: [Flight], completion: @escaping () -> Void) {
+        let from = openProgress
+        isAnimating = true
+        setChromeAlpha(0)
+        run(duration: max(0.16, 0.32 * Double(min(1, from))), curve: Self.easeInOut, step: { q in
+            step(from * (1 - q))
+        }, completion: { [weak self] in
+            guard let self else { return }
+            self.sourceTile?.isConcealed = false
+            self.sourceTile?.concealedLabelAlpha = 0
+            self.backdrop.alphaValue = 0
+            self.outsideBlur.alphaValue = 0
             flights.forEach { $0.view.removeFromSuperview() }
             completion()
         })
