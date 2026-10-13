@@ -7,6 +7,8 @@ final class LaunchpadPanel: NSPanel {
     var keyHandler: ((NSEvent) -> Bool)?
     // Sees every keyDown before the field editor (Workflow panel: ⌥ / ⌃ in-panel shortcuts).
     var keyDownHandler: ((NSEvent) -> Bool)?
+    // Sees modifier / key / click events without consuming them (Launchpad: hold ⌥ for edit mode).
+    var eventObserver: ((NSEvent) -> Void)?
     // Set by the owning controller: the two layers PanelMorph fades / re-slices separately.
     weak var morphBackground: LaunchpadBackgroundView?
     weak var morphContent: NSView?
@@ -40,6 +42,14 @@ final class LaunchpadPanel: NSPanel {
     private var isReplaying = false
 
     override func sendEvent(_ event: NSEvent) {
+        if let eventObserver {
+            switch event.type {
+            case .flagsChanged, .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown, .scrollWheel:
+                eventObserver(event)
+            default:
+                break
+            }
+        }
         if event.type == .keyDown, let keyDownHandler, keyDownHandler(event) { return }
         if !isReplaying {
             switch event.type {

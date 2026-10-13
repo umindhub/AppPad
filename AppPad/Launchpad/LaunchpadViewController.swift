@@ -25,6 +25,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var systemDrag: DragState?          // app handed over to an NSDraggingSession
     var edgeTask: Task<Void, Never>?
     var edgeDirection = 0
+    var optionHoldTask: Task<Void, Never>?   // hold ⌥ → edit mode (+Edit.swift)
 
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
@@ -168,6 +169,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     }
 
     func didHide() {
+        cancelOptionHold()
         cancelDrag()
         dismissConfirm()
         setEditingLayout(false)
@@ -303,7 +305,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             endSearch()
             return
         }
-        setEditingLayout(false)
+        // Edit mode survives searching (delete straight from the results).
         if folderOverlay != nil {
             folderOverlay?.removeFromSuperview()
             folderOverlay = nil
@@ -320,6 +322,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             let page = PageGridView(columns: prefs.gridColumns, rows: prefs.gridRows, context: .results)
             page.delegate = self
             page.setEntries(chunk.map { GridEntry.app($0) })
+            page.setEditing(isEditingLayout)
             return page
         }
         resultsPager.setPages(resultPages)

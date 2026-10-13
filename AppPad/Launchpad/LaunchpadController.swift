@@ -80,6 +80,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.keyHandler = { [weak self] event in
             self?.handleKeyEquivalent(event) ?? false
         }
+        panel.eventObserver = { [weak self] event in
+            self?.viewController.observeOptionHold(event)
+        }
         PinchGestureMonitor.shared.onTap = { [weak self] in self?.handleTrackpadTap() }
 
         lastCapacity = capacity
@@ -620,14 +623,16 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         viewController.reloadAll(refreshFolder: false)
     }
 
-    func uninstall(_ app: AppInfo, extra: [URL]) async -> Bool {
-        guard await AppUninstaller.quitIfRunning(app) else { return false }
-        guard await AppUninstaller.moveToTrash([app.url] + extra) else { return false }
+    var installedBundleIDs: Set<String> { Set(apps.compactMap(\.bundleID)) }
+
+    func uninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) async -> AppUninstaller.Result {
+        let result = await AppUninstaller.uninstall(app, bundleIDs: bundleIDs, extra: extra)
+        guard result.appRemoved else { return result }
         layoutStore.remove(appKey: app.key, capacity: capacity)
         apps.removeAll { $0.key == app.key }
         appsByKey[app.key] = nil
         viewController.reloadAll()
-        return true
+        return result
     }
 
     func applyPreferences() {

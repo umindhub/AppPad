@@ -4,7 +4,7 @@ import QuartzCore
 enum GridContext: Equatable {
     case page(Int)          // launcher page index
     case folder(String)     // open folder id
-    case results            // search results (read-only)
+    case results            // search results (edit mode: delete badges only, no reordering)
 }
 
 protocol PageGridDelegate: AnyObject {
@@ -34,7 +34,8 @@ final class PageGridView: FlippedView {
     }
     weak var delegate: PageGridDelegate?
 
-    var allowsEditing: Bool { context != .results }
+    // Search results can wiggle / delete but never reorder or make folders.
+    var allowsReordering: Bool { context != .results }
 
     private(set) var cells: [GridCellView] = []
     private(set) var entries: [GridEntry] = []
@@ -179,7 +180,7 @@ final class PageGridView: FlippedView {
 
     func setEditing(_ editing: Bool) {
         for (i, cell) in cells.enumerated() {
-            cell.setEditing(editing && allowsEditing, badge: badgeKind(for: entries[i]))
+            cell.setEditing(editing, badge: badgeKind(for: entries[i]))
         }
     }
 

@@ -1,6 +1,6 @@
 import AppKit
 
-// Edit mode (wiggle + delete badges), grid callbacks, context menus, delete / uninstall.
+// Edit mode (wiggle + delete badges, long press or hold ⌥), grid callbacks, context menus, delete / uninstall.
 extension LaunchpadViewController: PageGridDelegate {
 
     // MARK: - Edit mode
@@ -8,7 +8,7 @@ extension LaunchpadViewController: PageGridDelegate {
     func setEditingLayout(_ editing: Bool) {
         guard editing != isEditingLayout else { return }
         isEditingLayout = editing
-        for page in pager.pages {
+        for page in pager.pages + resultsPager.pages {
             (page as? PageGridView)?.setEditing(editing)
         }
         folderOverlay?.grid.setEditing(editing)
@@ -94,24 +94,67 @@ extension LaunchpadViewController: PageGridDelegate {
         endDrag(event)
     }
 
+    // MARK: - Hold ⌥ (macOS 15 Launchpad)
+
+    static let optionHoldDelay: Duration = .milliseconds(500)
+
+    // ⌥ alone held for a moment enters edit mode (stays after release, like a long press).
+    // Any other key / modifier, click or scroll cancels.
+    func observeOptionHold(_ event: NSEvent) {
+        let modifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
+        guard event.type == .flagsChanged, modifiers == .option, canStartOptionHold else {
+            cancelOptionHold()
+            return
+        }
+        guard optionHoldTask == nil else { return }   // second ⌥ key while the first is held
+        optionHoldTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.optionHoldDelay)
+            guard let self, !Task.isCancelled else { return }
+            self.optionHoldTask = nil
+            if self.canStartOptionHold { self.setEditingLayout(true) }
+        }
+    }
+
+    func cancelOptionHold() {
+        optionHoldTask?.cancel()
+        optionHoldTask = nil
+    }
+
+    private var canStartOptionHold: Bool {
+        guard !isEditingLayout, confirmOverlay == nil, drag == nil, systemDrag == nil,
+              view.window?.isVisible == true else { return false }
+        // Typing in another field (folder rename): ⌥ is for characters there.
+        if let editor = view.window?.firstResponder as? NSTextView,
+           (editor.delegate as AnyObject?) !== searchField { return false }
+        return true
+    }
+
     // MARK: - Delete / uninstall
 
-    // App Store apps: plain move to Trash. Others: uninstall with leftover file list.
+    // Every deletable app gets the leftover list (App Store apps keep data in their containers).
+    // The scan runs off the main thread; the dialog appears when it is done.
     func presentDelete(_ app: AppInfo) {
+        let installed = controller?.installedBundleIDs ?? []
+        Task { [weak self] in
+            let scan = await Task.detached(priority: .userInitiated) {
+                AppUninstaller.scan(app, installedIDs: installed)
+            }.value
+            guard let self, self.view.window?.isVisible == true else { return }
+            self.showDeleteConfirm(app, scan: scan)
+        }
+    }
+
+    private func showDeleteConfirm(_ app: AppInfo, scan: AppUninstaller.Scan) {
         let isRunning = app.bundleID.map { !NSRunningApplication.runningApplications(withBundleIdentifier: $0).isEmpty } ?? false
-        var items: [ConfirmOverlayView.CheckItem] = []
-        let title: String
-        var message: String
-        if app.isAppStore {
-            title = String(localized: "Delete “\(app.name)”?")
-            message = String(localized: "The app will be moved to the Trash.")
-        } else {
-            title = String(localized: "Uninstall “\(app.name)”?")
-            let leftovers = AppUninstaller.findLeftovers(for: app)
-            items = leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
-            message = leftovers.isEmpty
-                ? String(localized: "The app will be moved to the Trash. No related files were found.")
-                : String(localized: "The app and the checked related files will be moved to the Trash.")
+        let title = app.isAppStore
+            ? String(localized: "Delete “\(app.name)”?")
+            : String(localized: "Uninstall “\(app.name)”?")
+        let items = scan.leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
+        var message = items.isEmpty
+            ? String(localized: "The app will be moved to the Trash. No related files were found.")
+            : String(localized: "The app and the checked related files will be moved to the Trash.")
+        if items.contains(where: { $0.url.path.hasPrefix("/Library/") }) {
+            message += "\n" + String(localized: "Files in /Library may require an administrator password.")
         }
         if isRunning {
             message += "\n" + String(localized: "The app is running and will be quit first.")
@@ -120,22 +163,39 @@ extension LaunchpadViewController: PageGridDelegate {
             icon: IconCache.shared.icon(for: app), title: title, message: message, items: items,
             confirmTitle: String(localized: "Move to Trash"), destructive: true
         ) { [weak self] urls in
-            self?.performUninstall(app, extra: urls)
+            self?.performUninstall(app, bundleIDs: scan.bundleIDs, extra: urls)
         }
     }
 
-    private func performUninstall(_ app: AppInfo, extra: [URL]) {
+    private func performUninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) {
         dismissConfirm()
         Task { [weak self] in
             guard let controller = self?.controller else { return }
-            let ok = await controller.uninstall(app, extra: extra)
-            guard !ok, let self else { return }
-            self.showConfirm(
-                icon: IconCache.shared.icon(for: app),
-                title: String(localized: "Couldn’t move “\(app.name)” to the Trash."),
-                message: String(localized: "Quit the app and try again."),
-                items: [], confirmTitle: String(localized: "OK"), destructive: false, showsCancel: false
-            ) { [weak self] _ in self?.dismissConfirm() }
+            let result = await controller.uninstall(app, bundleIDs: bundleIDs, extra: extra)
+            guard let self else { return }
+            let icon = IconCache.shared.icon(for: app)
+            if !result.appRemoved {
+                self.showConfirm(
+                    icon: icon,
+                    title: String(localized: "Couldn’t move “\(app.name)” to the Trash."),
+                    message: String(localized: "Quit the app and try again. Deleting it may also require an administrator password."),
+                    items: [], confirmTitle: String(localized: "OK"), destructive: false, showsCancel: false
+                ) { [weak self] _ in self?.dismissConfirm() }
+            } else if !result.failed.isEmpty {
+                // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
+                self.showConfirm(
+                    icon: icon,
+                    title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash."),
+                    message: String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder."),
+                    items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
+                    confirmTitle: String(localized: "Show in Finder"), destructive: false
+                ) { [weak self] urls in
+                    self?.dismissConfirm()
+                    guard !urls.isEmpty else { return }
+                    self?.controller?.hide()
+                    NSWorkspace.shared.activateFileViewerSelecting(urls)
+                }
+            }
         }
     }
 

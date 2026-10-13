@@ -268,7 +268,7 @@ final class GridCellView: FlippedView {
         isDragging = false
         longPressFired = false
         mouseDownPoint = event.locationInWindow
-        guard grid?.allowsEditing == true else { return }
+        guard grid != nil else { return }
         longPressTask?.cancel()
         longPressTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(500))
@@ -285,7 +285,7 @@ final class GridCellView: FlippedView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard let grid, grid.allowsEditing else { return }
+        guard let grid else { return }
         if isDragging {
             grid.cellDragMoved(self, event: event)
             return
@@ -294,6 +294,8 @@ final class GridCellView: FlippedView {
         let dy = event.locationInWindow.y - mouseDownPoint.y
         guard dx * dx + dy * dy > 25 else { return }
         longPressTask?.cancel()
+        // Search results: moving only cancels the long press (a click still launches).
+        guard grid.allowsReordering else { return }
         isPressed = false
         isDragging = true
         grid.cellDidBeginDrag(self, event: event, grabPoint: mouseDownPoint)
