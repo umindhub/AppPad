@@ -8,7 +8,7 @@ final class WindowManager {
     // Called when a shortcut fires without Accessibility permission.
     var onNeedsAccess: (() -> Void)?
 
-    private enum Side { case left, right }
+    private enum Side { case left, right, top, bottom }
 
     private enum Placement: Equatable {
         case snap(Side, Int)   // index into fractions
@@ -49,6 +49,8 @@ final class WindowManager {
         switch action {
         case .snapLeft: snap(window, frame: frame, side: .left, screen: screen)
         case .snapRight: snap(window, frame: frame, side: .right, screen: screen)
+        case .snapTop: snap(window, frame: frame, side: .top, screen: screen)
+        case .snapBottom: snap(window, frame: frame, side: .bottom, screen: screen)
         case .maximize: apply(.maximized, rect: Self.visibleArea(screen), to: window, current: frame)
         case .restore: restore(window)
         case .previousDisplay: moveToDisplay(window, frame: frame, from: screen, step: -1)
@@ -149,10 +151,19 @@ final class WindowManager {
         axRect(screen.visibleFrame)
     }
 
+    // Left/right: full height, fractional width. Top/bottom: full width, fractional height.
     private static func snapRect(_ side: Side, _ index: Int, in area: CGRect) -> CGRect {
-        let width = (area.width * fractions[index]).rounded()
-        let x = side == .left ? area.minX : area.maxX - width
-        return CGRect(x: x, y: area.minY, width: width, height: area.height)
+        let f = fractions[index]
+        switch side {
+        case .left, .right:
+            let width = (area.width * f).rounded()
+            let x = side == .left ? area.minX : area.maxX - width
+            return CGRect(x: x, y: area.minY, width: width, height: area.height)
+        case .top, .bottom:
+            let height = (area.height * f).rounded()
+            let y = side == .top ? area.minY : area.maxY - height   // AX: minY is the top edge
+            return CGRect(x: area.minX, y: y, width: area.width, height: height)
+        }
     }
 
     // Loose match: apps like Terminal round sizes to their character grid.
