@@ -2,7 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 import Combine
 
-// Layout: title (left, on the search line) + hint below it, search field, list (2/3) | preview (1/3).
+// Layout: title + one line of shortcut hints (left, the block centered on the search line), search field, list (2/3) | preview (1/3).
 // Rows: workflows and apps mixed, most used first (shared frecency); while searching, match quality first.
 // Search: only the text before the first space is matched; the rest is the workflow argument.
 // Typing after the first space only changes the argument: rows and selection stay.
@@ -11,7 +11,7 @@ import Combine
 // Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
 // While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
 // Keys: ↩ run / open / copy, Tab complete name, ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
-// in-panel workflow shortcuts (Settings › Workflows), Esc clears / closes.
+// in-panel workflow shortcuts (Settings › Workflows), Esc closes (or clears first, see General settings).
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
     weak var controller: WorkflowPanelController?
@@ -19,8 +19,11 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     let root = FlippedView()
     private let searchChrome = GlassSearchFieldView()
     private var searchField: NSSearchField { searchChrome.field }
-    private let titleLabel = NSTextField(labelWithString: String(localized: "Workflows"))
-    private let hintLabel = NSTextField(labelWithString: String(localized: "Tab Complete   ⌘⇧J / ⌘⇧K  Switch"))
+    private let header = PanelHeaderView(title: String(localized: "Workflows"), hints: [
+        .init(keys: "Tab", action: String(localized: "Complete")),
+        .init(keys: "⌘K/J", action: String(localized: "Up/Down")),
+        .init(keys: "⌘⇧K/J", action: String(localized: "Switch")),
+    ])
     private let scrollView = NSScrollView()
     private let tableView = ClipTableView()
     private let divider = NSBox()
@@ -56,10 +59,6 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         searchField.delegate = self
         searchField.focusRingType = .none
 
-        titleLabel.font = .systemFont(ofSize: 14, weight: .semibold)
-        titleLabel.textColor = .secondaryLabelColor
-        hintLabel.font = .systemFont(ofSize: 11)
-        hintLabel.textColor = .tertiaryLabelColor
 
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("item"))
         column.resizingMask = .autoresizingMask
@@ -89,7 +88,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         emptyLabel.isHidden = true
         preview.onEscape = { [weak self] in self?.focusSearch() }
 
-        [scrollView, divider, preview, searchChrome, titleLabel, hintLabel, emptyLabel].forEach {
+        [scrollView, divider, preview, searchChrome, header, emptyLabel].forEach {
             root.addSubview($0)
         }
 
@@ -110,18 +109,17 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         let b = view.bounds
         let pad = Self.pad
         let fieldHeight = searchChrome.preferredHeight
-        let labelWidth = ceil(titleLabel.intrinsicContentSize.width)
-        let hintWidth = ceil(hintLabel.intrinsicContentSize.width)
-        let side = max(labelWidth, hintWidth) + 16
+        let headerSize = header.preferredSize
+        let side = headerSize.width + 16
         let fieldWidth = max(160, min(560, b.width - 2 * pad - 2 * side))
-        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: 18,
+        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(),
+                                    y: 18,
                                     width: fieldWidth, height: fieldHeight)
-        // Title centered on the search field's line, hint right below the title.
-        let midY = searchChrome.frame.midY
-        titleLabel.frame = NSRect(x: pad, y: (midY - 9).rounded(), width: labelWidth, height: 18)
-        hintLabel.frame = NSRect(x: pad, y: titleLabel.frame.maxY + 2, width: hintWidth, height: 16)
+        // Title + hints as one block, its center on the search field's center.
+        header.frame = NSRect(x: pad, y: (searchChrome.frame.midY - headerSize.height / 2).rounded(),
+                              width: headerSize.width, height: headerSize.height)
 
-        let top = max(searchChrome.frame.maxY + 16, hintLabel.frame.maxY + 8)
+        let top = max(searchChrome.frame.maxY + 16, header.frame.maxY + 8)
         let bottom = b.height - 18
         let inner = b.width - 2 * pad
         let listWidth = (inner * 2 / 3).rounded()
@@ -438,8 +436,9 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         controller?.edit(workflow)
     }
 
+    // Clears the search first only when that setting is on (General › Keyboard).
     private func handleEscape() {
-        if !searchField.stringValue.isEmpty {
+        if prefs.escClearsSearchFirst, !searchField.stringValue.isEmpty {
             searchField.stringValue = ""
             reload(selectFirst: true)
         } else {

@@ -52,6 +52,8 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         panel.contentView = container
         background.frame = container.bounds
         content.frame = container.bounds
+        panel.morphBackground = background
+        panel.morphContent = content
 
         panel.delegate = self
         panel.keyHandler = { [weak self] event in
@@ -92,8 +94,8 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow(scope: scope)
 
-        // ⌘⇧J/K switch: appear opaque over the previous panel, no fade.
-        panel.alphaValue = handOff ? 1 : 0
+        // ⌘⇧J/K switch: opaque over the previous panel, or morph from it (different size).
+        panel.alphaValue = handOff ? PanelSwitch.incomingAlpha(for: panel) : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
         viewController.focusSearch()

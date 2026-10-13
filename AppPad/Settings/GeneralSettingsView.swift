@@ -25,6 +25,13 @@ struct GeneralSettingsView: View {
                 }
             }
 
+            Section("Keyboard") {
+                Toggle(isOn: $prefs.escClearsSearchFirst) {
+                    Text("Esc clears the search first")
+                    Text("When on, Esc clears the search text first and closes on the next press. When off, Esc closes right away. Applies to AppPad, Clipboard and Workflows.")
+                }
+            }
+
             Section("Displays") {
                 Toggle(isOn: $prefs.panelsFollowMouseScreen) {
                     Text("Open on the display with the pointer")

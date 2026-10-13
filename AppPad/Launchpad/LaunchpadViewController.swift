@@ -427,7 +427,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             setEditingLayout(false)
             return
         }
-        if !searchField.stringValue.isEmpty {
+        // Open folder / edit mode / confirm still close first; only the search step is optional.
+        if prefs.escClearsSearchFirst, !searchField.stringValue.isEmpty {
             searchField.stringValue = ""
             endSearch()
             return

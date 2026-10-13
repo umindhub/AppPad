@@ -169,6 +169,15 @@ final class LaunchpadBackgroundView: NSView {
     private let extraBlur = NSVisualEffectView()
     // Latest wallpaper request; stale async results are dropped.
     private var requestID = 0
+    // How the shown wallpaper maps to screen points (for PanelMorph's moving slice).
+    private struct SliceGeometry {
+        let screenFrame: NSRect
+        let filled: CGSize
+        let offset: CGSize
+        let panelFrame: NSRect
+    }
+    private var slice: SliceGeometry?
+    private static let sliceKey = "morphSlice"
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -225,6 +234,7 @@ final class LaunchpadBackgroundView: NSView {
     // Plain color (clipboard panel options).
     func update(solid color: NSColor) {
         requestID += 1
+        slice = nil
         imageHost.isHidden = true
         material.isHidden = true
         extraBlur.isHidden = true
@@ -252,6 +262,7 @@ final class LaunchpadBackgroundView: NSView {
 
     // No wallpaper image: blur whatever is behind the window instead.
     private func showMaterialOnly() {
+        slice = nil
         imageHost.isHidden = true
         material.blendingMode = .behindWindow
     }
@@ -266,11 +277,40 @@ final class LaunchpadBackgroundView: NSView {
         let filled = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
         let offsetX = (filled.width - screenFrame.width) / 2
         let offsetY = (filled.height - screenFrame.height) / 2
-        let x = (panelFrame.minX - screenFrame.minX + offsetX) / filled.width
-        let y = (panelFrame.minY - screenFrame.minY + offsetY) / filled.height
+        let geometry = SliceGeometry(screenFrame: screenFrame, filled: filled,
+                                     offset: CGSize(width: offsetX, height: offsetY), panelFrame: panelFrame)
+        slice = geometry
+        imageLayer.removeAnimation(forKey: Self.sliceKey)
         imageLayer.contents = image
-        imageLayer.contentsRect = CGRect(x: x, y: y,
-                                         width: panelFrame.width / filled.width,
-                                         height: panelFrame.height / filled.height)
+        imageLayer.contentsRect = Self.contentsRect(for: panelFrame, geometry)
+    }
+
+    private static func contentsRect(for rect: NSRect, _ g: SliceGeometry) -> CGRect {
+        CGRect(x: (rect.minX - g.screenFrame.minX + g.offset.width) / g.filled.width,
+               y: (rect.minY - g.screenFrame.minY + g.offset.height) / g.filled.height,
+               width: rect.width / g.filled.width,
+               height: rect.height / g.filled.height)
+    }
+
+    // PanelMorph: while the panel is scaled onto `rect` (screen points), show the wallpaper under `rect`,
+    // so the blur stays put instead of shrinking with the panel. nil = back to the panel's own frame.
+    // Animated with the same duration / curve as the scale, so both stay in step.
+    func setWallpaperSlice(onScreen rect: NSRect?, duration: TimeInterval?, timing: CAMediaTimingFunction? = nil) {
+        guard let slice, !imageHost.isHidden else { return }
+        let target = Self.contentsRect(for: rect ?? slice.panelFrame, slice)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        if let duration {
+            let animation = CABasicAnimation(keyPath: "contentsRect")
+            animation.fromValue = NSValue(rect: imageLayer.presentation()?.contentsRect ?? imageLayer.contentsRect)
+            animation.toValue = NSValue(rect: target)
+            animation.duration = duration
+            animation.timingFunction = timing ?? CAMediaTimingFunction(name: .easeOut)
+            imageLayer.add(animation, forKey: Self.sliceKey)
+        } else {
+            imageLayer.removeAnimation(forKey: Self.sliceKey)
+        }
+        imageLayer.contentsRect = target
+        CATransaction.commit()
     }
 }

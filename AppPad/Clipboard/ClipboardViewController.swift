@@ -1,7 +1,8 @@
 import AppKit
 import Carbon.HIToolbox
 
-// Layout: title (left, on the search line) + hint below it, search field, app filter chips, list (2/3) | preview (1/3).
+// Layout: title + one line of shortcut hints (left, the block centered on the search line), search field, app filter chips,
+// list (2/3) | preview (1/3).
 // The search field always keeps focus; arrows, ⌘J/K, Enter and ⌘1–⌘0 drive the list.
 // Mouse: hovering a row selects it, a single click pastes it.
 final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
@@ -11,9 +12,11 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
     let root = FlippedView()
     private let searchChrome = GlassSearchFieldView()
     private var searchField: NSSearchField { searchChrome.field }
-    private let scopeLabel = NSTextField(labelWithString: String(localized: "Clipboard"))
+    private let header = PanelHeaderView(title: String(localized: "Clipboard"), hints: [
+        .init(keys: "⌘K/J", action: String(localized: "Up/Down")),
+        .init(keys: "⌘⇧K/J", action: String(localized: "Switch")),
+    ])
     private let savedToggle = SavedToggleView()
-    private let switchHint = NSTextField(labelWithString: String(localized: "⌘⇧J / ⌘⇧K  Switch"))
     private let filterBar = AppFilterBarView()
     private let scrollView = NSScrollView()
     private let tableView = ClipTableView()
@@ -51,10 +54,6 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         searchField.delegate = self
         searchField.focusRingType = .none
 
-        scopeLabel.font = .systemFont(ofSize: 14, weight: .semibold)
-        scopeLabel.textColor = .secondaryLabelColor
-        switchHint.font = .systemFont(ofSize: 11)
-        switchHint.textColor = .tertiaryLabelColor
         savedToggle.toolTip = String(localized: "Show saved items only")
         savedToggle.onToggle = { [weak self] in
             guard let self else { return }
@@ -95,7 +94,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         filterBar.onToggle = { [weak self] bundleID in self?.toggleAppFilter(bundleID) }
         preview.onEscape = { [weak self] in self?.focusSearch() }
 
-        [scrollView, divider, preview, filterBar, searchChrome, scopeLabel, savedToggle, switchHint, emptyLabel].forEach {
+        [scrollView, divider, preview, filterBar, searchChrome, header, savedToggle, emptyLabel].forEach {
             root.addSubview($0)
         }
 
@@ -111,25 +110,25 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         let pad = Self.pad
 
         let fieldHeight = searchChrome.preferredHeight
-        // Left: "Clipboard" title on the search line, hint below it. Center: search field. Right of it: [★ Saved], same height and line.
-        let labelWidth = ceil(scopeLabel.intrinsicContentSize.width)
-        let hintWidth = ceil(switchHint.intrinsicContentSize.width)
+        // Left: title + hints block, its center on the search field's center. Center: search field.
+        // Right of it: [★ Saved], same height and line.
+        let headerSize = header.preferredSize
         if savedToggle.height != fieldHeight { savedToggle.setHeight(fieldHeight) }
         let toggleWidth = savedToggle.intrinsicContentSize.width
         let gap: CGFloat = 10
-        let side = max(max(labelWidth, hintWidth) + 16, toggleWidth + gap + 16)
+        let side = max(headerSize.width + 16, toggleWidth + gap + 16)
         let fieldWidth = max(160, min(560, b.width - 2 * pad - 2 * side))
-        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: 18,
+        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(),
+                                    y: 18,
                                     width: fieldWidth, height: fieldHeight)
         savedToggle.frame = NSRect(x: searchChrome.frame.maxX + gap, y: searchChrome.frame.minY,
                                    width: toggleWidth, height: fieldHeight)
-        let midY = searchChrome.frame.midY
-        scopeLabel.frame = NSRect(x: pad, y: (midY - 9).rounded(), width: labelWidth, height: 18)
-        switchHint.frame = NSRect(x: pad, y: scopeLabel.frame.maxY + 2, width: hintWidth, height: 16)
+        header.frame = NSRect(x: pad, y: (searchChrome.frame.midY - headerSize.height / 2).rounded(),
+                              width: headerSize.width, height: headerSize.height)
 
         filterBar.frame = NSRect(x: pad, y: searchChrome.frame.maxY + 8, width: b.width - 2 * pad,
                                  height: AppFilterBarView.chipSize + 4)
-        let top = max(filterBar.frame.maxY + 8, switchHint.frame.maxY + 8)
+        let top = max(filterBar.frame.maxY + 8, header.frame.maxY + 8)
         let bottom = b.height - 18
         let inner = b.width - 2 * pad
         let listWidth = (inner * 2 / 3).rounded()
@@ -367,8 +366,9 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
     }
 
+    // Clears the search first only when that setting is on (General › Keyboard).
     private func handleEscape() {
-        if !searchField.stringValue.isEmpty {
+        if prefs.escClearsSearchFirst, !searchField.stringValue.isEmpty {
             replaceSearchText("")
         } else {
             controller?.hide()

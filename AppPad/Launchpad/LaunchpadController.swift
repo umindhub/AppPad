@@ -73,6 +73,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.contentView = container
         background.frame = container.bounds
         content.frame = container.bounds
+        panel.morphBackground = background
+        panel.morphContent = content
 
         panel.delegate = self
         panel.keyHandler = { [weak self] event in
@@ -312,7 +314,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         let handOff = PanelSwitch.prepareIncoming(panel)
         guard presentPanel(opaque: handOff) else { return }
         if handOff {
-            // ⌘⇧J/K switch: opaque over the previous panel; input switch after its hide().
+            // ⌘⇧J/K switch: opaque over / morphing from the previous panel; input switch after its hide().
             viewController.focusSearch()
             PanelSwitch.takeOver(panel) { [weak self] in self?.switchInputIfNeeded() }
             return
@@ -378,7 +380,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         isHiding = false
     }
 
-    // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over).
+    // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over, opaque or morphing).
     @discardableResult
     private func presentPanel(opaque: Bool = false) -> Bool {
         guard let screen = PanelScreen.target() else { return false }
@@ -390,7 +392,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         applyFrame(targetFrame(on: screen), on: screen, display: false)
         viewController.prepareForShow(resetToFirstPage: prefs.openPagePolicy == .firstPage)
         setContentScale(1, duration: nil)
-        panel.alphaValue = opaque ? 1 : 0
+        panel.alphaValue = opaque ? PanelSwitch.incomingAlpha(for: panel) : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
         PinchGestureMonitor.shared.setTapEnabled(true)

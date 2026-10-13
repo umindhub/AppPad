@@ -58,6 +58,7 @@ final class Preferences: ObservableObject {
         static let glassControls = "glassControls"
         static let pinchToOpen = "pinchToOpen"
         static let followMouseScreen = "panelsFollowMouseScreen"
+        static let escClearsFirst = "escClearsSearchFirst"
         static let clipEnabled = "clipboardEnabled"
         static let clipHotKey = "clipboardHotKey"
         static let clipSavedHotKey = "clipboardSavedHotKey"
@@ -101,6 +102,9 @@ final class Preferences: ObservableObject {
     @Published var pinchToOpen: Bool { didSet { save(pinchToOpen, Key.pinchToOpen) } }
     // Launchpad / Clipboard / Workflow panel open on the display under the mouse; off = main display.
     @Published var panelsFollowMouseScreen: Bool { didSet { save(panelsFollowMouseScreen, Key.followMouseScreen) } }
+    // Esc in AppPad / Clipboard / Workflow panel: on = clear the search first, close on the next press;
+    // off (default) = close right away.
+    @Published var escClearsSearchFirst: Bool { didSet { save(escClearsSearchFirst, Key.escClearsFirst) } }
     @Published var appHotKeys: [AppHotKey] {
         didSet { save((try? JSONEncoder().encode(appHotKeys)) ?? Data(), Key.appHotKeys) }
     }
@@ -155,6 +159,7 @@ final class Preferences: ObservableObject {
         glassControls = d.object(forKey: Key.glassControls) as? Bool ?? true
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true
         panelsFollowMouseScreen = d.object(forKey: Key.followMouseScreen) as? Bool ?? true
+        escClearsSearchFirst = d.object(forKey: Key.escClearsFirst) as? Bool ?? false
         workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)
