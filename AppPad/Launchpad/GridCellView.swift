@@ -155,17 +155,20 @@ final class GridCellView: FlippedView {
         if editing { startWiggle() } else { iconContainer.layer?.removeAnimation(forKey: "wiggle") }
     }
 
-    // Icon snapshot for the floating drag image.
+    // Image for the floating drag icon. Rendered the same way as the live cell (no bitmap
+    // snapshot), so the landing can swap to the real cell without any visible change:
+    // app → the very same NSImage; folder → drawn by the same code as FolderIconView.
     func snapshotIcon() -> NSImage {
-        let view: NSView = imageView.isHidden ? folderIcon : imageView
-        let wasHidden = badge.isHidden
-        badge.isHidden = true
-        defer { badge.isHidden = wasHidden }
-        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return NSImage() }
-        view.cacheDisplay(in: view.bounds, to: rep)
-        let image = NSImage(size: view.bounds.size)
-        image.addRepresentation(rep)
-        return image
+        if !imageView.isHidden, let image = imageView.image { return image }
+        let icons = Array(folderIcon.icons.prefix(9))
+        let appearance = folderIcon.effectiveAppearance
+        let size = folderIcon.bounds.size
+        return NSImage(size: size, flipped: true) { rect in
+            appearance.performAsCurrentDrawingAppearance {
+                FolderIconView.drawTile(in: rect, icons: icons, hiddenIndex: nil)
+            }
+            return true
+        }
     }
 
     // Icon rect in this cell's coordinates.
@@ -386,13 +389,17 @@ final class FolderIconView: FlippedView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        let b = bounds
+        Self.drawTile(in: bounds, icons: icons, hiddenIndex: hiddenIndex)
+    }
+
+    // Plate + mini icons; shared with the drag image so both render identically.
+    static func drawTile(in b: NSRect, icons: [NSImage], hiddenIndex: Int?) {
         let radius = b.width * 0.24
         NSColor.labelColor.withAlphaComponent(0.16).setFill()
         NSBezierPath(roundedRect: b, xRadius: radius, yRadius: radius).fill()
 
         for (index, image) in icons.prefix(9).enumerated() where index != hiddenIndex {
-            image.draw(in: Self.miniRect(index: index, in: b), from: .zero, operation: .sourceOver,
+            image.draw(in: miniRect(index: index, in: b), from: .zero, operation: .sourceOver,
                        fraction: 1, respectFlipped: true, hints: nil)
         }
     }

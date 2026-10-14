@@ -13,8 +13,9 @@ import QuartzCore
 // - drags that start in a folder reorder inside it (hold at the sheet's side → folder page flips),
 //   or leave the box to go back to the pages
 // - an app dragged out of the panel becomes a system file drag (drop on the Dock to add it)
-// - landing: the drag shadow fades out over the last `landingGlowDistance` pt, then the floating
-//   snapshot dissolves into the real cell (no brightness pop when the layout is rebuilt)
+// - landing: the drag shadow fades out over the last `landingGlowDistance` pt; the floating icon
+//   is rendered exactly like the real cell, so it is swapped for it in the same frame as the
+//   reload (no cross-fade: two stacked copies look brighter on translucent backgrounds)
 // - until the layout is committed, a click first commits it, then acts on the rebuilt grid
 struct DragState {
     let source: DragSource
@@ -39,7 +40,6 @@ extension LaunchpadViewController {
     static let reorderSpeedLimit: CGFloat = 40   // pt/s; reorder only when (almost) stopped
     static let reorderDwell: Duration = .milliseconds(280)
     static let landingGlowDistance: CGFloat = 300   // pt before the landing spot where the shadow starts fading
-    static let landingDissolveSeconds = 0.16        // snapshot → real cell cross-fade
 
     static let dragShadow: NSShadow = {
         let shadow = NSShadow()
@@ -330,11 +330,8 @@ extension LaunchpadViewController {
             folderOverlay?.passesClicks = true
         }
 
-        // Landing spot in root coordinates → dissolve into the real cell after the reload.
-        // Merges ride inside the target tile (and shrink to a mini icon): just removed.
-        let dissolveRect = (isMerge || landing.fade) ? nil : landing.rect
         let token = UUID()
-        pendingDrop = (token: token, run: { [weak self] immediate in
+        pendingDrop = (token: token, run: { [weak self] _ in
             guard let self else { return }
             state.sourceCell.isDragSource = false
             if case .folder = state.source, state.leftFolder {
@@ -345,7 +342,7 @@ extension LaunchpadViewController {
             } else {
                 self.reloadAll()                                       // cancelled: restore
             }
-            self.finishDragImage(dissolvingAt: immediate ? nil : dissolveRect)
+            self.finishDragImage()
         })
         // Merges wait for the gentle gap-closing spring so the reload does not cut it short.
         let commitDelay = isMerge ? Self.mergeCommitMilliseconds : duration + 10
@@ -363,30 +360,16 @@ extension LaunchpadViewController {
         pending.run(immediate)
     }
 
-    // After the reload: freeze the snapshot on its landing spot above everything (also above a
-    // reopened folder) and fade it out over the real cell. nil rect → remove right away.
-    private func finishDragImage(dissolvingAt rect: NSRect?) {
-        guard let rect, dragImageView.superview === root else {
-            dragImageView.removeFromSuperview()
-            dragImageView.layer?.removeAllAnimations()
-            return
-        }
+    // After the reload (same runloop turn → same frame): the real cell now shows exactly what the
+    // floating icon showed, so just remove it. Any overlap / fade would double translucent pixels
+    // (folder plate, icon edges) and flash brighter over color backgrounds.
+    private func finishDragImage() {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        dragImageView.shadow = nil
-        dragImageView.frame = rect                    // model = where the transform ended
+        dragImageView.removeFromSuperview()
         dragImageView.layer?.removeAllAnimations()
-        root.addSubview(dragImageView)                // back to the front
+        dragImageView.alphaValue = 1
         CATransaction.commit()
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = Self.landingDissolveSeconds
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            self.dragImageView.animator().alphaValue = 0
-        }, completionHandler: { [weak self] in
-            guard let self else { return }   // no new drag can start before this (superview check)
-            self.dragImageView.removeFromSuperview()
-            self.dragImageView.alphaValue = 1
-        })
     }
 
     static let landingMilliseconds = 240
