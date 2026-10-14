@@ -567,7 +567,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // 100% of the screen + "Cover the menu bar": the area grows up to the screen's top edge.
     private var coversMenuBar: Bool {
-        prefs.windowSizeMode == .screenPercent && prefs.windowPercent >= 100 && prefs.launchpadCoversMenuBar
+        prefs.windowPercent >= 100 && prefs.launchpadCoversMenuBar
     }
 
     // Area the panel is sized / centered in.
@@ -579,16 +579,11 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     private func targetFrame(on screen: NSScreen) -> NSRect {
         let visible = availableFrame(on: screen)
-        var size: NSSize
-        switch prefs.windowSizeMode {
-        case .screenPercent:
-            // Slightly taller than wide (+6% of the screen height, capped at 100%) so rows are not cramped.
-            let ratio = CGFloat(min(max(prefs.windowPercent, 30), 100)) / 100
-            let heightRatio = min(ratio + 0.06, 1)
-            size = NSSize(width: visible.width * ratio, height: visible.height * heightRatio)
-        case .custom:
-            size = NSSize(width: CGFloat(prefs.customWidth), height: CGFloat(prefs.customHeight))
-        }
+        let ratio = CGFloat(min(max(prefs.windowPercent, 30), 100)) / 100
+        // Slightly taller than wide (+6%, capped at 100%) so rows are not cramped,
+        // unless all three panels use the same percent (then they line up exactly).
+        let heightRatio = prefs.launchpadMatchesPanels ? ratio : min(ratio + 0.06, 1)
+        var size = NSSize(width: visible.width * ratio, height: visible.height * heightRatio)
         size.width = min(max(size.width, 480), visible.width)
         size.height = min(max(size.height, 360), visible.height)
         return NSRect(

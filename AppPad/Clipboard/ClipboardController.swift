@@ -207,23 +207,13 @@ final class ClipboardController: NSObject, NSWindowDelegate {
     }
 
     private func targetFrame(on screen: NSScreen) -> NSRect {
-        let visible = screen.visibleFrame
-        let w = CGFloat(min(max(prefs.clipboardWidthPercent, 30), 100)) / 100
-        let h = CGFloat(min(max(prefs.clipboardHeightPercent, 30), 100)) / 100
-        let width = min(max(visible.width * w, 520), visible.width)
-        let height = min(max(visible.height * h, 360), visible.height)
-        return NSRect(
-            x: (visible.midX - width / 2).rounded(),
-            y: (visible.midY - height / 2).rounded(),
-            width: width.rounded(),
-            height: height.rounded()
-        )
+        PanelFrame.centered(on: screen, widthPercent: prefs.clipboardWidthPercent,
+                            heightPercent: prefs.clipboardHeightPercent)
     }
 
     private func applyFrame(_ frame: NSRect, on screen: NSScreen, display: Bool) {
         panel.setFrame(frame, display: display)
-        let visible = screen.visibleFrame
-        let filled = frame.width >= visible.width - 1 && frame.height >= visible.height - 1
+        let filled = PanelFrame.isFilled(frame, on: screen)
         let radius = filled ? LaunchpadController.filledCornerRadius : LaunchpadController.cornerRadius
         container.layer?.cornerRadius = radius
         viewController.root.layer?.cornerRadius = radius
@@ -232,5 +222,30 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         let spec = PanelBackgroundSpec.current(for: .clipboard)
         background.update(spec: spec, screen: screen, panelFrame: frame)
         panel.appearance = spec.appearance(on: screen)
+    }
+}
+
+// Clipboard / Workflow panel frame: percent of the visible frame, centered.
+// Shared so both panels get the same size and position.
+enum PanelFrame {
+    static func centered(on screen: NSScreen, widthPercent: Int, heightPercent: Int) -> NSRect {
+        let visible = screen.visibleFrame
+        let range = Preferences.panelPercentRange
+        let w = CGFloat(min(max(widthPercent, range.lowerBound), range.upperBound)) / 100
+        let h = CGFloat(min(max(heightPercent, range.lowerBound), range.upperBound)) / 100
+        let width = (visible.width * w).rounded()
+        let height = (visible.height * h).rounded()
+        return NSRect(
+            x: (visible.midX - width / 2).rounded(),
+            y: (visible.midY - height / 2).rounded(),
+            width: width,
+            height: height
+        )
+    }
+
+    // Fills the visible frame: square corners, no shadow.
+    static func isFilled(_ frame: NSRect, on screen: NSScreen) -> Bool {
+        let visible = screen.visibleFrame
+        return frame.width >= visible.width - 1 && frame.height >= visible.height - 1
     }
 }

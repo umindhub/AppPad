@@ -23,6 +23,7 @@ struct WorkflowSettingsView: View {
     var body: some View {
         Form {
             panelSection
+            windowSection
             BackgroundSection(settings: $prefs.workflowBackground, allowsFollow: true)
             workflowsSection
             ForEach(groupKeys, id: \.self) { group in
@@ -125,6 +126,22 @@ struct WorkflowSettingsView: View {
             Text("The panel lists your workflows and apps. ↩ runs or opens, ⌘1–⌘0 picks a row, ⌘↩ edits the workflow here.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Window
+
+    // Follows the Clipboard window by default; off = own width / height.
+    private var windowSection: some View {
+        Section("Window") {
+            Toggle(isOn: $prefs.workflowFollowsClipboardSize) {
+                Text("Same as Clipboard")
+                Text("Uses the Clipboard window's width, height and position.")
+            }
+            if !prefs.workflowFollowsClipboardSize {
+                PanelPercentSlider(title: "Width", value: $prefs.workflowWidthPercent)
+                PanelPercentSlider(title: "Height", value: $prefs.workflowHeightPercent)
+            }
         }
     }
 

@@ -9,10 +9,6 @@ nonisolated enum PageIndicatorStyle: String, CaseIterable, Sendable {
     case dots, numbers
 }
 
-nonisolated enum WindowSizeMode: String, CaseIterable, Sendable {
-    case screenPercent, custom
-}
-
 nonisolated enum BackgroundClickAction: String, CaseIterable, Sendable {
     case closePanel   // like clicking outside (macOS 15 Launchpad)
     case nothing
@@ -136,15 +132,17 @@ final class Preferences: ObservableObject {
         static let indicator = "pageIndicatorStyle"
         static let columns = "gridColumns"
         static let rows = "gridRows"
-        static let sizeMode = "windowSizeMode"
         static let percent = "windowPercent"
         static let coverMenuBar = "launchpadCoversMenuBar"
-        static let width = "customWidth"
-        static let height = "customHeight"
+        // Removed "Custom" size mode, cleared once on launch.
+        static let legacySizeKeys = ["windowSizeMode", "customWidth", "customHeight"]
         static let theme = "appTheme"
         static let launchpadBackground = "launchpadBackground.v2"
         static let clipBackgroundV2 = "clipboardBackground.v2"
         static let workflowBackground = "workflowBackground.v2"
+        static let workflowFollowsClipSize = "workflowFollowsClipboardSize"
+        static let workflowWidth = "workflowWidthPercent"
+        static let workflowHeight = "workflowHeightPercent"
         // Pre-v2 keys, read once for migration.
         static let legacyBackground = "backgroundStyle"
         static let backgroundClick = "backgroundClickAction"
@@ -182,12 +180,10 @@ final class Preferences: ObservableObject {
     @Published var pageIndicatorStyle: PageIndicatorStyle { didSet { save(pageIndicatorStyle.rawValue, Key.indicator) } }
     @Published var gridColumns: Int { didSet { save(gridColumns, Key.columns) } }
     @Published var gridRows: Int { didSet { save(gridRows, Key.rows) } }
-    @Published var windowSizeMode: WindowSizeMode { didSet { save(windowSizeMode.rawValue, Key.sizeMode) } }
-    @Published var windowPercent: Int { didSet { save(windowPercent, Key.percent) } }
+    // AppPad always follows the screen size (percent of the visible frame).
+    @Published var windowPercent: Int { didSet { updatePanelMatch(); save(windowPercent, Key.percent) } }
     // At 100%: panel also covers the menu bar.
     @Published var launchpadCoversMenuBar: Bool { didSet { save(launchpadCoversMenuBar, Key.coverMenuBar) } }
-    @Published var customWidth: Int { didSet { save(customWidth, Key.width) } }
-    @Published var customHeight: Int { didSet { save(customHeight, Key.height) } }
     @Published var appTheme: AppTheme { didSet { save(appTheme.rawValue, Key.theme) } }
     @Published var launchpadBackground: BackgroundSettings { didSet { saveBackground(launchpadBackground, Key.launchpadBackground) } }
     @Published var backgroundClickAction: BackgroundClickAction { didSet { save(backgroundClickAction.rawValue, Key.backgroundClick) } }
@@ -215,8 +211,8 @@ final class Preferences: ObservableObject {
     @Published var clipboardEnabled: Bool { didSet { save(clipboardEnabled, Key.clipEnabled) } }
     @Published var clipboardHotKey: KeyCombo? { didSet { saveCombo(clipboardHotKey, Key.clipHotKey) } }
     @Published var clipboardSavedHotKey: KeyCombo? { didSet { saveCombo(clipboardSavedHotKey, Key.clipSavedHotKey) } }
-    @Published var clipboardWidthPercent: Int { didSet { save(clipboardWidthPercent, Key.clipWidth) } }
-    @Published var clipboardHeightPercent: Int { didSet { save(clipboardHeightPercent, Key.clipHeight) } }
+    @Published var clipboardWidthPercent: Int { didSet { updatePanelMatch(); save(clipboardWidthPercent, Key.clipWidth) } }
+    @Published var clipboardHeightPercent: Int { didSet { updatePanelMatch(); save(clipboardHeightPercent, Key.clipHeight) } }
     @Published var clipboardSearchFontFamily: String { didSet { save(clipboardSearchFontFamily, Key.clipSearchFamily) } }
     @Published var clipboardSearchFontSize: Int { didSet { save(clipboardSearchFontSize, Key.clipSearchSize) } }
     @Published var clipboardListFontFamily: String { didSet { save(clipboardListFontFamily, Key.clipListFamily) } }
@@ -230,6 +226,24 @@ final class Preferences: ObservableObject {
 
     // MARK: Workflow panel
     @Published var workflowBackground: BackgroundSettings { didSet { saveBackground(workflowBackground, Key.workflowBackground) } }
+    // On (default): same size and position as the Clipboard panel.
+    @Published var workflowFollowsClipboardSize: Bool {
+        didSet {
+            // Turning it off starts from the Clipboard's current size (no jump).
+            if !workflowFollowsClipboardSize && oldValue {
+                workflowWidthPercent = clipboardWidthPercent
+                workflowHeightPercent = clipboardHeightPercent
+            }
+            updatePanelMatch()
+            save(workflowFollowsClipboardSize, Key.workflowFollowsClipSize)
+        }
+    }
+    @Published var workflowWidthPercent: Int { didSet { updatePanelMatch(); save(workflowWidthPercent, Key.workflowWidth) } }
+    @Published var workflowHeightPercent: Int { didSet { updatePanelMatch(); save(workflowHeightPercent, Key.workflowHeight) } }
+
+    // AppPad %, Clipboard and Workflows width / height all equal → AppPad drops its +6% height.
+    // Updated whenever one of these values changes (not when AppPad opens).
+    @Published private(set) var launchpadMatchesPanels = false
 
     // MARK: Window control
     @Published var windowControlEnabled: Bool { didSet { save(windowControlEnabled, Key.winEnabled) } }
@@ -250,11 +264,9 @@ final class Preferences: ObservableObject {
         pageIndicatorStyle = PageIndicatorStyle(rawValue: d.string(forKey: Key.indicator) ?? "") ?? .dots
         gridColumns = d.object(forKey: Key.columns) as? Int ?? 7
         gridRows = d.object(forKey: Key.rows) as? Int ?? 5
-        windowSizeMode = WindowSizeMode(rawValue: d.string(forKey: Key.sizeMode) ?? "") ?? .screenPercent
+        for key in Key.legacySizeKeys { d.removeObject(forKey: key) }
         windowPercent = d.object(forKey: Key.percent) as? Int ?? 100
         launchpadCoversMenuBar = d.object(forKey: Key.coverMenuBar) as? Bool ?? true
-        customWidth = d.object(forKey: Key.width) as? Int ?? 1280
-        customHeight = d.object(forKey: Key.height) as? Int ?? 800
         appTheme = AppTheme(rawValue: d.string(forKey: Key.theme) ?? "") ?? .auto
         launchpadBackground = Self.loadBackground(d, Key.launchpadBackground) ?? Self.migrateLaunchpadBackground(d)
         backgroundClickAction = BackgroundClickAction(rawValue: d.string(forKey: Key.backgroundClick) ?? "") ?? .closePanel
@@ -270,8 +282,8 @@ final class Preferences: ObservableObject {
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)
         clipboardSavedHotKey = Self.loadCombo(d, Key.clipSavedHotKey, default: .defaultClipboardSaved)
-        clipboardWidthPercent = d.object(forKey: Key.clipWidth) as? Int ?? 60
-        clipboardHeightPercent = d.object(forKey: Key.clipHeight) as? Int ?? 60
+        clipboardWidthPercent = Self.panelPercent(d.object(forKey: Key.clipWidth) as? Int)
+        clipboardHeightPercent = Self.panelPercent(d.object(forKey: Key.clipHeight) as? Int)
         clipboardSearchFontFamily = d.string(forKey: Key.clipSearchFamily) ?? ""
         clipboardSearchFontSize = d.object(forKey: Key.clipSearchSize) as? Int ?? 18
         clipboardListFontFamily = d.string(forKey: Key.clipListFamily) ?? ""
@@ -285,6 +297,9 @@ final class Preferences: ObservableObject {
             ?? ["com.apple.keychainaccess", "com.apple.Passwords"]
         clipboardBackground = Self.loadBackground(d, Key.clipBackgroundV2) ?? Self.migrateClipboardBackground(d)
         workflowBackground = Self.loadBackground(d, Key.workflowBackground) ?? .panelDefault   // always followed AppPad before
+        workflowFollowsClipboardSize = d.object(forKey: Key.workflowFollowsClipSize) as? Bool ?? true
+        workflowWidthPercent = Self.panelPercent(d.object(forKey: Key.workflowWidth) as? Int)
+        workflowHeightPercent = Self.panelPercent(d.object(forKey: Key.workflowHeight) as? Int)
         windowControlEnabled = d.object(forKey: Key.winEnabled) as? Bool ?? true
         var windowCombos: [WindowAction: KeyCombo] = [:]
         for action in WindowAction.allCases {
@@ -297,6 +312,31 @@ final class Preferences: ObservableObject {
         } else {
             appHotKeys = []
         }
+        updatePanelMatch()
+    }
+
+    // Clipboard / Workflow panel size limits (percent of the screen's visible frame).
+    static let panelPercentRange = 40...100
+    static let panelPercentDefault = 60
+
+    private static func panelPercent(_ stored: Int?) -> Int {
+        min(max(stored ?? panelPercentDefault, panelPercentRange.lowerBound), panelPercentRange.upperBound)
+    }
+
+    // Size actually used by the Workflow panel (may follow the Clipboard).
+    var workflowPanelPercent: (width: Int, height: Int) {
+        workflowFollowsClipboardSize
+            ? (clipboardWidthPercent, clipboardHeightPercent)
+            : (workflowWidthPercent, workflowHeightPercent)
+    }
+
+    // Recomputed by the AppPad / Clipboard / Workflows size setters (before they post the change).
+    private func updatePanelMatch() {
+        let p = windowPercent
+        let workflow = workflowPanelPercent
+        let matches = clipboardWidthPercent == p && clipboardHeightPercent == p
+            && workflow.width == p && workflow.height == p
+        if matches != launchpadMatchesPanels { launchpadMatchesPanels = matches }
     }
 
     // Background actually used by a panel (Clipboard / Workflows may follow AppPad).

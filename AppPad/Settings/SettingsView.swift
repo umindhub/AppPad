@@ -154,37 +154,29 @@ struct SettingsView: View {
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
             }
 
+            // Always follows the screen size.
             Section("Window") {
-                Picker("Size", selection: $prefs.windowSizeMode) {
-                    Text("Follow screen size").tag(WindowSizeMode.screenPercent)
-                    Text("Custom").tag(WindowSizeMode.custom)
+                LabeledContent("Screen percentage") {
+                    HStack {
+                        Slider(
+                            value: Binding(
+                                get: { Double(prefs.windowPercent) },
+                                set: { prefs.windowPercent = Int($0.rounded()) }
+                            ),
+                            in: 40...100,
+                            step: 5
+                        )
+                        Text(Double(prefs.windowPercent) / 100, format: .percent)
+                            .monospacedDigit()
+                            .frame(width: 44, alignment: .trailing)
+                    }
+                    .frame(width: 220)
                 }
-                if prefs.windowSizeMode == .screenPercent {
-                    LabeledContent("Screen percentage") {
-                        HStack {
-                            Slider(
-                                value: Binding(
-                                    get: { Double(prefs.windowPercent) },
-                                    set: { prefs.windowPercent = Int($0.rounded()) }
-                                ),
-                                in: 40...100,
-                                step: 5
-                            )
-                            Text(Double(prefs.windowPercent) / 100, format: .percent)
-                                .monospacedDigit()
-                                .frame(width: 44, alignment: .trailing)
-                        }
-                        .frame(width: 220)
+                if prefs.windowPercent >= 100 {
+                    Toggle(isOn: $prefs.launchpadCoversMenuBar) {
+                        Text("Cover the menu bar")
+                        Text("Fills the screen up to the top edge. The Dock stays below AppPad while it is open.")
                     }
-                    if prefs.windowPercent >= 100 {
-                        Toggle(isOn: $prefs.launchpadCoversMenuBar) {
-                            Text("Cover the menu bar")
-                            Text("Fills the screen up to the top edge. The Dock stays below AppPad while it is open.")
-                        }
-                    }
-                } else {
-                    Stepper("Width: \(prefs.customWidth) pt", value: $prefs.customWidth, in: 480...4000, step: 20)
-                    Stepper("Height: \(prefs.customHeight) pt", value: $prefs.customHeight, in: 360...3000, step: 20)
                 }
             }
 

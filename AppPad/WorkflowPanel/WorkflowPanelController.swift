@@ -177,25 +177,20 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         panel.appearance = PanelBackgroundSpec.current(for: .workflows).appearance(on: screen)
     }
 
-    // Clipboard-sized panel, centered on the screen with the pointer.
+    // Same size / position as the Clipboard by default, or its own percentages.
     private func targetFrame(on screen: NSScreen) -> NSRect {
-        let visible = screen.visibleFrame
-        let width = min(max(visible.width * 0.6, 720), visible.width)
-        let height = min(max(visible.height * 0.6, 460), visible.height)
-        return NSRect(
-            x: (visible.midX - width / 2).rounded(),
-            y: (visible.midY - height / 2).rounded(),
-            width: width.rounded(),
-            height: height.rounded()
-        )
+        let size = prefs.workflowPanelPercent
+        return PanelFrame.centered(on: screen, widthPercent: size.width, heightPercent: size.height)
     }
 
     private func applyFrame(_ frame: NSRect, on screen: NSScreen, display: Bool) {
         panel.setFrame(frame, display: display)
-        container.layer?.cornerRadius = LaunchpadController.cornerRadius
-        viewController.root.layer?.cornerRadius = LaunchpadController.cornerRadius
-        panel.cornerMaskRadius = LaunchpadController.cornerRadius
-        panel.hasShadow = true
+        let filled = PanelFrame.isFilled(frame, on: screen)
+        let radius = filled ? LaunchpadController.filledCornerRadius : LaunchpadController.cornerRadius
+        container.layer?.cornerRadius = radius
+        viewController.root.layer?.cornerRadius = radius
+        panel.cornerMaskRadius = radius
+        panel.hasShadow = !filled
         let spec = PanelBackgroundSpec.current(for: .workflows)
         background.update(spec: spec, screen: screen, panelFrame: frame)
         panel.appearance = spec.appearance(on: screen)

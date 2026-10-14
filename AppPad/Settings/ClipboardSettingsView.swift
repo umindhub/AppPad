@@ -59,8 +59,8 @@ struct ClipboardSettingsView: View {
             }
 
             Section("Window") {
-                percentSlider("Width", value: $prefs.clipboardWidthPercent)
-                percentSlider("Height", value: $prefs.clipboardHeightPercent)
+                PanelPercentSlider(title: "Width", value: $prefs.clipboardWidthPercent)
+                PanelPercentSlider(title: "Height", value: $prefs.clipboardHeightPercent)
             }
 
             BackgroundSection(settings: $prefs.clipboardBackground, allowsFollow: true)
@@ -214,22 +214,6 @@ struct ClipboardSettingsView: View {
         }
     }
 
-    private func percentSlider(_ title: LocalizedStringKey, value: Binding<Int>) -> some View {
-        LabeledContent(title) {
-            HStack {
-                Slider(
-                    value: Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue = Int($0.rounded()) }),
-                    in: 30...100,
-                    step: 5
-                )
-                Text(Double(value.wrappedValue) / 100, format: .percent)
-                    .monospacedDigit()
-                    .frame(width: 44, alignment: .trailing)
-            }
-            .frame(width: 220)
-        }
-    }
-
     private func fontPicker(_ title: LocalizedStringKey, family: Binding<String>) -> some View {
         Picker(title, selection: family) {
             Text("System").tag("")
@@ -249,6 +233,28 @@ struct ClipboardSettingsView: View {
         for url in panel.urls {
             guard let id = Bundle(url: url)?.bundleIdentifier, !prefs.clipboardIgnoredApps.contains(id) else { continue }
             prefs.clipboardIgnoredApps.append(id)
+        }
+    }
+}
+
+// Clipboard / Workflow window size slider: percent of the screen, 40–100%.
+struct PanelPercentSlider: View {
+    var title: LocalizedStringKey
+    @Binding var value: Int
+
+    var body: some View {
+        LabeledContent(title) {
+            HStack {
+                Slider(
+                    value: Binding(get: { Double(value) }, set: { value = Int($0.rounded()) }),
+                    in: Double(Preferences.panelPercentRange.lowerBound)...Double(Preferences.panelPercentRange.upperBound),
+                    step: 5
+                )
+                Text(Double(value) / 100, format: .percent)
+                    .monospacedDigit()
+                    .frame(width: 44, alignment: .trailing)
+            }
+            .frame(width: 220)
         }
     }
 }
