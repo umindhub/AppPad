@@ -325,6 +325,10 @@ final class LaunchpadBackgroundView: NSView {
     private let tint = NSView()
     // Async wallpaper arrived (the owner re-picks light / dark text).
     var onWallpaperApplied: (() -> Void)?
+    // Color layer over the live windows behind (not opaque): two of these stacked look brighter,
+    // so PanelMorph cross-fades them instead of overlapping. overlayAlpha = that layer's alpha.
+    private(set) var showsWindowsBehind = false
+    private(set) var overlayAlpha: CGFloat = 1
     // Latest wallpaper request; stale async results are dropped.
     private var requestID = 0
     // How the shown wallpaper maps to screen points (for PanelMorph's moving slice).
@@ -380,6 +384,8 @@ final class LaunchpadBackgroundView: NSView {
         requestID += 1
         let translucent = spec.needsWallpaper || spec.showsWindowsBehind
         tint.layer?.backgroundColor = spec.overlay.withAlphaComponent(translucent ? spec.opacity : 1).cgColor
+        showsWindowsBehind = spec.showsWindowsBehind
+        overlayAlpha = CGFloat(spec.opacity)
         let panel = window as? LaunchpadPanel
         if spec.showsWindowsBehind {
             // Live windows behind the (non-opaque) panel; no blur → just see-through.

@@ -360,6 +360,8 @@ final class PanelMorph {
     private static let radiusKey = "panelMorphRadius"
     private static let fadeKey = "panelMorphFade"
     private static let contentKey = "panelMorphContent"
+    private static let backgroundKey = "panelMorphBackground"
+    private static let backgroundRadiusKey = "panelMorphBackgroundRadius"
 
     let incoming: NSWindow
     let outgoing: NSWindow
@@ -457,10 +459,18 @@ final class PanelMorph {
         if incomingIsLarge {
             Self.apply(incoming, largeAtSmall, duration: nil)
             views.background?.setWallpaperSlice(onScreen: smallFrame, duration: nil)
+            // Translucent pair: the large background comes in as the small one leaves (see run()).
+            if crossFadesBackgrounds { views.background?.alphaValue = 0 }
         } else {
             views.background?.alphaValue = 0
         }
         spreadSmallWindow()
+        if !incomingIsLarge, let background = Self.parts(small).background {
+            if let layer = background.layer {
+                Self.setBackgroundPose(layer, atLarge: true, morph: self, duration: nil, timing: nil)
+            }
+            background.setWallpaperSlice(onScreen: largeFrame, duration: nil)   // wallpaper under that frame
+        }
         if !incomingIsLarge, let content = Self.parts(small).content?.layer {
             Self.setTransform(content, scale: smallContentAtLarge, key: Self.contentKey, duration: nil, timing: nil)
         }
@@ -523,8 +533,20 @@ final class PanelMorph {
             if let content = smallParts.content?.layer {
                 Self.setTransform(content, scale: smallContentAtLarge, key: Self.contentKey, duration: d, timing: curve)
             }
+            if let background = smallParts.background {
+                if let layer = background.layer {
+                    Self.setBackgroundPose(layer, atLarge: true, morph: self, duration: d, timing: curve)
+                }
+                background.setWallpaperSlice(onScreen: largeFrame, duration: d, timing: curve)
+            }
             Self.fade(smallParts.content, to: 0, delay: 0, length: swap, timing: .easeIn)
-            Self.fade(smallParts.background, to: 0, delay: 0, length: d / 4, timing: .easeIn)
+            if crossFadesBackgrounds {
+                Self.fade(smallParts.background, to: 0, delay: 0, length: d / 4, timing: .linear)
+                Self.compensatedFade(largeParts.background, topFrom: 1, topTo: 0, alpha: overlayAlpha,
+                                     delay: 0, length: d / 4)
+            } else {
+                Self.fade(smallParts.background, to: 0, delay: 0, length: d / 4, timing: .easeIn)
+            }
             Self.fade(largeParts.content, to: 1, delay: swap, length: d - swap, timing: .easeOut)
         } else {
             // Shrink: panel (on top, still invisible) fills in as Launchpad arrives.
@@ -536,9 +558,21 @@ final class PanelMorph {
             if let content = smallParts.content?.layer {
                 Self.setTransform(content, scale: Self.identity, key: Self.contentKey, duration: d, timing: curve)
             }
+            if let background = smallParts.background {
+                if let layer = background.layer {
+                    Self.setBackgroundPose(layer, atLarge: false, morph: self, duration: d, timing: curve)
+                }
+                background.setWallpaperSlice(onScreen: nil, duration: d, timing: curve)
+            }
             Self.fade(largeParts.content, to: 0, delay: 0, length: swap, timing: .easeIn)
             Self.fade(smallParts.content, to: 1, delay: swap, length: d - swap, timing: .easeOut)
-            Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .easeOut)
+            if crossFadesBackgrounds {
+                Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .linear)
+                Self.compensatedFade(largeParts.background, topFrom: 0, topTo: 1, alpha: overlayAlpha,
+                                     delay: d * 3 / 4, length: d / 4)
+            } else {
+                Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .easeOut)
+            }
         }
         blurTrack?.animate(duration: d, curve: incomingIsLarge ? Self.expandCurve : Self.shrinkCurve)
         DispatchQueue.main.asyncAfter(deadline: .now() + d) { completion() }
@@ -594,6 +628,14 @@ final class PanelMorph {
         apply(window, Pose(scale: identity, radius: radius), duration: nil)
         let views = Self.parts(window)
         views.background?.setWallpaperSlice(onScreen: nil, duration: nil)
+        if let background = views.background?.layer {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            background.removeAnimation(forKey: backgroundKey)
+            background.removeAnimation(forKey: backgroundRadiusKey)
+            background.transform = CATransform3DIdentity
+            CATransaction.commit()
+        }
         for view in [views.background as NSView?, views.content] {
             view?.layer?.removeAnimation(forKey: fadeKey)
             view?.alphaValue = 1
@@ -606,6 +648,89 @@ final class PanelMorph {
             context.duration = 0
             window.animator().alphaValue = alpha
         }
+    }
+
+    // Small panel's background on the large panel's visible frame (atLarge) or on its own (identity):
+    // it moves with the shrinking / growing frame, so it never shows its final rect early.
+    // Scale + move around its center; corner radius so the on-screen radius matches the large one.
+    private static func setBackgroundPose(_ layer: CALayer, atLarge: Bool, morph: PanelMorph,
+                                          duration: TimeInterval?, timing: CAMediaTimingFunction?) {
+        let r = morph.ratio
+        let scale = atLarge ? CGSize(width: 1 / max(r.width, 0.01), height: 1 / max(r.height, 0.01)) : identity
+        let offset = atLarge ? CGSize(width: morph.largeFrame.midX - morph.smallFrame.midX,
+                                      height: morph.largeFrame.midY - morph.smallFrame.midY) : .zero
+        let mean = (scale.width * scale.height).squareRoot()
+        let radius = atLarge ? morph.largeRadius / max(mean, 0.01) : morph.smallRadius
+
+        let size = layer.bounds.size
+        let dx = (0.5 - layer.anchorPoint.x) * size.width
+        let dy = (0.5 - layer.anchorPoint.y) * size.height
+        var target = CATransform3DMakeTranslation(dx, dy, 0)
+        target = CATransform3DScale(target, scale.width, scale.height, 1)
+        target = CATransform3DTranslate(target, -dx, -dy, 0)
+        if offset != .zero {
+            // Unscaled points in the container (y up unless its layer is flipped).
+            let ySign: CGFloat = layer.superlayer?.isGeometryFlipped == true ? -1 : 1
+            target = CATransform3DConcat(target, CATransform3DMakeTranslation(offset.width, ySign * offset.height, 0))
+        }
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        if let duration {
+            let move = CABasicAnimation(keyPath: "transform")
+            move.fromValue = NSValue(caTransform3D: layer.presentation()?.transform ?? layer.transform)
+            move.toValue = NSValue(caTransform3D: target)
+            let corner = CABasicAnimation(keyPath: "cornerRadius")
+            corner.fromValue = layer.presentation()?.cornerRadius ?? layer.cornerRadius
+            corner.toValue = radius
+            for animation in [move, corner] {
+                animation.duration = duration
+                animation.timingFunction = timing ?? CAMediaTimingFunction(name: .easeOut)
+            }
+            layer.add(move, forKey: backgroundKey)
+            layer.add(corner, forKey: backgroundRadiusKey)
+        } else {
+            layer.removeAnimation(forKey: backgroundKey)
+            layer.removeAnimation(forKey: backgroundRadiusKey)
+        }
+        layer.transform = target
+        layer.cornerRadius = radius
+        CATransaction.commit()
+    }
+
+    // Both backgrounds are translucent colors over the windows behind: stacked they would look
+    // brighter, so they cross-fade (opaque ones just overlap, which is invisible).
+    private var crossFadesBackgrounds: Bool {
+        Self.parts(large).background?.showsWindowsBehind == true
+            && Self.parts(small).background?.showsWindowsBehind == true
+    }
+
+    // Alpha of the small (top) panel's color layer, for the compensated cross-fade.
+    private var overlayAlpha: CGFloat {
+        Self.parts(small).background?.overlayAlpha ?? 0.5
+    }
+
+    // Large (bottom) background against the small one fading linearly topFrom → topTo:
+    // a·x + a·y − a²·x·y = a  →  x = (1 − y) / (1 − a·y), so the combined layer stays as dense as one.
+    private static func compensatedFade(_ view: NSView?, topFrom: CGFloat, topTo: CGFloat, alpha a: CGFloat,
+                                        delay: TimeInterval, length: TimeInterval) {
+        guard let view, let layer = view.layer else { return }
+        let steps = 12
+        let values: [Float] = (0...steps).map { i in
+            let y = topFrom + (topTo - topFrom) * CGFloat(i) / CGFloat(steps)
+            return Float(min(max((1 - y) / max(1 - a * y, 0.001), 0), 1))
+        }
+        let animation = CAKeyframeAnimation(keyPath: "opacity")
+        animation.values = values
+        animation.calculationMode = .linear
+        animation.beginTime = layer.convertTime(CACurrentMediaTime(), from: nil) + delay
+        animation.duration = length
+        animation.fillMode = .backwards
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer.add(animation, forKey: fadeKey)
+        view.alphaValue = CGFloat(values.last ?? 1)
+        CATransaction.commit()
     }
 
     // View opacity after a delay; the start value holds until then (fillMode backwards).
