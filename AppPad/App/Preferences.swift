@@ -36,7 +36,7 @@ nonisolated enum BackgroundSurface: Sendable {
 // Base of a panel background. Wallpaper: blurred wallpaper + black veil.
 // Colors: drawn at `opacity` over the live windows behind the panel.
 nonisolated enum BackgroundStyle: String, CaseIterable, Codable, Sendable {
-    case wallpaper, white, lightGray, darkGray, custom
+    case white, lightGray, darkGray, wallpaper, custom   // display order
 }
 
 // The two user-visible parameters (0…1).
@@ -56,8 +56,8 @@ nonisolated struct BackgroundSettings: Codable, Equatable, Sendable {
     var tunings: [String: BackgroundTuning]   // "style.variant"
     var customColors: [String: String]        // variant -> "#RRGGBB"
 
-    static let launchpadDefault = BackgroundSettings(follow: false, style: .wallpaper, tunings: [:], customColors: [:])
-    static let panelDefault = BackgroundSettings(follow: true, style: .wallpaper, tunings: [:], customColors: [:])
+    static let launchpadDefault = BackgroundSettings(follow: false, style: .white, tunings: [:], customColors: [:])
+    static let panelDefault = BackgroundSettings(follow: true, style: .white, tunings: [:], customColors: [:])
 
     private static func key(_ style: BackgroundStyle, _ variant: ThemeVariant) -> String {
         "\(style.rawValue).\(variant.rawValue)"
@@ -110,7 +110,7 @@ nonisolated enum BackgroundPalette {
             // Same dark veil in both themes; light just a little brighter than dark.
             return BackgroundTuning(blur: 0.6, opacity: variant == .light ? 0.2 : 0.25)
         case .white, .lightGray, .darkGray, .custom:
-            return BackgroundTuning(blur: 0.6, opacity: 1)   // solid until the user lowers it
+            return BackgroundTuning(blur: 0.6, opacity: 0.5)   // 50% transparency over the windows behind
         }
     }
 
@@ -317,10 +317,10 @@ final class Preferences: ObservableObject {
         save((try? JSONEncoder().encode(settings)) ?? Data(), key)
     }
 
-    // Old "backgroundStyle": wallpaper / white.
+    // Old "backgroundStyle" (wallpaper / white); only an explicit wallpaper choice is kept.
     private static func migrateLaunchpadBackground(_ d: UserDefaults) -> BackgroundSettings {
         var settings = BackgroundSettings.launchpadDefault
-        if d.string(forKey: Key.legacyBackground) == "white" { settings.style = .white }
+        if d.string(forKey: Key.legacyBackground) == "wallpaper" { settings.style = .wallpaper }
         return settings
     }
 

@@ -77,10 +77,10 @@ struct BackgroundSection: View {
             }
             if isOwn {
                 Picker("Background", selection: $settings.style) {
-                    Text("Wallpaper").tag(BackgroundStyle.wallpaper)
                     Text("White").tag(BackgroundStyle.white)
                     Text("Light gray").tag(BackgroundStyle.lightGray)
                     Text("Dark gray").tag(BackgroundStyle.darkGray)
+                    Text("Wallpaper").tag(BackgroundStyle.wallpaper)
                     Text("Custom color").tag(BackgroundStyle.custom)
                 }
                 Picker("Adjust for", selection: $variant) {
