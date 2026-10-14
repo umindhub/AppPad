@@ -188,7 +188,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     private func showSettings() {
-        launchpad.hide()
+        // Same slow fade as a click on empty space (a plain hide() would cut a running fade short).
+        launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
         clipboard.hide()
         workflows.hide()
         if settings == nil {

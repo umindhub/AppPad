@@ -629,7 +629,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             hide()
             return true
         case ",":
-            hide()
+            // Same slow fade as a click on empty space; Settings opens underneath meanwhile.
+            hide(animated: true, duration: Self.backgroundClickHideDuration)
             onOpenSettings?()
             return true
         default:
