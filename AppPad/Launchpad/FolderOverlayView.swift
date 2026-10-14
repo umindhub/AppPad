@@ -23,6 +23,9 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
     private let apps: [AppInfo]
     private let outsideBlur = NSVisualEffectView()
+    // Dims the blurred pages outside the sheet (child of outsideBlur, so it fades with it):
+    // keeps the sheet's edge readable when panel and sheet would otherwise blur to the same tone.
+    private let outsideDim = NSView()
     private let backdrop = FolderBackdropView()
     private let content = FolderBoxView()
     private let titleField = CrispTextField()
@@ -87,7 +90,11 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         outsideBlur.blendingMode = .withinWindow
         outsideBlur.state = .active
         outsideBlur.alphaValue = 1
+        outsideDim.wantsLayer = true
+        outsideDim.autoresizingMask = [.width, .height]
+        outsideBlur.addSubview(outsideDim)
         addSubview(outsideBlur)
+        applyContrastColors()
         addSubview(backdrop)
         addSubview(content)
         content.addSubview(pager)
@@ -119,8 +126,20 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     // rows as fit. With pages, name → sheet distance = headerGap (half of the launcher's
     // search → icon distance) and the indicator is centered in it.
     // Inside the sheet the first icon is as far from the top edge as from the side edge.
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        applyContrastColors()
+    }
+
+    // Outside darker than the sheet in both appearances (light: subtle, dark: deeper).
+    private func applyContrastColors() {
+        let dark = effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        outsideDim.layer?.backgroundColor = NSColor.black.withAlphaComponent(dark ? 0.28 : 0.14).cgColor
+    }
+
     override func layout() {
         super.layout()
+        outsideDim.frame = outsideBlur.bounds
         let icon = grid.fixedIconSize ?? grid.iconSize
         let iconTop = GridCellView.iconTop(cellHeight: rowHeight, iconSize: icon)
         let sideIconInset = Self.sidePad + (cellWidth - icon) / 2
@@ -531,7 +550,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 }
 
 // Folder backdrop: same material as the panel background (inherits its appearance),
-// with a light tint (brighter than the panel) so the folder reads as a separate sheet.
+// with a light tint (brighter than the panel) and a hairline edge so the folder reads as a
+// separate sheet even over a pale, translucent panel background.
 final class FolderBackdropView: NSView {
     private let blur = NSVisualEffectView()
     private let tint = NSView()
@@ -549,9 +569,28 @@ final class FolderBackdropView: NSView {
         addSubview(blur)
 
         tint.wantsLayer = true
-        tint.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.2).cgColor
         tint.autoresizingMask = [.width, .height]
         addSubview(tint)
+        applyColors()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        applyColors()
+    }
+
+    override func viewDidChangeBackingProperties() {
+        super.viewDidChangeBackingProperties()
+        applyColors()
+    }
+
+    // Light: brighter sheet + faint dark edge; dark: gentle lift + faint light edge.
+    private func applyColors() {
+        let dark = effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        tint.layer?.backgroundColor = NSColor.white.withAlphaComponent(dark ? 0.14 : 0.5).cgColor
+        layer?.borderColor = (dark ? NSColor.white.withAlphaComponent(0.18)
+                                   : NSColor.black.withAlphaComponent(0.1)).cgColor
+        layer?.borderWidth = 1 / (window?.backingScaleFactor ?? 2)   // one device pixel
     }
 
     required init?(coder: NSCoder) {
