@@ -587,7 +587,7 @@ final class FolderBackdropView: NSView {
     // Light: brighter sheet + faint dark edge; dark: gentle lift + faint light edge.
     private func applyColors() {
         let dark = effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-        tint.layer?.backgroundColor = NSColor.white.withAlphaComponent(dark ? 0.14 : 0.5).cgColor
+        tint.layer?.backgroundColor = NSColor.white.withAlphaComponent(dark ? 0.14 : 0.3).cgColor
         layer?.borderColor = (dark ? NSColor.white.withAlphaComponent(0.18)
                                    : NSColor.black.withAlphaComponent(0.1)).cgColor
         layer?.borderWidth = 1 / (window?.backingScaleFactor ?? 2)   // one device pixel
