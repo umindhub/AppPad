@@ -71,20 +71,23 @@ nonisolated enum AppScanner {
     }
 
     // Recurse into plain folders (e.g. Utilities, vendor folders), never into bundles.
+    // Not using .skipsHiddenFiles: the OS marks the /Applications/Safari.app symlink
+    // (-> cryptex) as hidden, which would drop Safari.
     private static func findApps(in dir: URL, depth: Int) -> [URL] {
         guard depth <= 2 else { return [] }
-        let keys: [URLResourceKey] = [.isDirectoryKey, .isPackageKey]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isPackageKey, .isHiddenKey, .isSymbolicLinkKey]
         guard let items = try? FileManager.default.contentsOfDirectory(
-            at: dir, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]
+            at: dir, includingPropertiesForKeys: keys, options: []
         ) else { return [] }
 
         var apps: [URL] = []
-        for url in items {
+        for url in items where !url.lastPathComponent.hasPrefix(".") {
+            let values = try? url.resourceValues(forKeys: Set(keys))
+            if values?.isHidden == true, !isSymlinkedApp(url, values) { continue }
             if url.pathExtension == "app" {
                 apps.append(url)
                 continue
             }
-            let values = try? url.resourceValues(forKeys: Set(keys))
             if values?.isDirectory == true, values?.isPackage != true {
                 apps += findApps(in: url, depth: depth + 1)
             }
@@ -92,8 +95,20 @@ nonisolated enum AppScanner {
         return apps
     }
 
+    // Hidden flag is ignored only for a symlink that points at an existing .app bundle.
+    private static func isSymlinkedApp(_ url: URL, _ values: URLResourceValues?) -> Bool {
+        guard values?.isSymbolicLink == true, url.pathExtension == "app" else { return false }
+        let target = url.resolvingSymlinksInPath()
+        var isDir: ObjCBool = false
+        return target.pathExtension == "app"
+            && FileManager.default.fileExists(atPath: target.path, isDirectory: &isDir) && isDir.boolValue
+    }
+
     private static func makeInfo(_ url: URL) -> AppInfo? {
-        let bundle = Bundle(url: url)
+        // Read the bundle through symlinks (Safari: /Applications/Safari.app -> cryptex),
+        // but keep the original url for display, launch and layout.
+        let resolved = url.resolvingSymlinksInPath()
+        let bundle = Bundle(url: resolved) ?? Bundle(url: url)
         let plist = bundle?.infoDictionary ?? [:]
         if isTrue(plist["LSBackgroundOnly"]) { return nil }
 
@@ -103,9 +118,10 @@ nonisolated enum AppScanner {
         if name.hasSuffix(".app") { name = String(name.dropLast(4)) }
         let bundleID = bundle?.bundleIdentifier
         let bundleName = plist["CFBundleName"] as? String ?? url.deletingPathExtension().lastPathComponent
-        let receipt = url.appendingPathComponent("Contents/_MASReceipt/receipt").path
+        let receipt = resolved.appendingPathComponent("Contents/_MASReceipt/receipt").path
         // Safari lives in /Applications but is part of the OS (cryptex).
-        let isSystem = path.hasPrefix("/System/") || systemBundleIDsOutsideSystem.contains(bundleID ?? "")
+        let isSystem = path.hasPrefix("/System/") || resolved.path.hasPrefix("/System/")
+            || systemBundleIDsOutsideSystem.contains(bundleID ?? "")
 
         return AppInfo(
             key: bundleID ?? path,

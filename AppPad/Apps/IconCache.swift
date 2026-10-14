@@ -8,7 +8,8 @@ final class IconCache {
     func icon(for app: AppInfo) -> NSImage {
         let path = app.url.path
         if let image = cache[path] { return image }
-        let image = NSWorkspace.shared.icon(forFile: path)
+        // Resolve symlinks (Safari) so the icon is the target app's, never a link icon.
+        let image = NSWorkspace.shared.icon(forFile: URL(fileURLWithPath: path).resolvingSymlinksInPath().path)
         image.size = NSSize(width: 128, height: 128)
         cache[path] = image
         return image
