@@ -73,12 +73,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
         PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
-        // One-time hint: which system gestures to turn off (in order).
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1))
-            PinchSetupGuide.showOnceIfNeeded()
-            // ⌘Space is Spotlight's until the user frees it.
-            SpotlightShortcut.showGuideOnceIfNeeded()
+        // One-time hints, one after the other, only while no panel is up
+        // (a guide under the full-screen Launchpad left nothing clickable).
+        Task { @MainActor [weak self] in
+            await self?.waitUntilPanelsIdle()
+            // Which system gestures to turn off (in order).
+            PinchSetupGuide.showOnceIfNeeded {
+                Task { @MainActor [weak self] in
+                    await self?.waitUntilPanelsIdle()
+                    // ⌘Space is Spotlight's until the user frees it.
+                    SpotlightShortcut.showGuideOnceIfNeeded()
+                }
+            }
         }
         NotificationCenter.default.addObserver(
             self, selector: #selector(preferencesDidChange(_:)),
@@ -89,6 +95,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             Task { @MainActor [weak self] in self?.appearanceDidChange() }
         }
         if openedByUser { openLaunchpadAfterColdLaunch() }
+    }
+
+    // Returns once no panel has been on screen (or pending) for ~1 s.
+    private func waitUntilPanelsIdle() async {
+        var idleTicks = 0
+        while idleTicks < 2 {
+            try? await Task.sleep(for: .milliseconds(500))
+            let busy = launchpad.isBusy || clipboard.isActive || workflows.isActive
+            idleTicks = busy ? 0 : idleTicks + 1
+        }
     }
 
     // Dock / Finder click while not running: no reopen event comes, so open Launchpad here

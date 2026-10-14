@@ -51,12 +51,21 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
     private static let aspect: Float = 1.5
     private static let minSpread: Float = 0.04
     // Spread ratio → progress: dead zone, then linear up to "full".
-    private static let pinchInStart: Float = 0.94
+    private static let pinchInStart: Float = 0.92
     private static let pinchInFull: Float = 0.55
-    private static let spreadStart: Float = 1.06
+    private static let spreadStart: Float = 1.08
     private static let spreadFull: Float = 1.60
-    // Centroid travel without a size change = 4-finger swipe, not a pinch.
+    // Swipe vs pinch: compare centroid travel with the spread change (both normalized).
+    // Any direction: travel beyond this while barely resizing = swipe (Mission Control etc.).
     private static let swipeTravel: Float = 0.08
+    private static let swipeResizeRatio: Float = 0.35
+    // Sideways (4-finger left/right = Spaces): stricter. A thumb pinch drifts little sideways.
+    private static let swipeTravelX: Float = 0.04
+    private static let lockResizeRatioX: Float = 0.7    // resize must reach 0.7× sideways drift to lock
+    // Already locked but the hand keeps sliding sideways → it was a swipe, roll back.
+    private static let abortTravelX: Float = 0.08
+    private static let abortResizeRatioX: Float = 0.5
+    private static let abortMaxProgress: Float = 0.6
     // One-finger tap: short contact, almost no travel (normalized, aspect-scaled).
     private static let tapMaxDuration: Double = 0.3
     private static let tapMaxTravel: Float = 0.03
@@ -403,19 +412,34 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
         s.ratio = ratio
         s.lastX = cx; s.lastY = cy
 
+        // Centroid drift (sideways and total) vs. how much the hand changed size.
+        let dx = abs(cx - s.startX)
+        let dy = cy - s.startY
+        let travel = (dx * dx + dy * dy).squareRoot()
+        let resize = abs(spread - s.baseline)
+
         var began = false
         if s.direction == nil {
-            if ratio < pinchInStart {
-                s.direction = .pinchIn
-            } else if ratio > spreadStart {
-                s.direction = .spread
-            } else {
-                let travel = ((cx - s.startX) * (cx - s.startX) + (cy - s.startY) * (cy - s.startY)).squareRoot()
-                if travel > swipeTravel { s.rejected = true }
+            // Moving more than resizing → 4-finger swipe, never a pinch for this contact.
+            if (dx > swipeTravelX && resize < dx * lockResizeRatioX)
+                || (travel > swipeTravel && resize < travel * swipeResizeRatio) {
+                s.rejected = true
+                return nil
+            }
+            let candidate: PinchDirection? = ratio < pinchInStart ? .pinchIn
+                : (ratio > spreadStart ? .spread : nil)
+            // Lock only once the size change clearly outweighs sideways drift.
+            guard let candidate, resize >= dx * lockResizeRatioX else {
                 s.lastTime = time
                 return nil
             }
+            s.direction = candidate
             began = true
+        } else if let direction = s.direction, s.progress < abortMaxProgress,
+                  dx > abortTravelX, resize < dx * abortResizeRatioX {
+            // Locked early, but the hand kept sliding sideways: swipe after all → roll back.
+            s.rejected = true
+            return PinchEvent(phase: .ended, direction: direction, progress: 0, velocity: -10)
         }
 
         // Direction is locked; reversing the fingers brings progress back to 0.

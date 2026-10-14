@@ -282,6 +282,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Visible and focused (what toggle / gestures treat as "open").
     var isShown: Bool { panel.isVisible && panel.isKeyWindow && !isFadingOut }
 
+    // Panel on screen (incl. fading / warm-up) or a cold-launch show waiting.
+    // One-time launch guides wait until this is false.
+    var isBusy: Bool { panel.isVisible || pendingReadyShow != nil }
+
     // Runs action once apps and wallpaper are loaded (immediately if already ready).
     func showWhenReady(_ action: @escaping () -> Void) {
         if isReady {
@@ -394,6 +398,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over, opaque or morphing).
     @discardableResult
     private func presentPanel(opaque: Bool = false) -> Bool {
+        // An app-modal alert is up: the full-screen panel would cover it while the modal
+        // session blocks every click on the panel → nothing clickable.
+        guard NSApp.modalWindow == nil else { return false }
         guard let screen = PanelScreen.target() else { return false }
         endWarmUp(orderOut: false)
         // Interrupts an animated hide.
