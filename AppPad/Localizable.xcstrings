@@ -1692,7 +1692,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪贴板之间切换；“已保存”按钮（或已保存项目快捷键）仅显示已保存项目。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⌫ 删除。输入“App名::文本”可按 App 筛选。"
+            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存项目快捷键）仅显示已保存项目。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⌫ 删除。输入“App名::文本”可按 App 筛选。"
           }
         },
         "zh-Hant" : {
@@ -3376,7 +3376,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同时将结果拷贝到剪贴板"
+            "value" : "同时将结果拷贝到剪切板"
           }
         },
         "zh-Hant" : {
@@ -3957,7 +3957,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "适用于 AppPad、剪贴板和工作流。关闭后，它们都会在主显示器上打开。"
+            "value" : "适用于 AppPad、剪切板和工作流。关闭后，它们都会在主显示器上打开。"
           }
         },
         "zh-Hant" : {
@@ -4015,7 +4015,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "适用于 AppPad、剪贴板和工作流中的搜索框和控件。"
+            "value" : "适用于 AppPad、剪切板和工作流中的搜索框和控件。"
           }
         },
         "zh-Hant" : {
@@ -4654,7 +4654,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自动跟随 macOS 外观。AppPad、剪贴板和工作流的背景会跟随主题。"
+            "value" : "自动跟随 macOS 外观。AppPad、剪切板和工作流的背景会跟随主题。"
           }
         },
         "zh-Hant" : {
@@ -6050,7 +6050,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "剪贴板"
+            "value" : "剪切板"
           }
         },
         "zh-Hant" : {
@@ -6108,7 +6108,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "剪贴板快捷键"
+            "value" : "剪切板快捷键"
           }
         },
         "zh-Hant" : {
@@ -6689,7 +6689,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "生成新的 UUID 并复制到剪贴板。"
+            "value" : "生成新的 UUID 并复制到剪切板。"
           }
         },
         "zh-Hant" : {
@@ -8360,7 +8360,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要删除全部剪贴板历史记录吗？"
+            "value" : "要删除全部剪切板历史记录吗？"
           }
         },
         "zh-Hant" : {
@@ -8418,7 +8418,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要删除剪贴板历史记录吗？"
+            "value" : "要删除剪切板历史记录吗？"
           }
         },
         "zh-Hant" : {
@@ -10105,7 +10105,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用剪贴板历史记录"
+            "value" : "启用剪切板历史记录"
           }
         },
         "zh-Hant" : {
@@ -19169,7 +19169,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开剪贴板"
+            "value" : "打开剪切板"
           }
         },
         "zh-Hant" : {
@@ -24865,7 +24865,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜索剪贴板"
+            "value" : "搜索剪切板"
           }
         },
         "zh-Hant" : {
@@ -33251,7 +33251,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "使用系统服务（打开 App、剪贴板、通知）"
+            "value" : "使用系统服务（打开 App、剪切板、通知）"
           }
         },
         "zh-Hant" : {
@@ -34180,7 +34180,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "开启后，按 Esc 先清空搜索内容，再按一次才关闭。关闭时，按 Esc 直接关闭。适用于 AppPad、剪贴板和工作流。"
+            "value" : "开启后，按 Esc 先清空搜索内容，再按一次才关闭。关闭时，按 Esc 直接关闭。适用于 AppPad、剪切板和工作流。"
           }
         },
         "zh-Hant" : {

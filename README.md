@@ -9,11 +9,27 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Website</a> ·
-  English · <a href="README.zh-CN.md">简体中文</a>
+  <a href="https://apppad.youmindhub.com">Website</a>
+</p>
+
+<p align="center">
+  English ·
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.it.md">Italiano</a> ·
+  <a href="README.nl.md">Nederlands</a>
 </p>
 
 ---
+
+## Download
+
+[Download the latest release](https://github.com/umindhub/AppPad/releases/latest)
 
 ## Features
 
@@ -23,28 +39,31 @@
 - Folders, drag to reorder / create folders, long-press or hold ⌥ for edit mode
 - Built-in clean uninstall: removes the app together with its leftover files
 - Grid search, page indicator (dots / numbers), Liquid Glass controls
-- Backgrounds: wallpaper / white / light gray / dark gray / custom color, separate settings for light & dark theme
+- Backgrounds: white / light gray / dark gray / wallpaper / custom color, separate settings for light & dark theme
 
 ### Clipboard
-- Permanent history of text and images (images survive deletion of the original file)
-- Saved library for frequently used items, `⌘1`–`⌘0` to paste
-- Source-app filter chips and `AppName::` search syntax, live preview
+- Text and images are kept permanently
+- Any copied item can be saved
+- `⌘1`–`⌘0` quick paste, source-app filter chips, `AppName::` search syntax, live preview
 
 ### Workflows
 - `⌘Space` opens the Workflow panel: apps and workflows ranked together by frecency
-- Workflows run Apple Shortcuts, AppleScript or shell scripts, with arguments (e.g. `time 10`)
-- Built-in: Empty Trash, Set Timer, Set Alarm, Set Volume, Quit All Apps, calculator…
+- Workflows run shell scripts, AppleScript, Shortcuts or HTTP requests, with arguments (e.g. `time 10`)
+- Built-in: Empty Trash, Set Timer, Set Alarm, Set Volume, Quit All Apps…
 - Declared permissions enforced by a real sandbox (Allow Once / Don't Allow / Always Allow)
 - Import / share workflows as JSON files or links
 
+### Calculator
+- Type a math expression right in the Workflow panel search field to calculate (scientific notation supported)
+
 ### App Shortcuts
-- Global hotkey for any app, Raycast-style
+- Assign a global hotkey to any app
 
 ### Window Control
 - Snap left / right (½ → ⅓ → ⅔), maximize, restore, move to another display — all hotkeys customizable
 
 ### Other
-- Menu-bar only (no Dock icon), launch at login
+- Launch at login
 - `⌘⇧J` / `⌘⇧K` morphs between Launchpad, Clipboard and Workflows
 - 10 languages: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
