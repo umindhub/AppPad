@@ -284,7 +284,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.isAnimating = false
             self.backdrop.frame = box
             tile.concealedLabelAlpha = 0
-            // Proxies are pixel snapshots of the real content at its final spots: swap instantly.
+            // Proxies render exactly like the real content at its final spots: swap instantly.
             self.setChromeAlpha(1)
             flights.forEach { $0.view.removeFromSuperview() }
         })
@@ -376,19 +376,22 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         link = newLink
     }
 
+    // The last step and the completion (proxy → real view swap) share one transaction,
+    // so the swap lands in the same frame as the final pose.
     @objc private func tick(_ displayLink: CADisplayLink) {
         let t = min(1, (CACurrentMediaTime() - timelineStart) / timelineDuration)
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         timelineStep?(CGFloat(t >= 1 ? 1 : timelineCurve(t)))
+        if t >= 1 {
+            link?.invalidate()
+            link = nil
+            let done = timelineDone
+            timelineStep = nil
+            timelineDone = nil
+            done?()
+        }
         CATransaction.commit()
-        guard t >= 1 else { return }
-        link?.invalidate()
-        link = nil
-        let done = timelineDone
-        timelineStep = nil
-        timelineDone = nil
-        done?()
     }
 
     // Critically damped spring, normalised to reach 1 at t = 1.
@@ -460,14 +463,16 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         }
 
         var flights: [Flight] = []
-        func addFlight(snapshotOf view: NSView, part: NSRect, real: NSRect, small: NSRect, fade: Fade) {
-            guard let image = snapshot(view, rect: part) else { return }
-            let proxy = IconProxyView(image: image)
+        func addProxy(_ proxy: NSView, real: NSRect, small: NSRect, fade: Fade) {
             proxy.frame = opening ? small : real
             proxy.alphaValue = fade.alpha(0, opening: opening)
             addSubview(proxy)
-            proxy.fixOrientation()
+            (proxy as? IconProxyView)?.fixOrientation()
             flights.append(Flight(view: proxy, start: opening ? small : real, end: opening ? real : small, fade: fade))
+        }
+        func addFlight(snapshotOf view: NSView, part: NSRect, real: NSRect, small: NSRect, fade: Fade) {
+            guard let image = snapshot(view, rect: part) else { return }
+            addProxy(IconProxyView(image: image), real: real, small: small, fade: fade)
         }
 
         for (index, cell) in grid.cells.enumerated() where index != excluded {
@@ -491,20 +496,31 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
                 shrink = collapsed
             }
 
-            // Split at the middle of the icon → name gap (cell coordinates, flipped).
+            // Icon: not a bitmap snapshot (cacheDisplay renders it duller than the live icon, which
+            // lit up when swapped in at the end). Same NSImage in an NSImageView, exactly like the
+            // cell's own image view and the drag image → the swap shows no change.
+            let iconReal = convert(cell.iconRect, from: cell)
+            addProxy(Self.iconProxy(cell.snapshotIcon()), real: iconReal, small: shrink(iconReal),
+                     fade: tileIndex < 9 ? .none : .whole)
+            // Name: snapshot below the middle of the icon → name gap (cell coordinates, flipped).
             let split = (cell.iconRect.maxY + GridCellView.gap / 2).rounded()
-            let iconPart = NSRect(x: 0, y: 0, width: cell.bounds.width, height: split)
             let namePart = NSRect(x: 0, y: split, width: cell.bounds.width, height: cell.bounds.height - split)
-            let iconReal = convert(iconPart, from: cell)
             let nameReal = convert(namePart, from: cell)
-            addFlight(snapshotOf: cell, part: iconPart, real: iconReal, small: shrink(iconReal),
-                      fade: tileIndex < 9 ? .none : .whole)
             addFlight(snapshotOf: cell, part: namePart, real: nameReal, small: shrink(nameReal), fade: .text)
         }
 
         let titleRect = convert(titleField.bounds, from: titleField)
         addFlight(snapshotOf: titleField, part: titleField.bounds, real: titleRect, small: collapsed(titleRect), fade: .text)
         return flights
+    }
+
+    // Rendered like GridCellView's imageView (same scaling, layer-backed).
+    private static func iconProxy(_ image: NSImage) -> NSImageView {
+        let view = NSImageView()
+        view.imageScaling = .scaleProportionallyUpOrDown
+        view.wantsLayer = true
+        view.image = image
+        return view
     }
 
     private func snapshot(_ view: NSView, rect: NSRect) -> NSImage? {
