@@ -46,6 +46,8 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         content.frame = container.bounds
         panel.morphBackground = background
         panel.morphContent = content
+        // Late wallpaper (cache miss) may change light / dark text.
+        background.onWallpaperApplied = { [weak self] in self?.applyAppearance() }
 
         panel.delegate = self
         panel.keyHandler = { [weak self] event in
@@ -169,9 +171,10 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         }
     }
 
-    // Same background as the launcher: wallpaper → dark, white → light.
+    // Light / dark text from the composed background brightness (own or AppPad's background).
     private func applyAppearance() {
-        panel.appearance = NSAppearance(named: prefs.backgroundStyle == .white ? .aqua : .darkAqua)
+        let screen = panel.isVisible ? panel.screen : PanelScreen.target()
+        panel.appearance = PanelBackgroundSpec.current(for: .workflows).appearance(on: screen)
     }
 
     // Clipboard-sized panel, centered on the screen with the pointer.
@@ -191,7 +194,10 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         panel.setFrame(frame, display: display)
         container.layer?.cornerRadius = LaunchpadController.cornerRadius
         viewController.root.layer?.cornerRadius = LaunchpadController.cornerRadius
+        panel.cornerMaskRadius = LaunchpadController.cornerRadius
         panel.hasShadow = true
-        background.update(style: prefs.backgroundStyle, screen: screen, panelFrame: frame)
+        let spec = PanelBackgroundSpec.current(for: .workflows)
+        background.update(spec: spec, screen: screen, panelFrame: frame)
+        panel.appearance = spec.appearance(on: screen)
     }
 }

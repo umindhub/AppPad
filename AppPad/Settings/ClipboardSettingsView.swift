@@ -59,21 +59,11 @@ struct ClipboardSettingsView: View {
             }
 
             Section("Window") {
-                Picker("Background", selection: $prefs.clipboardBackground) {
-                    Text("Same as AppPad").tag(ClipboardBackground.followLaunchpad)
-                    Text("Blurred wallpaper").tag(ClipboardBackground.wallpaper)
-                    Text("Heavily blurred wallpaper").tag(ClipboardBackground.heavyBlur)
-                    Text("White").tag(ClipboardBackground.white)
-                    Text("Light gray").tag(ClipboardBackground.lightGray)
-                    Text("Dark gray").tag(ClipboardBackground.darkGray)
-                    Text("Custom color").tag(ClipboardBackground.custom)
-                }
-                if prefs.clipboardBackground == .custom {
-                    ColorPicker("Color", selection: customColor, supportsOpacity: false)
-                }
                 percentSlider("Width", value: $prefs.clipboardWidthPercent)
                 percentSlider("Height", value: $prefs.clipboardHeightPercent)
             }
+
+            BackgroundSection(settings: $prefs.clipboardBackground, allowsFollow: true)
 
             Section("Fonts") {
                 fontPicker("Search font", family: $prefs.clipboardSearchFontFamily)
@@ -222,13 +212,6 @@ struct ClipboardSettingsView: View {
         case .lastDay: return String(localized: "Last 24 hours")
         case .lastHour: return String(localized: "Last hour")
         }
-    }
-
-    private var customColor: Binding<Color> {
-        Binding(
-            get: { Color(nsColor: ClipboardColors.color(hex: prefs.clipboardBackgroundColor) ?? ClipboardColors.darkGray) },
-            set: { prefs.clipboardBackgroundColor = ClipboardColors.hex(NSColor($0)) }
-        )
     }
 
     private func percentSlider(_ title: LocalizedStringKey, value: Binding<Int>) -> some View {

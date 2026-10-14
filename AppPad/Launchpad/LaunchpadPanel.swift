@@ -1,9 +1,37 @@
 import AppKit
+import Darwin
+
+// Window-server blur of whatever is behind a window, at any radius (private CGS call, as iTerm2 does).
+// Resolved with dlsym, so a missing symbol only disables it (callers fall back to the system material).
+enum WindowBlur {
+    private typealias ConnectionFn = @convention(c) () -> Int32
+    private typealias SetRadiusFn = @convention(c) (Int32, Int32, Int32) -> Int32
+
+    private static let connection: ConnectionFn? = symbol("CGSDefaultConnectionForThread")
+    private static let setRadius: SetRadiusFn? = symbol("CGSSetWindowBackgroundBlurRadius")
+
+    static var isAvailable: Bool { connection != nil && setRadius != nil }
+
+    private static func symbol<T>(_ name: String) -> T? {
+        // RTLD_DEFAULT: search every loaded image (SkyLight is loaded by AppKit).
+        guard let pointer = dlsym(UnsafeMutableRawPointer(bitPattern: -2), name) else { return nil }
+        return unsafeBitCast(pointer, to: T.self)
+    }
+
+    @discardableResult
+    static func set(_ window: NSWindow, radius: Int) -> Bool {
+        guard window.windowNumber > 0, let connection, let setRadius else { return false }
+        return setRadius(connection(), Int32(truncatingIfNeeded: window.windowNumber), Int32(max(radius, 0))) == 0
+    }
+}
 
 // Borderless, non-activating floating panel (Spotlight style):
 // it takes keyboard focus without activating AppPad, so the hotkey works from any app
 // and closing it leaves the previous app frontmost.
 final class LaunchpadPanel: NSPanel {
+    // Launchpad covering the menu bar (above the menu bar and status items).
+    static let aboveMenuBarLevel = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 2)
+
     var keyHandler: ((NSEvent) -> Bool)?
     // Sees every keyDown before the field editor (Workflow panel: ⌥ / ⌃ in-panel shortcuts).
     var keyDownHandler: ((NSEvent) -> Bool)?
@@ -12,6 +40,38 @@ final class LaunchpadPanel: NSPanel {
     // Set by the owning controller: the two layers PanelMorph fades / re-slices separately.
     weak var morphBackground: LaunchpadBackgroundView?
     weak var morphContent: NSView?
+
+    // MARK: - Behind-window blur (color backgrounds)
+    // Drawn by PanelBackdrop's helper window right below the panel, never by the panel itself:
+    // a panel switch then only moves / resizes that one window and the blur never toggles.
+
+    // Window-server blur radius for what is behind the panel; 0 = off. Set by LaunchpadBackgroundView.
+    var behindBlurRadius = 0 {
+        didSet { if behindBlurRadius != oldValue { PanelBackdrop.shared.update(for: self) } }
+    }
+    // Rounded corners of that blur (matches the content); set by the controllers' applyFrame.
+    var cornerMaskRadius: CGFloat = 0 {
+        didSet { if cornerMaskRadius != oldValue { PanelBackdrop.shared.update(for: self) } }
+    }
+
+    // Blur scaled by window alpha (fade in / out, invisible warm-up).
+    // KVO, not an alphaValue override: animator() calls the setter on its proxy, which crashes
+    // a Swift override that touches stored properties.
+    private var alphaObservation: NSKeyValueObservation?
+
+    override func order(_ place: NSWindow.OrderingMode, relativeTo otherWin: Int) {
+        super.order(place, relativeTo: otherWin)
+        if place == .out {
+            PanelBackdrop.shared.panelDidHide(self)
+        } else {
+            PanelBackdrop.shared.update(for: self)
+        }
+    }
+
+    override func setFrame(_ frameRect: NSRect, display flag: Bool) {
+        super.setFrame(frameRect, display: flag)
+        PanelBackdrop.shared.update(for: self)
+    }
 
     override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         super.init(contentRect: contentRect, styleMask: style.union(.nonactivatingPanel), backing: backingStoreType, defer: flag)
@@ -26,6 +86,11 @@ final class LaunchpadPanel: NSPanel {
         isReleasedWhenClosed = false
         animationBehavior = .none
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        alphaObservation = observe(\.alphaValue, options: [.new]) { panel, _ in
+            MainActor.assumeIsolated {   // window alpha only changes on the main thread
+                if panel.behindBlurRadius > 0 { PanelBackdrop.shared.update(for: panel) }
+            }
+        }
     }
 
     override var canBecomeKey: Bool { true }
@@ -306,6 +371,9 @@ final class PanelMorph {
     private let outgoingRadius: CGFloat
     private var incomingHadShadow = false
     private var outgoingHadShadow = false
+    // Launchpad may sit above the menu bar: both panels share the higher level during the morph.
+    private var incomingLevel: NSWindow.Level = .floating
+    private var outgoingLevel: NSWindow.Level = .floating
 
     private struct Pose {
         let scale: CGSize
@@ -365,11 +433,17 @@ final class PanelMorph {
 
     // Before ordering in (window alpha 0): incoming in its start state.
     func prepare() {
+        incomingLevel = incoming.level
+        outgoingLevel = outgoing.level
+        let top = NSWindow.Level(rawValue: max(incomingLevel.rawValue, outgoingLevel.rawValue))
+        incoming.level = top
+        outgoing.level = top
         incomingHadShadow = incoming.hasShadow
         outgoingHadShadow = outgoing.hasShadow
         // A window shadow would not follow the scaling / fading layers.
         incoming.hasShadow = false
         outgoing.hasShadow = false
+        startBlurTrack()
         outgoing.ignoresMouseEvents = true
         let views = Self.parts(incoming)
         views.content?.alphaValue = 0
@@ -457,7 +531,29 @@ final class PanelMorph {
             Self.fade(smallParts.content, to: 1, delay: swap, length: d - swap, timing: .easeOut)
             Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .easeOut)
         }
+        blurTrack?.animate(duration: d, curve: incomingIsLarge ? Self.expandCurve : Self.shrinkCurve)
         DispatchQueue.main.asyncAfter(deadline: .now() + d) { completion() }
+    }
+
+    // Window-server blur during the morph: PanelBackdrop's window (already below the outgoing panel)
+    // follows the large panel's visible frame / corner radius at one constant radius, then simply
+    // stays as the incoming panel's blur. Nothing is switched off or on, so no flash or jump.
+    private var blurTrack: MorphBlurTrack?
+
+    private func startBlurTrack() {
+        let frames = incomingIsLarge ? (smallFrame, largeFrame) : (largeFrame, smallFrame)
+        let corners = incomingIsLarge ? (smallRadius, largeRadius) : (largeRadius, smallRadius)
+        guard PanelBackdrop.shared.beginMorph(from: outgoing as? LaunchpadPanel, to: incoming as? LaunchpadPanel,
+                                              frame: frames.0, corner: corners.0)
+        else { return }
+        blurTrack = MorphBlurTrack(frames: frames, corners: corners)
+    }
+
+    // Blur hands over to the incoming panel (frame / radius of its own, normally unchanged).
+    private func endBlurTrack() {
+        blurTrack?.cancel()
+        blurTrack = nil
+        PanelBackdrop.shared.endMorph(owner: incoming as? LaunchpadPanel)
     }
 
     // Incoming at its final look (also when cut short).
@@ -468,10 +564,15 @@ final class PanelMorph {
         if !incoming.isVisible || incoming.isKeyWindow { Self.setAlpha(incoming, 1) }
         incoming.hasShadow = incomingHadShadow
         incoming.invalidateShadow()
+        endBlurTrack()
     }
 
     // Outgoing after its hide(): back to normal for its next show.
     func resetOutgoing() {
+        // Own levels back once the outgoing panel is gone (earlier, it could cover the incoming one).
+        outgoing.level = outgoingLevel
+        incoming.level = incomingLevel
+        if let panel = incoming as? LaunchpadPanel { PanelBackdrop.shared.update(for: panel) }
         if incomingIsLarge { gatherSmallWindow() }
         Self.restore(outgoing, radius: outgoingRadius)
         Self.setAlpha(outgoing, 1)
@@ -664,5 +765,212 @@ enum PanelScreen {
         }
         // screens[0] holds the menu bar; NSScreen.main is just the key window's screen.
         return NSScreen.screens.first ?? NSScreen.main
+    }
+}
+
+// MARK: - Panel backdrop (window-server blur)
+// One clear, click-through window right below the visible panel carries the blur of what is behind
+// it (the panels never blur themselves). Frame / corners / radius follow the owner panel; during a
+// morph PanelMorph drives the frame instead, and the owner changes at the end without any toggle.
+@MainActor
+final class PanelBackdrop {
+    static let shared = PanelBackdrop()
+
+    private let window = BlurHelperWindow(contentRect: .zero, styleMask: .borderless,
+                                          backing: .buffered, defer: false)
+    private weak var owner: LaunchpadPanel?
+    private var isMorphing = false
+    private var appliedRadius = -1
+
+    // Panel shown / moved / resized / faded / re-configured.
+    func update(for panel: LaunchpadPanel) {
+        guard !isMorphing, WindowBlur.isAvailable else { return }
+        guard panel.isVisible, panel.behindBlurRadius > 0 else {
+            if owner === panel { hide() }
+            return
+        }
+        owner = panel
+        place(panel.frame, corner: panel.cornerMaskRadius)
+        keepBelow(panel)
+        setRadius(Int((CGFloat(panel.behindBlurRadius) * panel.alphaValue).rounded()))
+    }
+
+    func panelDidHide(_ panel: LaunchpadPanel) {
+        guard owner === panel, !isMorphing else { return }
+        hide()
+    }
+
+    // Morph start: below the outgoing panel at the start frame, constant radius
+    // (the outgoing panel's, or the incoming one's when the outgoing has none). false = no blur.
+    func beginMorph(from outgoing: LaunchpadPanel?, to incoming: LaunchpadPanel?, frame: NSRect, corner: CGFloat) -> Bool {
+        guard WindowBlur.isAvailable, let outgoing else { return false }
+        let outRadius = outgoing.behindBlurRadius
+        let radius = outRadius > 0 ? outRadius : (incoming?.behindBlurRadius ?? 0)
+        guard radius > 0 else { return false }
+        isMorphing = true
+        place(frame, corner: corner)
+        keepBelow(outgoing)
+        setRadius(radius)
+        return true
+    }
+
+    func setMorphFrame(_ frame: NSRect, corner: CGFloat) {
+        guard isMorphing else { return }
+        place(frame, corner: corner)
+    }
+
+    // Morph end (or cut short): the incoming panel owns the blur; no reorder, so no flicker.
+    func endMorph(owner panel: LaunchpadPanel?) {
+        guard isMorphing else { return }
+        isMorphing = false
+        owner = panel
+        if let panel { update(for: panel) } else { hide() }
+    }
+
+    // Same level as the panel, right below it. Ordered only when coming in or when the level
+    // changed (a level change moves a window to the front of its new level).
+    private func keepBelow(_ panel: NSWindow) {
+        guard !window.isVisible || window.level != panel.level else { return }
+        window.level = panel.level
+        window.order(.below, relativeTo: panel.windowNumber)
+        appliedRadius = -1
+    }
+
+    private func place(_ frame: NSRect, corner: CGFloat) {
+        window.setFrame(frame.integral, display: false)
+        window.cornerMaskRadius = corner.rounded()
+    }
+
+    private func setRadius(_ radius: Int) {
+        guard radius != appliedRadius else { return }
+        if WindowBlur.set(window, radius: radius) { appliedRadius = radius }
+    }
+
+    private func hide() {
+        owner = nil
+        setRadius(0)
+        window.orderOut(nil)
+        appliedRadius = -1
+    }
+}
+
+// MARK: - Morph blur track
+// Moves PanelBackdrop's window per display frame, in step with PanelMorph's layer animation
+// (same duration and timing curve).
+@MainActor
+final class MorphBlurTrack: NSObject {
+    private let frames: (NSRect, NSRect)
+    private let corners: (CGFloat, CGFloat)
+    private var duration: TimeInterval = 0.5
+    private var ease: (Double) -> Double = { $0 }
+    private var startTime: CFTimeInterval = 0
+    private var link: CADisplayLink?
+
+    init(frames: (NSRect, NSRect), corners: (CGFloat, CGFloat)) {
+        self.frames = frames
+        self.corners = corners
+        super.init()
+    }
+
+    func animate(duration: TimeInterval, curve: CAMediaTimingFunction) {
+        self.duration = max(duration, 0.01)
+        ease = Self.easing(curve)
+        startTime = CACurrentMediaTime()
+        link?.invalidate()
+        guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(frames.0) }) ?? NSScreen.main else { return }
+        let link = screen.displayLink(target: self, selector: #selector(tick(_:)))
+        link.add(to: .main, forMode: .common)
+        self.link = link
+    }
+
+    func cancel() {
+        link?.invalidate()
+        link = nil
+    }
+
+    @objc private func tick(_ link: CADisplayLink) {
+        let t = min(1, (CACurrentMediaTime() - startTime) / duration)
+        let p = ease(t)
+        let a = frames.0, b = frames.1
+        let frame = NSRect(x: lerp(a.minX, b.minX, p), y: lerp(a.minY, b.minY, p),
+                           width: lerp(a.width, b.width, p), height: lerp(a.height, b.height, p))
+        PanelBackdrop.shared.setMorphFrame(frame, corner: lerp(corners.0, corners.1, p))
+        if t >= 1 {   // hold the end state until the morph settles
+            cancel()
+        }
+    }
+
+    private func lerp(_ a: CGFloat, _ b: CGFloat, _ p: Double) -> CGFloat {
+        a + (b - a) * CGFloat(p)
+    }
+
+    // Cubic bezier of a CAMediaTimingFunction: x (time) → y (progress).
+    private static func easing(_ curve: CAMediaTimingFunction) -> (Double) -> Double {
+        var c1: [Float] = [0, 0]
+        var c2: [Float] = [0, 0]
+        curve.getControlPoint(at: 1, values: &c1)
+        curve.getControlPoint(at: 2, values: &c2)
+        let x1 = Double(c1[0]), y1 = Double(c1[1]), x2 = Double(c2[0]), y2 = Double(c2[1])
+        let bez: (Double, Double, Double) -> Double = { s, p1, p2 in
+            let u = 1 - s
+            return 3 * u * u * s * p1 + 3 * u * s * s * p2 + s * s * s
+        }
+        return { x in
+            guard x > 0 else { return 0 }
+            guard x < 1 else { return 1 }
+            // Bisection on the monotonic x(s).
+            var lo = 0.0, hi = 1.0, s = x
+            for _ in 0..<24 {
+                s = (lo + hi) / 2
+                if bez(s, x1, x2) < x { lo = s } else { hi = s }
+            }
+            return bez(s, y1, y2)
+        }
+    }
+}
+
+// Clear, click-through window that only carries the window-server blur.
+final class BlurHelperWindow: NSWindow {
+    // Rounded window shape for the window server, so the blur has the panel's corners.
+    var cornerMaskRadius: CGFloat = 0 {
+        didSet {
+            guard cornerMaskRadius != oldValue else { return }
+            let changed = NSSelectorFromString("_cornerMaskChanged")
+            if responds(to: changed) { _ = perform(changed) }
+        }
+    }
+
+    override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask,
+                  backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
+        super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = false
+        ignoresMouseEvents = true
+        isReleasedWhenClosed = false
+        animationBehavior = .none
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
+    }
+
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+
+    // Private NSWindow hook (no `override`: not visible to Swift). nil = plain rectangle.
+    @objc func _cornerMask() -> NSImage? {
+        Self.cornerMaskImage(radius: cornerMaskRadius)
+    }
+
+    // Stretchable rounded-rect mask; nil for radius 0.
+    static func cornerMaskImage(radius r: CGFloat) -> NSImage? {
+        guard r > 0 else { return nil }
+        let size = NSSize(width: r * 2 + 1, height: r * 2 + 1)
+        let image = NSImage(size: size, flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: r, yRadius: r).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: r, left: r, bottom: r, right: r)
+        image.resizingMode = .stretch
+        return image
     }
 }

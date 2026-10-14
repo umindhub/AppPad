@@ -13,6 +13,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private var appHotKeyIDs: [UInt32] = []
     private var windowHotKeyIDs: [UInt32] = []
     private var prefsTask: Task<Void, Never>?
+    // System light / dark switch (Theme: Auto) → re-apply panel backgrounds.
+    private var appearanceObservation: NSKeyValueObservation?
     // Last other app that was frontmost (gets focus back after a Dock click).
     private let frontmost = FrontmostAppTracker()
     // Dock click → focus handed back to the previous app, then this runs.
@@ -40,6 +42,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Read while the launch Apple Event is still current.
         let openedByUser = LaunchOrigin.isUserOpen()
+        // Theme first: wallpaper prewarm picks blur params for the theme in effect.
+        applyTheme()
         NSApp.mainMenu = MainMenu.build()
         launchpad.onOpenSettings = { [weak self] in self?.showSettings() }
         launchpad.onRequestShortcut = { [weak self] app in self?.addAppShortcut(for: app) }
@@ -78,6 +82,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             self, selector: #selector(preferencesDidChange(_:)),
             name: .preferencesDidChange, object: nil
         )
+        // App delegate lives for the whole process; the strong capture here is intended.
+        appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { _, _ in
+            Task { @MainActor [weak self] in self?.appearanceDidChange() }
+        }
         if openedByUser { openLaunchpadAfterColdLaunch() }
     }
 
@@ -276,9 +284,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             guard !Task.isCancelled, let self else { return }
             self.registerHotKeys()
             PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
-            self.launchpad.applyPreferences()
-            self.clipboard.applyPreferences()
+            self.applyTheme()
+            self.applyBackgrounds()
         }
+    }
+
+    // General › Theme: nil follows the system.
+    private func applyTheme() {
+        let name: NSAppearance.Name?
+        switch Preferences.shared.appTheme {
+        case .auto: name = nil
+        case .light: name = .aqua
+        case .dark: name = .darkAqua
+        }
+        let target = name.flatMap { NSAppearance(named: $0) }
+        if NSApp.appearance?.name != target?.name { NSApp.appearance = target }
+    }
+
+    // Light / dark switch (system or Theme setting): backgrounds use the other variant's values.
+    private var lastVariant: ThemeVariant?
+
+    private func appearanceDidChange() {
+        let variant = PanelBackgroundSpec.currentVariant
+        guard variant != lastVariant else { return }
+        lastVariant = variant
+        applyBackgrounds()
+    }
+
+    private func applyBackgrounds() {
+        lastVariant = PanelBackgroundSpec.currentVariant
+        WallpaperBlurCache.shared.prewarm()
+        launchpad.applyPreferences()
+        clipboard.applyPreferences()
+        workflows.applyPreferences()
     }
 
     private func registerHotKeys() {

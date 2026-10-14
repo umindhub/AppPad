@@ -17,6 +17,10 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var folderOverlay: FolderOverlayView?
     var confirmOverlay: ConfirmOverlayView?
     var isEditingLayout = false
+    // Extra top margin when the panel reaches into a notched screen's top area (camera housing).
+    var topInset: CGFloat = 0 {
+        didSet { if topInset != oldValue { view.needsLayout = true } }
+    }
     var drag: DragState?
     var lastDragEvent: NSEvent?
     var mergeTask: Task<Void, Never>?
@@ -91,13 +95,13 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         let b = view.bounds
         let pad: CGFloat = 28
         let fieldWidth = min(320, b.width - 2 * pad)
-        // Field centered at y 36 (same 32 pt capsule with and without glass).
+        // Field centered at y 36 below the safe top (same 32 pt capsule with and without glass).
         let fieldHeight = searchChrome.preferredHeight
-        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: 36 - fieldHeight / 2,
+        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: topInset + 36 - fieldHeight / 2,
                                     width: fieldWidth, height: fieldHeight)
         let searchBottom = searchChrome.frame.maxY
 
-        let top: CGFloat = 76
+        let top: CGFloat = topInset + 76
         // Breathing room under the last icon row (labels no longer hug the bottom edge).
         let bottom = b.height - Self.bottomPadding
         // Each page adds a small side margin so pages are 1.5× the icon gap apart (PageGridView.pageGapFactor).
@@ -455,7 +459,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             return
         }
         if prefs.backgroundClickAction == .closePanel {
-            controller?.hide()
+            controller?.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
         }
     }
 

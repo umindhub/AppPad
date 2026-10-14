@@ -54,6 +54,8 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         content.frame = container.bounds
         panel.morphBackground = background
         panel.morphContent = content
+        // Late wallpaper (cache miss) may change light / dark text.
+        background.onWallpaperApplied = { [weak self] in self?.applyAppearance() }
 
         panel.delegate = self
         panel.keyHandler = { [weak self] event in
@@ -198,30 +200,10 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         }
     }
 
-    private enum Background {
-        case style(PanelBackgroundStyle)
-        case color(NSColor)
-    }
-
-    private var resolvedBackground: Background {
-        switch prefs.clipboardBackground {
-        case .followLaunchpad: return .style(prefs.backgroundStyle)
-        case .wallpaper, .heavyBlur: return .style(.wallpaper)
-        case .white: return .color(.white)
-        case .lightGray: return .color(ClipboardColors.lightGray)
-        case .darkGray: return .color(ClipboardColors.darkGray)
-        case .custom: return .color(ClipboardColors.color(hex: prefs.clipboardBackgroundColor) ?? ClipboardColors.darkGray)
-        }
-    }
-
-    // Wallpaper / dark colors → dark appearance; white / light colors → light appearance.
+    // Light / dark text from the composed background brightness (own or AppPad's background).
     private func applyAppearance() {
-        let dark: Bool
-        switch resolvedBackground {
-        case .style(let style): dark = style == .wallpaper
-        case .color(let color): dark = ClipboardColors.isDark(color)
-        }
-        panel.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        let screen = panel.isVisible ? panel.screen : PanelScreen.target()
+        panel.appearance = PanelBackgroundSpec.current(for: .clipboard).appearance(on: screen)
     }
 
     private func targetFrame(on screen: NSScreen) -> NSRect {
@@ -245,12 +227,10 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         let radius = filled ? LaunchpadController.filledCornerRadius : LaunchpadController.cornerRadius
         container.layer?.cornerRadius = radius
         viewController.root.layer?.cornerRadius = radius
+        panel.cornerMaskRadius = radius
         panel.hasShadow = !filled
-        switch resolvedBackground {
-        case .style(let style):
-            background.update(style: style, screen: screen, panelFrame: frame,
-                              heavyBlur: prefs.clipboardBackground == .heavyBlur)
-        case .color(let color): background.update(solid: color)
-        }
+        let spec = PanelBackgroundSpec.current(for: .clipboard)
+        background.update(spec: spec, screen: screen, panelFrame: frame)
+        panel.appearance = spec.appearance(on: screen)
     }
 }

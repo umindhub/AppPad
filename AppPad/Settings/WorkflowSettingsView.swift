@@ -23,6 +23,7 @@ struct WorkflowSettingsView: View {
     var body: some View {
         Form {
             panelSection
+            BackgroundSection(settings: $prefs.workflowBackground, allowsFollow: true)
             workflowsSection
             ForEach(groupKeys, id: \.self) { group in
                 groupSection(group)

@@ -155,10 +155,6 @@ struct SettingsView: View {
             }
 
             Section("Window") {
-                Picker("Background", selection: $prefs.backgroundStyle) {
-                    Text("Blurred wallpaper").tag(PanelBackgroundStyle.wallpaper)
-                    Text("White").tag(PanelBackgroundStyle.white)
-                }
                 Picker("Size", selection: $prefs.windowSizeMode) {
                     Text("Follow screen size").tag(WindowSizeMode.screenPercent)
                     Text("Custom").tag(WindowSizeMode.custom)
@@ -180,11 +176,19 @@ struct SettingsView: View {
                         }
                         .frame(width: 220)
                     }
+                    if prefs.windowPercent >= 100 {
+                        Toggle(isOn: $prefs.launchpadCoversMenuBar) {
+                            Text("Cover the menu bar")
+                            Text("Fills the screen up to the top edge. The Dock stays below AppPad while it is open.")
+                        }
+                    }
                 } else {
                     Stepper("Width: \(prefs.customWidth) pt", value: $prefs.customWidth, in: 480...4000, step: 20)
                     Stepper("Height: \(prefs.customHeight) pt", value: $prefs.customHeight, in: 360...3000, step: 20)
                 }
             }
+
+            BackgroundSection(settings: $prefs.launchpadBackground, allowsFollow: false)
 
             Section("Grid") {
                 Stepper("Columns: \(prefs.gridColumns)", value: $prefs.gridColumns, in: 3...10)

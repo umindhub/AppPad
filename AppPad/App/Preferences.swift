@@ -18,14 +18,107 @@ nonisolated enum BackgroundClickAction: String, CaseIterable, Sendable {
     case nothing
 }
 
-nonisolated enum PanelBackgroundStyle: String, CaseIterable, Sendable {
-    case wallpaper   // blurred desktop picture (macOS 15 Launchpad look)
-    case white
+// App-wide theme; .auto follows the system appearance.
+nonisolated enum AppTheme: String, CaseIterable, Sendable {
+    case auto, light, dark
 }
 
-// Clipboard panel background; independent of the launcher unless followLaunchpad.
-nonisolated enum ClipboardBackground: String, CaseIterable, Sendable {
-    case followLaunchpad, wallpaper, heavyBlur, white, lightGray, darkGray, custom
+// Effective light / dark side of the theme; every background option is tuned per variant.
+nonisolated enum ThemeVariant: String, CaseIterable, Codable, Sendable {
+    case light, dark
+}
+
+// Panels that draw a background.
+nonisolated enum BackgroundSurface: Sendable {
+    case launchpad, clipboard, workflows
+}
+
+// Base of a panel background. Wallpaper: blurred wallpaper + black veil.
+// Colors: drawn at `opacity` over the live windows behind the panel.
+nonisolated enum BackgroundStyle: String, CaseIterable, Codable, Sendable {
+    case wallpaper, white, lightGray, darkGray, custom
+}
+
+// The two user-visible parameters (0…1).
+// blur: wallpaper blur (wallpaper style) or blur of the windows behind (color styles).
+// opacity: color layer on top (wallpaper style: a black veil; lighter default in the light theme).
+nonisolated struct BackgroundTuning: Codable, Equatable, Sendable {
+    var blur: Double
+    var opacity: Double
+}
+
+// One panel's background settings. Every style keeps its own tuning (and custom color)
+// per theme variant, so switching style or theme never needs re-adjusting.
+// Missing entries fall back to BackgroundPalette defaults.
+nonisolated struct BackgroundSettings: Codable, Equatable, Sendable {
+    var follow: Bool                          // Clipboard / Workflows: use AppPad's background (ignored for AppPad)
+    var style: BackgroundStyle
+    var tunings: [String: BackgroundTuning]   // "style.variant"
+    var customColors: [String: String]        // variant -> "#RRGGBB"
+
+    static let launchpadDefault = BackgroundSettings(follow: false, style: .wallpaper, tunings: [:], customColors: [:])
+    static let panelDefault = BackgroundSettings(follow: true, style: .wallpaper, tunings: [:], customColors: [:])
+
+    private static func key(_ style: BackgroundStyle, _ variant: ThemeVariant) -> String {
+        "\(style.rawValue).\(variant.rawValue)"
+    }
+
+    func tuning(_ style: BackgroundStyle, _ variant: ThemeVariant) -> BackgroundTuning {
+        tunings[Self.key(style, variant)] ?? BackgroundPalette.defaultTuning(style, variant)
+    }
+
+    mutating func setTuning(_ tuning: BackgroundTuning, _ style: BackgroundStyle, _ variant: ThemeVariant) {
+        tunings[Self.key(style, variant)] = tuning
+    }
+
+    mutating func resetTuning(_ style: BackgroundStyle, _ variant: ThemeVariant) {
+        tunings[Self.key(style, variant)] = nil
+    }
+
+    func customHex(_ variant: ThemeVariant) -> String {
+        customColors[variant.rawValue] ?? BackgroundPalette.defaultCustomHex(variant)
+    }
+
+    // Color drawn on top: preset / custom color; nil = wallpaper style (black veil).
+    func colorHex(_ style: BackgroundStyle, _ variant: ThemeVariant) -> String? {
+        style == .custom ? customHex(variant) : BackgroundPalette.presetHex(style, variant)
+    }
+}
+
+// Built-in colors and defaults. Dark variants keep the light → dark order of the presets
+// without being bright in the dark theme.
+nonisolated enum BackgroundPalette {
+    static func presetHex(_ style: BackgroundStyle, _ variant: ThemeVariant) -> String? {
+        switch (style, variant) {
+        case (.white, .light): return "#FFFFFF"
+        case (.white, .dark): return "#48484A"
+        case (.lightGray, .light): return "#E8E8ED"
+        case (.lightGray, .dark): return "#3A3A3C"
+        case (.darkGray, .light): return "#2C2C2E"
+        case (.darkGray, .dark): return "#1C1C1E"
+        case (.wallpaper, _), (.custom, _): return nil
+        }
+    }
+
+    static func defaultCustomHex(_ variant: ThemeVariant) -> String {
+        variant == .light ? "#DCE3EC" : "#3A3A3C"
+    }
+
+    static func defaultTuning(_ style: BackgroundStyle, _ variant: ThemeVariant) -> BackgroundTuning {
+        switch style {
+        case .wallpaper:
+            // Same dark veil in both themes; light just a little brighter than dark.
+            return BackgroundTuning(blur: 0.6, opacity: variant == .light ? 0.2 : 0.25)
+        case .white, .lightGray, .darkGray, .custom:
+            return BackgroundTuning(blur: 0.6, opacity: 1)   // solid until the user lowers it
+        }
+    }
+
+    // Internal third parameter: saturation boost of the blurred wallpaper (vibrancy, not user-facing).
+    // Color styles use the system behind-window blur, which brings its own.
+    static func saturation(_ style: BackgroundStyle) -> Double {
+        style == .wallpaper ? 1.35 : 1.2
+    }
 }
 
 extension Notification.Name {
@@ -45,9 +138,15 @@ final class Preferences: ObservableObject {
         static let rows = "gridRows"
         static let sizeMode = "windowSizeMode"
         static let percent = "windowPercent"
+        static let coverMenuBar = "launchpadCoversMenuBar"
         static let width = "customWidth"
         static let height = "customHeight"
-        static let background = "backgroundStyle"
+        static let theme = "appTheme"
+        static let launchpadBackground = "launchpadBackground.v2"
+        static let clipBackgroundV2 = "clipboardBackground.v2"
+        static let workflowBackground = "workflowBackground.v2"
+        // Pre-v2 keys, read once for migration.
+        static let legacyBackground = "backgroundStyle"
         static let backgroundClick = "backgroundClickAction"
         static let englishInput = "switchToEnglishInput"
         static let clipEnglishInput = "clipboardSwitchToEnglishInput"
@@ -73,8 +172,8 @@ final class Preferences: ObservableObject {
         static let clipQuality = "clipboardImageQuality"
         static let clipAutoPaste = "clipboardAutoPaste"
         static let clipIgnored = "clipboardIgnoredApps"
-        static let clipBackground = "clipboardBackground"
-        static let clipBackgroundColor = "clipboardBackgroundColor"
+        static let legacyClipBackground = "clipboardBackground"
+        static let legacyClipBackgroundColor = "clipboardBackgroundColor"
         static let winEnabled = "windowControlEnabled"
         static let winHotKeyPrefix = "windowHotKey."
     }
@@ -85,9 +184,12 @@ final class Preferences: ObservableObject {
     @Published var gridRows: Int { didSet { save(gridRows, Key.rows) } }
     @Published var windowSizeMode: WindowSizeMode { didSet { save(windowSizeMode.rawValue, Key.sizeMode) } }
     @Published var windowPercent: Int { didSet { save(windowPercent, Key.percent) } }
+    // At 100%: panel also covers the menu bar.
+    @Published var launchpadCoversMenuBar: Bool { didSet { save(launchpadCoversMenuBar, Key.coverMenuBar) } }
     @Published var customWidth: Int { didSet { save(customWidth, Key.width) } }
     @Published var customHeight: Int { didSet { save(customHeight, Key.height) } }
-    @Published var backgroundStyle: PanelBackgroundStyle { didSet { save(backgroundStyle.rawValue, Key.background) } }
+    @Published var appTheme: AppTheme { didSet { save(appTheme.rawValue, Key.theme) } }
+    @Published var launchpadBackground: BackgroundSettings { didSet { saveBackground(launchpadBackground, Key.launchpadBackground) } }
     @Published var backgroundClickAction: BackgroundClickAction { didSet { save(backgroundClickAction.rawValue, Key.backgroundClick) } }
     // Switch to an English (ASCII) input source while a panel is open; off by default for each panel.
     @Published var switchToEnglishInput: Bool { didSet { save(switchToEnglishInput, Key.englishInput) } }   // Launchpad
@@ -124,8 +226,10 @@ final class Preferences: ObservableObject {
     @Published var clipboardImageQuality: Int { didSet { save(clipboardImageQuality, Key.clipQuality) } }  // HEIC %, 50–100
     @Published var clipboardAutoPaste: Bool { didSet { save(clipboardAutoPaste, Key.clipAutoPaste) } }
     @Published var clipboardIgnoredApps: [String] { didSet { save(clipboardIgnoredApps, Key.clipIgnored) } }
-    @Published var clipboardBackground: ClipboardBackground { didSet { save(clipboardBackground.rawValue, Key.clipBackground) } }
-    @Published var clipboardBackgroundColor: String { didSet { save(clipboardBackgroundColor, Key.clipBackgroundColor) } }  // "#RRGGBB" for .custom
+    @Published var clipboardBackground: BackgroundSettings { didSet { saveBackground(clipboardBackground, Key.clipBackgroundV2) } }
+
+    // MARK: Workflow panel
+    @Published var workflowBackground: BackgroundSettings { didSet { saveBackground(workflowBackground, Key.workflowBackground) } }
 
     // MARK: Window control
     @Published var windowControlEnabled: Bool { didSet { save(windowControlEnabled, Key.winEnabled) } }
@@ -148,9 +252,11 @@ final class Preferences: ObservableObject {
         gridRows = d.object(forKey: Key.rows) as? Int ?? 5
         windowSizeMode = WindowSizeMode(rawValue: d.string(forKey: Key.sizeMode) ?? "") ?? .screenPercent
         windowPercent = d.object(forKey: Key.percent) as? Int ?? 100
+        launchpadCoversMenuBar = d.object(forKey: Key.coverMenuBar) as? Bool ?? true
         customWidth = d.object(forKey: Key.width) as? Int ?? 1280
         customHeight = d.object(forKey: Key.height) as? Int ?? 800
-        backgroundStyle = PanelBackgroundStyle(rawValue: d.string(forKey: Key.background) ?? "") ?? .wallpaper
+        appTheme = AppTheme(rawValue: d.string(forKey: Key.theme) ?? "") ?? .auto
+        launchpadBackground = Self.loadBackground(d, Key.launchpadBackground) ?? Self.migrateLaunchpadBackground(d)
         backgroundClickAction = BackgroundClickAction(rawValue: d.string(forKey: Key.backgroundClick) ?? "") ?? .closePanel
         switchToEnglishInput = d.object(forKey: Key.englishInput) as? Bool ?? false
         clipboardSwitchToEnglishInput = d.object(forKey: Key.clipEnglishInput) as? Bool ?? false
@@ -177,8 +283,8 @@ final class Preferences: ObservableObject {
         clipboardAutoPaste = d.object(forKey: Key.clipAutoPaste) as? Bool ?? true
         clipboardIgnoredApps = d.stringArray(forKey: Key.clipIgnored)
             ?? ["com.apple.keychainaccess", "com.apple.Passwords"]
-        clipboardBackground = ClipboardBackground(rawValue: d.string(forKey: Key.clipBackground) ?? "") ?? .followLaunchpad
-        clipboardBackgroundColor = d.string(forKey: Key.clipBackgroundColor) ?? "#3A3A3C"
+        clipboardBackground = Self.loadBackground(d, Key.clipBackgroundV2) ?? Self.migrateClipboardBackground(d)
+        workflowBackground = Self.loadBackground(d, Key.workflowBackground) ?? .panelDefault   // always followed AppPad before
         windowControlEnabled = d.object(forKey: Key.winEnabled) as? Bool ?? true
         var windowCombos: [WindowAction: KeyCombo] = [:]
         for action in WindowAction.allCases {
@@ -191,6 +297,53 @@ final class Preferences: ObservableObject {
         } else {
             appHotKeys = []
         }
+    }
+
+    // Background actually used by a panel (Clipboard / Workflows may follow AppPad).
+    func effectiveBackground(for surface: BackgroundSurface) -> BackgroundSettings {
+        switch surface {
+        case .launchpad: return launchpadBackground
+        case .clipboard: return clipboardBackground.follow ? launchpadBackground : clipboardBackground
+        case .workflows: return workflowBackground.follow ? launchpadBackground : workflowBackground
+        }
+    }
+
+    private static func loadBackground(_ d: UserDefaults, _ key: String) -> BackgroundSettings? {
+        guard let data = d.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(BackgroundSettings.self, from: data)
+    }
+
+    private func saveBackground(_ settings: BackgroundSettings, _ key: String) {
+        save((try? JSONEncoder().encode(settings)) ?? Data(), key)
+    }
+
+    // Old "backgroundStyle": wallpaper / white.
+    private static func migrateLaunchpadBackground(_ d: UserDefaults) -> BackgroundSettings {
+        var settings = BackgroundSettings.launchpadDefault
+        if d.string(forKey: Key.legacyBackground) == "white" { settings.style = .white }
+        return settings
+    }
+
+    // Old clipboard enum (followLaunchpad / wallpaper / heavyBlur / white / lightGray / darkGray / custom).
+    private static func migrateClipboardBackground(_ d: UserDefaults) -> BackgroundSettings {
+        var settings = BackgroundSettings.panelDefault
+        if let hex = d.string(forKey: Key.legacyClipBackgroundColor) {
+            for variant in ThemeVariant.allCases { settings.customColors[variant.rawValue] = hex }
+        }
+        guard let old = d.string(forKey: Key.legacyClipBackground), old != "followLaunchpad" else { return settings }
+        settings.follow = false
+        switch old {
+        case "heavyBlur":
+            settings.style = .wallpaper
+            for variant in ThemeVariant.allCases {
+                var tuning = BackgroundPalette.defaultTuning(.wallpaper, variant)
+                tuning.blur = 0.9
+                settings.setTuning(tuning, .wallpaper, variant)
+            }
+        default:
+            settings.style = BackgroundStyle(rawValue: old) ?? .wallpaper
+        }
+        return settings
     }
 
     // Empty data = explicitly cleared; missing key = use default.

@@ -40,6 +40,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     private static let showDuration: TimeInterval = 0.25
     private static let hideDuration: TimeInterval = 0.2
+    // Click on empty space: slower, calmer fade out.
+    static let backgroundClickHideDuration: TimeInterval = 0.25
 
     var capacity: Int { max(1, prefs.gridColumns * prefs.gridRows) }
 
@@ -61,7 +63,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         WallpaperBlurCache.shared.start()
         viewController.controller = self
 
-        // Rounded container: background (wallpaper / white) + content.
+        // Rounded container: background (wallpaper / color) + content.
         container.wantsLayer = true
         container.layer?.cornerRadius = Self.cornerRadius
         container.layer?.masksToBounds = true
@@ -75,6 +77,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         content.frame = container.bounds
         panel.morphBackground = background
         panel.morphContent = content
+        // Late wallpaper (cache miss) may change light / dark text.
+        background.onWallpaperApplied = { [weak self] in self?.applyAppearance() }
 
         panel.delegate = self
         panel.keyHandler = { [weak self] event in
@@ -141,7 +145,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         didWarmUp = true
         Task { [weak self] in
             let screen = PanelScreen.target()
-            if let screen { _ = await WallpaperBlurCache.shared.image(for: screen) }
+            if let screen {
+                let params = PanelBackgroundSpec.current(for: .launchpad).blurParams
+                _ = await WallpaperBlurCache.shared.image(for: screen, params: params)
+            }
             guard let self else { return }
             self.isReady = true
             // Cold launch from the Dock: show right away, no hidden warm-up pass.
@@ -346,7 +353,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     }
 
     // animated: fade out + icons grow, then order out. A show() meanwhile cancels it.
-    func hide(animated: Bool = false) {
+    func hide(animated: Bool = false, duration: TimeInterval? = nil) {
         guard panel.isVisible, !isHiding else { return }
         guard animated else {
             hideNow()
@@ -358,11 +365,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.ignoresMouseEvents = true
         PinchGestureMonitor.shared.setTapEnabled(false)
         let token = transitionToken
+        let length = duration ?? Self.hideDuration
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = Self.hideDuration
+            context.duration = length
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             self.panel.animator().alphaValue = 0
-            self.setContentScale(self.scale(forVisibility: 0), duration: Self.hideDuration, timing: .easeIn)
+            self.setContentScale(self.scale(forVisibility: 0), duration: length, timing: .easeIn)
         } completionHandler: { [weak self] in
             guard let self, token == self.transitionToken else { return }
             self.hideNow()
@@ -404,8 +412,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // A tap that stopped a page swipe never becomes a click (macOS eats it).
     // Replay it as a click, only on empty space, so "tap outside closes" works mid-swipe.
+    // Also while a pinch open is running or just finished: a tap there cancels (closes) it.
     private func handleTrackpadTap() {
-        guard isShown, transition == nil, PagerView.isScrollActive, TapToClick.isEnabled else { return }
+        guard panel.isVisible, panel.isKeyWindow, !isFadingOut, TapToClick.isEnabled else { return }
+        let pinchOpening = transition == .opening
+            || ProcessInfo.processInfo.systemUptime - lastPinchOpen < Self.pinchTapWindow
+        guard pinchOpening || (transition == nil && PagerView.isScrollActive) else { return }
         let point = panel.mouseLocationOutsideOfEventStream
         guard let content = panel.contentView,
               content.bounds.contains(content.convert(point, from: nil)),
@@ -430,6 +442,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var transition: TransitionMode?
     private var transitionProgress: CGFloat = 0
     private var transitionToken = 0   // invalidates stale finish animations
+    // Last pinch-open activity: macOS eats taps right after a system gesture, so they are replayed.
+    private var lastPinchOpen: TimeInterval = -1
+    private static let pinchTapWindow: TimeInterval = 1.0
 
     // Icons start this much larger and settle to 1× as the panel fades in.
     private static let pinchZoom: CGFloat = 0.12
@@ -439,6 +454,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         transitionToken += 1
         transition = .opening
         transitionProgress = 0
+        lastPinchOpen = ProcessInfo.processInfo.systemUptime
         applyVisibility(0)
     }
 
@@ -465,6 +481,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         let visible = mode == .opening ? transitionProgress : 1 - transitionProgress
         let distance = abs((open ? 1 : 0) - visible)
         let duration = max(0.08, 0.25 * Double(distance))
+        if mode == .opening { lastPinchOpen = ProcessInfo.processInfo.systemUptime + duration }
 
         transitionToken += 1
         let token = transitionToken
@@ -535,13 +552,26 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         hide(animated: true)
     }
 
-    // Wallpaper → dark appearance (white labels); white → light appearance.
+    // Light / dark labels from the composed background brightness (style, theme, opacity, wallpaper).
     private func applyAppearance() {
-        panel.appearance = NSAppearance(named: prefs.backgroundStyle == .white ? .aqua : .darkAqua)
+        let screen = panel.isVisible ? panel.screen : PanelScreen.target()
+        panel.appearance = PanelBackgroundSpec.current(for: .launchpad).appearance(on: screen)
+    }
+
+    // 100% of the screen + "Cover the menu bar": the area grows up to the screen's top edge.
+    private var coversMenuBar: Bool {
+        prefs.windowSizeMode == .screenPercent && prefs.windowPercent >= 100 && prefs.launchpadCoversMenuBar
+    }
+
+    // Area the panel is sized / centered in.
+    private func availableFrame(on screen: NSScreen) -> NSRect {
+        var area = screen.visibleFrame
+        if coversMenuBar { area.size.height = screen.frame.maxY - area.minY }
+        return area
     }
 
     private func targetFrame(on screen: NSScreen) -> NSRect {
-        let visible = screen.visibleFrame
+        let visible = availableFrame(on: screen)
         var size: NSSize
         switch prefs.windowSizeMode {
         case .screenPercent:
@@ -564,15 +594,23 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // Sets frame, corner radius, shadow and wallpaper slice together.
     private func applyFrame(_ frame: NSRect, on screen: NSScreen, display: Bool) {
+        // Above the menu bar only while actually reaching into it (that level also covers the Dock).
+        panel.level = frame.maxY > screen.visibleFrame.maxY + 0.5 ? LaunchpadPanel.aboveMenuBarLevel : .floating
         panel.setFrame(frame, display: display)
-        let visible = screen.visibleFrame
+        let visible = availableFrame(on: screen)
         let filled = frame.width >= visible.width - 1 && frame.height >= visible.height - 1
         let radius = filled ? Self.filledCornerRadius : Self.cornerRadius
         container.layer?.cornerRadius = radius
         viewController.root.layer?.cornerRadius = radius
+        panel.cornerMaskRadius = radius
+        // Notched screen: keep the search field clear of the camera housing when reaching the top.
+        let topGap = screen.frame.maxY - frame.maxY
+        viewController.topInset = max(0, screen.safeAreaInsets.top - topGap)
         // No shadow when filled: it would spill onto the menu bar and Dock.
         panel.hasShadow = !filled
-        background.update(style: prefs.backgroundStyle, screen: screen, panelFrame: frame)
+        let spec = PanelBackgroundSpec.current(for: .launchpad)
+        background.update(spec: spec, screen: screen, panelFrame: frame)
+        panel.appearance = spec.appearance(on: screen)
     }
 
     private func handleKeyEquivalent(_ event: NSEvent) -> Bool {
