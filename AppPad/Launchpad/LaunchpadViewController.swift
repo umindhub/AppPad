@@ -21,6 +21,12 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var topInset: CGFloat = 0 {
         didSet { if topInset != oldValue { view.needsLayout = true } }
     }
+    // Panel fills the screen: search field lower down (fillSearchPosition of the way from the safe top
+    // edge to the first icon row), page dots halfway between field and icons.
+    var fillsScreen = false {
+        didSet { if fillsScreen != oldValue { view.needsLayout = true } }
+    }
+    private static let fillSearchPosition: CGFloat = 0.42
     var drag: DragState?
     var lastDragEvent: NSEvent?
     var mergeTask: Task<Void, Never>?
@@ -95,12 +101,6 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         let b = view.bounds
         let pad: CGFloat = 28
         let fieldWidth = min(320, b.width - 2 * pad)
-        // Field centered at y 36 below the safe top (same 32 pt capsule with and without glass).
-        let fieldHeight = searchChrome.preferredHeight
-        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: topInset + 36 - fieldHeight / 2,
-                                    width: fieldWidth, height: fieldHeight)
-        let searchBottom = searchChrome.frame.maxY
-
         let top: CGFloat = topInset + 76
         // Breathing room under the last icon row (labels no longer hug the bottom edge).
         let bottom = b.height - Self.bottomPadding
@@ -108,10 +108,19 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         let gridRect = NSRect(x: pad, y: top, width: b.width - 2 * pad, height: max(0, bottom - top))
         pager.frame = gridRect
         resultsPager.frame = gridRect
-
-        // Indicator sits halfway between the search field and the first icon row.
         let firstIconTop = gridRect.minY + PageGridView.firstIconTop(
             size: gridRect.size, columns: prefs.gridColumns, rows: prefs.gridRows)
+
+        // Field: centered at y 36 below the safe top, or lower when filling the screen
+        // (same 32 pt capsule with and without glass).
+        let fieldHeight = searchChrome.preferredHeight
+        let span = firstIconTop - topInset
+        let fieldCenter = fillsScreen ? topInset + span * Self.fillSearchPosition : topInset + 36
+        searchChrome.frame = NSRect(x: ((b.width - fieldWidth) / 2).rounded(), y: (fieldCenter - fieldHeight / 2).rounded(),
+                                    width: fieldWidth, height: fieldHeight)
+        let searchBottom = searchChrome.frame.maxY
+
+        // Indicator: halfway between the field and the first icon row.
         let center = (searchBottom + firstIconTop) / 2
         indicator.frame = NSRect(x: pad, y: (center - 12).rounded(), width: b.width - 2 * pad, height: 24)
 

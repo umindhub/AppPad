@@ -606,6 +606,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         // Notched screen: keep the search field clear of the camera housing when reaching the top.
         let topGap = screen.frame.maxY - frame.maxY
         viewController.topInset = max(0, screen.safeAreaInsets.top - topGap)
+        viewController.fillsScreen = filled
         // No shadow when filled: it would spill onto the menu bar and Dock.
         panel.hasShadow = !filled
         let spec = PanelBackgroundSpec.current(for: .launchpad)

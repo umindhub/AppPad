@@ -334,8 +334,9 @@ enum PanelSwitch {
 }
 
 // MARK: - Panel morph
-// Launchpad ⇄ Clipboard / Workflows (different size, same center). The larger panel's frame
-// (content layer scale + corner radius) goes between its own frame and the smaller one's,
+// Launchpad ⇄ Clipboard / Workflows (different size; centers may differ, e.g. Launchpad covering
+// the menu bar). The larger panel's frame (content layer scale + move + corner radius) goes between
+// its own frame and the smaller one's,
 // its wallpaper slice follows so the blur always matches what is under it.
 // Both contents scale uniformly with that frame: Launchpad's icons shrink into the panel's frame,
 // the panel's content comes in from Launchpad size (or leaves growing to it). To draw that without
@@ -378,6 +379,8 @@ final class PanelMorph {
     private struct Pose {
         let scale: CGSize
         let radius: CGFloat            // layer cornerRadius (before scaling)
+        // Move after scaling, window points (y up): large panel's center → small frame's center.
+        var offset = CGSize.zero
         // Extra scale on the content inside, so frame × content is uniform.
         var contentScale = CGSize(width: 1, height: 1)
     }
@@ -391,11 +394,13 @@ final class PanelMorph {
     init?(from outgoing: NSWindow, to incoming: NSWindow) {
         let a = outgoing.frame
         let b = incoming.frame
-        guard outgoing.isVisible, a.width > 0, a.height > 0, b.width > 0, b.height > 0,
-              abs(a.midX - b.midX) <= 4, abs(a.midY - b.midY) <= 4 else { return nil }
+        guard outgoing.isVisible, a.width > 0, a.height > 0, b.width > 0, b.height > 0 else { return nil }
         let incomingIsLarge = b.width * b.height > a.width * a.height
         let largeFrame = incomingIsLarge ? b : a
         let smallFrame = incomingIsLarge ? a : b
+        // Centers may differ (Launchpad covering the menu bar reaches higher); the small frame
+        // only has to lie inside the large one.
+        guard largeFrame.insetBy(dx: -4, dy: -4).contains(smallFrame) else { return nil }
         guard largeFrame.width - smallFrame.width > 24 || largeFrame.height - smallFrame.height > 24 else { return nil }
         self.incoming = incoming
         self.outgoing = outgoing
@@ -415,6 +420,8 @@ final class PanelMorph {
         // Content: min(ratio) both ways, so it keeps its proportions and stays inside the frame.
         let uniform = min(ratio.width, ratio.height)
         return Pose(scale: ratio, radius: smallRadius / max(mean, 0.01),
+                    offset: CGSize(width: smallFrame.midX - largeFrame.midX,
+                                   height: smallFrame.midY - largeFrame.midY),
                     contentScale: CGSize(width: uniform / max(ratio.width, 0.01),
                                          height: uniform / max(ratio.height, 0.01)))
     }
@@ -467,8 +474,10 @@ final class PanelMorph {
         small.disableScreenUpdatesUntilFlush()
         container.autoresizesSubviews = false
         small.setFrame(largeFrame, display: false)
-        let origin = NSPoint(x: ((largeFrame.width - smallFrame.width) / 2).rounded(),
-                             y: ((largeFrame.height - smallFrame.height) / 2).rounded())
+        // Where the small frame sits inside the large one (container coordinates).
+        let origin = NSPoint(
+            x: (smallFrame.minX - largeFrame.minX).rounded(),
+            y: (container.isFlipped ? largeFrame.maxY - smallFrame.maxY : smallFrame.minY - largeFrame.minY).rounded())
         for view in [views.background as NSView?, views.content] { view?.setFrameOrigin(origin) }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -628,6 +637,11 @@ final class PanelMorph {
         var target = CATransform3DMakeTranslation(dx, dy, 0)
         target = CATransform3DScale(target, pose.scale.width, pose.scale.height, 1)
         target = CATransform3DTranslate(target, -dx, -dy, 0)
+        if pose.offset != .zero {
+            // Unscaled points in the superlayer (the window's root layer, y up unless flipped).
+            let ySign: CGFloat = layer.superlayer?.isGeometryFlipped == true ? -1 : 1
+            target = CATransform3DConcat(target, CATransform3DMakeTranslation(pose.offset.width, ySign * pose.offset.height, 0))
+        }
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
