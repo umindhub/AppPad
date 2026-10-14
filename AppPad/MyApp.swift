@@ -54,6 +54,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         clipboard.onOpenSettings = { [weak self] in self?.showSettings() }
         workflows.onOpenSettings = { [weak self] in self?.showSettings() }
         workflows.onEditWorkflow = { [weak self] id in self?.editWorkflow(id) }
+        // Workflow Market link installed something: show it in Settings › Workflows.
+        WorkflowLinkImporter.shared.onInstalled = { [weak self] in self?.showWorkflowSettings() }
         // Window shortcut without Accessibility permission → Settings › Windows (Grant Access).
         WindowManager.shared.onNeedsAccess = { [weak self] in
             UserDefaults.standard.set(SettingsTab.windows.rawValue, forKey: SettingsTab.storageKey)
@@ -97,6 +99,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             self.clipboard.hide()
             self.workflows.hide()
             self.handOffActivation { [weak self] in self?.launchpad.show() }
+        }
+    }
+
+    // apppad://import-workflow?url=… from the Workflow Market (apppad-dev:// in Dev).
+    // Also called on a cold launch by a link; that launch never opens Launchpad.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            if !WorkflowLinkImporter.shared.handle(url) {
+                NSLog("Unhandled URL: \(url.absoluteString)")
+            }
         }
     }
 
@@ -237,6 +249,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         case .clipboard: clipboard.show(.history)
         case .workflows: workflows.show()
         }
+    }
+
+    private func showWorkflowSettings() {
+        UserDefaults.standard.set(SettingsTab.workflows.rawValue, forKey: SettingsTab.storageKey)
+        showSettings()
     }
 
     // ⌘↩ in the Workflow panel: Settings › Workflows with this workflow's editor open.

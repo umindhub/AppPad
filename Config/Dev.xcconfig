@@ -4,3 +4,5 @@ PRODUCT_BUNDLE_IDENTIFIER = com.youmindhub.devapppad
 APP_DISPLAY_NAME = AppPad Dev
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Dev
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEV
+// Own link scheme so the Dev build never takes apppad:// links from Beta / Release
+APP_URL_SCHEME = apppad-dev

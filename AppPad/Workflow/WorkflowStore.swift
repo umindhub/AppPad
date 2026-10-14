@@ -150,7 +150,11 @@ final class WorkflowStore: ObservableObject {
     // Reads a file (one workflow or an array) and decides per item; nothing is stored yet.
     // Throws WorkflowImportError.unsupportedFormat for format versions without a parser.
     func prepareImport(_ url: URL) throws -> [WorkflowImportItem] {
-        let data = try Data(contentsOf: url)
+        try prepareImport(data: Data(contentsOf: url))
+    }
+
+    // Same as above for downloaded data (Workflow Market links).
+    func prepareImport(data: Data) throws -> [WorkflowImportItem] {
         var items: [WorkflowImportItem] = []
         var batchIdentifiers = Set<String>()
         for var incoming in try WorkflowFormat.decode(data) {

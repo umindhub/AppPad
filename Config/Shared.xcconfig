@@ -20,3 +20,8 @@ INFOPLIST_KEY_NSHumanReadableCopyright = © 2026 YouMindHub
 // Workflows: AppleScript steps / Empty Trash send Apple Events (hardened runtime needs the entitlement)
 CODE_SIGN_ENTITLEMENTS = Config/AppPad.entitlements
 INFOPLIST_KEY_NSAppleEventsUsageDescription = AppPad workflows control the apps you allow, for example Finder to empty the Trash.
+
+// Workflow Market links: apppad://import-workflow?url=… (Dev overrides the scheme).
+// Config/Info.plist only adds CFBundleURLTypes; everything else stays generated. Not a target member.
+INFOPLIST_FILE = Config/Info.plist
+APP_URL_SCHEME = apppad
