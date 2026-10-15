@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.2
+
+### Added
+
+#### Workflows
+- New "Ask before running" option in the workflow editor: a confirmation appears before the workflow runs, whether it is started from the Workflow panel or from Settings.
+- In the Workflow panel the confirmation opens inside the panel: ↩ runs, Esc cancels, other keys are ignored. A held or quickly repeated ↩ never confirms.
+- The workflow format gains an optional `"confirm": true` field; existing files without it run as before.
+
+### Changed
+- The built-in "Quit All Apps" workflow (v1.4) now asks for confirmation, so Tab or ↩ in the Workflow panel can no longer quit every app by accident.
+
 ## v1.0.1
 
 ### Added
