@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.4
+
+### Fixed
+- Saved Clips: copying an item no longer changes its source app to AppPad. The copy now counts as a use, like pasting from the Clipboard panel, and moves the item to the top of the history.
+
+### Changed
+- Saved Clips: the Copy button briefly turns into a green checkmark after a successful copy; the row keeps its height.
+
 ## v1.0.3
 
 ### Added
