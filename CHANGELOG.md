@@ -6,6 +6,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.5
+
+### Added
+
+#### Automatic Updates
+- AppPad now keeps itself up to date. Every day at 4:00 it checks for a new version, downloads it in the background and installs it as soon as no panel is open, then restarts quietly without opening Launchpad.
+- Missed the check because the Mac was asleep or off? AppPad catches up shortly after waking, and retries every 30 minutes if the network isn't ready.
+- New Updates section in Settings › About: turn automatic updates on or off (on by default), pick the check time, see when the last check ran, and check now.
+- "Check for Updates…" in the menu-bar menu.
+- If an update is waiting while you're in Settings, "Restart to Update" installs it right away.
+- Updates are verified with an EdDSA signature before they are installed.
+
+### Changed
+- Settings › About lists Sparkle under Acknowledgements.
+
+### Note
+- Versions before 1.0.5 can't update themselves: install 1.0.5 once from the DMG or with `brew upgrade --cask apppad`; later versions arrive automatically.
+
+## v1.0.4
+
+### Added
+- Saved Clips: the content of text items can now be edited as well as their name. Click the text to open the editor; ⌘↩ saves, Esc cancels. An edit that would duplicate another item is refused.
+
+### Changed
+- Saved Clips: the Copy button briefly turns into a green checkmark after a successful copy; the row keeps its height.
+
+### Fixed
+- Saved Clips: copying an item no longer changes its source app to AppPad. The copy now counts as a use, like pasting from the Clipboard panel, and moves the item to the top of the history.
+
 ## v1.0.3
 
 ### Added
