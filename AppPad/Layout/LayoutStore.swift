@@ -71,6 +71,14 @@ final class LayoutStore {
         save()
     }
 
+    // Backup restore: take the imported pages, then drop missing apps / append new ones.
+    func restore(_ imported: Layout, apps: [AppInfo], capacity: Int) {
+        layout = imported
+        isFresh = false
+        reconcile(apps: apps, capacity: capacity)
+        save()
+    }
+
     // MARK: - Editing
 
     func items(onPage page: Int) -> [LayoutItem] {

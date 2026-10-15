@@ -364,6 +364,165 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
         }
     }
 
+    // MARK: - Backup
+
+    nonisolated struct BackupCounts: Sendable {
+        var history: Int
+        var saved: Int
+    }
+
+    nonisolated struct BackupImportResult: Sendable {
+        var added = 0
+        var existing = 0       // same content already here (scopes merged)
+    }
+
+    // Writes clipboard.sqlite (consistent online snapshot) + blobs/ into `directory`,
+    // keeping only the chosen scopes.
+    func exportBackup(to directory: URL, history: Bool, saved: Bool) throws -> BackupCounts {
+        let fm = FileManager.default
+        let blobs = directory.appendingPathComponent("blobs", isDirectory: true)
+        try fm.createDirectory(at: blobs, withIntermediateDirectories: true)
+        let snapshot = try DatabaseQueue(path: directory.appendingPathComponent("clipboard.sqlite").path)
+        try pool.backup(to: snapshot)
+        let images = try snapshot.write { db -> [(uuid: String, ext: String)] in
+            if !history {
+                try db.execute(sql: "DELETE FROM clip WHERE saved = 0")
+                try db.execute(sql: "UPDATE clip SET inHistory = 0")
+            }
+            if !saved {
+                try db.execute(sql: "DELETE FROM clip WHERE inHistory = 0")
+                try db.execute(sql: "UPDATE clip SET saved = 0, savedAt = NULL")
+            }
+            try db.execute(sql: """
+                DELETE FROM sourceApp WHERE bundleID NOT IN
+                    (SELECT sourceBundleID FROM clip WHERE sourceBundleID IS NOT NULL)
+                """)
+            let rows = try Row.fetchAll(db, sql: "SELECT uuid, imageExt FROM clip WHERE imageExt IS NOT NULL")
+            return rows.map { row -> (uuid: String, ext: String) in (uuid: row["uuid"], ext: row["imageExt"]) }
+        }
+        let counts = try snapshot.read { db in
+            BackupCounts(
+                history: try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM clip WHERE inHistory = 1") ?? 0,
+                saved: try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM clip WHERE saved = 1") ?? 0
+            )
+        }
+        // Single self-contained file (no -wal), compacted.
+        try snapshot.writeWithoutTransaction { db in
+            try db.execute(sql: "PRAGMA journal_mode = DELETE")
+            try db.execute(sql: "VACUUM")
+        }
+        try snapshot.close()
+        for image in images {
+            let source = imageURL(uuid: image.uuid, ext: image.ext)
+            guard fm.fileExists(atPath: source.path) else { continue }
+            try fm.copyItem(at: source, to: blobs.appendingPathComponent("\(image.uuid).\(image.ext)"))
+        }
+        return counts
+    }
+
+    // Reads a snapshot written by exportBackup. Items are matched by content hash;
+    // replace* first clears that scope here. Scopes not taken are stripped from incoming rows.
+    func importBackup(from directory: URL, history: Bool, saved: Bool,
+                      replaceHistory: Bool, replaceSaved: Bool) throws -> BackupImportResult {
+        let fm = FileManager.default
+        let dbURL = directory.appendingPathComponent("clipboard.sqlite")
+        guard fm.fileExists(atPath: dbURL.path) else { throw BackupError.notABackup }
+        var config = Configuration()
+        config.readonly = true
+        let source = try DatabaseQueue(path: dbURL.path, configuration: config)
+        let (incoming, apps) = try source.read { db in
+            (try ClipItem.fetchAll(db), try SourceApp.fetchAll(db))
+        }
+        try source.close()
+
+        // Keep only the requested scopes.
+        var items: [ClipItem] = []
+        for var item in incoming {
+            if !history { item.inHistory = false }
+            if !saved {
+                item.saved = false
+                item.savedAt = nil
+            }
+            if item.inHistory || item.saved { items.append(item) }
+        }
+
+        // Replace: clear the chosen scopes first.
+        let removed = try pool.write { db -> [URL] in
+            let condition: String?
+            var update: String?
+            switch (replaceHistory, replaceSaved) {
+            case (true, true):
+                condition = "1"
+            case (true, false):
+                condition = "inHistory = 1 AND saved = 0"
+                update = "UPDATE clip SET inHistory = 0 WHERE saved = 1"
+            case (false, true):
+                condition = "saved = 1 AND inHistory = 0"
+                update = "UPDATE clip SET saved = 0, savedAt = NULL WHERE saved = 1"
+            case (false, false):
+                condition = nil
+            }
+            guard let condition else { return [] }
+            let rows = try Row.fetchAll(db, sql: "SELECT uuid, imageExt FROM clip WHERE \(condition)")
+            try db.execute(sql: "DELETE FROM clip WHERE \(condition)")
+            if let update { try db.execute(sql: update) }
+            return rows.compactMap { row in
+                (row["imageExt"] as String?).map { self.imageURL(uuid: row["uuid"], ext: $0) }
+            }
+        }
+        removeFiles(removed)
+
+        let blobSource = directory.appendingPathComponent("blobs", isDirectory: true)
+        var copied: [URL] = []
+        do {
+            let result = try pool.write { db -> BackupImportResult in
+                var result = BackupImportResult()
+                for app in apps { try app.save(db) }
+                for var item in items {
+                    if let existingID = try Int64.fetchOne(db, sql: "SELECT id FROM clip WHERE hash = ?",
+                                                           arguments: [item.hash]) {
+                        // Same content: union of scopes, latest use wins.
+                        try db.execute(sql: """
+                            UPDATE clip SET inHistory = MAX(inHistory, ?), saved = MAX(saved, ?),
+                                savedAt = COALESCE(savedAt, ?), lastUsedAt = MAX(lastUsedAt, ?),
+                                useCount = MAX(useCount, ?)
+                            WHERE id = ?
+                            """, arguments: [item.inHistory, item.saved, item.saved ? item.savedAt : nil,
+                                             item.lastUsedAt, item.useCount, existingID])
+                        result.existing += 1
+                        continue
+                    }
+                    let originalUUID = item.uuid
+                    let uuidTaken = try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM clip WHERE uuid = ?)",
+                                                      arguments: [item.uuid]) ?? false
+                    if uuidTaken || UUID(uuidString: item.uuid) == nil { item.uuid = UUID().uuidString }
+                    if let ext = item.imageExt {
+                        // Untrusted names: only plain uuid + short alphanumeric extension.
+                        guard UUID(uuidString: originalUUID) != nil, Self.isSafeExtension(ext) else { continue }
+                        let file = blobSource.appendingPathComponent("\(originalUUID).\(ext)")
+                        guard fm.fileExists(atPath: file.path) else { continue }   // image missing: skip row
+                        let target = imageURL(uuid: item.uuid, ext: ext)
+                        try? fm.removeItem(at: target)
+                        try fm.copyItem(at: file, to: target)
+                        copied.append(target)
+                    }
+                    item.id = nil
+                    try item.insert(db)
+                    result.added += 1
+                }
+                return result
+            }
+            return result
+        } catch {
+            removeFiles(copied)   // transaction rolled back: drop the copied images too
+            throw error
+        }
+    }
+
+    private static func isSafeExtension(_ ext: String) -> Bool {
+        !ext.isEmpty && ext.count <= 5 && ext.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber) }
+    }
+
     private static func escapeLike(_ s: String) -> String {
         s.replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "%", with: "\\%")

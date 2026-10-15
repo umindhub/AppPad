@@ -64,6 +64,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         launchpad.start()
         clipboard.start()
         workflows.start()
+        // Settings › Backup reaches the layout and clipboard store through these hooks.
+        BackupService.shared.clipboardStore = clipboard.store
+        BackupService.shared.layoutProvider = { [weak self] in self?.launchpad.currentLayout }
+        BackupService.shared.layoutRestorer = { [weak self] layout in self?.launchpad.restoreLayout(layout) }
         statusBar = StatusBarController(
             onOpen: { [weak self] in self?.launchpad.show() },
             onClipboard: { [weak self] in self?.clipboard.show(.history) },

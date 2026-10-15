@@ -695,6 +695,17 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         }
     }
 
+    // MARK: - Backup
+
+    var currentLayout: Layout { layoutStore.layout }
+
+    // Replaces pages / folders with a backup (grid size is set by the caller first).
+    func restoreLayout(_ layout: Layout) {
+        lastCapacity = capacity   // pending applyPreferences must not reflow it again
+        layoutStore.restore(layout, apps: apps, capacity: capacity)
+        viewController.reloadAll()
+    }
+
     func confirmResetLayout() {
         let alert = NSAlert()
         alert.messageText = String(localized: "Reset layout?")
