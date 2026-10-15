@@ -164,11 +164,13 @@ extension LaunchpadViewController: PageGridDelegate {
         let title = app.isAppStore
             ? String(localized: "Delete “\(app.name)”?")
             : String(localized: "Uninstall “\(app.name)”?")
-        let items = scan.leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
-        var message = items.isEmpty
+        let leftovers = scan.leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
+        // App bundle first, always on (it is what gets deleted).
+        let items = [ConfirmOverlayView.CheckItem(url: app.url, checked: true, locked: true)] + leftovers
+        var message = leftovers.isEmpty
             ? String(localized: "The app will be moved to the Trash. No related files were found.")
             : String(localized: "The app and the checked related files will be moved to the Trash.")
-        if items.contains(where: { $0.url.path.hasPrefix("/Library/") }) {
+        if leftovers.contains(where: { $0.url.path.hasPrefix("/Library/") }) {
             message += "\n" + String(localized: "Files in /Library may require an administrator password.")
         }
         if isRunning {
@@ -178,12 +180,15 @@ extension LaunchpadViewController: PageGridDelegate {
             icon: IconCache.shared.icon(for: app), title: title, message: message, items: items,
             confirmTitle: String(localized: "Move to Trash"), destructive: true
         ) { [weak self] urls in
-            self?.performUninstall(app, bundleIDs: scan.bundleIDs, extra: urls)
+            // The app row is only shown; the bundle is trashed by uninstall() itself.
+            let appPath = app.url.standardizedFileURL.path
+            let extra = urls.filter { $0.standardizedFileURL.path != appPath }
+            self?.performUninstall(app, bundleIDs: scan.bundleIDs, extra: extra)
         }
     }
 
     private func performUninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) {
-        dismissConfirm()
+        dismissConfirm(animated: true)
         Task { [weak self] in
             guard let controller = self?.controller else { return }
             let result = await controller.uninstall(app, bundleIDs: bundleIDs, extra: extra)
@@ -195,7 +200,7 @@ extension LaunchpadViewController: PageGridDelegate {
                     title: String(localized: "Couldn’t move “\(app.name)” to the Trash."),
                     message: String(localized: "Quit the app and try again. Deleting it may also require an administrator password."),
                     items: [], confirmTitle: String(localized: "OK"), destructive: false, showsCancel: false
-                ) { [weak self] _ in self?.dismissConfirm() }
+                ) { [weak self] _ in self?.dismissConfirm(animated: true) }
             } else if !result.failed.isEmpty {
                 // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
                 self.showConfirm(
@@ -205,7 +210,7 @@ extension LaunchpadViewController: PageGridDelegate {
                     items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
                     confirmTitle: String(localized: "Show in Finder"), destructive: false
                 ) { [weak self] urls in
-                    self?.dismissConfirm()
+                    self?.dismissConfirm(animated: true)
                     guard !urls.isEmpty else { return }
                     self?.controller?.hide()
                     NSWorkspace.shared.activateFileViewerSelecting(urls)
@@ -217,6 +222,10 @@ extension LaunchpadViewController: PageGridDelegate {
     func showConfirm(icon: NSImage?, title: String, message: String, items: [ConfirmOverlayView.CheckItem],
                      confirmTitle: String, destructive: Bool, showsCancel: Bool = true,
                      onConfirm: @escaping ([URL]) -> Void) {
+        // A dialog still fading out hands its blur level over (no flash back to clear).
+        let fading = view.subviews.compactMap { $0 as? ConfirmOverlayView }.filter(\.isClosing)
+        let start = fading.map(\.progress).max() ?? 0
+        fading.forEach { $0.removeNow() }
         dismissConfirm()
         let overlay = ConfirmOverlayView(
             icon: icon, title: title, message: message, items: items,
@@ -224,15 +233,23 @@ extension LaunchpadViewController: PageGridDelegate {
             cornerRadius: LaunchpadController.cornerRadius
         )
         overlay.onConfirm = onConfirm
-        overlay.onCancel = { [weak self] in self?.dismissConfirm() }
+        overlay.onCancel = { [weak self] in self?.dismissConfirm(animated: true) }
         overlay.frame = view.bounds
         view.addSubview(overlay)
         confirmOverlay = overlay
+        overlay.animateIn(from: start)
     }
 
-    func dismissConfirm() {
-        confirmOverlay?.removeFromSuperview()
-        confirmOverlay = nil
+    // animated: blur clears gradually (cancel / done); otherwise gone at once (panel hide / show).
+    func dismissConfirm(animated: Bool = false) {
+        if let overlay = confirmOverlay {
+            confirmOverlay = nil
+            if animated { overlay.animateOut() } else { overlay.removeNow() }
+        }
+        if !animated {
+            // Panel hide / show: also drop any dialog still fading out.
+            view.subviews.compactMap { $0 as? ConfirmOverlayView }.forEach { $0.removeNow() }
+        }
         focusSearch()
     }
 }

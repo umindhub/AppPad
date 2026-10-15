@@ -50,6 +50,7 @@ final class GridCellView: FlippedView {
         didSet { updateVisibility() }
     }
     private var mouseDownPoint: NSPoint = .zero
+    private var isTracking = false      // a mouseDown really started on this cell
     private var isDragging = false
     private var longPressFired = false
     private var longPressTask: Task<Void, Never>?
@@ -278,6 +279,7 @@ final class GridCellView: FlippedView {
 
     override func mouseDown(with event: NSEvent) {
         isPressed = true
+        isTracking = true
         isDragging = false
         longPressFired = false
         mouseDownPoint = event.locationInWindow
@@ -298,7 +300,8 @@ final class GridCellView: FlippedView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard let grid else { return }
+        // Drags bubbling up from a subview (delete badge) never start a move.
+        guard let grid, isTracking else { return }
         if isDragging {
             grid.cellDragMoved(self, event: event)
             return
@@ -318,6 +321,7 @@ final class GridCellView: FlippedView {
         longPressTask?.cancel()
         let wasPressed = isPressed
         isPressed = false
+        isTracking = false
         if isDragging {
             isDragging = false
             grid?.cellDragEnded(self, event: event)
@@ -361,6 +365,9 @@ final class DeleteBadgeView: FlippedView {
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func mouseDown(with event: NSEvent) {}
+    // Swallow: otherwise the drag reaches the cell (stale mouseDownPoint) and starts a move
+    // whose mouseUp never arrives → the cell stays invisible as a drag source.
+    override func mouseDragged(with event: NSEvent) {}
     override func mouseUp(with event: NSEvent) {
         if bounds.contains(convert(event.locationInWindow, from: nil)) { onTap?() }
     }
