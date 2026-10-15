@@ -5,6 +5,13 @@ extension Notification.Name {
     nonisolated static let clipboardStoreDidChange = Notification.Name("AppPad.clipboardStoreDidChange")
 }
 
+// Result of editing a text item's content.
+nonisolated enum ClipTextUpdate: Sendable {
+    case updated, unchanged
+    case duplicate      // another item already has this content (hash is unique)
+    case failed
+}
+
 nonisolated struct ClipIngestOptions: Sendable {
     var imageQuality: Double
     var historyLimit: Int       // 0 = unlimited
@@ -291,6 +298,30 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
     func markUsed(id: Int64) {
         let now = Date().timeIntervalSince1970
         write("UPDATE clip SET useCount = useCount + 1, lastUsedAt = ?, inHistory = 1 WHERE id = ?", [now, id])
+    }
+
+    // Replaces a text item's content: new hash (same as a fresh copy), search text and size;
+    // rich text is dropped since it no longer matches. Refuses empty text and duplicates.
+    func updateText(id: Int64, text: String) -> ClipTextUpdate {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return .failed }
+        let hash = ClipCapture(kind: .text, text: text).contentHash
+        do {
+            return try pool.write { db -> ClipTextUpdate in
+                guard let row = try Row.fetchOne(db, sql: "SELECT kind, hash FROM clip WHERE id = ?", arguments: [id]),
+                      (row["kind"] as ClipKind) == .text else { return .failed }
+                if (row["hash"] as String) == hash { return .unchanged }
+                let taken = try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM clip WHERE hash = ? AND id != ?)",
+                                              arguments: [hash, id]) ?? false
+                if taken { return .duplicate }
+                try db.execute(sql: """
+                    UPDATE clip SET text = ?, searchText = ?, rtf = NULL, byteSize = ?, hash = ? WHERE id = ?
+                    """, arguments: [text, String(text.prefix(Self.searchTextLimit)), text.utf8.count, hash, id])
+                return .updated
+            }
+        } catch {
+            NSLog("Clipboard text update failed: \(error)")
+            return .failed
+        }
     }
 
     // Empty / whitespace clears the label.

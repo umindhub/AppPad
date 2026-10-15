@@ -8,11 +8,14 @@ Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses i
 
 ## v1.0.4
 
-### Fixed
-- Saved Clips: copying an item no longer changes its source app to AppPad. The copy now counts as a use, like pasting from the Clipboard panel, and moves the item to the top of the history.
+### Added
+- Saved Clips: the content of text items can now be edited as well as their name. Click the text to open the editor; ⌘↩ saves, Esc cancels. An edit that would duplicate another item is refused.
 
 ### Changed
 - Saved Clips: the Copy button briefly turns into a green checkmark after a successful copy; the row keeps its height.
+
+### Fixed
+- Saved Clips: copying an item no longer changes its source app to AppPad. The copy now counts as a use, like pasting from the Clipboard panel, and moves the item to the top of the history.
 
 ## v1.0.3
 

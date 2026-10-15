@@ -15,7 +15,14 @@ enum SavedClipsNavigator {
     }
 }
 
-// Settings → Saved Clips: browse, search, rename, copy and remove saved clipboard items.
+// Full text of one item, edited in a sheet.
+private struct ClipContentDraft: Identifiable {
+    let id: Int64
+    let name: String?
+    let text: String
+}
+
+// Settings → Saved Clips: browse, search, rename, edit, copy and remove saved clipboard items.
 // Names are stored on the clip row and searched by the Clipboard panel too.
 struct SavedClipsSettingsView: View {
     @ObservedObject var prefs: Preferences
@@ -26,6 +33,7 @@ struct SavedClipsSettingsView: View {
     @State private var pendingRemove: ClipSummary?
     @State private var highlightID: Int64?
     @State private var copiedID: Int64?
+    @State private var editingContent: ClipContentDraft?
     @FocusState private var focusedID: Int64?
 
     private static let limit = 2000
@@ -50,6 +58,9 @@ struct SavedClipsSettingsView: View {
         }
         .onChange(of: query) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .clipboardStoreDidChange)) { _ in reload() }
+        .sheet(item: $editingContent) { draft in
+            ClipContentEditor(draft: draft) { saveContent(draft.id, text: $0) }
+        }
         .alert("Remove from Saved?", isPresented: Binding(
             get: { pendingRemove != nil },
             set: { if !$0 { pendingRemove = nil } }
@@ -92,6 +103,7 @@ struct SavedClipsSettingsView: View {
                                      copied: copiedID == item.id,
                                      onRename: { rename(item, to: $0) },
                                      onCopy: { copy(item) },
+                                     onEditContent: { editContent(item) },
                                      onRemove: { pendingRemove = item })
                             .id(item.id)
                     }
@@ -99,7 +111,7 @@ struct SavedClipsSettingsView: View {
             } header: {
                 Text("\(total) saved items")
             } footer: {
-                Text("Names are searchable here and in the Clipboard panel. Return saves a name, Esc reverts it.")
+                Text("Names are searchable here and in the Clipboard panel. Return saves a name, Esc reverts it. Click the text of a text item to edit its content.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -144,6 +156,21 @@ struct SavedClipsSettingsView: View {
     private func rename(_ item: ClipSummary, to name: String) {
         store?.setName(id: item.id, name: name)
         NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
+    }
+
+    // Text items only: images and files have no editable content.
+    private func editContent(_ summary: ClipSummary) {
+        guard summary.kind == .text, let item = store?.item(id: summary.id) else { return }
+        editingContent = ClipContentDraft(id: summary.id, name: item.name, text: item.text ?? "")
+    }
+
+    private func saveContent(_ id: Int64, text: String) -> ClipTextUpdate {
+        guard let store else { return .failed }
+        let result = store.updateText(id: id, text: text)
+        if case .updated = result {
+            NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
+        }
+        return result
     }
 
     private func remove(_ item: ClipSummary) {
@@ -196,6 +223,7 @@ private struct SavedClipRow: View {
     var copied: Bool
     var onRename: (String) -> Void
     var onCopy: () -> Void
+    var onEditContent: () -> Void
     var onRemove: () -> Void
 
     @State private var draft = ""
@@ -246,7 +274,10 @@ private struct SavedClipRow: View {
                     .lineLimit(2, reservesSpace: true)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .help(item.snippet)
+                    .contentShape(Rectangle())
+                    .help(item.kind == .text ? String(localized: "Click to edit") : item.snippet)
+                    .pointerStyle(item.kind == .text ? .link : nil)
+                    .onTapGesture { if item.kind == .text { onEditContent() } }
             }
             // Fixed-size slots: the row height never changes.
             VStack(spacing: 6) {
@@ -344,6 +375,74 @@ private struct SavedClipRow: View {
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed != (item.name ?? "") { onRename(trimmed) }
         if draft != trimmed { draft = trimmed }
+    }
+}
+
+// Sheet editor for a text item's content. Plain text, no smart quotes / dashes (CodeTextView),
+// so the pasted result is exactly what was typed. ⌘↩ saves (↩ inserts a newline), Esc cancels.
+private struct ClipContentEditor: View {
+    let draft: ClipContentDraft
+    var onSave: (String) -> ClipTextUpdate
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var text = ""
+    @State private var error: String?
+
+    private var canSave: Bool {
+        text != draft.text && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Edit Content")
+                    .font(.headline)
+                if let name = draft.name, !name.isEmpty {
+                    Text(name)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            CodeTextView(text: $text, fontSize: 13)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color(nsColor: .separatorColor)))
+            HStack(spacing: 10) {
+                if let error {
+                    Text(error)
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                } else {
+                    Text("\(text.count) characters")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                Spacer()
+                Button("Cancel", role: .cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Save", action: save)
+                    .keyboardShortcut(.return, modifiers: .command)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!canSave)
+                    .help("⌘↩")
+            }
+        }
+        .padding(20)
+        .frame(width: 620, height: 440)
+        .onAppear { text = draft.text }
+        .onChange(of: text) { error = nil }
+    }
+
+    private func save() {
+        guard canSave else { return }
+        switch onSave(text) {
+        case .updated, .unchanged:
+            dismiss()
+        case .duplicate:
+            error = String(localized: "Another clipboard item already has this content.")
+        case .failed:
+            error = String(localized: "The content could not be saved.")
+        }
     }
 }
 
