@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C6618533080E4D300FF21FE /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 1C6618523080E4D300FF21FE /* Sparkle */; };
 		1C9E6B4030785C3400509702 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9E6B3F30785C3400509702 /* GRDB */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				1C9E6B4030785C3400509702 /* GRDB in Frameworks */,
+				1C6618533080E4D300FF21FE /* Sparkle in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 			name = AppPad;
 			packageProductDependencies = (
 				1C9E6B3F30785C3400509702 /* GRDB */,
+				1C6618523080E4D300FF21FE /* Sparkle */,
 			);
 			productName = AppPad;
 			productReference = 000000000000000000000120 /* AppPad.app */;
@@ -123,6 +126,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				1C9E6B3E30785C3400509702 /* XCRemoteSwiftPackageReference "GRDB" */,
+				1C6618513080E4D300FF21FE /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -338,10 +342,10 @@
 			baseConfigurationReference = 000000000000000000000032 /* Dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				ENABLE_PREVIEWS = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -360,10 +364,10 @@
 			baseConfigurationReference = 000000000000000000000034 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				ENABLE_PREVIEWS = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -382,10 +386,10 @@
 			baseConfigurationReference = 000000000000000000000033 /* Beta.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				ENABLE_PREVIEWS = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -423,6 +427,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		1C6618513080E4D300FF21FE /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.0;
+			};
+		};
 		1C9E6B3E30785C3400509702 /* XCRemoteSwiftPackageReference "GRDB" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
@@ -434,6 +446,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1C6618523080E4D300FF21FE /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C6618513080E4D300FF21FE /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		1C9E6B3F30785C3400509702 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1C9E6B3E30785C3400509702 /* XCRemoteSwiftPackageReference "GRDB" */;

@@ -15,5 +15,16 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Sparkle: feed per environment; daily check time is driven by UpdateController -->
+	<key>SUFeedURL</key>
+	<string>$(SPARKLE_FEED_URL)</string>
+	<key>SUPublicEDKey</key>
+	<string>WOkoQVRRpTkRoMe3oIZqbidNQJV2BuEChacfWyB5T9I=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>604800</integer>
 </dict>
 </plist>

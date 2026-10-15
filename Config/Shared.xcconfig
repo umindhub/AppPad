@@ -1,6 +1,6 @@
 // Shared settings for all environments (Dev / Beta / Release)
 MACOSX_DEPLOYMENT_TARGET = 26.0
-CURRENT_PROJECT_VERSION = 1
+// Version and Build live in project.pbxproj (Xcode › Target › General). Sparkle compares Build.
 
 DEVELOPMENT_TEAM = 63MSW5QTJL
 CODE_SIGN_STYLE = Automatic
@@ -24,3 +24,7 @@ INFOPLIST_KEY_NSAppleEventsUsageDescription = AppPad workflows control the apps 
 // Config/Info.plist only adds CFBundleURLTypes; everything else stays generated. Not a target member.
 INFOPLIST_FILE = Config/Info.plist
 APP_URL_SCHEME = apppad
+
+// Sparkle update feed (Beta + Release share it; Beta also reads the beta channel).
+// "/$()/" keeps xcconfig from treating "//" as a comment. Dev clears it.
+SPARKLE_FEED_URL = https:/$()/apppad.pages.dev/appcast.xml

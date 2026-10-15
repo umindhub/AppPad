@@ -41,7 +41,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Read while the launch Apple Event is still current.
-        let openedByUser = LaunchOrigin.isUserOpen()
+        // Relaunch after an update also looks like a user open: stay silent then.
+        let relaunchedByUpdate = UpdateController.consumeRelaunchMarker()
+        let openedByUser = !relaunchedByUpdate && LaunchOrigin.isUserOpen()
         // Theme first: wallpaper prewarm picks blur params for the theme in effect.
         applyTheme()
         NSApp.mainMenu = MainMenu.build()
@@ -72,8 +74,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             onOpen: { [weak self] in self?.launchpad.show() },
             onClipboard: { [weak self] in self?.clipboard.show(.history) },
             onSettings: { [weak self] in self?.showSettings() },
-            onWorkflows: { [weak self] in self?.workflows.show() }
+            onWorkflows: { [weak self] in self?.workflows.show() },
+            onCheckForUpdates: { UpdateController.shared.checkForUpdates() }
         )
+        // Downloaded updates install only while nothing is on screen.
+        UpdateController.shared.isIdle = { [weak self] in
+            guard let self else { return true }
+            return !self.launchpad.isBusy && !self.clipboard.isActive && !self.workflows.isActive
+                && self.settings?.isVisible != true
+        }
+        UpdateController.shared.start()
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
         PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)

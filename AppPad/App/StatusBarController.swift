@@ -13,6 +13,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let workflowsItem = NSMenuItem()
     private let settingsItem = NSMenuItem()
     private let loginItem = NSMenuItem()
+    private let updatesItem = NSMenuItem()
     private let quitItem = NSMenuItem()
     // Hidden twins carrying the key equivalents.
     private let workflowsKeyItem = NSMenuItem()
@@ -22,17 +23,19 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let onClipboard: () -> Void
     private let onSettings: () -> Void
     private let onWorkflows: () -> Void
+    private let onCheckForUpdates: () -> Void
 
     // Title + right-hand text for each visible row.
     private var rows: [(item: NSMenuItem, title: String, trailing: String)] = []
     private weak var highlighted: NSMenuItem?
 
     init(onOpen: @escaping () -> Void, onClipboard: @escaping () -> Void, onSettings: @escaping () -> Void,
-         onWorkflows: @escaping () -> Void) {
+         onWorkflows: @escaping () -> Void, onCheckForUpdates: @escaping () -> Void) {
         self.onOpen = onOpen
         self.onClipboard = onClipboard
         self.onSettings = onSettings
         self.onWorkflows = onWorkflows
+        self.onCheckForUpdates = onCheckForUpdates
         super.init()
 
         item.button?.image = Self.makeIcon()
@@ -42,6 +45,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         configure(workflowsItem, action: #selector(openWorkflows))
         configure(settingsItem, action: #selector(openSettings))
         configure(loginItem, action: #selector(toggleLogin))
+        configure(updatesItem, action: #selector(checkForUpdates))
         configure(quitItem, action: #selector(quit))
 
         menu.addItem(openItem)
@@ -53,6 +57,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let info = NSMenuItem(title: AppEnvironment.versionDescription, action: nil, keyEquivalent: "")
         info.isEnabled = false
         menu.addItem(info)
+        // Dev builds never update.
+        updatesItem.isHidden = !UpdateController.shared.isSupported
+        menu.addItem(updatesItem)
         menu.addItem(quitItem)
 
         // Hidden key-equivalent twins.
@@ -129,6 +136,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             (workflowsItem, workflowsTitle, prefs.workflowPanelHotKey?.displayString ?? ""),
             (settingsItem, String(localized: "Settings"), "⌘,"),
             (loginItem, String(localized: "Launch at Login"), LoginItem.isEnabled ? "✓" : "✕"),
+            (updatesItem, String(localized: "Check for Updates…"), ""),
             (quitItem, String(localized: "Quit AppPad"), "⌘Q"),
         ]
         renderTitles()
@@ -196,6 +204,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func openSettings() { onSettings() }
     @objc private func openWorkflows() { onWorkflows() }
     @objc private func quit() { NSApp.terminate(nil) }
+    @objc private func checkForUpdates() { onCheckForUpdates() }
 
     @objc private func toggleLogin() {
         LoginItem.setEnabled(!LoginItem.isEnabled)

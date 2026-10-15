@@ -1,9 +1,12 @@
 import SwiftUI
 import AppKit
 
-// Settings › About: app icon, version, official website, open-source acknowledgements.
+// Settings › About: app icon, version, website, updates, open-source acknowledgements.
 struct AboutSettingsView: View {
+    @ObservedObject private var prefs = Preferences.shared
+    @ObservedObject private var updates = UpdateController.shared
     private static let grdbURL = URL(string: "https://github.com/groue/GRDB.swift")!
+    private static let sparkleURL = URL(string: "https://github.com/sparkle-project/Sparkle")!
 
     private var appName: String {
         let info = Bundle.main.infoDictionary
@@ -46,6 +49,8 @@ struct AboutSettingsView: View {
                 }
             }
 
+            updatesSection
+
             Section("Acknowledgements") {
                 // Name + description on the left, GitHub icon vertically centered on the right.
                 HStack(alignment: .center, spacing: 12) {
@@ -58,9 +63,73 @@ struct AboutSettingsView: View {
                     Spacer(minLength: 0)
                     GitHubIconLink(url: Self.grdbURL)
                 }
+                HStack(alignment: .center, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(verbatim: "Sparkle")
+                        Text("A software update framework for macOS. MIT License.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    GitHubIconLink(url: Self.sparkleURL)
+                }
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+// MARK: - Updates
+
+extension AboutSettingsView {
+    @ViewBuilder fileprivate var updatesSection: some View {
+        Section("Updates") {
+            if updates.isSupported {
+                Toggle(isOn: $prefs.autoUpdateEnabled) {
+                    Text("Automatic updates")
+                    Text("Checks every day at the time below, then downloads and installs new versions in the background. AppPad restarts by itself while no panel is open.")
+                }
+                DatePicker("Check at", selection: updateTime, displayedComponents: .hourAndMinute)
+                    .disabled(!prefs.autoUpdateEnabled)
+                LabeledContent("Last checked") {
+                    if let date = updates.lastCheckDate {
+                        Text(date, format: .dateTime.year().month().day().hour().minute())
+                    } else {
+                        Text("Never")
+                    }
+                }
+                HStack {
+                    if updates.installPending {
+                        Text("A new version is ready to install.")
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if updates.installPending {
+                        Button("Restart to Update") { updates.installNow() }
+                    }
+                    Button("Check for Updates…") { updates.checkForUpdates() }
+                        .disabled(!updates.canCheckForUpdates)
+                }
+            } else {
+                Text("Updates are turned off in Dev builds.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    // Stored as minutes after midnight; edited as a local time of day.
+    private var updateTime: Binding<Date> {
+        Binding(
+            get: {
+                let m = prefs.autoUpdateMinutes
+                return Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: Date()) ?? Date()
+            },
+            set: { date in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                let value = (c.hour ?? 4) * 60 + (c.minute ?? 0)
+                if value != prefs.autoUpdateMinutes { prefs.autoUpdateMinutes = value }
+            }
+        )
     }
 }
 

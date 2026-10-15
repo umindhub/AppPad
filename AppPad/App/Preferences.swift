@@ -174,6 +174,8 @@ final class Preferences: ObservableObject {
         static let legacyClipBackgroundColor = "clipboardBackgroundColor"
         static let winEnabled = "windowControlEnabled"
         static let winHotKeyPrefix = "windowHotKey."
+        static let autoUpdate = "autoUpdateEnabled"
+        static let autoUpdateMinutes = "autoUpdateMinutes"
     }
 
     @Published var openPagePolicy: OpenPagePolicy { didSet { save(openPagePolicy.rawValue, Key.openPage) } }
@@ -258,6 +260,12 @@ final class Preferences: ObservableObject {
         }
     }
 
+    // MARK: Updates (Beta / Release; Dev never updates)
+    // Daily check at a local time, then silent download and install. On by default at 04:00.
+    @Published var autoUpdateEnabled: Bool { didSet { save(autoUpdateEnabled, Key.autoUpdate) } }
+    // Minutes after midnight, 0…1439.
+    @Published var autoUpdateMinutes: Int { didSet { save(autoUpdateMinutes, Key.autoUpdateMinutes) } }
+
     private init() {
         let d = UserDefaults.standard
         openPagePolicy = OpenPagePolicy(rawValue: d.string(forKey: Key.openPage) ?? "") ?? .lastPage
@@ -306,6 +314,8 @@ final class Preferences: ObservableObject {
             windowCombos[action] = Self.loadCombo(d, Key.winHotKeyPrefix + action.rawValue, default: action.defaultCombo)
         }
         windowHotKeys = windowCombos
+        autoUpdateEnabled = d.object(forKey: Key.autoUpdate) as? Bool ?? true
+        autoUpdateMinutes = min(max(d.object(forKey: Key.autoUpdateMinutes) as? Int ?? 4 * 60, 0), 24 * 60 - 1)
         if let data = d.data(forKey: Key.appHotKeys),
            let decoded = try? JSONDecoder().decode([AppHotKey].self, from: data) {
             appHotKeys = decoded
