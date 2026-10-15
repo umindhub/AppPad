@@ -123,10 +123,11 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     // MARK: - Actions
 
     // argument = text after the first space in the search field (apps ignore it).
-    func run(_ workflow: Workflow, argument: String) {
+    // confirmed: the panel's own dialog was answered, so the runner does not ask again.
+    func run(_ workflow: Workflow, argument: String, confirmed: Bool = false) {
         hide()
         launchpad.recordUse(workflow.statsKey)   // same frecency as app launches
-        WorkflowRunner.shared.start(id: workflow.id, trigger: .panel, argument: argument)
+        WorkflowRunner.shared.start(id: workflow.id, trigger: .panel, argument: argument, confirmed: confirmed)
     }
 
     func open(_ app: AppInfo) {

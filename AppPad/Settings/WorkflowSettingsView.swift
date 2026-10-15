@@ -303,7 +303,8 @@ struct WorkflowSettingsView: View {
             argument = value
         }
         Task {
-            if let result = await runner.run(workflow, trigger: .settings, argument: argument) {
+            // Declined confirmation: nothing ran, no result sheet.
+            if let result = await runner.run(workflow, trigger: .settings, argument: argument), !result.declined {
                 shownResult = result
             }
         }

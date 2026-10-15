@@ -238,6 +238,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     var failureNotice: FailureNotice = .error
     var failureMessage = ""
     var copyOutput = false                // also put the final output on the clipboard
+    var requiresConfirmation = false      // ask before every run (risky actions like Quit All Apps)
     var steps: [WorkflowStep] = []
     var permissions = WorkflowPermissions()
     var formatVersion = WorkflowFormat.current
@@ -247,6 +248,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         case group, keywords, keyword, argument, argumentType, argumentHint, symbol
         case summary = "description"
         case successNotice, successMessage, failureNotice, failureMessage, copyOutput
+        case requiresConfirmation = "confirm"
         case steps, permissions, formatVersion
     }
 
@@ -294,6 +296,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         failureNotice = c.value(.failureNotice, .error)
         failureMessage = c.value(.failureMessage, "")
         copyOutput = c.value(.copyOutput, false)
+        requiresConfirmation = c.value(.requiresConfirmation, false)   // missing in older files = no prompt
         // Early files: "outputMode" notification / clipboard / none.
         if !c.contains(.successNotice),
            let legacy = try? decoder.container(keyedBy: LegacyKeys.self),
@@ -336,6 +339,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         try c.encode(failureNotice, forKey: .failureNotice)
         try c.encode(failureMessage, forKey: .failureMessage)
         try c.encode(copyOutput, forKey: .copyOutput)
+        if requiresConfirmation { try c.encode(true, forKey: .requiresConfirmation) }
         try c.encode(steps, forKey: .steps)
         try c.encode(permissions, forKey: .permissions)
     }

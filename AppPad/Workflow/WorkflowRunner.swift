@@ -25,6 +25,7 @@ nonisolated struct WorkflowRunResult: Identifiable, Sendable {
     var steps: [StepResult] = []
     var denied: [PermissionItem] = []
     var cancelled = false
+    var declined = false           // the confirmation was answered with Cancel: nothing ran
     var message: String?           // run-level problem (invalid workflow)
     var sandboxProfile: String?    // last generated profile, for debugging
 
@@ -51,24 +52,34 @@ final class WorkflowRunner: ObservableObject {
     private let session = URLSession(configuration: .ephemeral)
 
     // Workflow panel entry point (Enter / ⌘N / in-panel shortcut). argument = text after the first space.
-    func start(id: UUID, trigger: RunTrigger, argument: String = "") {
+    // confirmed: the caller already asked (the panel's own dialog), so no second prompt.
+    func start(id: UUID, trigger: RunTrigger, argument: String = "", confirmed: Bool = false) {
         guard let workflow = WorkflowStore.shared.workflow(id: id), workflow.enabled else {
             NSSound.beep()
             return
         }
-        Task { await run(workflow, trigger: trigger, argument: argument) }
+        Task { await run(workflow, trigger: trigger, argument: argument, confirmed: confirmed) }
     }
 
     func cancel(id: UUID) {
         tasks[id]?.cancel()
     }
 
-    // nil when it did not run (already running).
+    // nil when it did not run (already running). Declined confirmation → cancelled result, not recorded.
     @discardableResult
-    func run(_ workflow: Workflow, trigger: RunTrigger, argument: String = "") async -> WorkflowRunResult? {
+    func run(_ workflow: Workflow, trigger: RunTrigger, argument: String = "",
+             confirmed: Bool = false) async -> WorkflowRunResult? {
         guard !running.contains(workflow.id) else {
             NSSound.beep()
             return nil
+        }
+        // Every trigger (Settings, MCP…) asks unless the caller already did.
+        if workflow.requiresConfirmation, !confirmed, !RunConfirmPrompt.ask(workflow: workflow) {
+            var result = WorkflowRunResult(workflowID: workflow.id, workflowName: workflow.displayName,
+                                           startedAt: Date(), finishedAt: Date())
+            result.cancelled = true
+            result.declined = true
+            return result
         }
         running.insert(workflow.id)
         let task = Task { await self.execute(workflow, trigger: trigger, argument: argument) }
@@ -710,6 +721,33 @@ nonisolated private final class RedirectGuard: NSObject, URLSessionTaskDelegate,
         } else {
             completionHandler(nil)
         }
+    }
+}
+
+// MARK: - Confirmation
+
+// Asked before a workflow marked "Ask before running" starts (runs outside the Workflow panel).
+// Cancel is the safe answer: Esc and closing the alert both decline.
+enum RunConfirmPrompt {
+    static func ask(workflow: Workflow) -> Bool {
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Run “\(workflow.displayName)”?")
+        alert.informativeText = workflow.confirmationMessage
+        alert.icon = WorkflowIcon.image(for: workflow)
+        let run = alert.addButton(withTitle: String(localized: "Run"))
+        run.hasDestructiveAction = true
+        let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
+        cancel.keyEquivalent = "\u{1b}"
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+}
+
+extension Workflow {
+    // Body of the confirmation dialog: the description, or a generic line.
+    var confirmationMessage: String {
+        let summary = displaySummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        return summary.isEmpty ? String(localized: "This workflow asks before it runs.") : summary
     }
 }
 

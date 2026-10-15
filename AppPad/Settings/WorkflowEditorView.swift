@@ -150,6 +150,12 @@ struct WorkflowEditorView: View {
                 iconStatus = nil
             }
             Toggle("Enabled", isOn: $draft.enabled)
+            VStack(alignment: .leading, spacing: 2) {
+                Toggle("Ask before running", isOn: $draft.requiresConfirmation)
+                Text("Shows a confirmation first, however it is started. Use it for actions that are hard to undo.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             LabeledContent("Shortcut in Workflow panel") {
                 VStack(alignment: .trailing, spacing: 2) {
                     ShortcutRecorder(combo: $draft.panelKey)

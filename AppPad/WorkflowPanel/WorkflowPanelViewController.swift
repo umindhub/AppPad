@@ -12,6 +12,7 @@ import Combine
 // While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
 // Keys: ↩ run / open / copy, Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc closes (or clears first, see General settings).
+// "Ask before running" workflows: an in-panel dialog first (↩ run, Esc cancel, every other key ignored).
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
     NSTableViewDataSource, NSTableViewDelegate {
     weak var controller: WorkflowPanelController?
@@ -36,11 +37,15 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private var installedShortcuts: Set<String>?    // nil = not known yet
     private var listFont = NSFont.systemFont(ofSize: 15)
     private var cancellables = Set<AnyCancellable>()
+    private var confirmOverlay: ConfirmOverlayView?
+    private var confirmShownAt: TimeInterval = 0
 
     private var prefs: Preferences { .shared }
     private var runner: WorkflowRunner { .shared }
 
     private static let pad: CGFloat = 24
+    // ↩ pressed this soon after the dialog appeared (double tap) does not confirm.
+    private static let confirmKeyDelay: TimeInterval = 0.3
     private static let digitKeys: [UInt16: Int] = [
         UInt16(kVK_ANSI_1): 0, UInt16(kVK_ANSI_2): 1, UInt16(kVK_ANSI_3): 2, UInt16(kVK_ANSI_4): 3,
         UInt16(kVK_ANSI_5): 4, UInt16(kVK_ANSI_6): 5, UInt16(kVK_ANSI_7): 6, UInt16(kVK_ANSI_8): 7,
@@ -129,12 +134,14 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
                                width: max(0, inner - listWidth - 14), height: max(0, bottom - top - 2))
         emptyLabel.frame = NSRect(x: pad, y: top + 40, width: listWidth - 8, height: 22)
         tableView.sizeLastColumnToFit()
+        confirmOverlay?.frame = b
     }
 
     // MARK: - Show / hide
 
     func prepareForShow() {
         _ = view
+        dismissConfirm()
         searchField.stringValue = ""
         reload(selectFirst: true)
         // Shortcuts may have been added since the last show.
@@ -155,6 +162,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     }
 
     func didHide() {
+        dismissConfirm()
         preview.show(nil)
     }
 
@@ -316,7 +324,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     }
 
     private func hoverSelect(_ row: Int) {
-        guard items.indices.contains(row), row != tableView.selectedRow else { return }
+        guard confirmOverlay == nil, items.indices.contains(row), row != tableView.selectedRow else { return }
         tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
         fillSearchField(explicit: false)
     }
@@ -395,7 +403,58 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
             updatePreview()
             return
         }
+        if workflow.requiresConfirmation {
+            askToRun(workflow, argument: value)
+            return
+        }
         controller?.run(workflow, argument: value)
+    }
+
+    // MARK: - Confirmation
+
+    // Same in-panel dialog as the Launchpad's uninstall (the non-activating panel keeps focus).
+    private func askToRun(_ workflow: Workflow, argument: String) {
+        dismissConfirm()
+        let overlay = ConfirmOverlayView(
+            icon: WorkflowIcon.image(for: workflow),
+            title: String(localized: "Run “\(workflow.displayName)”?"),
+            message: workflow.confirmationMessage, items: [],
+            confirmTitle: String(localized: "Run"), destructive: true,
+            cornerRadius: root.layer?.cornerRadius ?? LaunchpadController.cornerRadius
+        )
+        overlay.onConfirm = { [weak self] _ in
+            self?.dismissConfirm()
+            self?.controller?.run(workflow, argument: argument, confirmed: true)
+        }
+        overlay.onCancel = { [weak self] in self?.dismissConfirm(animated: true) }
+        overlay.frame = view.bounds
+        view.addSubview(overlay)
+        confirmOverlay = overlay
+        confirmShownAt = ProcessInfo.processInfo.systemUptime
+        overlay.animateIn()
+    }
+
+    // animated: cancel fades out; panel hide / show / run removes it at once.
+    private func dismissConfirm(animated: Bool = false) {
+        guard let overlay = confirmOverlay else { return }
+        confirmOverlay = nil
+        if animated { overlay.animateOut() } else { overlay.removeNow() }
+        focusSearch()
+    }
+
+    // While the dialog shows it gets every key: ↩ run, Esc cancel, the rest is swallowed
+    // (Tab / ↩ that opened it, typing, ⌘ shortcuts). A held or double-tapped ↩ never confirms.
+    private func handleConfirmKey(_ event: NSEvent, _ overlay: ConfirmOverlayView) {
+        switch Int(event.keyCode) {
+        case kVK_Return, kVK_ANSI_KeypadEnter:
+            let elapsed = ProcessInfo.processInfo.systemUptime - confirmShownAt
+            guard !event.isARepeat, elapsed >= Self.confirmKeyDelay else { return }
+            overlay.confirm()
+        case kVK_Escape:
+            overlay.cancel()
+        default:
+            break
+        }
     }
 
     // In-panel shortcut for a workflow that takes an argument: select it and put its name in the
@@ -517,6 +576,10 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     // In-panel workflow shortcuts (any modifier combination); reserved panel keys are left alone.
     func handlePanelShortcut(_ event: NSEvent) -> Bool {
+        if let confirmOverlay {
+            handleConfirmKey(event, confirmOverlay)
+            return true
+        }
         guard let combo = KeyCombo.from(event: event), !WorkflowPanelKeys.isReserved(combo) else { return false }
         guard let workflow = WorkflowStore.shared.workflows.first(where: {
             $0.enabled && $0.panelKey?.keyCode == combo.keyCode && $0.panelKey?.modifiers == combo.modifiers

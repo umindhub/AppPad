@@ -236,6 +236,64 @@
         }
       }
     },
+    "Ask before running" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vor dem Ausführen nachfragen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntar antes de ejecutar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander avant d’exécuter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiedi prima di eseguire"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "実行前に確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "실행하기 전에 확인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vraag voor uitvoeren"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "运行前确认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "執行前確認"
+          }
+        }
+      }
+    },
     "Back Up" : {
       "localizations" : {
         "de" : {
@@ -1454,6 +1512,122 @@
         }
       }
     },
+    "Run “%@”?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ ausführen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Ejecutar “%@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exécuter « %@ » ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eseguire “%@”?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を実行しますか?"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'%@'을(를) 실행하시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ uitvoeren?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "运行“%@”？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "執行「%@」？"
+          }
+        }
+      }
+    },
+    "Shows a confirmation first, however it is started. Use it for actions that are hard to undo." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt zuerst eine Bestätigung, egal wie der Workflow gestartet wird. Für Aktionen, die sich schwer rückgängig machen lassen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra primero una confirmación, se inicie como se inicie. Úsalo para acciones difíciles de deshacer."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche d’abord une confirmation, quelle que soit la façon dont il est lancé. À utiliser pour les actions difficiles à annuler."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra prima una conferma, in qualunque modo venga avviato. Usalo per azioni difficili da annullare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの方法で起動しても、先に確認を表示します。元に戻しにくい操作に使います。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어떤 방법으로 시작하든 먼저 확인을 표시합니다. 되돌리기 어려운 작업에 사용하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont eerst een bevestiging, hoe de workflow ook wordt gestart. Gebruik dit voor acties die moeilijk ongedaan te maken zijn."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无论以何种方式启动，都先弹出确认。适用于难以撤销的操作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無論以何種方式啟動，都先顯示確認。適用於難以復原的操作。"
+          }
+        }
+      }
+    },
     "The AppPad layout is always replaced. Apps not installed on this Mac are skipped; apps missing from the backup are added at the end." : {
       "localizations" : {
         "de" : {
@@ -1798,6 +1972,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此檔案不是 AppPad 備份。"
+          }
+        }
+      }
+    },
+    "This workflow asks before it runs." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Workflow fragt vor dem Ausführen nach."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este flujo de trabajo pide confirmación antes de ejecutarse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce workflow demande une confirmation avant de s’exécuter."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo workflow chiede conferma prima di essere eseguito."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このワークフローは実行前に確認します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 워크플로는 실행하기 전에 확인합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze workflow vraagt om bevestiging voordat hij wordt uitgevoerd."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此工作流在运行前需要确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此工作流程在執行前需要確認。"
           }
         }
       }

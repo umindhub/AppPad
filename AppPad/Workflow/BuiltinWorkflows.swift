@@ -65,8 +65,9 @@ enum BuiltinWorkflows {
                  version: "1.2", keywords: ["hidden", "dotfiles", "showhidden"], symbol: "eye", notice: .output,
                  steps: [WorkflowStep(builtin: .toggleHiddenFiles, timeout: 20)]),
             // Same identifier as the old "Quit App" (by name): the higher version replaces installed copies.
+            // Asks first: Tab / ↩ in the panel would otherwise quit everything at once.
             make("com.youmindhub.quit", "Quit All Apps", "Quit all running apps. Finder and AppPad stay open.",
-                 version: "1.3", keywords: ["quit", "close"], symbol: "xmark.app", notice: .output,
+                 version: "1.4", keywords: ["quit", "close"], symbol: "xmark.app", notice: .output, confirm: true,
                  steps: [WorkflowStep(builtin: .quitAllApps, timeout: 30)]),
             make("com.youmindhub.websearch", "Google Search", "Search the web. Duplicate it and change the URL for other sites.",
                  version: "1.2", keywords: ["g", "google", "search"], symbol: "magnifyingglass",
@@ -151,6 +152,7 @@ enum BuiltinWorkflows {
 
     private static func make(_ identifier: String, _ name: String, _ summary: String, version: String = "1.0",
                              keywords: [String], symbol: String, notice: SuccessNotice = .none, copy: Bool = false,
+                             confirm: Bool = false,
                              argument: ArgumentMode = .off, type: ArgumentType = .text, hint: String = "",
                              steps: [WorkflowStep]) -> Workflow {
         var w = Workflow(name: name, identifier: identifier, steps: steps)
@@ -161,6 +163,7 @@ enum BuiltinWorkflows {
         w.symbol = symbol
         w.successNotice = notice
         w.copyOutput = copy
+        w.requiresConfirmation = confirm
         w.argument = argument
         w.argumentType = type
         w.argumentHint = hint

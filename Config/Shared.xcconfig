@@ -1,6 +1,5 @@
 // Shared settings for all environments (Dev / Beta / Release)
 MACOSX_DEPLOYMENT_TARGET = 26.0
-MARKETING_VERSION = 1.0.1
 CURRENT_PROJECT_VERSION = 1
 
 DEVELOPMENT_TEAM = 63MSW5QTJL
