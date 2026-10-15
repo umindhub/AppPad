@@ -85,7 +85,9 @@ final class LaunchpadPanel: NSPanel {
         isMovable = false
         isReleasedWhenClosed = false
         animationBehavior = .none
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        // Belongs to the Space it opens on (slides away with it on a Space switch, like the
+        // macOS 15 Launchpad); each show moves it to the current Space. Also over full-screen apps.
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         alphaObservation = observe(\.alphaValue, options: [.new]) { panel, _ in
             MainActor.assumeIsolated {   // window alpha only changes on the main thread
                 if panel.behindBlurRadius > 0 { PanelBackdrop.shared.update(for: panel) }
@@ -907,6 +909,76 @@ enum PanelScreen {
     }
 }
 
+// MARK: - Space switch
+// Current Space of one display (private CGS call, resolved like WindowBlur; nil = unavailable).
+enum DisplaySpace {
+    private typealias ConnectionFn = @convention(c) () -> Int32
+    private typealias CurrentSpaceFn = @convention(c) (Int32, CFString) -> UInt64
+
+    private static let connection: ConnectionFn? = symbol("CGSDefaultConnectionForThread")
+    private static let currentSpace: CurrentSpaceFn? = symbol("CGSManagedDisplayGetCurrentSpace")
+
+    private static func symbol<T>(_ name: String) -> T? {
+        guard let pointer = dlsym(UnsafeMutableRawPointer(bitPattern: -2), name) else { return nil }
+        return unsafeBitCast(pointer, to: T.self)
+    }
+
+    static func current(on screen: NSScreen) -> UInt64? {
+        guard let connection, let currentSpace,
+              let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber,
+              let uuid = CGDisplayCreateUUIDFromDisplayID(number.uint32Value)?.takeRetainedValue(),
+              let string = CFUUIDCreateString(nil, uuid)
+        else { return nil }
+        let cid = connection()
+        var space = currentSpace(cid, string)
+        // "Displays have separate Spaces" off: all displays share the "Main" managed display.
+        if space == 0 { space = currentSpace(cid, "Main" as CFString) }
+        return space == 0 ? nil : space
+    }
+}
+
+// Closes a panel when the Space under it changes (4-finger swipe, ⌃←/→, entering a full-screen app),
+// like the macOS 15 Launchpad. The panel already slid away with its Space; order it out so it does
+// not wait there. Focus moving to another display's Space (separate Spaces) does not count.
+@MainActor
+final class PanelSpaceGuard {
+    private weak var panel: NSWindow?
+    private let onLeave: () -> Void
+    private var space: UInt64?
+    private var armed = false   // false until the first real show (skips the launch warm-up)
+    private var shownAt: TimeInterval = 0
+    // Without the private call: ignore the change caused by the show itself (other display).
+    private static let fallbackGrace: TimeInterval = 0.5
+
+    // Lives as long as its controller (app lifetime); the observer only holds it weakly.
+    init(panel: NSWindow, onLeave: @escaping () -> Void) {
+        self.panel = panel
+        self.onLeave = onLeave
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.spaceDidChange() }
+        }
+    }
+
+    // Right after the panel is ordered in.
+    func panelDidShow() {
+        armed = true
+        shownAt = ProcessInfo.processInfo.systemUptime
+        space = panel?.screen.flatMap(DisplaySpace.current(on:))
+    }
+
+    private func spaceDidChange() {
+        guard armed, let panel, panel.isVisible else { return }
+        if let old = space, let screen = panel.screen, let now = DisplaySpace.current(on: screen) {
+            guard now != old else { return }   // another display's Space changed
+        } else if ProcessInfo.processInfo.systemUptime - shownAt < Self.fallbackGrace {
+            return
+        }
+        onLeave()
+    }
+}
+
 // MARK: - Panel backdrop (window-server blur)
 // One clear, click-through window right below the visible panel carries the blur of what is behind
 // it (the panels never blur themselves). Frame / corners / radius follow the owner panel; during a
@@ -1088,7 +1160,8 @@ final class BlurHelperWindow: NSWindow {
         ignoresMouseEvents = true
         isReleasedWhenClosed = false
         animationBehavior = .none
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
+        // Same Space handling as the panels, so the blur slides away together with its panel.
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .ignoresCycle]
     }
 
     override var canBecomeKey: Bool { false }

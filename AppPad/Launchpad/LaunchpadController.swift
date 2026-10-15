@@ -37,6 +37,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var pendingReadyShow: (() -> Void)?
     // Animated hide in flight (Dock toggle / click outside).
     private var isFadingOut = false
+    // Closes on a Space switch (macOS 15 Launchpad behavior).
+    private var spaceGuard: PanelSpaceGuard?
 
     private static let showDuration: TimeInterval = 0.25
     private static let hideDuration: TimeInterval = 0.2
@@ -88,6 +90,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             self?.viewController.observeOptionHold(event)
         }
         PinchGestureMonitor.shared.onTap = { [weak self] in self?.handleTrackpadTap() }
+        // Instant close, no fade (the desktop already changed).
+        spaceGuard = PanelSpaceGuard(panel: panel) { [weak self] in self?.hide() }
 
         lastCapacity = capacity
         applyAppearance()
@@ -413,6 +417,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.alphaValue = opaque ? PanelSwitch.incomingAlpha(for: panel) : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
+        spaceGuard?.panelDidShow()
         PinchGestureMonitor.shared.setTapEnabled(true)
         return true
     }

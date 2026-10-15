@@ -15,6 +15,8 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
     private let background = LaunchpadBackgroundView()
     private let viewController = WorkflowPanelViewController()
     private var isHiding = false
+    // Closes on a Space switch, like the Launchpad.
+    private var spaceGuard: PanelSpaceGuard?
 
     var isVisible: Bool { panel.isVisible }
     // Open and focused (a global hotkey for another panel hands over from it).
@@ -50,6 +52,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         background.onWallpaperApplied = { [weak self] in self?.applyAppearance() }
 
         panel.delegate = self
+        spaceGuard = PanelSpaceGuard(panel: panel) { [weak self] in self?.hide() }
         panel.keyHandler = { [weak self] event in
             self?.viewController.handleKeyEquivalent(event) ?? false
         }
@@ -85,6 +88,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         panel.alphaValue = handOff ? PanelSwitch.incomingAlpha(for: panel) : 0
         panel.makeKeyAndOrderFront(nil)
         panel.invalidateShadow()
+        spaceGuard?.panelDidShow()
         viewController.focusSearch()
         if handOff {
             // After the old panel's hide() restored the input source.
