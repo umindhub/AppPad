@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.1
+
+### Added
+
+#### Backup & Restore
+- New Backup tab in Settings: export to a single `.apppadbackup` file and restore it on this or another Mac.
+- Choose what to include: app shortcuts (plus the Workflows, Clipboard and window shortcuts), the Launchpad layout with its grid size, installed workflows (with icons, panel shortcuts and on/off state), clipboard history and the saved library.
+- Restore shows what a backup contains before anything changes; pick the parts to restore and whether to merge with or replace what's already there.
+- Merge adds what is missing: newer workflow versions replace older ones, and clipboard items are matched by content, so nothing is duplicated.
+- The Launchpad layout is always replaced; apps not installed on this Mac are skipped, and apps not in the backup are added at the end.
+- Keychain secrets and "Always Allow" permissions are never written to a backup; restored workflows ask for permission again on their first run.
+
 ## v1.0.0
 
 First public release. Requires macOS 26 Tahoe or later (Universal: Apple Silicon + Intel).
