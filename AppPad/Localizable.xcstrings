@@ -3558,60 +3558,60 @@
         }
       }
     },
-    "↩ Paste   ⌘S Save   ⌘⌫ Delete" : {
+    "↩ Paste   ⌘S Save   ⌘⇧⌫ Delete" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ Einsetzen   ⌘S Sichern   ⌘⌫ Löschen"
+            "value" : "↩ Einsetzen   ⌘S Sichern   ⌘⇧⌫ Löschen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ Pegar   ⌘S Guardar   ⌘⌫ Eliminar"
+            "value" : "↩ Pegar   ⌘S Guardar   ⌘⇧⌫ Eliminar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ Coller   ⌘S Enregistrer   ⌘⌫ Supprimer"
+            "value" : "↩ Coller   ⌘S Enregistrer   ⌘⇧⌫ Supprimer"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ Incolla   ⌘S Salva   ⌘⌫ Elimina"
+            "value" : "↩ Incolla   ⌘S Salva   ⌘⇧⌫ Elimina"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ ペースト   ⌘S 保存   ⌘⌫ 削除"
+            "value" : "↩ ペースト   ⌘S 保存   ⌘⇧⌫ 削除"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ 붙여넣기   ⌘S 저장   ⌘⌫ 삭제"
+            "value" : "↩ 붙여넣기   ⌘S 저장   ⌘⇧⌫ 삭제"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ Plak   ⌘S Bewaar   ⌘⌫ Verwijder"
+            "value" : "↩ Plak   ⌘S Bewaar   ⌘⇧⌫ Verwijder"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ 粘贴   ⌘S 保存   ⌘⌫ 删除"
+            "value" : "↩ 粘贴   ⌘S 保存   ⌘⇧⌫ 删除"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "↩ 貼上   ⌘S 儲存   ⌘⌫ 刪除"
+            "value" : "↩ 貼上   ⌘S 儲存   ⌘⇧⌫ 刪除"
           }
         }
       }
@@ -3674,60 +3674,60 @@
         }
       }
     },
-    "⌘↩ Show in Finder" : {
+    "⌘⇧↩ Show in Finder" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Im Finder zeigen"
+            "value" : "⌘⇧↩ Im Finder zeigen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Mostrar en el Finder"
+            "value" : "⌘⇧↩ Mostrar en el Finder"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Afficher dans le Finder"
+            "value" : "⌘⇧↩ Afficher dans le Finder"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Mostra nel Finder"
+            "value" : "⌘⇧↩ Mostra nel Finder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Finder に表示"
+            "value" : "⌘⇧↩ Finder に表示"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Finder에서 보기"
+            "value" : "⌘⇧↩ Finder에서 보기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ Toon in Finder"
+            "value" : "⌘⇧↩ Toon in Finder"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ 在访达中显示"
+            "value" : "⌘⇧↩ 在访达中显示"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘↩ 在 Finder 中顯示"
+            "value" : "⌘⇧↩ 在 Finder 中顯示"
           }
         }
       }
@@ -3791,60 +3791,60 @@
         }
       }
     },
-    "⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⌫ deletes. Type \"App::text\" to filter by app." : {
+    "⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K wechseln zwischen AppPad und Zwischenablage; die Taste „Gesichert“ (oder der Kurzbefehl für gesicherte Objekte) zeigt nur gesicherte Objekte. ⌘1–⌘0 setzen die ersten zehn Objekte ein, ⌘J / ⌘K bewegen wie ↓ / ↑, ⌘S sichert, ⌘⌫ löscht. Gib „App::Text“ ein, um nach App zu filtern."
+            "value" : "⌘⇧J / ⌘⇧K wechseln zwischen AppPad und Zwischenablage; die Taste „Gesichert“ (oder der Kurzbefehl für gesicherte Objekte) zeigt nur gesicherte Objekte. ⌘1–⌘0 setzen die ersten zehn Objekte ein, ⌘J / ⌘K bewegen wie ↓ / ↑, ⌘S sichert, ⌘⇧⌫ löscht. Gib „App::Text“ ein, um nach App zu filtern."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K alternan entre AppPad y el portapapeles; el botón Guardado (o el atajo de elementos guardados) muestra solo los elementos guardados. ⌘1–⌘0 pegan los diez primeros elementos, ⌘J / ⌘K se mueven como ↓ / ↑, ⌘S guarda y ⌘⌫ elimina. Escribe “App::texto” para filtrar por app."
+            "value" : "⌘⇧J / ⌘⇧K alternan entre AppPad y el portapapeles; el botón Guardado (o el atajo de elementos guardados) muestra solo los elementos guardados. ⌘1–⌘0 pegan los diez primeros elementos, ⌘J / ⌘K se mueven como ↓ / ↑, ⌘S guarda y ⌘⇧⌫ elimina. Escribe “App::texto” para filtrar por app."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K basculent entre AppPad et le presse-papiers ; le bouton Enregistré (ou le raccourci des éléments enregistrés) n’affiche que les éléments enregistrés. ⌘1–⌘0 collent les dix premiers éléments, ⌘J / ⌘K déplacent comme ↓ / ↑, ⌘S enregistre, ⌘⌫ supprime. Tapez « App::texte » pour filtrer par app."
+            "value" : "⌘⇧J / ⌘⇧K basculent entre AppPad et le presse-papiers ; le bouton Enregistré (ou le raccourci des éléments enregistrés) n’affiche que les éléments enregistrés. ⌘1–⌘0 collent les dix premiers éléments, ⌘J / ⌘K déplacent comme ↓ / ↑, ⌘S enregistre, ⌘⇧⌫ supprime. Tapez « App::texte » pour filtrer par app."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K passano da AppPad agli Appunti e viceversa; il pulsante Salvato (o l’abbreviazione degli elementi salvati) mostra solo gli elementi salvati. ⌘1–⌘0 incollano i primi dieci elementi, ⌘J / ⌘K spostano come ↓ / ↑, ⌘S salva, ⌘⌫ elimina. Digita “App::testo” per filtrare per app."
+            "value" : "⌘⇧J / ⌘⇧K passano da AppPad agli Appunti e viceversa; il pulsante Salvato (o l’abbreviazione degli elementi salvati) mostra solo gli elementi salvati. ⌘1–⌘0 incollano i primi dieci elementi, ⌘J / ⌘K spostano come ↓ / ↑, ⌘S salva, ⌘⇧⌫ elimina. Digita “App::testo” per filtrare per app."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K で AppPad とクリップボードを切り替えます。「保存済み」ボタン(または保存済み項目のショートカット)で保存済み項目のみ表示します。⌘1〜⌘0 で最初の10項目をペースト、⌘J / ⌘K で ↓ / ↑ と同様に移動、⌘S で保存、⌘⌫ で削除。「App::テキスト」と入力するとアプリで絞り込めます。"
+            "value" : "⌘⇧J / ⌘⇧K で AppPad とクリップボードを切り替えます。「保存済み」ボタン(または保存済み項目のショートカット)で保存済み項目のみ表示します。⌘1〜⌘0 で最初の10項目をペースト、⌘J / ⌘K で ↓ / ↑ と同様に移動、⌘S で保存、⌘⇧⌫ で削除。「App::テキスト」と入力するとアプリで絞り込めます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K로 AppPad와 클립보드 간에 전환합니다. 저장됨 버튼(또는 저장된 항목 단축키)은 저장된 항목만 보여줍니다. ⌘1–⌘0은 처음 10개 항목을 붙여넣고, ⌘J / ⌘K는 ↓ / ↑처럼 이동하며, ⌘S는 저장, ⌘⌫는 삭제합니다. 'App::텍스트'를 입력하면 앱별로 필터링합니다."
+            "value" : "⌘⇧J / ⌘⇧K로 AppPad와 클립보드 간에 전환합니다. 저장됨 버튼(또는 저장된 항목 단축키)은 저장된 항목만 보여줍니다. ⌘1–⌘0은 처음 10개 항목을 붙여넣고, ⌘J / ⌘K는 ↓ / ↑처럼 이동하며, ⌘S는 저장, ⌘⇧⌫는 삭제합니다. 'App::텍스트'를 입력하면 앱별로 필터링합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K wisselen tussen AppPad en klembord; de knop Bewaard (of de sneltoets voor bewaarde onderdelen) toont alleen bewaarde onderdelen. ⌘1–⌘0 plakken de eerste tien onderdelen, ⌘J / ⌘K bewegen als ↓ / ↑, ⌘S bewaart, ⌘⌫ verwijdert. Typ ‘App::tekst’ om op app te filteren."
+            "value" : "⌘⇧J / ⌘⇧K wisselen tussen AppPad en klembord; de knop Bewaard (of de sneltoets voor bewaarde onderdelen) toont alleen bewaarde onderdelen. ⌘1–⌘0 plakken de eerste tien onderdelen, ⌘J / ⌘K bewegen als ↓ / ↑, ⌘S bewaart, ⌘⇧⌫ verwijdert. Typ ‘App::tekst’ om op app te filteren."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存项目快捷键）仅显示已保存项目。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⌫ 删除。输入“App名::文本”可按 App 筛选。"
+            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存项目快捷键）仅显示已保存项目。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⇧⌫ 删除。输入“App名::文本”可按 App 筛选。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪貼簿之間切換；「已儲存」按鈕（或已儲存項目快速鍵）僅顯示已儲存項目。⌘1–⌘0 貼上前十個項目，⌘J / ⌘K 等同 ↓ / ↑ 移動，⌘S 儲存，⌘⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
+            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪貼簿之間切換；「已儲存」按鈕（或已儲存項目快速鍵）僅顯示已儲存項目。⌘1–⌘0 貼上前十個項目，⌘J / ⌘K 等同 ↓ / ↑ 移動，⌘S 儲存，⌘⇧⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
           }
         }
       }
@@ -37324,6 +37324,688 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "zsh，在沙盒中執行。輸入來自 stdin 和 $APPPAD_INPUT。"
+          }
+        }
+      }
+    },
+    "Saved Clips" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesicherte Clips"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clips guardados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clips enregistrés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clip salvate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存済みクリップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장된 클립"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaarde clips"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已保存剪切板"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已儲存剪貼簿"
+          }
+        }
+      }
+    },
+    "Search saved items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesicherte Objekte durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar elementos guardados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans les éléments enregistrés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca negli elementi salvati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存済み項目を検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장된 항목 검색"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoek in bewaarde onderdelen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索已保存项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋已儲存項目"
+          }
+        }
+      }
+    },
+    "Add a name" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir un nombre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un nom"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi un nome"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前を追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg een naam toe"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加名称"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入名稱"
+          }
+        }
+      }
+    },
+    "%lld saved items" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld saved item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld saved items"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gesichertes Objekt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gesicherte Objekte"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elemento guardado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elementos guardados"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld élément enregistré"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld éléments enregistrés"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elemento salvato"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elementi salvati"
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bewaard onderdeel"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bewaarde onderdelen"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "保存済み %lld 項目"
+                }
+              }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "저장된 항목 %lld개"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "已保存 %lld 项"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hant" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "已儲存 %lld 項"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Names are searchable here and in the Clipboard panel. Return saves a name, Esc reverts it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen sind hier und im Zwischenablage-Fenster durchsuchbar. Return sichert einen Namen, Esc verwirft die Änderung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los nombres se pueden buscar aquí y en el panel del portapapeles. Retorno guarda un nombre, Esc lo revierte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les noms sont recherchables ici et dans le panneau du presse-papiers. Retour enregistre un nom, Échap l’annule."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I nomi sono ricercabili qui e nel pannello Appunti. A capo salva un nome, Esc lo annulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前はここでもクリップボードパネルでも検索できます。Return で名前を保存、Esc で元に戻します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름은 여기와 클립보드 패널에서 검색할 수 있습니다. Return으로 이름을 저장하고 Esc로 되돌립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen zijn hier en in het klembordpaneel doorzoekbaar. Return bewaart een naam, Esc maakt de wijziging ongedaan."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称可在此处和剪切板面板中搜索。按 Return 保存名称，按 Esc 撤销修改。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名稱可在此處和剪貼簿面板中搜尋。按 Return 儲存名稱，按 Esc 還原修改。"
+          }
+        }
+      }
+    },
+    "Remove from Saved?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus „Gesichert“ entfernen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Quitar de guardados?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer des éléments enregistrés ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovere dai salvati?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存済みから削除しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장됨에서 제거하시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijderen uit bewaard?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从已保存中移除？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從已儲存中移除？"
+          }
+        }
+      }
+    },
+    "Items no longer in the clipboard history are deleted." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekte, die nicht mehr im Verlauf der Zwischenablage sind, werden gelöscht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los elementos que ya no están en el historial del portapapeles se eliminan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments qui ne figurent plus dans l’historique du presse-papiers sont supprimés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli elementi non più presenti nella cronologia degli Appunti vengono eliminati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボード履歴に残っていない項目は削除されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 기록에 더 이상 없는 항목은 삭제됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onderdelen die niet meer in de klembordgeschiedenis staan, worden verwijderd."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已不在剪切板历史中的项目将被删除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已不在剪貼簿歷史中的項目將被刪除。"
+          }
+        }
+      }
+    },
+    "The clipboard store could not be opened." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zwischenablage-Speicher konnte nicht geöffnet werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo abrir el almacén del portapapeles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ouvrir le stockage du presse-papiers."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile aprire l’archivio degli Appunti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボードの保存領域を開けませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 저장소를 열 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De klembordopslag kon niet worden geopend."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开剪切板存储。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法開啟剪貼簿儲存。"
+          }
+        }
+      }
+    },
+    "⌘↩ Edit" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ Bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ Editar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ Modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ Modifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ 編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ 편집"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ Wijzig"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ 编辑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘↩ 編輯"
+          }
+        }
+      }
+    },
+    "Edit in Saved Clips" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In „Gesicherte Clips“ bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar en Clips guardados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier dans Clips enregistrés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica in Clip salvate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存済みクリップで編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장된 클립에서 편집"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzig in Bewaarde clips"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在已保存剪切板中编辑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在已儲存剪貼簿中編輯"
           }
         }
       }

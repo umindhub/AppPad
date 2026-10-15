@@ -52,25 +52,45 @@ final class ClipRowView: NSView {
         thumb.image = nil
         thumb.isPhoto = item.kind == .image
         hasThumb = false
+        let content: String
         switch item.kind {
         case .text:
-            titleLabel.stringValue = Self.singleLine(item.snippet)
+            content = Self.singleLine(item.snippet)
         case .image:
             let size = (item.imageWidth != nil && item.imageHeight != nil)
                 ? "  \(item.imageWidth!) × \(item.imageHeight!)" : ""
             let name = item.snippet.isEmpty ? String(localized: "Image") : item.snippet   // file name if copied as a file
-            titleLabel.stringValue = name + size
+            content = name + size
             hasThumb = true
             loadThumb(item, store: store)
         case .file:
             let paths = item.snippet.split(separator: "\n").map(String.init)
-            titleLabel.stringValue = paths.map { ($0 as NSString).lastPathComponent }.joined(separator: ", ")
+            content = paths.map { ($0 as NSString).lastPathComponent }.joined(separator: ", ")
             if let first = paths.first {
                 thumb.image = NSWorkspace.shared.icon(forFile: first)
                 hasThumb = true
             }
         }
+        setTitle(label: item.displayName.map(Self.singleLine), content: content, font: font)
         needsLayout = true
+    }
+
+    // Labeled items: "label  content", content dimmed.
+    private func setTitle(label: String?, content: String, font: NSFont) {
+        guard let label else {
+            titleLabel.stringValue = content
+            return
+        }
+        let bold = NSFontManager.shared.convert(font, toHaveTrait: .boldFontMask)
+        let title = NSMutableAttributedString(string: label, attributes: [.font: bold, .foregroundColor: NSColor.labelColor])
+        if !content.isEmpty {
+            title.append(NSAttributedString(string: "  " + content,
+                                            attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]))
+        }
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
+        title.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: title.length))
+        titleLabel.attributedStringValue = title
     }
 
     private func loadThumb(_ item: ClipSummary, store: ClipboardStore?) {

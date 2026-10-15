@@ -35,6 +35,7 @@ nonisolated struct ClipItem: Codable, FetchableRecord, MutablePersistableRecord,
     var saved: Bool
     var savedAt: Double?
     var sourcePath: String?    // original file of an image copied as a file
+    var name: String? = nil    // user label (edited in Settings › Saved Clips), searchable
 
     // File behind the item: the original image file, or the first copied file.
     var locationPath: String? {
@@ -64,10 +65,11 @@ nonisolated struct ClipSummary: FetchableRecord, Equatable, Sendable {
     var sourceName: String?
     var lastUsedAt: Double
     var saved: Bool
+    var name: String?
 
     static let columns = """
         id, uuid, kind, substr(searchText, 1, 300) AS snippet, imageExt, imageWidth, imageHeight, \
-        byteSize, sourceBundleID, sourceName, lastUsedAt, saved
+        byteSize, sourceBundleID, sourceName, lastUsedAt, saved, name
         """
 
     init(row: Row) {
@@ -83,6 +85,13 @@ nonisolated struct ClipSummary: FetchableRecord, Equatable, Sendable {
         sourceName = row["sourceName"]
         lastUsedAt = row["lastUsedAt"]
         saved = row["saved"]
+        name = row["name"]
+    }
+
+    // Non-empty user label.
+    var displayName: String? {
+        guard let name, !name.isEmpty else { return nil }
+        return name
     }
 }
 

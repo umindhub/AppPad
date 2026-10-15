@@ -3,7 +3,7 @@ import AppKit
 
 // Case order = sidebar order.
 enum SettingsTab: String, CaseIterable {
-    case general, launchpad, clipboard, workflows, shortcuts, windows, backup, about
+    case general, launchpad, clipboard, savedClips, workflows, shortcuts, windows, backup, about
 
     // UserDefaults key shared with @AppStorage (also set from AppDelegate).
     static let storageKey = "settingsTab"
@@ -13,6 +13,7 @@ enum SettingsTab: String, CaseIterable {
         case .general: return String(localized: "General")
         case .launchpad: return String(localized: "AppPad")
         case .clipboard: return String(localized: "Clipboard")
+        case .savedClips: return String(localized: "Saved Clips")
         case .shortcuts: return String(localized: "App Shortcuts")
         case .windows: return String(localized: "Windows")
         case .workflows: return String(localized: "Workflows")
@@ -26,6 +27,7 @@ enum SettingsTab: String, CaseIterable {
         case .general: return "gearshape"
         case .launchpad: return "square.grid.3x3"
         case .clipboard: return "doc.on.clipboard"
+        case .savedClips: return "star"
         case .shortcuts: return "keyboard"
         case .windows: return "rectangle.split.2x1"
         case .workflows: return "bolt"
@@ -47,6 +49,7 @@ enum SettingsTab: String, CaseIterable {
         case .general: return "gearshape.fill"
         case .launchpad: return "square.grid.3x3.fill"
         case .clipboard: return "doc.on.clipboard.fill"
+        case .savedClips: return "star.fill"
         case .shortcuts: return "keyboard.fill"
         case .windows: return "rectangle.split.2x1.fill"
         case .workflows: return "bolt.fill"
@@ -125,6 +128,8 @@ struct SettingsView: View {
             launchpadForm
         case .clipboard:
             ClipboardSettingsView(prefs: prefs, maintenance: clipboard)
+        case .savedClips:
+            SavedClipsSettingsView(prefs: prefs, store: BackupService.shared.clipboardStore)
         case .workflows:
             WorkflowSettingsView(prefs: prefs)
         case .shortcuts:

@@ -53,7 +53,7 @@ struct ClipboardSettingsView: View {
                         }
                     }
                 }
-                Text("⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⌫ deletes. Type \"App::text\" to filter by app.")
+                Text("⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

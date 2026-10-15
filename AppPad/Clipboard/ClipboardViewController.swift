@@ -335,7 +335,23 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         controller?.paste(item, autoPaste: autoPaste ?? prefs.clipboardAutoPaste)
     }
 
-    // ⌘↩: show the original file (image copied from a folder, or copied files) in Finder.
+    // ⌘↩: edit the item in Settings › Saved Clips (an unsaved item is saved first).
+    private func editInSavedClips(row: Int) {
+        guard items.indices.contains(row), let store else {
+            NSSound.beep()
+            return
+        }
+        let item = items[row]
+        if !item.saved {
+            store.toggleSaved(id: item.id)
+            NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
+        }
+        SavedClipsNavigator.reveal(item.id)
+        controller?.hide()
+        controller?.onOpenSettings?()
+    }
+
+    // ⌘⇧↩: show the original file (image copied from a folder, or copied files) in Finder.
     private func revealInFinder(row: Int) {
         guard items.indices.contains(row), let item = store?.item(id: items[row].id),
               let path = item.locationPath else {
@@ -406,6 +422,15 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
         let key = event.charactersIgnoringModifiers?.lowercased() ?? ""
         if flags == [.command, .shift] {
+            // ⌘⇧⌫ deletes; plain ⌘⌫ stays with the search field (delete to line start).
+            if event.keyCode == UInt16(kVK_Delete) {
+                if let id = selectedItem?.id { remove(id) }
+                return true
+            }
+            if event.keyCode == UInt16(kVK_Return) || event.keyCode == UInt16(kVK_ANSI_KeypadEnter) {
+                revealInFinder(row: tableView.selectedRow)
+                return true
+            }
             switch key {
             case "j": controller?.switchPanel(-1); return true
             case "k": controller?.switchPanel(1); return true
@@ -417,12 +442,8 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
             activate(row: index)
             return true
         }
-        if event.keyCode == UInt16(kVK_Delete) {
-            if let id = selectedItem?.id { remove(id) }
-            return true
-        }
         if event.keyCode == UInt16(kVK_Return) || event.keyCode == UInt16(kVK_ANSI_KeypadEnter) {
-            revealInFinder(row: tableView.selectedRow)
+            editInSavedClips(row: tableView.selectedRow)
             return true
         }
         switch key {
@@ -478,6 +499,9 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         }
         let saveTitle = item.saved ? String(localized: "Remove from Saved") : String(localized: "Save")
         menu.addItem(ClosureMenuItem(saveTitle) { [weak self] in self?.toggleSaved(item.id) })
+        menu.addItem(ClosureMenuItem(String(localized: "Edit in Saved Clips")) { [weak self] in
+            self?.editInSavedClips(row: row)
+        })
         menu.addItem(.separator())
         menu.addItem(ClosureMenuItem(String(localized: "Delete")) { [weak self] in self?.remove(item.id) })
     }

@@ -20,6 +20,7 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
     private let ftsAvailable: Bool
 
     static let searchTextLimit = 10_000     // chars indexed per item
+    static let nameLimit = 200              // chars kept for a user label
     static let maxImageBytes = 60_000_000
 
     init(directory: URL) throws {
@@ -93,6 +94,9 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
         }
         migrator.registerMigration("v2-sourcePath") { db in
             try db.execute(sql: "ALTER TABLE clip ADD COLUMN sourcePath TEXT")
+        }
+        migrator.registerMigration("v3-name") { db in
+            try db.execute(sql: "ALTER TABLE clip ADD COLUMN name TEXT")
         }
         return migrator
     }
@@ -227,18 +231,21 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
             conditions.append("sourceBundleID = ?")
             arguments.append(bundleID)
         }
-        var ftsTerms: [String] = []
+        // Each term must match the content or the user label.
         for term in query.terms {
+            let like = "%" + Self.escapeLike(term) + "%"
             if ftsAvailable && term.count >= 3 {
-                ftsTerms.append("\"" + term.replacingOccurrences(of: "\"", with: "\"\"") + "\"")
+                let match = "\"" + term.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+                conditions.append("""
+                    (id IN (SELECT rowid FROM clip_fts WHERE clip_fts MATCH ?) OR name LIKE ? ESCAPE '\\')
+                    """)
+                arguments.append(match)
+                arguments.append(like)
             } else {
-                conditions.append("searchText LIKE ? ESCAPE '\\'")
-                arguments.append("%" + Self.escapeLike(term) + "%")
+                conditions.append("(searchText LIKE ? ESCAPE '\\' OR name LIKE ? ESCAPE '\\')")
+                arguments.append(like)
+                arguments.append(like)
             }
-        }
-        if !ftsTerms.isEmpty {
-            conditions.append("id IN (SELECT rowid FROM clip_fts WHERE clip_fts MATCH ?)")
-            arguments.append(ftsTerms.joined(separator: " AND "))
         }
         // While searching / filtering history, saved-library items rank first.
         let searching = !query.terms.isEmpty || query.bundleID != nil
@@ -263,6 +270,11 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
         try? pool.read { db in try ClipItem.fetchOne(db, key: id) }
     }
 
+    func savedCount() -> Int {
+        let count = try? pool.read { db in try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM clip WHERE saved = 1") }
+        return (count ?? nil) ?? 0
+    }
+
     func sourceApps() -> [(bundleID: String, name: String)] {
         let rows = (try? pool.read { db in try Row.fetchAll(db, sql: "SELECT bundleID, name FROM sourceApp") }) ?? []
         return rows.map { (bundleID: $0["bundleID"], name: $0["name"]) }
@@ -279,6 +291,16 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
     func markUsed(id: Int64) {
         let now = Date().timeIntervalSince1970
         write("UPDATE clip SET useCount = useCount + 1, lastUsedAt = ?, inHistory = 1 WHERE id = ?", [now, id])
+    }
+
+    // Empty / whitespace clears the label.
+    func setName(id: Int64, name: String?) {
+        write("UPDATE clip SET name = ? WHERE id = ?", [Self.normalizedName(name), id])
+    }
+
+    static func normalizedName(_ name: String?) -> String? {
+        guard let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
+        return String(trimmed.prefix(nameLimit))
     }
 
     func toggleSaved(id: Int64) {
@@ -438,6 +460,7 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
         // Keep only the requested scopes.
         var items: [ClipItem] = []
         for var item in incoming {
+            item.name = Self.normalizedName(item.name)   // nil for backups made before labels existed
             if !history { item.inHistory = false }
             if !saved {
                 item.saved = false
@@ -481,14 +504,14 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
                 for var item in items {
                     if let existingID = try Int64.fetchOne(db, sql: "SELECT id FROM clip WHERE hash = ?",
                                                            arguments: [item.hash]) {
-                        // Same content: union of scopes, latest use wins.
+                        // Same content: union of scopes, latest use wins, a local label is kept.
                         try db.execute(sql: """
                             UPDATE clip SET inHistory = MAX(inHistory, ?), saved = MAX(saved, ?),
                                 savedAt = COALESCE(savedAt, ?), lastUsedAt = MAX(lastUsedAt, ?),
-                                useCount = MAX(useCount, ?)
+                                useCount = MAX(useCount, ?), name = COALESCE(name, ?)
                             WHERE id = ?
                             """, arguments: [item.inHistory, item.saved, item.saved ? item.savedAt : nil,
-                                             item.lastUsedAt, item.useCount, existingID])
+                                             item.lastUsedAt, item.useCount, item.name, existingID])
                         result.existing += 1
                         continue
                     }

@@ -80,8 +80,8 @@ final class ClipPreviewView: FlippedView {
         let location = item.locationPath
         pathLabel.stringValue = location.map { ($0 as NSString).abbreviatingWithTildeInPath } ?? ""
         pathLabel.toolTip = location
-        var hint = String(localized: "↩ Paste   ⌘S Save   ⌘⌫ Delete")
-        if location != nil { hint += "   " + String(localized: "⌘↩ Show in Finder") }
+        var hint = String(localized: "↩ Paste   ⌘S Save   ⌘⇧⌫ Delete") + "   " + String(localized: "⌘↩ Edit")
+        if location != nil { hint += "   " + String(localized: "⌘⇧↩ Show in Finder") }
         hintLabel.stringValue = hint
         // Older file items that point to an image: preview the image itself.
         let fileImage = item.kind == .file ? Self.firstImageFile(item) : nil
@@ -134,6 +134,7 @@ final class ClipPreviewView: FlippedView {
 
     private static func meta(for item: ClipItem) -> String {
         var parts: [String] = []
+        if let label = item.name, !label.isEmpty { parts.append(label) }
         if let name = item.sourceName { parts.append(name) }
         parts.append(dateFormatter.string(from: Date(timeIntervalSince1970: item.lastUsedAt)))
         switch item.kind {
