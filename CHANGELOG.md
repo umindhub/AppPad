@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.3
+
+### Added
+
+#### Clipboard
+- New "Saved Clips" tab in Settings to browse, search and manage the saved library: source app icon, name, two-line preview and date for every item, with Copy and Remove buttons.
+- Saved items can have a name. Names are searchable both in Settings and in the Clipboard panel, and named items show their name in bold in the list.
+- ⌘↩ on any clipboard item opens it in Settings › Saved Clips with the name field ready to type; unsaved items are saved first. Also available from the context menu ("Edit in Saved Clips").
+
+#### Backup & Restore
+- Backups now include item names. Older backups restore as before; when merging, a name already set on this Mac is kept.
+
+### Changed
+- Clipboard: delete an item with ⌘⇧⌫ (was ⌘⌫), so ⌘⌫ in the search field deletes to the start of the line again.
+- Clipboard: "Show in Finder" moved from ⌘↩ to ⌘⇧↩.
+
 ## v1.0.2
 
 ### Added
