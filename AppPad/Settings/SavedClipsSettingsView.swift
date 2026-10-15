@@ -25,6 +25,7 @@ struct SavedClipsSettingsView: View {
     @State private var total = 0
     @State private var pendingRemove: ClipSummary?
     @State private var highlightID: Int64?
+    @State private var copiedID: Int64?
     @FocusState private var focusedID: Int64?
 
     private static let limit = 2000
@@ -88,6 +89,7 @@ struct SavedClipsSettingsView: View {
                     ForEach(items, id: \.id) { item in
                         SavedClipRow(item: item, store: store, focus: $focusedID,
                                      highlighted: highlightID == item.id,
+                                     copied: copiedID == item.id,
                                      onRename: { rename(item, to: $0) },
                                      onCopy: { copy(item) },
                                      onRemove: { pendingRemove = item })
@@ -162,10 +164,25 @@ struct SavedClipsSettingsView: View {
                     NSSound.beep()
                     return
                 }
-                PasteService.write(item, image: data)
+                finishCopy(item, image: data)
             }
         } else {
-            PasteService.write(item, image: nil)
+            finishCopy(item, image: nil)
+        }
+    }
+
+    // Like a paste from the panel: the monitor skips our write (source app stays), the item counts as used.
+    private func finishCopy(_ item: ClipItem, image: PasteImageData?) {
+        let count = PasteService.write(item, image: image)
+        NotificationCenter.default.post(name: .clipboardOwnWrite, object: nil, userInfo: ["changeCount": count])
+        if let id = item.id { store?.markUsed(id: id) }
+        NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
+        // Checkmark on the row's copy button for a moment.
+        guard let id = item.id else { return }
+        copiedID = id
+        Task {
+            try? await Task.sleep(for: .seconds(1.2))
+            if copiedID == id { copiedID = nil }
         }
     }
 }
@@ -176,6 +193,7 @@ private struct SavedClipRow: View {
     let store: ClipboardStore?
     var focus: FocusState<Int64?>.Binding
     var highlighted: Bool
+    var copied: Bool
     var onRename: (String) -> Void
     var onCopy: () -> Void
     var onRemove: () -> Void
@@ -233,8 +251,15 @@ private struct SavedClipRow: View {
             // Fixed-size slots: the row height never changes.
             VStack(spacing: 6) {
                 Button(action: onCopy) {
-                    Image(systemName: "doc.on.doc")
-                        .frame(width: Self.actionSize.width, height: Self.actionSize.height)
+                    // Both symbols always laid out, only one visible: same size either way.
+                    ZStack {
+                        Image(systemName: "doc.on.doc")
+                            .opacity(copied ? 0 : 1)
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(.green)
+                            .opacity(copied ? 1 : 0)
+                    }
+                    .frame(width: Self.actionSize.width, height: Self.actionSize.height)
                 }
                 .buttonStyle(.borderless)
                 .help(String(localized: "Copy"))

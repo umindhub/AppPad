@@ -1,6 +1,12 @@
 import AppKit
 import UniformTypeIdentifiers
 
+extension Notification.Name {
+    // Posted after AppPad itself writes the pasteboard (userInfo["changeCount"]: Int),
+    // so the write is not captured again with AppPad as the source app.
+    static let clipboardOwnWrite = Notification.Name("AppPad.clipboardOwnWrite")
+}
+
 // Polls NSPasteboard.changeCount (there is no change notification) and stores new content.
 final class ClipboardMonitor: NSObject {
     private let store: ClipboardStore
@@ -27,6 +33,9 @@ final class ClipboardMonitor: NSObject {
         lastChangeCount = NSPasteboard.general.changeCount
         knownSources = Set(store.sourceApps().map(\.bundleID))
         super.init()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(ownWrite(_:)), name: .clipboardOwnWrite, object: nil
+        )
     }
 
     func start() {
@@ -47,6 +56,10 @@ final class ClipboardMonitor: NSObject {
     func ignore(changeCount: Int) {
         ignoredChangeCount = changeCount
         lastChangeCount = changeCount
+    }
+
+    @objc private func ownWrite(_ note: Notification) {
+        if let count = note.userInfo?["changeCount"] as? Int { ignore(changeCount: count) }
     }
 
     @objc private func tick() {
