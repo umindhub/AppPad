@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>AppPad</title>
+    <link>https://apppad.pages.dev/appcast.xml</link>
+    <language>en</language>
+    <item>
+      <title>Version 1.0.5</title>
+      <pubDate>Thu, 15 Oct 2026 12:15:43 GMT</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.0.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+<h3>Added</h3>
+<h3>Automatic Updates</h3>
+<ul>
+<li>AppPad now keeps itself up to date. Every day at 4:00 it checks for a new version, downloads it in the background and installs it as soon as no panel is open, then restarts quietly without opening Launchpad.</li>
+<li>Missed the check because the Mac was asleep or off? AppPad catches up shortly after waking, and retries every 30 minutes if the network isn't ready.</li>
+<li>New Updates section in Settings › About: turn automatic updates on or off (on by default), pick the check time, see when the last check ran, and check now.</li>
+<li>"Check for Updates…" in the menu-bar menu.</li>
+<li>If an update is waiting while you're in Settings, "Restart to Update" installs it right away.</li>
+<li>Updates are verified with an EdDSA signature before they are installed.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Settings › About lists Sparkle under Acknowledgements.</li>
+</ul>
+<h3>Note</h3>
+<ul>
+<li>Versions before 1.0.5 can't update themselves: install 1.0.5 once from the DMG or with <code>brew upgrade --cask apppad</code>; later versions arrive automatically.</li>
+</ul>
+      ]]></description>
+      <enclosure url="https://github.com/umindhub/AppPad/releases/download/v1.0.5/AppPad-1.0.5.dmg" type="application/octet-stream" sparkle:edSignature="XIrU8PdKxht2vpjvsgDkqZuCiXf0NLQQOMzQSVcum31sxiKXdAKzbRlt2mqIOqUyzsMPIbKeuShui6ViqKc5Dg==" length="8910106"/>
+    </item>
+  </channel>
+</rss>
