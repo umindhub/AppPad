@@ -103,7 +103,7 @@ enum MCPTools {
                 return haystack.contains { $0.lowercased().contains(query) }
             }
         }
-        return ["workflows": items.map(describe)]
+        return ["workflows": items.map { describe($0) }]
     }
 
     private static func getWorkflows(_ refs: [String]) throws -> [String: Any] {

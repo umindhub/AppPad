@@ -123,7 +123,7 @@ final class ClipRowView: NSView {
         }
     }
 
-    private static func singleLine(_ s: String) -> String {
+    nonisolated private static func singleLine(_ s: String) -> String {
         s.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespaces)
     }

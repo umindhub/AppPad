@@ -546,7 +546,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     // MARK: - Interactive pinch transition (macOS 15 Launchpad style)
 
-    private enum TransitionMode { case opening, closing }
+    nonisolated private enum TransitionMode: Equatable { case opening, closing }
     private var transition: TransitionMode?
     private var transitionProgress: CGFloat = 0
     private var transitionToken = 0   // invalidates stale finish animations

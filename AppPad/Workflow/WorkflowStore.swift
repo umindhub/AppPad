@@ -87,7 +87,7 @@ final class WorkflowStore: ObservableObject {
                 NSLog("Workflow file unreadable: \(url.lastPathComponent) \(error)")
             }
         }
-        workflows = loaded.sorted(by: Self.order)
+        workflows = loaded.sorted { Self.order($0, $1) }
         for (workflow, source) in needsRewrite {
             let target = fileURL(workflow.id)
             guard (try? write(workflow, to: target, local: true)) != nil else { continue }
@@ -119,7 +119,7 @@ final class WorkflowStore: ObservableObject {
         } else {
             workflows.append(workflow)
         }
-        workflows.sort(by: Self.order)
+        workflows.sort { Self.order($0, $1) }
         syncIcon(new: workflow, old: previous)
         NotificationCenter.default.post(name: .workflowsDidChange, object: self)
     }

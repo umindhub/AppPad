@@ -144,7 +144,7 @@ struct AppShortcutsSettingsView: View {
             .padding(.bottom, 2)
     }
 
-    private static func headerID(_ letter: String) -> String { "letter-header-" + letter }
+    nonisolated private static func headerID(_ letter: String) -> String { "letter-header-" + letter }
 
     private func form(groups: [LetterGroup], assigned: [AppHotKey]) -> some View {
         // Lookups built once instead of a linear search per row.

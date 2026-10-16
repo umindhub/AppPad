@@ -395,14 +395,14 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     }
 
     // Critically damped spring, normalised to reach 1 at t = 1.
-    private static func springOut(_ t: Double) -> Double {
+    nonisolated private static func springOut(_ t: Double) -> Double {
         let omega = 9.0
         let value = 1 - (1 + omega * t) * exp(-omega * t)
         let end = 1 - (1 + omega) * exp(-omega)
         return value / end
     }
 
-    private static func easeInOut(_ t: Double) -> Double {
+    nonisolated private static func easeInOut(_ t: Double) -> Double {
         t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2
     }
 

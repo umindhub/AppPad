@@ -184,7 +184,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     private func reload(selectFirst: Bool) {
         let previousRow = tableView.selectedRow
-        let previousKey = selectedItem.map(Self.identity)
+        let previousKey = selectedItem.map { Self.identity($0) }
         let parts = WorkflowArguments.split(searchField.stringValue)
         let term = SearchIndex.normalize(parts.term)
         argument = parts.argument

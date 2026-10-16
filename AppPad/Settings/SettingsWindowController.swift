@@ -13,7 +13,7 @@ private final class SettingsWindow: NSWindow {
             performClose(nil)
             return true
         case "f":
-            guard let search = contentView.flatMap(Self.visibleSearchField(in:)) else { return false }
+            guard let search = contentView.flatMap({ Self.visibleSearchField(in: $0) }) else { return false }
             search.field.selectText(nil)   // focus + select existing text, like ⌘F elsewhere
             return true
         default:

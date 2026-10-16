@@ -140,7 +140,7 @@ final class WorkflowLinkImporter {
         case .older(let installed):
             lines.append(String(localized: "Skipped: the installed version \(installed.version) is newer"))
         }
-        let steps = workflow.steps.map(Self.stepName)
+        let steps = workflow.steps.map { Self.stepName($0) }
         if !steps.isEmpty {
             lines.append(String(localized: "Steps: \(steps.joined(separator: ", "))"))
         }

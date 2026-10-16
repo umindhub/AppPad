@@ -323,8 +323,6 @@ enum PanelSwitch {
     // Blur and shadow live in their own helper windows, so they are not affected.
     private static func hideContent(of outgoing: NSWindow, under incoming: NSWindow) {
         guard let content = outgoing.contentView else { return }
-        outgoing.disableScreenUpdatesUntilFlush()
-        incoming.disableScreenUpdatesUntilFlush()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         content.isHidden = true
@@ -521,7 +519,6 @@ final class PanelMorph {
     private func spreadSmallWindow() {
         guard let container = small.contentView else { return }
         let views = Self.parts(small)
-        small.disableScreenUpdatesUntilFlush()
         container.autoresizesSubviews = false
         small.setFrame(largeFrame, display: false)
         // Where the small frame sits inside the large one (container coordinates).
@@ -544,7 +541,6 @@ final class PanelMorph {
         guard smallWindowSpread, let container = small.contentView else { return }
         smallWindowSpread = false
         let views = Self.parts(small)
-        small.disableScreenUpdatesUntilFlush()
         small.setFrame(smallFrame, display: false)
         for view in [views.background as NSView?, views.content] { view?.setFrameOrigin(.zero) }
         container.autoresizesSubviews = true
@@ -1176,7 +1172,6 @@ final class PanelShadow {
         }
         owner = panel
         let state = State(frame: panel.frame, corner: panel.cornerMaskRadius, opacity: 1)
-        window.disableScreenUpdatesUntilFlush()
         place(span: state.frame)
         apply(state, duration: nil, curve: nil)
         window.alphaValue = panel.alphaValue
@@ -1197,7 +1192,6 @@ final class PanelShadow {
         }
         isMorphing = true
         morphTarget = to
-        window.disableScreenUpdatesUntilFlush()
         place(span: span)
         apply(from, duration: nil, curve: nil)
         window.alphaValue = 1

@@ -244,7 +244,11 @@ final class WindowManager {
     private func axValue<T>(_ element: AXUIElement, _ attribute: String, type: AXValueType, _ initial: T) -> T? {
         guard let value = copyValue(element, attribute), CFGetTypeID(value) == AXValueGetTypeID() else { return nil }
         var result = initial
-        return AXValueGetValue(value as! AXValue, type, &result) ? result : nil
+        // Explicit typed pointer; callers only pass plain C structs (CGPoint / CGSize).
+        let ok = withUnsafeMutablePointer(to: &result) {
+            AXValueGetValue(value as! AXValue, type, UnsafeMutableRawPointer($0))
+        }
+        return ok ? result : nil
     }
 
     private func boolValue(_ element: AXUIElement, _ attribute: String) -> Bool {

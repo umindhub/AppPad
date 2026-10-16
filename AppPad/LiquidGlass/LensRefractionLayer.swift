@@ -128,7 +128,7 @@ final class LensRefractionLayer: CAMetalLayer {
         let queue:    MTLCommandQueue
     }
 
-    nonisolated(unsafe) private static let shared: Shared? = {
+    nonisolated private static let shared: Shared? = {
         guard let device = MTLCreateSystemDefaultDevice(),
               let queue  = device.makeCommandQueue() else { return nil }
         do {

@@ -359,7 +359,7 @@ struct WorkflowEditorView: View {
                 Text("open, pbcopy, say, launching apps… Always on for AppleScript.")
             }
             ValueListEditor(title: "Control apps (Apple Events)", values: $draft.permissions.appleEvents,
-                            placeholder: "com.apple.finder", display: AppLookup.name(forBundleID:), choose: chooseApps)
+                            placeholder: "com.apple.finder", display: { AppLookup.name(forBundleID: $0) }, choose: chooseApps)
             ValueListEditor(title: "HTTP hosts", values: $draft.permissions.httpHosts, placeholder: "api.github.com")
             if draft.usesHTTP {
                 if secretNames.isEmpty {

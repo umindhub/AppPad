@@ -116,7 +116,7 @@ struct WorkflowSettingsView: View {
                     Text("System Settings › Keyboard › Keyboard Shortcuts › Spotlight: turn off “Show Spotlight search” or give it another shortcut.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Button("Open Keyboard Settings…", action: SpotlightShortcut.openKeyboardShortcuts)
+                    Button("Open Keyboard Settings…") { SpotlightShortcut.openKeyboardShortcuts() }
                 }
             }
             Toggle("Switch to English input when opened", isOn: $prefs.workflowSwitchToEnglishInput)

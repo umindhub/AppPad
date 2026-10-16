@@ -180,7 +180,7 @@ struct PinchSetupStepsView: View {
                 .foregroundStyle(.orange)
 
             if showsButton {
-                Button("Open Trackpad Settings…", action: PinchSetupGuide.openTrackpadSettings)
+                Button("Open Trackpad Settings…") { PinchSetupGuide.openTrackpadSettings() }
             }
         }
         .padding(.vertical, 2)

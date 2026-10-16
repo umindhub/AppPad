@@ -144,7 +144,7 @@ final class ClipboardMonitor: NSObject {
         return [capture]
     }
 
-    private static func isImageFile(_ url: URL) -> Bool {
+    nonisolated private static func isImageFile(_ url: URL) -> Bool {
         let type = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
         return type?.conforms(to: .image) == true
     }

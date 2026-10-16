@@ -215,7 +215,7 @@ final class UpdateController: NSObject, ObservableObject {
 
 // MARK: - SPUUpdaterDelegate
 
-extension UpdateController: @preconcurrency SPUUpdaterDelegate {
+extension UpdateController: SPUUpdaterDelegate {
     // Beta and Release share the bundle id and the feed; Beta also takes beta-channel items.
     func allowedChannels(for updater: SPUUpdater) -> Set<String> {
         AppEnvironment.current == .beta ? ["beta"] : []
@@ -247,7 +247,7 @@ extension UpdateController: @preconcurrency SPUUpdaterDelegate {
 
 // MARK: - SPUStandardUserDriverDelegate
 
-extension UpdateController: @preconcurrency SPUStandardUserDriverDelegate {
+extension UpdateController: SPUStandardUserDriverDelegate {
     // Menu-bar app: let Sparkle show scheduled-update alerts without stealing focus.
     var supportsGentleScheduledUpdateReminders: Bool { true }
 

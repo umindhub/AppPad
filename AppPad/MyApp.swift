@@ -112,8 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             self, selector: #selector(preferencesDidChange(_:)),
             name: .preferencesDidChange, object: nil
         )
-        // App delegate lives for the whole process; the strong capture here is intended.
-        appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { _, _ in
+        appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { [weak self] _, _ in
             Task { @MainActor [weak self] in self?.appearanceDidChange() }
         }
         if openedByUser { openLaunchpadAfterColdLaunch() }
