@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.7
+
+### Added
+
+#### AI Assistants (MCP)
+- Claude, Cursor and other MCP clients can list and run your workflows, passing an argument just like the Workflow panel. Results come back to the AI instead of as notifications.
+- AI assistants can also write workflows for you. Every new or changed workflow is shown in full, scripts included, and only saved after you click Install.
+- Runs use the same confirmations and permission prompts as the Workflow panel. Disabled workflows stay hidden.
+- New AI Assistants (MCP) tab in Settings, below Workflows: on by default, shows the connection status and has copy-ready setup for Claude Desktop, Cursor and Claude Code.
+- If AppPad isn't running, the AI client starts it in the background without opening Launchpad.
+
 ## v1.0.6
 
 ### Added
