@@ -8,6 +8,12 @@ Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses i
 
 ## v1.0.9
 
+### Added
+
+#### Launchpad
+- Search now finds folders by name, including pinyin and initials, just like apps.
+- Search for several things at once with `|` or `||`, e.g. `WeChat | Social` shows the app and the folder together, so you can drop the app straight into the folder.
+
 ### Changed
 - AppPad now supports macOS 15 Sequoia and later (previously macOS 26 Tahoe or later). Liquid Glass controls remain available on macOS 26 and later.
 
