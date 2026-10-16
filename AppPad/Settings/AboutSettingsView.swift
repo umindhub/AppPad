@@ -126,7 +126,7 @@ extension AboutSettingsView {
             },
             set: { date in
                 let c = Calendar.current.dateComponents([.hour, .minute], from: date)
-                let value = (c.hour ?? 4) * 60 + (c.minute ?? 0)
+                let value = (c.hour ?? 5) * 60 + (c.minute ?? 0)
                 if value != prefs.autoUpdateMinutes { prefs.autoUpdateMinutes = value }
             }
         )

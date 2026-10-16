@@ -22,7 +22,7 @@ final class UpdateController: NSObject, ObservableObject {
     private var controller: SPUStandardUpdaterController?
     private var updater: SPUUpdater? { controller?.updater }
     private var enabled = false
-    private var minutes = 240
+    private var minutes = Preferences.autoUpdateMinutesDefault
     private var lastAttempt: Date?
     private var scheduleTask: Task<Void, Never>?
     private var installTask: Task<Void, Never>?

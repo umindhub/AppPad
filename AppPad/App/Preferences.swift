@@ -261,9 +261,10 @@ final class Preferences: ObservableObject {
     }
 
     // MARK: Updates (Beta / Release; Dev never updates)
-    // Daily check at a local time, then silent download and install. On by default at 04:00.
+    // Daily check at a local time, then silent download and install. On by default at 05:00.
     @Published var autoUpdateEnabled: Bool { didSet { save(autoUpdateEnabled, Key.autoUpdate) } }
     // Minutes after midnight, 0…1439.
+    static let autoUpdateMinutesDefault = 5 * 60
     @Published var autoUpdateMinutes: Int { didSet { save(autoUpdateMinutes, Key.autoUpdateMinutes) } }
 
     private init() {
@@ -315,7 +316,7 @@ final class Preferences: ObservableObject {
         }
         windowHotKeys = windowCombos
         autoUpdateEnabled = d.object(forKey: Key.autoUpdate) as? Bool ?? true
-        autoUpdateMinutes = min(max(d.object(forKey: Key.autoUpdateMinutes) as? Int ?? 4 * 60, 0), 24 * 60 - 1)
+        autoUpdateMinutes = min(max(d.object(forKey: Key.autoUpdateMinutes) as? Int ?? Self.autoUpdateMinutesDefault, 0), 24 * 60 - 1)
         if let data = d.data(forKey: Key.appHotKeys),
            let decoded = try? JSONDecoder().decode([AppHotKey].self, from: data) {
             appHotKeys = decoded
