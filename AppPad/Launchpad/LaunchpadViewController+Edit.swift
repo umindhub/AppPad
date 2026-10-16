@@ -52,6 +52,7 @@ extension LaunchpadViewController: PageGridDelegate {
     }
 
     func gridDidClickBackground(_ grid: PageGridView) {
+        guard !isDropInFlight else { return }     // see isDropInFlight
         if case .folder = grid.context {
             // Empty space inside an open folder never closes the panel.
             if isEditingLayout { setEditingLayout(false) }

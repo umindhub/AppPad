@@ -4,7 +4,7 @@ import QuartzCore
 enum GridContext: Equatable {
     case page(Int)          // launcher page index
     case folder(String)     // open folder id
-    case results            // search results (edit mode: delete badges only, no reordering)
+    case results            // search results (no reordering; drag out of the panel only)
 }
 
 protocol PageGridDelegate: AnyObject {
@@ -33,9 +33,6 @@ final class PageGridView: FlippedView {
         didSet { if oldValue != pageRows { needsLayout = true } }
     }
     weak var delegate: PageGridDelegate?
-
-    // Search results can wiggle / delete but never reorder or make folders.
-    var allowsReordering: Bool { context != .results }
 
     private(set) var cells: [GridCellView] = []
     private(set) var entries: [GridEntry] = []

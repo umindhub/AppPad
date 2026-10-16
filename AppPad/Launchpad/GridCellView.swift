@@ -68,6 +68,7 @@ final class GridCellView: FlippedView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         iconContainer.wantsLayer = true
+        imageView.wantsLayer = true      // own layer right away: the emerge animation needs it on a fresh cell
         imageView.imageScaling = .scaleProportionallyUpOrDown
         label.alignment = .center
         label.lineBreakMode = .byTruncatingTail
@@ -146,6 +147,80 @@ final class GridCellView: FlippedView {
         view.frame = iconContainer.convert(cellFrame, from: self)
         iconContainer.addSubview(view)
         return iconContainer
+    }
+
+    // Folder dissolve: slow enough to follow the icon growing (a strong ease-out looked instant).
+    static let emergeDuration: CFTimeInterval = 0.8
+
+    // Folder with one app left dissolved into this app cell: the icon grows out of the folder's
+    // first mini slot while the leftover plate widens and fades, and the app name fades in.
+    func animateEmergeFromFolder(duration: CFTimeInterval = GridCellView.emergeDuration) {
+        layoutSubtreeIfNeeded()
+        guard !imageView.isHidden, let iconLayer = imageView.layer else { return }
+        // Gentle ease-in-out: the growth stays visible over the whole duration.
+        let timing = CAMediaTimingFunction(controlPoints: 0.45, 0.05, 0.25, 1)
+        let mini = iconContainer.convert(folderMiniRect(index: 0), from: self)
+
+        let plate = FolderIconView(frame: folderIcon.frame)
+        plate.wantsLayer = true
+        iconContainer.addSubview(plate, positioned: .below, relativeTo: imageView)
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        let iconStart = Self.transform(for: imageView, showingAt: mini)
+        let plateEnd = Self.transform(for: plate, showingAt: imageView.frame)
+
+        let grow = CABasicAnimation(keyPath: "transform")
+        grow.fromValue = NSValue(caTransform3D: iconStart)
+        grow.toValue = NSValue(caTransform3D: CATransform3DIdentity)
+        grow.duration = duration
+        grow.timingFunction = timing
+        grow.fillMode = .both
+        iconLayer.add(grow, forKey: "emerge")
+
+        if let plateLayer = plate.layer {
+            let widen = CABasicAnimation(keyPath: "transform")
+            widen.fromValue = NSValue(caTransform3D: CATransform3DIdentity)
+            widen.toValue = NSValue(caTransform3D: plateEnd)
+            let fade = CABasicAnimation(keyPath: "opacity")
+            fade.fromValue = 1
+            fade.toValue = 0
+            let group = CAAnimationGroup()
+            group.animations = [widen, fade]
+            group.duration = duration
+            group.timingFunction = timing
+            group.fillMode = .forwards
+            group.isRemovedOnCompletion = false
+            plateLayer.add(group, forKey: "dissolve")
+        }
+        CATransaction.commit()
+
+        label.alphaValue = 0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = timing
+            label.animator().alphaValue = 1
+        }
+        Task { [weak plate] in
+            try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 50))
+            plate?.removeFromSuperview()
+        }
+    }
+
+    // Layer transform that makes `view` (at its current frame) appear at `rect` (same superview).
+    // Start / end are read in layer space by briefly setting the frame, so flipping cannot matter.
+    private static func transform(for view: NSView, showingAt rect: NSRect) -> CATransform3D {
+        guard let layer = view.layer else { return CATransform3DIdentity }
+        let original = view.frame
+        let end = layer.frame
+        view.frame = rect
+        let start = layer.frame
+        view.frame = original
+        let scale = start.width / max(end.width, 1)
+        let anchor = layer.anchorPoint
+        let dx = (start.minX - end.minX) - (1 - scale) * anchor.x * end.width
+        let dy = (start.minY - end.minY) - (1 - scale) * anchor.y * end.height
+        return CATransform3DScale(CATransform3DMakeTranslation(dx, dy, 0), scale, scale, 1)
     }
 
     func setEditing(_ editing: Bool, badge kind: DeleteBadgeKind) {
@@ -310,8 +385,6 @@ final class GridCellView: FlippedView {
         let dy = event.locationInWindow.y - mouseDownPoint.y
         guard dx * dx + dy * dy > 25 else { return }
         longPressTask?.cancel()
-        // Search results: moving only cancels the long press (a click still launches).
-        guard grid.allowsReordering else { return }
         isPressed = false
         isDragging = true
         grid.cellDidBeginDrag(self, event: event, grabPoint: mouseDownPoint)

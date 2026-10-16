@@ -281,6 +281,48 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         }.map(\.app)
     }
 
+    // Launchpad search: top-level apps plus the folders holding a match (each folder once, at the
+    // rank of its best app), so results can still be opened / dragged like on the pages.
+    func searchEntries(_ query: String) -> [(entry: GridEntry, best: AppInfo)] {
+        let ranked = search(query)
+        guard !ranked.isEmpty else { return [] }
+        var folderOf: [String: FolderItem] = [:]
+        for page in layoutStore.layout.pages {
+            for case .folder(let folder) in page {
+                for key in folder.apps { folderOf[key] = folder }
+            }
+        }
+        var shownFolders = Set<String>()
+        var result: [(entry: GridEntry, best: AppInfo)] = []
+        for app in ranked {
+            guard let folder = folderOf[app.key] else {
+                result.append((entry: .app(app), best: app))
+                continue
+            }
+            guard shownFolders.insert(folder.id).inserted else { continue }
+            let list = folderApps(folder)
+            result.append((entry: list.count > 1 ? .folder(folder, list) : .app(app), best: app))
+        }
+        return result
+    }
+
+    // Layout position of a displayed entry (search results → drag source).
+    func layoutLocation(of entry: GridEntry) -> (page: Int, index: Int)? {
+        for (p, page) in layoutStore.layout.pages.enumerated() {
+            for (i, item) in page.enumerated() {
+                switch (entry, item) {
+                case (.app(let app), .app(let key)) where app.key == key:
+                    return (p, i)
+                case (.folder(let shown, _), .folder(let folder)) where shown.id == folder.id:
+                    return (p, i)
+                default:
+                    continue
+                }
+            }
+        }
+        return nil
+    }
+
     // MARK: - Show / hide
 
     // Visible and focused (what toggle / gestures treat as "open").

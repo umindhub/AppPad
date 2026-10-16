@@ -42,13 +42,18 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
     private(set) var isSearching = false
-    private var results: [AppInfo] = []
+    // Search results: top-level apps and folders holding a match (best = the app that matched best).
+    private var results: [(entry: GridEntry, best: AppInfo)] = []
     private var resultPages: [PageGridView] = []
     private var selection = 0   // index into results
+    // Folder opened from the results: its best-matching app is highlighted (↩ launches it).
+    private var folderSelection: Int?
+    // App just merged into a result (+Drag.swift): ignored when the new folder takes its slot.
+    var searchDroppedKey: String?
 
     var prefs: Preferences { .shared }
     var capacity: Int { max(1, prefs.gridColumns * prefs.gridRows) }
-    private var activePager: PagerView { isSearching ? resultsPager : pager }
+    var activePager: PagerView { isSearching ? resultsPager : pager }
 
     private enum Direction { case left, right, up, down }
 
@@ -138,7 +143,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             makePageGrid(page: index, entries: entries)
         }
         pager.setPages(pages)
-        if isSearching { updateSearch() }
+        if isSearching { updateSearch(fromReload: true) }
         if let overlay = folderOverlay {
             if refreshFolder {
                 reopenFolder(id: overlay.folderID)
@@ -236,8 +241,19 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         folderOverlay = overlay
         overlay.sourceTile = tile
         tile?.isConcealed = true      // the folder "moved" into the overlay
+        if isSearching { highlightSearchMatch(in: overlay, apps: apps) } else { folderSelection = nil }
         if animated && tile != nil { overlay.animateOpen() }
         // Pages stay at full opacity: the overlay's own blur softens them instead.
+    }
+
+    // Highlight the app that made this folder show up in the results.
+    private func highlightSearchMatch(in overlay: FolderOverlayView, apps: [AppInfo]) {
+        let best = results.first { result in
+            if case .folder(let folder, _) = result.entry { return folder.id == overlay.folderID }
+            return false
+        }?.best
+        folderSelection = best.flatMap { best in apps.firstIndex { $0.key == best.key } }
+        overlay.grid.setSelectedIndex(folderSelection)
     }
 
     // Folder title → first icon row: half of the launcher's search field → first icon row distance.
@@ -293,6 +309,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     func closeFolder(animated: Bool = false) {
         guard let overlay = folderOverlay else { return }
         folderOverlay = nil
+        folderSelection = nil
         if animated && overlay.sourceTile != nil {
             overlay.animateClose { overlay.removeFromSuperview() }
         } else {
@@ -309,7 +326,9 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         updateSearch()
     }
 
-    private func updateSearch() {
+    // fromReload: layout changed while searching (drop in a folder, uninstall) — keep the open
+    // folder, the results page and the selection.
+    private func updateSearch(fromReload: Bool = false) {
         guard let controller else { return }
         let text = searchField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else {
@@ -317,38 +336,80 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             return
         }
         // Edit mode survives searching (delete straight from the results).
-        if folderOverlay != nil {
-            folderOverlay?.removeFromSuperview()
-            folderOverlay = nil
-            setPagesReceded(false, animated: false)
-        }
+        if !fromReload { discardFolderOverlay() }
 
+        let keepPage = fromReload && isSearching ? resultsPager.currentPage : 0
+        let keepSelection = fromReload && isSearching ? selection : 0
+        let fresh = controller.searchEntries(text)
+        results = fromReload && isSearching ? keepingOrder(fresh, ignoring: searchDroppedKey) : fresh
+        searchDroppedKey = nil
         isSearching = true
-        results = controller.search(text)
-        selection = 0
+        selection = min(keepSelection, max(0, results.count - 1))
 
         let cap = capacity
         resultPages = stride(from: 0, to: results.count, by: cap).map { start in
             let chunk = results[start..<min(start + cap, results.count)]
             let page = PageGridView(columns: prefs.gridColumns, rows: prefs.gridRows, context: .results)
             page.delegate = self
-            page.setEntries(chunk.map { GridEntry.app($0) })
+            page.setEntries(chunk.map { $0.entry })
             page.setEditing(isEditingLayout)
             return page
         }
         resultsPager.setPages(resultPages)
-        resultsPager.scrollTo(page: 0, animated: false)
+        resultsPager.scrollTo(page: min(keepPage, max(0, resultPages.count - 1)), animated: false)
 
         pager.isHidden = true
         resultsPager.isHidden = false
         emptyLabel.isHidden = !results.isEmpty
-        applySelection()
+        applySelection(scroll: !fromReload)
         syncIndicator()
         view.needsLayout = true
     }
 
+    // Reload while searching (merge, folder edit, uninstall): results keep their previous order
+    // instead of being re-ranked. A new folder takes the slot of the app it was made from
+    // (ignoring: the app dropped onto it); anything new goes last, in rank order.
+    private func keepingOrder(_ fresh: [(entry: GridEntry, best: AppInfo)],
+                              ignoring droppedKey: String?) -> [(entry: GridEntry, best: AppInfo)] {
+        var oldIndex: [String: Int] = [:]
+        for (index, result) in results.enumerated() {
+            switch result.entry {
+            case .app(let app):
+                if oldIndex["a:" + app.key] == nil { oldIndex["a:" + app.key] = index }
+            case .folder(let folder, let apps):
+                oldIndex["f:" + folder.id] = index
+                for app in apps where oldIndex["a:" + app.key] == nil { oldIndex["a:" + app.key] = index }
+            }
+        }
+        func slot(_ entry: GridEntry) -> Int {
+            switch entry {
+            case .app(let app):
+                return oldIndex["a:" + app.key] ?? Int.max
+            case .folder(let folder, let apps):
+                if let index = oldIndex["f:" + folder.id] { return index }
+                return apps.filter { $0.key != droppedKey }.compactMap { oldIndex["a:" + $0.key] }.min() ?? Int.max
+            }
+        }
+        return fresh.enumerated()
+            .sorted { a, b in
+                let sa = slot(a.element.entry), sb = slot(b.element.entry)
+                return sa != sb ? sa < sb : a.offset < b.offset
+            }
+            .map { $0.element }
+    }
+
+    // Open folder dropped without animation (search text changed / cleared).
+    private func discardFolderOverlay() {
+        guard let overlay = folderOverlay else { return }
+        overlay.removeFromSuperview()
+        folderOverlay = nil
+        folderSelection = nil
+        setPagesReceded(false, animated: false)
+    }
+
     private func endSearch() {
         guard isSearching || !resultsPager.pages.isEmpty else { return }
+        discardFolderOverlay()     // its tile lives in the results
         isSearching = false
         results = []
         resultPages = []
@@ -361,13 +422,13 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         view.needsLayout = true
     }
 
-    private func applySelection() {
+    private func applySelection(scroll: Bool = true) {
         let cap = capacity
         for (pageIndex, page) in resultPages.enumerated() {
             page.setSelectedIndex(selection / cap == pageIndex ? selection % cap : nil)
         }
         let page = selection / cap
-        if page != resultsPager.currentPage {
+        if scroll, page != resultsPager.currentPage {
             resultsPager.scrollTo(page: page, animated: true)
         }
     }
@@ -407,11 +468,11 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             return handleHorizontal(1)
         case #selector(NSResponder.moveUp(_:)):
             guard isSearching else { return false }
-            moveSelection(.up)
+            if folderOverlay == nil { moveSelection(.up) }
             return true
         case #selector(NSResponder.moveDown(_:)):
             guard isSearching else { return false }
-            moveSelection(.down)
+            if folderOverlay == nil { moveSelection(.down) }
             return true
         default:
             return false
@@ -419,11 +480,11 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     }
 
     private func handleHorizontal(_ delta: Int) -> Bool {
+        if folderOverlay != nil || confirmOverlay != nil { return true }
         if isSearching {
             moveSelection(delta < 0 ? .left : .right)
             return true
         }
-        if folderOverlay != nil || confirmOverlay != nil { return true }
         pager.scrollTo(page: pager.currentPage + delta, animated: true)
         return true
     }
@@ -455,14 +516,30 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             confirmOverlay.confirm()
             return
         }
+        if let overlay = folderOverlay {
+            // Folder opened from the results: launch its highlighted app.
+            guard isSearching, let index = folderSelection, overlay.grid.entries.indices.contains(index),
+                  case .app(let app) = overlay.grid.entries[index] else { return }
+            controller?.launch(app)
+            return
+        }
         guard isSearching, results.indices.contains(selection) else { return }
-        controller?.launch(results[selection])
+        switch results[selection].entry {
+        case .app(let app):
+            controller?.launch(app)
+        case .folder(let folder, let apps):
+            let cap = capacity
+            let page = selection / cap
+            let tile: GridCellView? = resultPages.indices.contains(page) && resultPages[page].cells.indices.contains(selection % cap)
+                ? resultPages[page].cells[selection % cap] : nil
+            openFolder(folder, apps: apps, fromTile: tile, animated: tile != nil)
+        }
     }
 
     // Empty area click: leave edit mode first; otherwise close the panel (macOS 15 Launchpad)
     // or do nothing, depending on Settings.
     func handleBackgroundClick() {
-        if confirmOverlay != nil { return }
+        if confirmOverlay != nil || isDropInFlight { return }
         if isEditingLayout {
             setEditingLayout(false)
             return
@@ -470,6 +547,13 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         if prefs.backgroundClickAction == .closePanel {
             controller?.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
         }
+    }
+
+    // A drop still landing (icon flying, gap closing, folder forming): tiles are drawn away from
+    // their final frames (hit testing uses those), so a click on what looks like an icon can land
+    // on "empty" space. Such clicks must not close the panel or leave edit mode.
+    var isDropInFlight: Bool {
+        drag != nil || systemDrag != nil || pendingDrop != nil || dragImageView.superview != nil
     }
 
     // Empty space for a replayed trackpad tap: page / grid gaps, the root, outside an open folder.

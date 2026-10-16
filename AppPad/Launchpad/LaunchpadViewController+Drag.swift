@@ -17,6 +17,13 @@ import QuartzCore
 //   is rendered exactly like the real cell, so it is swapped for it in the same frame as the
 //   reload (no cross-fade: two stacked copies look brighter on translucent backgrounds)
 // - until the layout is committed, a click first commits it, then acts on the rebuilt grid
+// - search results (apps and folders) can be dragged too: out of the panel = system drag
+//   (Dock, Finder). Inside the results there is no reordering, only merging (same slow-touch
+//   rule as on the pages): an app onto an app → new folder, onto a folder → added to it.
+//   Released anywhere else, the icon flies back. Apps dragged out of a folder opened from the
+//   results can be merged the same way. Hold at the side → next / previous results page.
+// - an app dragged out of a two-app folder dissolves it: the app left behind grows out of its
+//   mini slot into a full icon when the layout is committed
 struct DragState {
     let source: DragSource
     let sourceCell: GridCellView
@@ -32,6 +39,7 @@ struct DragState {
     var lastTime: TimeInterval = 0
     var speed: CGFloat = 0          // smoothed pointer speed, pt/s
     var folderInsert: Int?
+    var resultsPage: Int?           // search: results page being hovered (merge indices are its cells)
 }
 
 extension LaunchpadViewController {
@@ -66,7 +74,12 @@ extension LaunchpadViewController {
             source = .folder(id, index)
             item = .app(folder.apps[index])
         case .results:
-            return
+            guard grid.entries.indices.contains(index),
+                  let location = controller.layoutLocation(of: grid.entries[index]) else { return }
+            let items = controller.layoutItems(onPage: location.page)
+            guard items.indices.contains(location.index) else { return }
+            source = .page(location.page, location.index)
+            item = items[location.index]
         }
 
         let cell = grid.cells[index]
@@ -86,7 +99,7 @@ extension LaunchpadViewController {
             grabOffset: NSSize(width: frame.minX - grab.x, height: frame.minY - grab.y)
         )
         // Start with the placeholder where the icon was, so nothing jumps.
-        if case .page(let page, let i) = source {
+        if grid.context != .results, case .page(let page, let i) = source {
             state.hoverPage = page
             state.insertIndex = i
         }
@@ -140,7 +153,103 @@ extension LaunchpadViewController {
             }
         }
         drag = state
-        updatePageHover(event)
+        if isSearching {
+            updateResultsHover(event)
+        } else {
+            updatePageHover(event)
+        }
+    }
+
+    // MARK: - Search results (merge only)
+
+    func resultsGrid(_ page: Int) -> PageGridView? {
+        resultsPager.pages.indices.contains(page) ? resultsPager.pages[page] as? PageGridView : nil
+    }
+
+    // Results have no positions to drop on: only the slow-touch merge onto another result.
+    func updateResultsHover(_ event: NSEvent) {
+        guard var state = drag else { return }
+        let pagerPoint = resultsPager.convert(event.locationInWindow, from: nil)
+        let edge = pagerPoint.x < 36 ? -1 : (pagerPoint.x > resultsPager.bounds.width - 36 ? 1 : 0)
+        scheduleEdgeFlip(edge)
+
+        let page = resultsPager.currentPage
+        if state.resultsPage != page {
+            if let old = state.resultsPage, let oldGrid = resultsGrid(old) { clearResultsMerge(&state, grid: oldGrid) }
+            state.resultsPage = page
+        }
+        guard case .app = state.item, let grid = resultsGrid(page) else {   // folders cannot nest
+            drag = state
+            return
+        }
+
+        let dragRect = grid.convert(dragImageView.frame, from: root)
+        var touched: Int?
+        for j in grid.cells.indices where canMergeResult(at: j, in: grid, state: state) {
+            let target = grid.iconRect(forSlot: j)
+            let overlap = target.intersection(dragRect)
+            if !overlap.isNull, overlap.width * overlap.height >= target.width * target.height * 0.4 {
+                touched = j
+                break
+            }
+        }
+
+        if let candidate = touched {
+            if state.speed > Self.mergeSpeedLimit {
+                clearResultsMerge(&state, grid: grid)           // too fast: just passing over
+            } else if candidate != state.mergeCandidate {
+                clearResultsMerge(&state, grid: grid)
+                state.mergeCandidate = candidate
+                startResultsMergeTimer(candidate: candidate, page: page)
+            }
+        } else {
+            clearResultsMerge(&state, grid: grid)
+        }
+        drag = state
+    }
+
+    // Not the dragged cell itself, not the folder the app is being dragged out of.
+    private func canMergeResult(at index: Int, in grid: PageGridView, state: DragState) -> Bool {
+        guard grid.cells.indices.contains(index), grid.entries.indices.contains(index),
+              grid.cells[index] !== state.sourceCell else { return false }
+        if case .folder(let sourceID, _) = state.source, case .folder(let folder, _) = grid.entries[index],
+           folder.id == sourceID { return false }
+        return true
+    }
+
+    private func clearResultsMerge(_ state: inout DragState, grid: PageGridView) {
+        mergeTask?.cancel()
+        if let target = state.mergeTarget, grid.cells.indices.contains(target) {
+            grid.cells[target].isDropTarget = false
+        }
+        state.mergeCandidate = nil
+        state.mergeTarget = nil
+    }
+
+    private func startResultsMergeTimer(candidate: Int, page: Int) {
+        mergeTask?.cancel()
+        mergeTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.mergeDwell)
+            guard !Task.isCancelled, let self, var state = self.drag,
+                  state.mergeCandidate == candidate, state.resultsPage == page,
+                  state.speed <= Self.mergeSpeedLimit,
+                  let grid = self.resultsGrid(page), grid.cells.indices.contains(candidate) else { return }
+            state.mergeTarget = candidate
+            self.drag = state
+            grid.cells[candidate].isDropTarget = true
+        }
+    }
+
+    // Layout merge target for a result cell. Page indices exclude the dragged item
+    // (a top-level app before the target on the same page shifts it by one).
+    private func resultsMergeTarget(state: DragState, grid: PageGridView, index: Int) -> DropTarget? {
+        guard grid.entries.indices.contains(index),
+              let location = controller?.layoutLocation(of: grid.entries[index]) else { return nil }
+        var targetIndex = location.index
+        if case .page(let p, let i) = state.source, p == location.page, i < location.index {
+            targetIndex -= 1
+        }
+        return .merge(page: location.page, index: targetIndex)
     }
 
     // Reorder inside the open folder; the slot is taken on the page being shown (or scrolled to).
@@ -283,8 +392,22 @@ extension LaunchpadViewController {
 
         var target: DropTarget?
         var mergeTileBefore: NSRect?   // merge tile frame (root) before the gap starts closing
+        var resultsTile: GridCellView?   // search: result cell the app merges into
         if case .folder(_, let sourceIndex) = state.source, !state.leftFolder {
             target = .reorderInFolder(index: state.folderInsert ?? sourceIndex)   // folder reopens on reload
+        } else if isSearching {
+            if let page = state.resultsPage, let index = state.mergeTarget, let grid = resultsGrid(page),
+               let merge = resultsMergeTarget(state: state, grid: grid, index: index) {
+                target = merge
+                let tile = grid.cells[index]
+                resultsTile = tile
+                mergeTileBefore = root.convert(tile.bounds, from: tile)
+                // The dragged result's spot closes (results keep their order after the reload).
+                if let source = grid.cells.firstIndex(where: { $0 === state.sourceCell }) {
+                    grid.applyArrangement(Self.arrangement(cellCount: grid.cells.count, sourceIndex: source, placeholder: nil),
+                                          animated: true, gentle: true)
+                }
+            }
         } else if let page = state.hoverPage, let grid = pageGrid(page) {
             let pagerPoint = pager.convert(event.locationInWindow, from: nil)
             if pagerPoint.y > -60, pagerPoint.y < pager.bounds.height + 60 {
@@ -318,7 +441,9 @@ extension LaunchpadViewController {
         // Where the icon lands; into a folder it shrinks to its exact mini slot (first 9)
         // or to a mini-sized spot at the tile center (fading) when it will not be visible.
         var landing: (rect: NSRect?, fade: Bool) = (landingRect(for: finalTarget, state: state), false)
-        if case .merge(let page, let index)? = finalTarget {
+        if let resultsTile {
+            landing = landInFolderTile(resultsTile, state: state, tileBefore: mergeTileBefore)
+        } else if case .merge(let page, let index)? = finalTarget {
             landing = prepareMergeLanding(page: page, index: index, state: state, tileBefore: mergeTileBefore)
         } else if finalTarget == nil, case .folder(let id, let appIndex) = state.source, state.leftFolder {
             landing = prepareFolderReturn(folderID: id, appIndex: appIndex)   // cancelled: back into its tile
@@ -330,6 +455,11 @@ extension LaunchpadViewController {
             folderOverlay?.passesClicks = true
         }
 
+        let emergingKey = remainingAppKey(state: state, target: finalTarget)
+        let droppedKey: String? = {
+            guard resultsTile != nil, case .app(let key) = state.item else { return nil }
+            return key
+        }()
         let token = UUID()
         pendingDrop = (token: token, run: { [weak self] _ in
             guard let self else { return }
@@ -338,7 +468,9 @@ extension LaunchpadViewController {
                 self.closeFolder()
             }
             if let finalTarget, let controller = self.controller {
+                self.searchDroppedKey = droppedKey       // results keep their order (VC)
                 controller.moveItem(from: state.source, to: finalTarget)   // reloads pages (+ open folder)
+                if let emergingKey { self.animateEmergence(appKey: emergingKey) }
             } else {
                 self.reloadAll()                                       // cancelled: restore
             }
@@ -349,6 +481,26 @@ extension LaunchpadViewController {
         Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(commitDelay))
             self?.flushPendingDrop(token: token)
+        }
+    }
+
+    // App left behind when a two-app folder loses the dragged one (the folder dissolves on commit).
+    private func remainingAppKey(state: DragState, target: DropTarget?) -> String? {
+        guard target != nil, state.leftFolder, case .folder(let id, let index) = state.source,
+              let folder = controller?.folder(id: id), folder.apps.count == 2,
+              folder.apps.indices.contains(index) else { return nil }
+        return folder.apps[1 - index]
+    }
+
+    // The dissolved folder's last app grows from its mini slot into the full icon.
+    private func animateEmergence(appKey: String) {
+        view.layoutSubtreeIfNeeded()
+        for case let grid as PageGridView in tileGrids {
+            for (index, entry) in grid.entries.enumerated() {
+                guard case .app(let app) = entry, app.key == appKey, grid.cells.indices.contains(index) else { continue }
+                grid.cells[index].animateEmergeFromFolder()
+                return
+            }
         }
     }
 
@@ -485,15 +637,24 @@ extension LaunchpadViewController {
     // and return that slot in the coordinates of dragImageView's (possibly new) superview.
     private func prepareMergeLanding(page: Int, index: Int, state: DragState,
                                      tileBefore: NSRect?) -> (rect: NSRect?, fade: Bool) {
-        guard let grid = pageGrid(page), case .app(let draggedKey) = state.item,
-              let dragged = controller?.app(forKey: draggedKey) else { return (nil, true) }
+        guard let grid = pageGrid(page) else { return (nil, true) }
         let tileIndex = cellIndex(forBase: index, page: page, state: state)
-        guard grid.cells.indices.contains(tileIndex), grid.entries.indices.contains(tileIndex) else { return (nil, true) }
-        let tile = grid.cells[tileIndex]
+        guard grid.cells.indices.contains(tileIndex) else { return (nil, true) }
+        return landInFolderTile(grid.cells[tileIndex], state: state, tileBefore: tileBefore,
+                                finalFrame: grid.slotRect(Self.slot(forBase: index, placeholder: nil)))
+    }
+
+    // Shared merge landing (pages and search results). finalFrame: the tile's final frame in its
+    // grid, used when the icon cannot ride along inside the tile (default: its model frame).
+    private func landInFolderTile(_ tile: GridCellView, state: DragState, tileBefore: NSRect?,
+                                  finalFrame: NSRect? = nil) -> (rect: NSRect?, fade: Bool) {
+        guard let grid = tile.grid, grid.entries.indices.contains(tile.index),
+              case .app(let draggedKey) = state.item,
+              let dragged = controller?.app(forKey: draggedKey) else { return (nil, true) }
         tile.isDropTarget = false
 
         let apps: [AppInfo]
-        switch grid.entries[tileIndex] {
+        switch grid.entries[tile.index] {
         case .app(let targetApp): apps = [targetApp, dragged]           // app + app → new folder
         case .folder(_, let folderApps): apps = folderApps + [dragged]   // appended at the end
         }
@@ -516,9 +677,8 @@ extension LaunchpadViewController {
         }
 
         // Fallback: fly in root coordinates to the tile's final frame.
-        let finalTile = grid.slotRect(Self.slot(forBase: index, placeholder: nil))
-        let rectInGrid = mini.offsetBy(dx: finalTile.minX, dy: finalTile.minY)
-        return (root.convert(rectInGrid, from: grid), !visible)
+        let finalTile = finalFrame ?? tile.frame
+        return (root.convert(mini.offsetBy(dx: finalTile.minX, dy: finalTile.minY), from: grid), !visible)
     }
 
     // Cancelled drag out of a folder: show the tile complete again except the returning slot.
@@ -627,6 +787,14 @@ extension LaunchpadViewController {
             if let event = lastDragEvent { updateFolderHover(event) }
             return
         }
+        if isSearching {
+            let target = resultsPager.currentPage + direction
+            guard target >= 0, target < resultsPager.pageCount else { return }
+            resultsPager.scrollTo(page: target, animated: true)
+            syncIndicator()
+            if let event = lastDragEvent { updateResultsHover(event) }
+            return
+        }
         let target = pager.currentPage + direction
         guard target >= 0 else { return }
         if target >= pager.pageCount {
@@ -649,7 +817,11 @@ extension LaunchpadViewController {
             state.speed = 0
             self.drag = state
             if case .folder = state.source, !state.leftFolder { return }
-            self.updatePageHover(event)
+            if self.isSearching {
+                self.updateResultsHover(event)
+            } else {
+                self.updatePageHover(event)
+            }
         }
     }
 
@@ -677,11 +849,12 @@ extension LaunchpadViewController: NSDraggingSource {
         dragImageView.removeFromSuperview()
 
         // Put the page back as it was while the system drag runs (source spot stays empty).
-        if case .page(let page, _) = state.source, let grid = pageGrid(page) {
+        // Results grids are never rearranged.
+        if !isSearching, case .page(let page, _) = state.source, let grid = pageGrid(page) {
             grid.applyArrangement(arrangement(forPage: page, grid: grid, placeholder: state.insertIndexForRestore, state: state),
                                   animated: true)
         }
-        if let hover = state.hoverPage, hover != state.sourcePage, let grid = pageGrid(hover) {
+        if !isSearching, let hover = state.hoverPage, hover != state.sourcePage, let grid = pageGrid(hover) {
             grid.applyArrangement(nil, animated: true)
         }
 
@@ -710,9 +883,12 @@ extension LaunchpadViewController: NSDraggingSource {
 // MARK: - Folder tile helpers
 
 extension LaunchpadViewController {
-    // The page cell showing a folder (searches all pages).
+    // Grids that show folder tiles right now: the results while searching, else the pages.
+    var tileGrids: [NSView] { activePager.pages }
+
+    // The cell showing a folder (searches all pages / result pages).
     func folderTileCell(id: String) -> GridCellView? {
-        for case let grid as PageGridView in pager.pages {
+        for case let grid as PageGridView in tileGrids {
             for (index, entry) in grid.entries.enumerated() {
                 if case .folder(let folder, _) = entry, folder.id == id, grid.cells.indices.contains(index) {
                     return grid.cells[index]
@@ -724,7 +900,7 @@ extension LaunchpadViewController {
 
     // Redraw the tile without one app; the real layout changes only on drop (reload restores on cancel).
     func showFolderTile(id: String, withoutAppAt appIndex: Int) {
-        for case let grid as PageGridView in pager.pages {
+        for case let grid as PageGridView in tileGrids {
             for (index, entry) in grid.entries.enumerated() {
                 guard case .folder(let folder, var apps) = entry, folder.id == id,
                       grid.cells.indices.contains(index) else { continue }

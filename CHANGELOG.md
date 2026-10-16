@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.6
+
+### Added
+
+#### Launchpad
+- Search keeps folders: an app inside a folder now shows up as its folder. Open it with a click or ↩; the matching app is highlighted, and ↩ again opens it.
+- Search results can be dragged: drag an app out of the panel onto the Dock or into Finder.
+- Create folders while searching: drop an app slowly onto another result to make a new folder, or onto a folder to add it. Apps dragged out of a folder opened from the results can be dropped the same way. Hold at the side of the panel to flip to the next or previous results page.
+
+### Changed
+- When a folder is left with a single app, that app now slowly grows out of the folder instead of popping in.
+- While searching, the open folder, the results page and the selection are kept when the layout changes (reordering inside a folder, renaming, uninstalling), and results keep their order after a merge instead of being re-ranked.
+
+### Fixed
+- Clicking during a drop animation (for example on a folder that is still forming) could close Launchpad.
+
 ## v1.0.5
 
 ### Added
