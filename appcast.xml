@@ -5,6 +5,38 @@
     <link>https://apppad.pages.dev/appcast.xml</link>
     <language>en</language>
     <item>
+      <title>Version 1.0.8</title>
+      <pubDate>Fri, 16 Oct 2026 12:44:33 GMT</pubDate>
+      <sparkle:version>9</sparkle:version>
+      <sparkle:shortVersionString>1.0.8</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+<h3>Added</h3>
+<h3>Launchpad</h3>
+<ul>
+<li>Uninstalling an app that was installed with Homebrew (<code>brew install --cask</code>) now also removes it from Homebrew: after the app and its leftovers are in the Trash, AppPad runs <code>brew uninstall --cask</code> for its cask. Without Homebrew, or for apps that aren't a cask, nothing changes.</li>
+<li>If Homebrew can't finish on its own (for example when the cask needs an administrator password), AppPad shows the command to run in Terminal, with a button to copy it.</li>
+</ul>
+<h3>Workflows</h3>
+<ul>
+<li>In the Workflow panel, the result of a typed argument now starts with a green checkmark when it is valid and a red cross when it isn't.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Switching from Launchpad to the Clipboard or Workflow panel: the panel's shadow now fades in during the morph instead of appearing after it.</li>
+<li>Panel shadows are drawn by AppPad and stay outside the panel. With a translucent background, the Clipboard and Workflow panels now look exactly like Launchpad, with the same blur and transparency and no extra darkening.</li>
+<li>Workflow panel: a valid argument result is shown in the normal text color instead of green; an invalid one stays red.</li>
+<li>Choosing Launchpad, Clipboard or Workflows in the menu-bar menu while another panel is open now switches the same way as ⌘⇧J / ⌘⇧K.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Switching between the Clipboard and Workflow panels with ⌘⇧J / ⌘⇧K could flash for a moment.</li>
+<li>Opening a panel from the menu bar while another one was open briefly showed the desktop.</li>
+</ul>
+      ]]></description>
+      <enclosure url="https://github.com/umindhub/AppPad/releases/download/v1.0.8/AppPad-1.0.8.dmg" type="application/octet-stream" sparkle:edSignature="9RZ+uY4sY+GUcCTfoM40HZ8xHO2V00pcgfhPiOALS4kSMi1WOagOSmnAn4snDtlvaa9nc+ZjH1j+XuEmAjhxCQ==" length="9221955"/>
+    </item>
+    <item>
       <title>Version 1.0.7</title>
       <pubDate>Fri, 16 Oct 2026 06:35:24 GMT</pubDate>
       <sparkle:version>8</sparkle:version>
