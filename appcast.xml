@@ -5,6 +5,32 @@
     <link>https://apppad.pages.dev/appcast.xml</link>
     <language>en</language>
     <item>
+      <title>Version 1.0.6</title>
+      <pubDate>Fri, 16 Oct 2026 01:25:02 GMT</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.0.6</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+<h3>Added</h3>
+<h3>Launchpad</h3>
+<ul>
+<li>Search keeps folders: an app inside a folder now shows up as its folder. Open it with a click or ↩; the matching app is highlighted, and ↩ again opens it.</li>
+<li>Search results can be dragged: drag an app out of the panel onto the Dock or into Finder.</li>
+<li>Create folders while searching: drop an app slowly onto another result to make a new folder, or onto a folder to add it. Apps dragged out of a folder opened from the results can be dropped the same way. Hold at the side of the panel to flip to the next or previous results page.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>When a folder is left with a single app, that app now slowly grows out of the folder instead of popping in.</li>
+<li>While searching, the open folder, the results page and the selection are kept when the layout changes (reordering inside a folder, renaming, uninstalling), and results keep their order after a merge instead of being re-ranked.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Clicking during a drop animation (for example on a folder that is still forming) could close Launchpad.</li>
+</ul>
+      ]]></description>
+      <enclosure url="https://github.com/umindhub/AppPad/releases/download/v1.0.6/AppPad-1.0.6.dmg" type="application/octet-stream" sparkle:edSignature="uDyhs0NG+BqOhlJs9R/G2P9IDkC74YVzC2PdTJHi5RSO5xmwKfnP9/G0AYyuNPvelZQRebcsUOYJDqZoAIGWBA==" length="8948491"/>
+    </item>
+    <item>
       <title>Version 1.0.5</title>
       <pubDate>Thu, 15 Oct 2026 12:15:43 GMT</pubDate>
       <sparkle:version>5</sparkle:version>
