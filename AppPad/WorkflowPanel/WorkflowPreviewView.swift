@@ -251,19 +251,91 @@ final class WorkflowPreviewView: FlippedView {
         switch WorkflowArguments.parse(typed, type: workflow.argumentType, mode: workflow.argument) {
         case .success(let parsed):
             // Optional argument left empty: keep the line's height with a blank.
-            result(parsed.summary.isEmpty ? " " : parsed.summary, in: text, color: .systemGreen)
+            if parsed.summary.isEmpty {
+                result(" ", in: text, state: .neutral)
+            } else {
+                result(parsed.summary, in: text, state: .valid)
+            }
         case .failure(let error):
-            result(error.message, in: text, color: typed.isEmpty ? .secondaryLabelColor : .systemRed)
+            result(error.message, in: text, state: typed.isEmpty ? .neutral : .invalid)
         }
     }
 
-    // Same size as the usage line (14), left-aligned with the pill text.
-    private func result(_ string: String, in text: NSMutableAttributedString, color: NSColor) {
-        text.append(NSAttributedString(string: string + "\n", attributes: [
-            .font: NSFont.systemFont(ofSize: 14, weight: .semibold),
-            .foregroundColor: color,
-            .paragraphStyle: Self.resultStyle,
+    private enum ResultState {
+        case neutral, valid, invalid
+    }
+
+    private static let resultFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
+    private static let resultIconSize: CGFloat = 15
+    private static let resultIconGap: CGFloat = 6
+
+    // Same size as the usage line (14); icon at the left edge (pill edge), text after it.
+    // Valid: green ✓ + normal text; invalid: red ✕ + red text; neutral: blank slot, so text never shifts.
+    private func result(_ string: String, in text: NSMutableAttributedString, state: ResultState) {
+        let line = NSMutableAttributedString(attachment: Self.resultIcon(state, centeredOn: string))
+        line.append(NSAttributedString(string: "\u{00A0}", attributes: [
+            .font: Self.resultFont, .kern: Self.resultIconGap,
         ]))
+        let color: NSColor
+        switch state {
+        case .neutral: color = .secondaryLabelColor
+        case .valid: color = .labelColor
+        case .invalid: color = .systemRed
+        }
+        line.append(NSAttributedString(string: string + "\n", attributes: [
+            .font: Self.resultFont, .foregroundColor: color,
+        ]))
+        line.addAttribute(.paragraphStyle, value: Self.resultStyle, range: NSRange(location: 0, length: line.length))
+        text.append(line)
+    }
+
+    // White mark on a green / red circle, or a clear image of the same size for the neutral state.
+    private static func resultIcon(_ state: ResultState, centeredOn string: String) -> NSTextAttachment {
+        let size = NSSize(width: resultIconSize, height: resultIconSize)
+        let attachment = NSTextAttachment()
+        switch state {
+        case .neutral: attachment.image = NSImage(size: size, flipped: false) { _ in true }
+        case .valid: attachment.image = badge(mark: "checkmark", color: .systemGreen, size: size)
+        case .invalid: attachment.image = badge(mark: "xmark", color: .systemRed, size: size)
+        }
+        // Vertically centered on the text's visual middle; half-point steps (Retina) instead of whole points.
+        let y = textMiddle(string) - size.height / 2
+        attachment.bounds = NSRect(x: 0, y: (y * 2).rounded() / 2, width: size.width, height: size.height)
+        return attachment
+    }
+
+    // Middle of the glyph body above the baseline. Latin: half the cap height. CJK / kana / Hangul
+    // (fallback font, taller body than capHeight): ink bounds of a full-width reference glyph.
+    private static func textMiddle(_ string: String) -> CGFloat {
+        let wide = string.unicodeScalars.contains { $0.value >= 0x2E80 && $0.value <= 0xD7FF }
+        guard wide else { return resultFont.capHeight / 2 }
+        let ink = ("中" as NSString).boundingRect(with: .zero, options: [.usesDeviceMetrics],
+                                                  attributes: [.font: resultFont])
+        return ink.height > 0 ? ink.midY : resultFont.capHeight / 2
+    }
+
+    // Like checkmark.circle.fill / xmark.circle.fill, but drawn by hand: a symbol image is a template
+    // and comes out as one solid color. Drawn lazily, so the dynamic color follows the appearance.
+    private static func badge(mark: String, color: NSColor, size: NSSize) -> NSImage {
+        NSImage(size: size, flipped: false) { rect in
+            color.setFill()
+            NSBezierPath(ovalIn: rect).fill()
+            let config = NSImage.SymbolConfiguration(pointSize: rect.height * 0.5, weight: .heavy)
+            guard let symbol = NSImage(systemSymbolName: mark, accessibilityDescription: nil)?
+                .withSymbolConfiguration(config) else { return true }
+            let markSize = symbol.size
+            // Template → white: draw the shape, then paint white over its pixels only.
+            let white = NSImage(size: markSize, flipped: false) { r in
+                symbol.draw(in: r)
+                NSColor.white.setFill()
+                r.fill(using: .sourceAtop)
+                return true
+            }
+            white.draw(in: NSRect(x: (rect.midX - markSize.width / 2).rounded(),
+                                  y: (rect.midY - markSize.height / 2).rounded(),
+                                  width: markSize.width, height: markSize.height))
+            return true
+        }
     }
 
     // MARK: - Example pills
@@ -286,14 +358,15 @@ final class WorkflowPreviewView: FlippedView {
         return p
     }()
 
-    // Inner left padding of a pill; the result line is indented by it so its text lines up with the pill text.
+    // Inner left padding of a pill.
     private static let pillPadX: CGFloat = 10
 
+    // Icon flush left; wrapped lines continue under the text, not under the icon.
     private static let resultStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
         p.paragraphSpacingBefore = 10
-        p.firstLineHeadIndent = pillPadX
-        p.headIndent = pillPadX
+        let space = ("\u{00A0}" as NSString).size(withAttributes: [.font: resultFont]).width
+        p.headIndent = resultIconSize + space + resultIconGap
         return p
     }()
 

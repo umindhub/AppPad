@@ -75,10 +75,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         BackupService.shared.layoutProvider = { [weak self] in self?.launchpad.currentLayout }
         BackupService.shared.layoutRestorer = { [weak self] layout in self?.launchpad.restoreLayout(layout) }
         statusBar = StatusBarController(
-            onOpen: { [weak self] in self?.launchpad.show() },
-            onClipboard: { [weak self] in self?.clipboard.show(.history) },
+            // Same hand-over as ⌘⇧J/K / the panel hotkeys when another panel is open (no flash).
+            onOpen: { [weak self] in self?.openFromMenu(.launchpad) },
+            onClipboard: { [weak self] in self?.openFromMenu(.clipboard) },
             onSettings: { [weak self] in self?.showSettings() },
-            onWorkflows: { [weak self] in self?.workflows.show() },
+            onWorkflows: { [weak self] in self?.openFromMenu(.workflows) },
             onCheckForUpdates: { UpdateController.shared.checkForUpdates() }
         )
         // Downloaded updates install only while nothing is on screen.
@@ -281,16 +282,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         }
     }
 
-    // Clipboard is skipped while it is turned off in Settings.
-    private func switchPanel(from current: Panel, step: Int) {
-        let cycle = Panel.allCases.filter { $0 != .clipboard || Preferences.shared.clipboardEnabled }
-        guard let index = cycle.firstIndex(of: current) else { return }
-        let target = cycle[(index + step + cycle.count) % cycle.count]
+    // Menu bar entry: switch from the open panel like ⌘⇧J/K, otherwise a plain open.
+    private func openFromMenu(_ target: Panel) {
+        handOffIfNeeded(to: target)
+        show(target)
+    }
+
+    private func show(_ target: Panel) {
         switch target {
         case .launchpad: launchpad.show()
         case .clipboard: clipboard.show(.history)
         case .workflows: workflows.show()
         }
+    }
+
+    // Clipboard is skipped while it is turned off in Settings.
+    private func switchPanel(from current: Panel, step: Int) {
+        let cycle = Panel.allCases.filter { $0 != .clipboard || Preferences.shared.clipboardEnabled }
+        guard let index = cycle.firstIndex(of: current) else { return }
+        show(cycle[(index + step + cycle.count) % cycle.count])
     }
 
     private func showWorkflowSettings() {

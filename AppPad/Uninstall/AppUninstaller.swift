@@ -4,6 +4,7 @@ import Security
 // AppCleaner-style uninstall: finds an app's related files in ~/Library and /Library
 // (by bundle id, embedded helper / extension ids and app-group ids), then moves them to the Trash.
 // Root-owned items go through NSWorkspace.recycle, which asks for an admin password itself.
+// Second pass: an app installed as a Homebrew cask is also removed from Homebrew (see HomebrewCask).
 nonisolated enum AppUninstaller {
     nonisolated struct Leftover: Sendable {
         let url: URL
@@ -18,6 +19,7 @@ nonisolated enum AppUninstaller {
     nonisolated struct Result: Sendable {
         let appRemoved: Bool
         let failed: [URL]             // related files still on disk
+        var homebrewFailedCask: String? = nil   // cask whose `brew uninstall` failed
     }
 
     // Children named "<id>" or "<id>.<suffix>" (plist, binarycookies, savedState, ShipIt…).
@@ -171,7 +173,12 @@ nonisolated enum AppUninstaller {
         for url in extra where exists(url) {
             try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
         }
-        return Result(appRemoved: true, failed: extra.filter(exists))
+        var result = Result(appRemoved: true, failed: extra.filter(exists))
+        if !app.isAppStore, !app.isSystem,
+           case .failed(let token) = await HomebrewCask.remove(appFileName: app.url.lastPathComponent) {
+            result.homebrewFailedCask = token
+        }
+        return result
     }
 
     // Quit the app (and its running helpers); true when the app itself is no longer running.
@@ -224,5 +231,123 @@ nonisolated enum AppUninstaller {
                 process.waitUntilExit()
             }
         }.value
+    }
+}
+
+// MARK: - Homebrew
+
+// After the app is in the Trash: if it came from `brew install --cask`, `brew uninstall --cask` removes
+// the cask record (Caskroom, linked binaries, its uninstall steps). No brew / no matching cask → skipped.
+nonisolated enum HomebrewCask {
+    nonisolated enum Outcome: Sendable {
+        case skipped
+        case removed(String)
+        case failed(String)
+    }
+
+    private static let infoBatch = 20   // casks per `brew info` call (JSON size stays well below the cap)
+
+    static func remove(appFileName: String) async -> Outcome {
+        guard let brew = await brewPath() else { return .skipped }
+        // Another copy still in an Applications folder: that one may be the cask's, leave it alone.
+        let fm = FileManager.default
+        let appDirs = ["/Applications", fm.homeDirectoryForCurrentUser.appendingPathComponent("Applications").path]
+        guard !appDirs.contains(where: { fm.fileExists(atPath: ($0 as NSString).appendingPathComponent(appFileName)) })
+        else { return .skipped }
+
+        let env = await environment(brew: brew)
+        guard let token = await caskToken(appFileName: appFileName, brew: brew, env: env) else { return .skipped }
+        let output = await ProcessRunner.run(brew, ["uninstall", "--cask", token], environment: env, timeout: 180)
+        if output.succeeded { return .removed(token) }
+        NSLog("brew uninstall --cask \(token) failed (\(output.exitCode)): \(output.stderr)")
+        return .failed(token)
+    }
+
+    static func command(for token: String) -> String {
+        "brew uninstall --cask \(token)"
+    }
+
+    // Default prefixes first (Apple silicon / Intel), then the login shell's PATH.
+    private static func brewPath() async -> String? {
+        let fm = FileManager.default
+        if let hit = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].first(where: fm.isExecutableFile(atPath:)) {
+            return hit
+        }
+        let path = await ShellEnvironment.loginPath()
+        for dir in path.split(separator: ":") {
+            let candidate = (String(dir) as NSString).appendingPathComponent("brew")
+            if fm.isExecutableFile(atPath: candidate) { return candidate }
+        }
+        return nil
+    }
+
+    // Non-interactive: no auto-update, no hints; stdin is closed, so a sudo prompt fails instead of hanging.
+    private static func environment(brew: String) async -> [String: String] {
+        let binDir = (brew as NSString).deletingLastPathComponent
+        let path = await ShellEnvironment.loginPath()
+        return [
+            "HOME": NSHomeDirectory(),
+            "USER": NSUserName(),
+            "LOGNAME": NSUserName(),
+            "PATH": binDir + ":" + path,
+            "LANG": ProcessInfo.processInfo.environment["LANG"] ?? "en_US.UTF-8",
+            "HOMEBREW_NO_AUTO_UPDATE": "1",
+            "HOMEBREW_NO_ENV_HINTS": "1",
+            "HOMEBREW_NO_ANALYTICS": "1",
+            "NONINTERACTIVE": "1",
+        ]
+    }
+
+    // `brew list --cask`, then `brew info` in batches (likely tokens first) until a cask installs this app.
+    private static func caskToken(appFileName: String, brew: String, env: [String: String]) async -> String? {
+        let list = await ProcessRunner.run(brew, ["list", "--cask", "-1"], environment: env, timeout: 30)
+        guard list.succeeded else { return nil }
+        let tokens = list.stdout.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && !$0.contains(" ") }
+        guard !tokens.isEmpty else { return nil }
+
+        let ordered = rank(tokens, appName: (appFileName as NSString).deletingPathExtension)
+        var start = 0
+        while start < ordered.count {
+            let batch = Array(ordered[start..<min(start + infoBatch, ordered.count)])
+            start += infoBatch
+            let info = await ProcessRunner.run(brew, ["info", "--cask", "--json=v2"] + batch,
+                                               environment: env, timeout: 60)
+            guard info.succeeded, let data = info.stdout.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let casks = json["casks"] as? [[String: Any]] else { continue }
+            for cask in casks {
+                guard let token = cask["token"] as? String else { continue }
+                let artifacts = cask["artifacts"] as? [[String: Any]] ?? []
+                if artifacts.contains(where: { installedAppNames($0).contains(appFileName) }) { return token }
+            }
+        }
+        return nil
+    }
+
+    // {"app": ["Foo.app"]} or {"app": ["Foo.app", {"target": "Bar.app"}]} → name in the Applications folder.
+    private static func installedAppNames(_ artifact: [String: Any]) -> [String] {
+        guard let app = artifact["app"] as? [Any], let source = app.first as? String else { return [] }
+        if let options = app.dropFirst().first as? [String: Any], let target = options["target"] as? String {
+            return [(target as NSString).lastPathComponent]
+        }
+        return [(source as NSString).lastPathComponent]
+    }
+
+    // "Visual Studio Code" → "visual-studio-code" first, then tokens containing / contained in it.
+    private static func rank(_ tokens: [String], appName: String) -> [String] {
+        let key = appName.lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
+        func score(_ token: String) -> Int {
+            if token == key { return 0 }
+            if !key.isEmpty, token.hasPrefix(key) || key.hasPrefix(token) { return 1 }
+            if !key.isEmpty, token.contains(key) || key.contains(token) { return 2 }
+            return 3
+        }
+        return tokens.enumerated()
+            .sorted { (score($0.element), $0.offset) < (score($1.element), $1.offset) }
+            .map(\.element)
     }
 }

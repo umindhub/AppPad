@@ -195,7 +195,7 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         container.layer?.cornerRadius = radius
         viewController.root.layer?.cornerRadius = radius
         panel.cornerMaskRadius = radius
-        panel.hasShadow = !filled
+        panel.dropsShadow = !filled
         let spec = PanelBackgroundSpec.current(for: .workflows)
         background.update(spec: spec, screen: screen, panelFrame: frame)
         panel.appearance = spec.appearance(on: screen)

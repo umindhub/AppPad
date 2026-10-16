@@ -210,10 +210,12 @@ extension LaunchpadViewController: PageGridDelegate {
                 ) { [weak self] _ in self?.dismissConfirm(animated: true) }
             } else if !result.failed.isEmpty {
                 // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
+                var message = String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder.")
+                if let cask = result.homebrewFailedCask { message += "\n\n" + Self.homebrewHelp(cask) }
                 self.showConfirm(
                     icon: icon,
                     title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash."),
-                    message: String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder."),
+                    message: message,
                     items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
                     confirmTitle: String(localized: "Show in Finder"), destructive: false
                 ) { [weak self] urls in
@@ -222,8 +224,25 @@ extension LaunchpadViewController: PageGridDelegate {
                     self?.controller?.hide()
                     NSWorkspace.shared.activateFileViewerSelecting(urls)
                 }
+            } else if let cask = result.homebrewFailedCask {
+                // App is in the Trash, only the Homebrew record is left (e.g. its uninstall needs sudo).
+                self.showConfirm(
+                    icon: icon,
+                    title: String(localized: "Homebrew couldn’t remove the cask of “\(app.name)”."),
+                    message: Self.homebrewHelp(cask),
+                    items: [], confirmTitle: String(localized: "Copy Command"), destructive: false
+                ) { [weak self] _ in
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(HomebrewCask.command(for: cask), forType: .string)
+                    self?.dismissConfirm(animated: true)
+                }
             }
         }
+    }
+
+    private static func homebrewHelp(_ cask: String) -> String {
+        String(localized: "The app is already in the Trash. To remove it from Homebrew too, run this command in Terminal:")
+            + "\n" + HomebrewCask.command(for: cask)
     }
 
     func showConfirm(icon: NSImage?, title: String, message: String, items: [ConfirmOverlayView.CheckItem],

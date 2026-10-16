@@ -222,7 +222,7 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         container.layer?.cornerRadius = radius
         viewController.root.layer?.cornerRadius = radius
         panel.cornerMaskRadius = radius
-        panel.hasShadow = !filled
+        panel.dropsShadow = !filled
         let spec = PanelBackgroundSpec.current(for: .clipboard)
         background.update(spec: spec, screen: screen, panelFrame: frame)
         panel.appearance = spec.appearance(on: screen)

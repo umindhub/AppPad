@@ -51,7 +51,17 @@ final class LaunchpadPanel: NSPanel {
     }
     // Rounded corners of that blur (matches the content); set by the controllers' applyFrame.
     var cornerMaskRadius: CGFloat = 0 {
-        didSet { if cornerMaskRadius != oldValue { PanelBackdrop.shared.update(for: self) } }
+        didSet {
+            guard cornerMaskRadius != oldValue else { return }
+            PanelBackdrop.shared.update(for: self)
+            PanelShadow.shared.update(for: self)
+        }
+    }
+
+    // Drop shadow, drawn by PanelShadow's helper window (cut out under the panel). The window-server
+    // shadow stays off: it also shows through a translucent background and darkens it.
+    var dropsShadow = true {
+        didSet { if dropsShadow != oldValue { PanelShadow.shared.update(for: self) } }
     }
 
     // Blur scaled by window alpha (fade in / out, invisible warm-up).
@@ -63,14 +73,17 @@ final class LaunchpadPanel: NSPanel {
         super.order(place, relativeTo: otherWin)
         if place == .out {
             PanelBackdrop.shared.panelDidHide(self)
+            PanelShadow.shared.panelDidHide(self)
         } else {
             PanelBackdrop.shared.update(for: self)
+            PanelShadow.shared.update(for: self)
         }
     }
 
     override func setFrame(_ frameRect: NSRect, display flag: Bool) {
         super.setFrame(frameRect, display: flag)
         PanelBackdrop.shared.update(for: self)
+        PanelShadow.shared.update(for: self)
     }
 
     override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
@@ -80,7 +93,7 @@ final class LaunchpadPanel: NSPanel {
         level = .floating
         isOpaque = false
         backgroundColor = .clear
-        hasShadow = true
+        hasShadow = false   // see dropsShadow
         hidesOnDeactivate = false
         isMovable = false
         isReleasedWhenClosed = false
@@ -91,6 +104,7 @@ final class LaunchpadPanel: NSPanel {
         alphaObservation = observe(\.alphaValue, options: [.new]) { panel, _ in
             MainActor.assumeIsolated {   // window alpha only changes on the main thread
                 if panel.behindBlurRadius > 0 { PanelBackdrop.shared.update(for: panel) }
+                if panel.dropsShadow { PanelShadow.shared.update(for: panel) }
             }
         }
     }
@@ -241,6 +255,8 @@ final class LaunchpadRootView: FlippedView {
 // Gap-free hand-over: the outgoing panel stays on screen until the incoming one is drawn
 // on top of it, then orders out.
 // Same size (Clipboard ⇄ Workflows): incoming opaque at once, old one leaves on the next run-loop turn.
+// The old panel's content view is hidden in that same screen update: two translucent backgrounds
+// stacked (and the old rows showing through) flashed for a frame.
 // Different size (Launchpad ⇄ Clipboard / Workflows): PanelMorph expands / shrinks between the two
 // frames, contents swap at the halfway point, then the old one leaves.
 // (Hiding first and fading in from alpha 0 briefly showed the desktop → flash.)
@@ -249,6 +265,7 @@ enum PanelSwitch {
     private static var outgoing: NSWindow?
     private static var hideOutgoing: (() -> Void)?
     private static var morph: PanelMorph?
+    private static var hiddenContent: NSView?   // outgoing content view hidden for a same-size hand-over
     private static var token = 0
     private static let fallbackDelay: TimeInterval = 0.3
 
@@ -282,6 +299,7 @@ enum PanelSwitch {
             hideOutgoing = nil
             pending?.settleIncoming()
             pending?.resetOutgoing()
+            restoreContent()
             return false
         }
         return true
@@ -291,10 +309,33 @@ enum PanelSwitch {
     // the alpha to order in with (0 = morph starts transparent, 1 = instant hand-over).
     static func incomingAlpha(for window: NSWindow) -> CGFloat {
         morph = nil
-        guard let outgoing, outgoing !== window, let plan = PanelMorph(from: outgoing, to: window) else { return 1 }
+        guard let outgoing, outgoing !== window else { return 1 }
+        guard let plan = PanelMorph(from: outgoing, to: window) else {
+            hideContent(of: outgoing, under: window)
+            return 1
+        }
         morph = plan
         plan.prepare()
         return 0
+    }
+
+    // Same-size hand-over: only the incoming panel shows from its first frame on.
+    // Blur and shadow live in their own helper windows, so they are not affected.
+    private static func hideContent(of outgoing: NSWindow, under incoming: NSWindow) {
+        guard let content = outgoing.contentView else { return }
+        outgoing.disableScreenUpdatesUntilFlush()
+        incoming.disableScreenUpdatesUntilFlush()
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        content.isHidden = true
+        CATransaction.commit()
+        hiddenContent = content
+    }
+
+    // After the outgoing panel ordered out (or the switch went back to it).
+    private static func restoreContent() {
+        hiddenContent?.isHidden = false
+        hiddenContent = nil
     }
 
     // Incoming panel, right after makeKeyAndOrderFront.
@@ -332,6 +373,7 @@ enum PanelSwitch {
         pending?.settleIncoming()
         hide?()
         pending?.resetOutgoing()
+        restoreContent()
     }
 }
 
@@ -348,6 +390,8 @@ enum PanelSwitch {
 // frames (nearly) coincide: last quarter when shrinking, first quarter when expanding.
 //   shrink (Launchpad → panel): icons out [0, ⅔], panel content in [⅔, 1], panel background in [¾, 1]
 //   expand (panel → Launchpad): panel content out [0, ⅓], panel background out [0, ¼], icons in [⅓, 1]
+// Shadow: PanelShadow's window spans the large frame during the morph; its cut-out shadow follows
+// the visible frame (same curve) and fades between the two panels' shadow states.
 @MainActor
 final class PanelMorph {
     private static let duration: TimeInterval = 0.5
@@ -374,8 +418,6 @@ final class PanelMorph {
     private var smallWindowSpread = false
     private let incomingRadius: CGFloat
     private let outgoingRadius: CGFloat
-    private var incomingHadShadow = false
-    private var outgoingHadShadow = false
     // Launchpad may sit above the menu bar: both panels share the higher level during the morph.
     private var incomingLevel: NSWindow.Level = .floating
     private var outgoingLevel: NSWindow.Level = .floating
@@ -449,12 +491,8 @@ final class PanelMorph {
         let top = NSWindow.Level(rawValue: max(incomingLevel.rawValue, outgoingLevel.rawValue))
         incoming.level = top
         outgoing.level = top
-        incomingHadShadow = incoming.hasShadow
-        outgoingHadShadow = outgoing.hasShadow
-        // A window shadow would not follow the scaling / fading layers.
-        incoming.hasShadow = false
-        outgoing.hasShadow = false
         startBlurTrack()
+        startShadowTrack()
         outgoing.ignoresMouseEvents = true
         let views = Self.parts(incoming)
         views.content?.alphaValue = 0
@@ -576,8 +614,22 @@ final class PanelMorph {
                 Self.fade(smallParts.background, to: 1, delay: d * 3 / 4, length: d / 4, timing: .easeOut)
             }
         }
-        blurTrack?.animate(duration: d, curve: incomingIsLarge ? Self.expandCurve : Self.shrinkCurve)
+        let motion = incomingIsLarge ? Self.expandCurve : Self.shrinkCurve
+        blurTrack?.animate(duration: d, curve: motion)
+        PanelShadow.shared.animateMorph(duration: d, curve: motion)
         DispatchQueue.main.asyncAfter(deadline: .now() + d) { completion() }
+    }
+
+    // Shadow from the outgoing panel's frame / state to the incoming one's.
+    private func startShadowTrack() {
+        let outPanel = outgoing as? LaunchpadPanel
+        let inPanel = incoming as? LaunchpadPanel
+        PanelShadow.shared.beginMorph(
+            below: outgoing, span: largeFrame,
+            from: .init(frame: incomingIsLarge ? smallFrame : largeFrame, corner: outgoingRadius,
+                        opacity: outPanel?.dropsShadow == true ? 1 : 0),
+            to: .init(frame: incomingIsLarge ? largeFrame : smallFrame, corner: incomingRadius,
+                      opacity: inPanel?.dropsShadow == true ? 1 : 0))
     }
 
     // Window-server blur during the morph: PanelBackdrop's window (already below the outgoing panel)
@@ -607,9 +659,8 @@ final class PanelMorph {
         Self.restore(incoming, radius: incomingRadius)
         // A panel already closing on its own (lost key) keeps its fade-out.
         if !incoming.isVisible || incoming.isKeyWindow { Self.setAlpha(incoming, 1) }
-        incoming.hasShadow = incomingHadShadow
-        incoming.invalidateShadow()
         endBlurTrack()
+        PanelShadow.shared.endMorph(owner: incoming as? LaunchpadPanel)
     }
 
     // Outgoing after its hide(): back to normal for its next show.
@@ -617,12 +668,14 @@ final class PanelMorph {
         // Own levels back once the outgoing panel is gone (earlier, it could cover the incoming one).
         outgoing.level = outgoingLevel
         incoming.level = incomingLevel
-        if let panel = incoming as? LaunchpadPanel { PanelBackdrop.shared.update(for: panel) }
+        if let panel = incoming as? LaunchpadPanel {
+            PanelBackdrop.shared.update(for: panel)
+            PanelShadow.shared.update(for: panel)
+        }
         if incomingIsLarge { gatherSmallWindow() }
         Self.restore(outgoing, radius: outgoingRadius)
         Self.setAlpha(outgoing, 1)
         outgoing.ignoresMouseEvents = false
-        outgoing.hasShadow = outgoingHadShadow
     }
 
     // Scale 1, own radius and wallpaper slice, both layers opaque; running animations dropped.
@@ -1062,6 +1115,187 @@ final class PanelBackdrop {
         setRadius(0)
         window.orderOut(nil)
         appliedRadius = -1
+    }
+}
+
+// MARK: - Panel shadow
+// One clear, click-through window below the visible panel draws its drop shadow, cut out under the
+// panel shape. A window-server shadow is drawn under the whole window, so it showed through a
+// translucent background and made a panel darker than the same background without a shadow.
+// The window is larger than the panel by `margin` so the blur of the shadow is not clipped.
+// During a morph it spans the large frame and the shape is animated with the morph's curve.
+@MainActor
+final class PanelShadow {
+    static let shared = PanelShadow()
+
+    struct State {
+        let frame: NSRect      // panel frame (screen)
+        let corner: CGFloat
+        let opacity: Float     // 0 = no shadow, 1 = full
+    }
+
+    // Tuning: roughly the look of a macOS panel shadow.
+    private static let opacity: Float = 0.32
+    private static let radius: CGFloat = 16
+    private static let drop: CGFloat = 10
+    private static let margin: CGFloat = 64
+    private static let pathKey = "panelShadowPath"
+    private static let fadeKey = "panelShadowFade"
+
+    private let window = BlurHelperWindow(contentRect: .zero, styleMask: .borderless,
+                                          backing: .buffered, defer: false)
+    private let host = NSView()
+    private let shadowLayer = CALayer()
+    private let mask = CAShapeLayer()
+    private weak var owner: LaunchpadPanel?
+    private var isMorphing = false
+    private var morphTarget: State?
+
+    private init() {
+        let root = CALayer()
+        host.layer = root
+        host.wantsLayer = true   // layer-hosting, y up
+        shadowLayer.shadowColor = NSColor.black.cgColor
+        shadowLayer.shadowOpacity = Self.opacity
+        shadowLayer.shadowRadius = Self.radius
+        shadowLayer.shadowOffset = CGSize(width: 0, height: -Self.drop)
+        mask.fillRule = .evenOdd
+        shadowLayer.mask = mask
+        root.addSublayer(shadowLayer)
+        window.contentView = host
+    }
+
+    // Panel shown / moved / resized / faded / re-configured.
+    func update(for panel: LaunchpadPanel) {
+        guard !isMorphing else { return }
+        // Panel being replaced (⌘⇧J/K): the incoming one already owns the shadow.
+        if let owner, owner !== panel, owner.isVisible, PanelSwitch.isOutgoing(panel) { return }
+        guard panel.isVisible, panel.dropsShadow else {
+            if owner === panel { hide() }
+            return
+        }
+        owner = panel
+        let state = State(frame: panel.frame, corner: panel.cornerMaskRadius, opacity: 1)
+        window.disableScreenUpdatesUntilFlush()
+        place(span: state.frame)
+        apply(state, duration: nil, curve: nil)
+        window.alphaValue = panel.alphaValue
+        keepBelow(panel)
+    }
+
+    func panelDidHide(_ panel: LaunchpadPanel) {
+        guard owner === panel, !isMorphing else { return }
+        hide()
+    }
+
+    // Morph start: below the outgoing (visible) panel, spanning the large frame, at the outgoing shadow.
+    // The incoming panel is ordered in above it, so the shadow stays under both.
+    func beginMorph(below panel: NSWindow, span: NSRect, from: State, to: State) {
+        guard from.opacity > 0 || to.opacity > 0 else {
+            hide()
+            return
+        }
+        isMorphing = true
+        morphTarget = to
+        window.disableScreenUpdatesUntilFlush()
+        place(span: span)
+        apply(from, duration: nil, curve: nil)
+        window.alphaValue = 1
+        keepBelow(panel)
+    }
+
+    // Same duration / curve as the panel layers. Fade in: visible early; fade out: gone by half time.
+    func animateMorph(duration: TimeInterval, curve: CAMediaTimingFunction) {
+        guard isMorphing, let target = morphTarget else { return }
+        apply(target, duration: duration, curve: curve)
+    }
+
+    // Morph end (or cut short): back to following the incoming panel.
+    func endMorph(owner panel: LaunchpadPanel?) {
+        guard isMorphing else { return }
+        isMorphing = false
+        morphTarget = nil
+        shadowLayer.removeAllAnimations()
+        mask.removeAllAnimations()
+        owner = panel
+        if let panel { update(for: panel) } else { hide() }
+    }
+
+    // MARK: Private
+
+    private func place(span frame: NSRect) {
+        window.setFrame(frame.insetBy(dx: -Self.margin, dy: -Self.margin).integral, display: false)
+        let bounds = CGRect(origin: .zero, size: window.frame.size)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        shadowLayer.frame = bounds
+        mask.frame = bounds
+        CATransaction.commit()
+    }
+
+    // Panel rect in the shadow window (y up).
+    private func local(_ rect: NSRect) -> CGRect {
+        CGRect(x: rect.minX - window.frame.minX, y: rect.minY - window.frame.minY,
+               width: rect.width, height: rect.height)
+    }
+
+    private func apply(_ state: State, duration: TimeInterval?, curve: CAMediaTimingFunction?) {
+        let rect = local(state.frame)
+        let path = Self.roundedPath(rect, radius: state.corner)
+        let cutout = CGMutablePath()
+        cutout.addRect(shadowLayer.bounds.insetBy(dx: -1, dy: -1))
+        cutout.addPath(path)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        if let duration, let curve {
+            let shape = CABasicAnimation(keyPath: "shadowPath")
+            shape.fromValue = shadowLayer.presentation()?.shadowPath ?? shadowLayer.shadowPath
+            shape.toValue = path
+            let cut = CABasicAnimation(keyPath: "path")
+            cut.fromValue = mask.presentation()?.path ?? mask.path
+            cut.toValue = cutout
+            for animation in [shape, cut] {
+                animation.duration = duration
+                animation.timingFunction = curve
+            }
+            shadowLayer.add(shape, forKey: Self.pathKey)
+            mask.add(cut, forKey: Self.pathKey)
+            let from = shadowLayer.presentation()?.opacity ?? shadowLayer.opacity
+            if from != state.opacity {
+                let fadeIn = state.opacity > from
+                let fade = CABasicAnimation(keyPath: "opacity")
+                fade.fromValue = from
+                fade.toValue = state.opacity
+                fade.duration = fadeIn ? duration : duration / 2
+                fade.timingFunction = CAMediaTimingFunction(name: fadeIn ? .easeOut : .easeIn)
+                shadowLayer.add(fade, forKey: Self.fadeKey)
+            }
+        } else {
+            shadowLayer.removeAllAnimations()
+            mask.removeAllAnimations()
+        }
+        shadowLayer.shadowPath = path
+        mask.path = cutout
+        shadowLayer.opacity = state.opacity
+        CATransaction.commit()
+    }
+
+    private static func roundedPath(_ rect: CGRect, radius: CGFloat) -> CGPath {
+        // Radius > 0 keeps the element count fixed, so the paths interpolate.
+        let r = min(max(radius, 0.5), min(rect.width, rect.height) / 2)
+        return CGPath(roundedRect: rect, cornerWidth: r, cornerHeight: r, transform: nil)
+    }
+
+    // Same level as the panel, right below it (re-ordered only when needed, like PanelBackdrop).
+    private func keepBelow(_ panel: NSWindow) {
+        guard !window.isVisible || window.level != panel.level else { return }
+        window.level = panel.level
+        window.order(.below, relativeTo: panel.windowNumber)
+    }
+
+    private func hide() {
+        owner = nil
+        window.orderOut(nil)
     }
 }
 

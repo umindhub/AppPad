@@ -681,7 +681,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         viewController.topInset = max(0, screen.safeAreaInsets.top - topGap)
         viewController.fillsScreen = filled
         // No shadow when filled: it would spill onto the menu bar and Dock.
-        panel.hasShadow = !filled
+        panel.dropsShadow = !filled
         let spec = PanelBackgroundSpec.current(for: .launchpad)
         background.update(spec: spec, screen: screen, panelFrame: frame)
         panel.appearance = spec.appearance(on: screen)
