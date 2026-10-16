@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  Het originele Launchpad, terug op macOS 26+, met klembord, workflows, app-sneltoetsen en vensterbeheer.
+  Brengt het originele Launchpad terug naar macOS 26+ (werkt ook op macOS 15), met klembord, workflows, app-sneltoetsen en vensterbeheer.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - Openen door met vier vingers te knijpen, via de menubalk of door op AppPad in het Dock te klikken (nogmaals klikken sluit)
 - Mappen, slepen om te ordenen of mappen te maken; houd een symbool of de ⌥-toets ingedrukt voor de wijzigmodus
 - Ingebouwde schone verwijdering: verwijdert de app samen met achtergebleven bestanden
-- Zoeken in raster, pagina-indicator (stippen / cijfers), Liquid Glass-regelaars
+- Zoeken in raster, pagina-indicator (stippen / cijfers), Liquid Glass-regelaars (macOS 26+)
 - Achtergronden: wit / lichtgrijs / donkergrijs / bureaubladachtergrond / aangepaste kleur, aparte instellingen voor lichte en donkere weergave
 
 ### Klembord
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## Systeemvereisten
 
-- macOS 26 of nieuwer
+- macOS 15 of nieuwer
 - Xcode 27 (om vanuit de broncode te bouwen)
 
 ## Bouwen

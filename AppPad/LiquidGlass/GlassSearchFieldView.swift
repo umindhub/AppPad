@@ -5,7 +5,7 @@ import SwiftUI
 // MARK: - GlassSearchFieldView
 //
 // Search field chrome — port of YouMindHub pickerSearchChrome (macOS 26 branch):
-//   glass : NSGlassEffectView capsule            (isGlass = true)
+//   glass : GlassBackdropView capsule            (isGlass = true, macOS 26+)
 //   pill  : plain filled capsule, same size      (isGlass = false)
 //   glow  : uniform HDR wash over the capsule while the field has focus (glass only)
 //   field : borderless NSSearchField, same frame / padding in both modes, no magnifier
@@ -37,7 +37,7 @@ final class GlassSearchFieldView: FlippedView {
         }
     }
 
-    private let glass = NSGlassEffectView()
+    private let glass = GlassBackdropView()
     private let pill = PlainPillView()
     private let glow = SearchGlowView()
     private let clearButton = NSButton()
@@ -72,7 +72,6 @@ final class GlassSearchFieldView: FlippedView {
         clearButton.action = #selector(clearText)
         clearButton.isHidden = true
 
-        glass.style = .regular
         glass.isHidden = true
         glow.isHidden = true
         addSubview(pill)

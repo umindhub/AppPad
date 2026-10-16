@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  오리지널 Launchpad가 macOS 26+로 돌아왔습니다. 클립보드, 워크플로, 앱 단축키, 윈도우 제어까지.
+  오리지널 Launchpad를 macOS 26+로 다시 가져왔습니다(macOS 15도 지원). 클립보드, 워크플로, 앱 단축키, 윈도우 제어까지.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - 네 손가락 오므리기, 메뉴 막대 또는 Dock의 AppPad 클릭으로 열기(다시 클릭하면 닫힘)
 - 폴더, 드래그로 정렬 / 폴더 만들기, 아이콘을 길게 누르거나 ⌥ 키를 누른 채로 편집 모드
 - 깔끔한 제거 기능 내장: 앱과 남은 파일을 함께 삭제
-- 격자 검색, 페이지 표시기(점 / 숫자), Liquid Glass 제어기
+- 격자 검색, 페이지 표시기(점 / 숫자), Liquid Glass 제어기(macOS 26+)
 - 배경: 흰색 / 연한 회색 / 진한 회색 / 배경화면 / 사용자화 색상, 라이트·다크 모드별 개별 설정
 
 ### 클립보드
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## 시스템 요구 사항
 
-- macOS 26 이상
+- macOS 15 이상
 - Xcode 27(소스에서 빌드하는 경우)
 
 ## 빌드

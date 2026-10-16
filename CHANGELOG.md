@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.9
+
+### Changed
+- AppPad now supports macOS 15 Sequoia and later (previously macOS 26 Tahoe or later). Liquid Glass controls remain available on macOS 26 and later.
+
 ## v1.0.8
 
 ### Added

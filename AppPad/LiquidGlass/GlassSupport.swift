@@ -3,6 +3,55 @@ import QuartzCore
 
 // Shared helpers for the Liquid Glass controls (ported from YouMindHub GlassSegmentedControl).
 
+// MARK: - Availability
+
+// Liquid Glass (NSGlassEffectView, glass segmented control) needs macOS 26.
+// On older systems the glass setting is hidden and forced off.
+nonisolated enum GlassAvailability {
+    static let isSupported: Bool = {
+        if #available(macOS 26.0, *) { return true }
+        return false
+    }()
+}
+
+// MARK: - GlassBackdropView
+
+// Drop-in for NSGlassEffectView(.regular): real glass on macOS 26+,
+// empty view below (never shown there because glass is forced off).
+final class GlassBackdropView: NSView {
+    private let effect: NSView?
+
+    var cornerRadius: CGFloat = 0 {
+        didSet { if oldValue != cornerRadius { applyCornerRadius() } }
+    }
+
+    override init(frame frameRect: NSRect) {
+        if #available(macOS 26.0, *) {
+            let glass = NSGlassEffectView()
+            glass.style = .regular
+            effect = glass
+        } else {
+            effect = nil
+        }
+        super.init(frame: frameRect)
+        if let effect {
+            effect.frame = bounds
+            effect.autoresizingMask = [.width, .height]
+            addSubview(effect)
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func applyCornerRadius() {
+        if #available(macOS 26.0, *), let glass = effect as? NSGlassEffectView {
+            glass.cornerRadius = cornerRadius
+        }
+    }
+}
+
 // MARK: - GlassSpring
 
 // Damped spring, same parameters as SwiftUI Spring(duration:bounce:) with mass 1.

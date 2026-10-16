@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  Das originale Launchpad – zurück auf macOS 26+. Dazu Zwischenablage, Workflows, App-Kurzbefehle und Fenstersteuerung.
+  Bringt das originale Launchpad zurück auf macOS 26+ (läuft auch unter macOS 15). Dazu Zwischenablage, Workflows, App-Kurzbefehle und Fenstersteuerung.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - Öffnen per Vier-Finger-Zusammenziehen, über die Menüleiste oder per Klick auf AppPad im Dock (erneuter Klick schließt)
 - Ordner, Apps per Drag & Drop anordnen oder zu Ordnern zusammenfassen, langes Drücken auf ein Symbol oder ⌥ gedrückt halten für den Bearbeitungsmodus
 - Integrierte saubere Deinstallation: entfernt die App samt Restdateien
-- Rastersuche, Seitenanzeige (Punkte / Zahlen), Liquid-Glass-Steuerelemente
+- Rastersuche, Seitenanzeige (Punkte / Zahlen), Liquid-Glass-Steuerelemente (macOS 26+)
 - Hintergründe: Weiß / Hellgrau / Dunkelgrau / Hintergrundbild / eigene Farbe, getrennte Einstellungen für helles und dunkles Erscheinungsbild
 
 ### Zwischenablage
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## Systemvoraussetzungen
 
-- macOS 26 oder neuer
+- macOS 15 oder neuer
 - Xcode 27 (zum Kompilieren aus dem Quellcode)
 
 ## Kompilieren

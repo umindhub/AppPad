@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  Il Launchpad originale, di nuovo su macOS 26+, con appunti, flussi di lavoro, abbreviazioni per le app e controllo delle finestre.
+  Riporta il Launchpad originale su macOS 26+ (compatibile anche con macOS 15), con appunti, flussi di lavoro, abbreviazioni per le app e controllo delle finestre.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - Si apre con il pizzico a quattro dita, dalla barra dei menu o facendo clic su AppPad nel Dock (un altro clic lo chiude)
 - Cartelle, trascina per riordinare o creare cartelle; tieni premuta un’icona o il tasto ⌥ per la modalità modifica
 - Disinstallazione pulita integrata: rimuove l’app insieme ai file residui
-- Ricerca a griglia, indicatore di pagina (punti / numeri), controlli Liquid Glass
+- Ricerca a griglia, indicatore di pagina (punti / numeri), controlli Liquid Glass (macOS 26+)
 - Sfondi: bianco / grigio chiaro / grigio scuro / sfondo scrivania / colore personalizzato, impostazioni separate per aspetto chiaro e scuro
 
 ### Appunti
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## Requisiti
 
-- macOS 26 o successivo
+- macOS 15 o successivo
 - Xcode 27 (per compilare dai sorgenti)
 
 ## Compilazione

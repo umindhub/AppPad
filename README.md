@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  The original Launchpad, back on macOS 26+ — plus clipboard, workflows, app shortcuts and window control.
+  Brings the original Launchpad back to macOS 26+ (runs on macOS 15 too) — plus clipboard, workflows, app shortcuts and window control.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - Open by four-finger pinch, menu bar, or clicking AppPad in the Dock (click again to close)
 - Folders, drag to reorder / create folders, long-press or hold ⌥ for edit mode
 - Built-in clean uninstall: removes the app together with its leftover files
-- Grid search, page indicator (dots / numbers), Liquid Glass controls
+- Grid search, page indicator (dots / numbers), Liquid Glass controls (macOS 26+)
 - Backgrounds: white / light gray / dark gray / wallpaper / custom color, separate settings for light & dark theme
 
 ### Clipboard
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## Requirements
 
-- macOS 26 or later
+- macOS 15 or later
 - Xcode 27 (to build from source)
 
 ## Build

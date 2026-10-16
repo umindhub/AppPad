@@ -92,7 +92,7 @@ final class SavedToggleView: NSView {
     var isOn = false { didSet { if oldValue != isOn { updateStyle() } } }
     var isGlass = false { didSet { if oldValue != isGlass { updateStyle() } } }
 
-    private let glass = NSGlassEffectView()
+    private let glass = GlassBackdropView()
     private let fill = NSView()          // tint / plain background above the glass
     private let icon = NSImageView()
     private let label = NSTextField(labelWithString: String(localized: "Saved"))
@@ -100,7 +100,6 @@ final class SavedToggleView: NSView {
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
-        glass.style = .regular
         fill.wantsLayer = true
         fill.layer?.cornerCurve = .circular
         icon.imageScaling = .scaleNone

@@ -28,9 +28,12 @@ struct GeneralSettingsView: View {
                     Text("Auto follows the macOS appearance. AppPad, Clipboard and Workflows backgrounds follow the theme.")
                 }
                 .pickerStyle(.segmented)
-                Toggle(isOn: $prefs.glassControls) {
-                    Text("Liquid Glass controls")
-                    Text("Applies to search fields and controls in AppPad, Clipboard and Workflows.")
+                // Liquid Glass needs macOS 26; hidden on older systems.
+                if GlassAvailability.isSupported {
+                    Toggle(isOn: $prefs.glassControls) {
+                        Text("Liquid Glass controls")
+                        Text("Applies to search fields and controls in AppPad, Clipboard and Workflows.")
+                    }
                 }
             }
 

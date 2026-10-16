@@ -5,7 +5,7 @@
 <h1 align="center">AppPad</h1>
 
 <p align="center">
-  Le Launchpad d’origine, de retour sur macOS 26+, avec presse-papiers, flux de travail, raccourcis d’apps et gestion des fenêtres.
+  Ramène le Launchpad d’origine sur macOS 26+ (compatible aussi avec macOS 15), avec presse-papiers, flux de travail, raccourcis d’apps et gestion des fenêtres.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ brew install --cask apppad
 - S’ouvre en pinçant avec quatre doigts, depuis la barre des menus ou en cliquant sur AppPad dans le Dock (un nouveau clic le ferme)
 - Dossiers, glisser-déposer pour réorganiser ou créer des dossiers ; appui long sur une icône ou maintien de ⌥ pour le mode édition
 - Désinstallation propre intégrée : supprime l’app ainsi que ses fichiers résiduels
-- Recherche en grille, indicateur de page (points / numéros), commandes Liquid Glass
+- Recherche en grille, indicateur de page (points / numéros), commandes Liquid Glass (macOS 26+)
 - Arrière-plans : blanc / gris clair / gris foncé / fond d’écran / couleur personnalisée, réglages distincts pour l’apparence claire et sombre
 
 ### Presse-papiers
@@ -79,7 +79,7 @@ brew install --cask apppad
 
 ## Configuration requise
 
-- macOS 26 ou version ultérieure
+- macOS 15 ou version ultérieure
 - Xcode 27 (pour compiler depuis les sources)
 
 ## Compilation

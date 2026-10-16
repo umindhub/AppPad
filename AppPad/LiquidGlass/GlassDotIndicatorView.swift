@@ -6,7 +6,7 @@ import QuartzCore
 //
 // Liquid Glass page indicator — port of YouMindHub GlassSegmentedNSView, with a CIRCULAR lens.
 //
-//   trackGlass : NSGlassEffectView capsule around the dots (off: showsTrack = false)
+//   trackGlass : GlassBackdropView capsule around the dots (off: showsTrack = false)
 //   overlay    : (bottom → top)
 //     glowFill    pressed: one uniform HDR wash over track ∪ lens
 //     outerShadow lifted: soft shadow outside the lens
@@ -110,7 +110,7 @@ final class GlassDotIndicatorView: FlippedView {
     private var isDark = false
     private var tintCG: CGColor = NSColor.labelColor.cgColor
 
-    private let trackGlass = NSGlassEffectView()
+    private let trackGlass = GlassBackdropView()
     private let overlay = FlippedView()
     private let glowFill = CAGradientLayer()
     private let glowMask = CAShapeLayer()
@@ -157,7 +157,6 @@ final class GlassDotIndicatorView: FlippedView {
         wantsLayer = true
         clipsToBounds = false          // lifted lens overhangs the track
 
-        trackGlass.style = .regular
         addSubview(trackGlass)
 
         overlay.wantsLayer = true

@@ -1,5 +1,5 @@
 // Shared settings for all environments (Dev / Beta / Release)
-MACOSX_DEPLOYMENT_TARGET = 26.0
+MACOSX_DEPLOYMENT_TARGET = 15.0
 // Version and Build live in project.pbxproj (Xcode › Target › General). Sparkle compares Build.
 
 DEVELOPMENT_TEAM = 63MSW5QTJL

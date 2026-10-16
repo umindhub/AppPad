@@ -283,7 +283,8 @@ final class Preferences: ObservableObject {
         clipboardSwitchToEnglishInput = d.object(forKey: Key.clipEnglishInput) as? Bool ?? false
         workflowSwitchToEnglishInput = d.object(forKey: Key.workflowEnglishInput) as? Bool ?? false
         frecencyHalfLifeDays = d.object(forKey: Key.halfLife) as? Int ?? 72
-        glassControls = d.object(forKey: Key.glassControls) as? Bool ?? true
+        // Pre-26 systems have no Liquid Glass: forced off (stored value kept for later upgrades).
+        glassControls = GlassAvailability.isSupported && (d.object(forKey: Key.glassControls) as? Bool ?? true)
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true
         panelsFollowMouseScreen = d.object(forKey: Key.followMouseScreen) as? Bool ?? true
         escClearsSearchFirst = d.object(forKey: Key.escClearsFirst) as? Bool ?? false
