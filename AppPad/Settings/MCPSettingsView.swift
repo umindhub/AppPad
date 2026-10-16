@@ -13,7 +13,7 @@ struct MCPSettingsView: View {
             Section {
                 Toggle(isOn: $host.enabled) {
                     Text("Allow AI assistants to use workflows")
-                    Text("Claude and other MCP clients can list and run your enabled workflows.")
+                    Text("Claude and other MCP clients can list, run and write your workflows. You approve every new or changed workflow.")
                 }
                 if host.enabled {
                     LabeledContent("Status") { statusText }

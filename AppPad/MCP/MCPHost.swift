@@ -92,6 +92,7 @@ final class MCPHost: ObservableObject {
 final class MCPSession {
     private let connection: MCPConnection
     private let onClosed: () -> Void
+    private var clientName = "AI"   // from initialize, shown in the save review dialog
 
     init(fd: Int32, onClosed: @escaping () -> Void) {
         connection = MCPConnection(fd: fd)
@@ -123,9 +124,25 @@ final class MCPSession {
         let id = message["id"].flatMap { $0 is NSNull ? nil : $0 }
         let params = message["params"] as? [String: Any] ?? [:]
         guard let id else { return }   // notifications (initialized, cancelled…) need no answer
+        if method == "initialize" { clientName = Self.displayName(params["clientInfo"] as? [String: Any]) }
+        let client = clientName
         Task { [weak self] in
-            let response = await MCPRPC.handle(method: method, id: id, params: params)
+            let response = await MCPRPC.handle(method: method, id: id, params: params, client: client)
             self?.reply(response)
+        }
+    }
+
+    // "claude-ai" → "Claude"; unknown clients keep their own title or name.
+    private static func displayName(_ info: [String: Any]?) -> String {
+        let name = info?["name"] as? String ?? ""
+        switch name.lowercased() {
+        case "claude-ai", "claude desktop": return "Claude"
+        case "claude-code": return "Claude Code"
+        case let n where n.hasPrefix("cursor"): return "Cursor"
+        default:
+            let title = (info?["title"] as? String)?.trimmingCharacters(in: .whitespaces) ?? ""
+            if !title.isEmpty { return title }
+            return name.isEmpty ? "AI" : name
         }
     }
 
@@ -141,7 +158,7 @@ enum MCPRPC {
     static let supportedVersions: Set<String> = ["2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25"]
     static let latestVersion = "2025-06-18"
 
-    static func handle(method: String, id: Any, params: [String: Any]) async -> [String: Any] {
+    static func handle(method: String, id: Any, params: [String: Any], client: String) async -> [String: Any] {
         switch method {
         case "initialize":
             let requested = params["protocolVersion"] as? String ?? latestVersion
@@ -165,7 +182,7 @@ enum MCPRPC {
                 return error(id: id, code: -32602, message: "Unknown tool: \(name)")
             }
             let arguments = params["arguments"] as? [String: Any] ?? [:]
-            let outcome = await MCPTools.call(name, MCPArguments(arguments))
+            let outcome = await MCPTools.call(name, MCPArguments(arguments), client: client)
             return result(id: id, [
                 "content": [["type": "text", "text": outcome.text]],
                 "isError": outcome.isError,

@@ -13,10 +13,14 @@ enum MCPTools {
         (e.g. "10" or "1h30m" for a timer); see each workflow's argument hint and examples.
         AppPad may show a confirmation or permission dialog on the Mac; if the user declines or \
         denies, report it and do not retry unless asked. Disabled workflows are not available.
+        You can also WRITE workflows for the user: call workflow_guide first (it is the only \
+        reference for the JSON format), then save_workflows. To change one, export_workflows, \
+        edit it, raise its version and save it again. The user approves every save in AppPad.
         """
 
     static let names: Set<String> = ["list_workflows", "get_workflows", "run_workflow",
-                                     "get_workflow_result", "stop_workflow"]
+                                     "get_workflow_result", "stop_workflow",
+                                     "workflow_guide", "export_workflows", "save_workflows"]
 
     static var definitions: [[String: Any]] {
         [
@@ -42,6 +46,23 @@ enum MCPTools {
             tool("stop_workflow",
                  "Stop a running workflow (e.g. Keep Awake without a time limit).",
                  ["id": string("Workflow id (or name / keyword).")], required: ["id"]),
+
+            // --- Authoring ---
+            tool("workflow_guide",
+                 "Return the complete guide for WRITING AppPad workflows: JSON fields, step kinds (shell, AppleScript, Shortcuts, HTTP, built-in actions), argument types, sandbox permissions, validation rules and examples. Call this BEFORE save_workflows.",
+                 [:]),
+            tool("export_workflows",
+                 "Return installed workflows as workflow JSON (the save_workflows format), including scripts. Use it to edit an existing workflow or to learn from one.",
+                 ["ids": stringArray("Workflow ids (or names / keywords).")], required: ["ids"]),
+            tool("save_workflows",
+                 """
+                 Add or replace workflows. Each entry is one workflow JSON object as described by \
+                 workflow_guide (call it first). The same id replaces the installed workflow only with \
+                 a HIGHER version; built-in workflows cannot be changed. The user reviews all entries \
+                 in one AppPad dialog (Install / Cancel). Invalid entries come back in 'rejected' with \
+                 the reason and are not shown to the user.
+                 """,
+                 ["workflows": objectArray("Workflow JSON objects.")], required: ["workflows"]),
         ]
     }
 
@@ -52,7 +73,7 @@ enum MCPTools {
         var isError: Bool
     }
 
-    static func call(_ name: String, _ args: MCPArguments) async -> Outcome {
+    static func call(_ name: String, _ args: MCPArguments, client: String) async -> Outcome {
         do {
             switch name {
             case "list_workflows": return ok(listWorkflows(query: args.string("query")))
@@ -60,6 +81,12 @@ enum MCPTools {
             case "run_workflow": return try await runWorkflow(args)
             case "get_workflow_result": return ok(try result(of: resolve(args.requireString("id"))))
             case "stop_workflow": return ok(try stop(resolve(args.requireString("id"))))
+            case "workflow_guide": return Outcome(text: MCPWorkflowGuide.text, isError: false)
+            case "export_workflows": return ok(MCPWorkflowWriter.export(try args.requireStrings("ids")))
+            case "save_workflows":
+                let payload = try MCPWorkflowWriter.save(try args.requireObjects("workflows"), client: client)
+                let savedNothing = (payload["saved"] as? [Any])?.isEmpty ?? true
+                return Outcome(text: json(payload), isError: savedNothing && payload["declined"] == nil)
             default: return Outcome(text: "Unknown tool: \(name)", isError: true)
             }
         } catch {
@@ -298,6 +325,10 @@ enum MCPTools {
     private static func stringArray(_ description: String) -> [String: Any] {
         ["type": "array", "items": ["type": "string"], "description": description]
     }
+
+    private static func objectArray(_ description: String) -> [String: Any] {
+        ["type": "array", "items": ["type": "object"], "description": description]
+    }
 }
 
 // Result holder for the wait loop in run_workflow (main actor only).
@@ -347,6 +378,29 @@ struct MCPArguments {
         if let n = values[key] as? NSNumber { return n.intValue }
         if let s = values[key] as? String { return Int(s.trimmingCharacters(in: .whitespaces)) }
         return nil
+    }
+
+    // Array of objects; a single object counts as one entry.
+    func requireObjects(_ key: String) throws -> [[String: Any]] {
+        switch values[key] {
+        case let array as [Any]:
+            let objects = array.compactMap { $0 as? [String: Any] }
+            guard !objects.isEmpty, objects.count == array.count else {
+                throw MCPToolError("\(key) must be a non-empty array of objects")
+            }
+            return objects
+        case let object as [String: Any]:
+            return [object]
+        case let text as String:
+            // Some clients send the JSON as a string.
+            guard let data = text.data(using: .utf8),
+                  let parsed = try? JSONSerialization.jsonObject(with: data) else {
+                throw MCPToolError("\(key) must be an array of workflow objects")
+            }
+            return try MCPArguments([key: parsed]).requireObjects(key)
+        default:
+            throw MCPToolError("Missing required argument: \(key) (array of objects)")
+        }
     }
 
     func requireStrings(_ key: String) throws -> [String] {
