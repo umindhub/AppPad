@@ -46,8 +46,9 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
     private(set) var isSearching = false
-    // Search results: top-level apps and folders holding a match (best = the app that matched best).
-    private var results: [(entry: GridEntry, best: AppInfo)] = []
+    // Search results: top-level apps and folders holding a match or matching by name
+    // (best = the app that matched best; nil for a folder found only by its name).
+    private var results: [(entry: GridEntry, best: AppInfo?)] = []
     private var resultPages: [PageGridView] = []
     private var selection = 0   // index into results
     // Folder opened from the results: its best-matching app is highlighted (↩ launches it).
@@ -250,7 +251,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         // Pages stay at full opacity: the overlay's own blur softens them instead.
     }
 
-    // Highlight the app that made this folder show up in the results.
+    // Highlight the app that made this folder show up in the results (none for a name match).
     private func highlightSearchMatch(in overlay: FolderOverlayView, apps: [AppInfo]) {
         let best = results.first { result in
             if case .folder(let folder, _) = result.entry { return folder.id == overlay.folderID }
@@ -373,8 +374,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     // Reload while searching (merge, folder edit, uninstall): results keep their previous order
     // instead of being re-ranked. A new folder takes the slot of the app it was made from
     // (ignoring: the app dropped onto it); anything new goes last, in rank order.
-    private func keepingOrder(_ fresh: [(entry: GridEntry, best: AppInfo)],
-                              ignoring droppedKey: String?) -> [(entry: GridEntry, best: AppInfo)] {
+    private func keepingOrder(_ fresh: [(entry: GridEntry, best: AppInfo?)],
+                              ignoring droppedKey: String?) -> [(entry: GridEntry, best: AppInfo?)] {
         var oldIndex: [String: Int] = [:]
         for (index, result) in results.enumerated() {
             switch result.entry {

@@ -8,6 +8,8 @@ import Foundation
 //   camelCase / digit boundaries ("as" → App Store, "ws" → WebStorm)
 // - compact: names without spaces / separators ("appstore" → App Store, "setvolume" → Set Volume)
 // - pinyin / pinyin initials for a CJK display name ("jsq" → 计算器)
+// Folder names use the same rules (folderEntry / score), built on demand by the caller.
+// Query syntax: "A | B" or "A || B" matches either term (each item takes its best term score).
 nonisolated struct SearchIndex: Sendable {
     nonisolated struct Entry: Sendable {
         let primary: String
@@ -39,26 +41,55 @@ nonisolated struct SearchIndex: Sendable {
 
     private static let compactSeparators: Set<Character> = ["-", "_", "."]
 
+    // MARK: - Query
+
+    // "A | B" / "A || B" → ["a", "b"]: any run of "|" separates terms; normalized, empty and
+    // duplicate terms dropped (so "a |" while typing still searches "a").
+    static func queryTerms(_ raw: String) -> [String] {
+        var seen = Set<String>()
+        return raw.split(separator: "|", omittingEmptySubsequences: true)
+            .map { normalize($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+
     // MARK: - Matching
 
     // Higher is better; 0 = no match. `query` must be normalized.
     func matchScore(_ key: String, query: String) -> Int {
         guard let e = entries[key] else { return 0 }
+        return Self.score(e, query: query)
+    }
+
+    // Best score over several normalized terms (OR).
+    func matchScore(_ key: String, terms: [String]) -> Int {
+        guard let e = entries[key] else { return 0 }
+        return Self.score(e, terms: terms)
+    }
+
+    static func score(_ e: Entry, terms: [String]) -> Int {
+        terms.reduce(0) { max($0, score(e, query: $1)) }
+    }
+
+    static func score(_ e: Entry, query: String) -> Int {
         let compact = Self.compact(query)
         guard !compact.isEmpty else { return 0 }
         if e.primary.hasPrefix(query) { return 100 }
         if e.primaryWords.contains(where: { $0.hasPrefix(query) }) { return 85 }
         if e.primaryCompact.hasPrefix(compact) { return 82 }      // "setvolume" → "Set Volume"
         if compact.count >= 2, e.acronyms.contains(compact) { return 80 }
-        if e.bundleName.hasPrefix(query) { return 75 }
-        if e.bundleCompact.hasPrefix(compact) { return 74 }
+        if !e.bundleName.isEmpty {
+            if e.bundleName.hasPrefix(query) { return 75 }
+            if e.bundleCompact.hasPrefix(compact) { return 74 }
+        }
         if compact.count >= 2, e.acronyms.contains(where: { $0.hasPrefix(compact) }) { return 72 }
         if !e.pinyinInitials.isEmpty, e.pinyinInitials.hasPrefix(compact) { return 70 }
         if !e.pinyin.isEmpty, e.pinyin.hasPrefix(compact) { return 65 }
         if e.primary.contains(query) { return 50 }
         if compact.count >= 3, e.primaryCompact.contains(compact) { return 45 }
-        if e.bundleName.contains(query) { return 40 }
-        if compact.count >= 3, e.bundleCompact.contains(compact) { return 38 }
+        if !e.bundleName.isEmpty {
+            if e.bundleName.contains(query) { return 40 }
+            if compact.count >= 3, e.bundleCompact.contains(compact) { return 38 }
+        }
         if !e.pinyin.isEmpty, e.pinyin.contains(compact) { return 30 }
         return 0
     }
@@ -66,17 +97,26 @@ nonisolated struct SearchIndex: Sendable {
     // MARK: - Building
 
     private static func makeEntry(_ app: AppInfo) -> Entry {
-        let primary = normalize(app.name)
+        makeEntry(name: app.name, bundleName: app.bundleName)
+    }
+
+    // Folder name entry (no secondary name).
+    static func folderEntry(name: String) -> Entry {
+        makeEntry(name: name, bundleName: "")
+    }
+
+    private static func makeEntry(name: String, bundleName: String) -> Entry {
+        let primary = normalize(name)
         let separators: Set<Character> = [" ", "-", "_", "."]
         let words = primary.split(whereSeparator: { separators.contains($0) }).map(String.init)
 
         var acronymSet = Set<String>()
-        for name in [app.name, app.bundleName] {
-            acronyms(of: name).forEach { acronymSet.insert($0) }
+        for source in [name, bundleName] where !source.isEmpty {
+            acronyms(of: source).forEach { acronymSet.insert($0) }
         }
 
-        let py = pinyin(of: app.name)
-        let bundle = normalize(app.bundleName)
+        let py = pinyin(of: name)
+        let bundle = normalize(bundleName)
         return Entry(
             primary: primary,
             primaryWords: words,

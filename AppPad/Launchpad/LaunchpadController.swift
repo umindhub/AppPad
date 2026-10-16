@@ -34,6 +34,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var apps: [AppInfo] = []
     private var appsByKey: [String: AppInfo] = [:]
     private var searchIndex = SearchIndex(apps: [])
+    private var folderEntryCache: [String: SearchIndex.Entry] = [:]
     private var watcher: AppDirectoryWatcher?
     private var rescanTask: Task<Void, Never>?
     private var rescanDebounce: Task<Void, Never>?
@@ -278,46 +279,80 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         stats.seedIfNeeded(keys: keys, score: 2)
     }
 
-    // Rank: match quality, then frecency, then name.
+    // Rank: match quality, then frecency, then name. "A | B" / "A || B" matches either term.
     func search(_ query: String) -> [AppInfo] {
-        let normalized = SearchIndex.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))
-        guard !normalized.isEmpty else { return [] }
-        let now = Date()
-        let scored: [(app: AppInfo, match: Int, frecency: Double)] = apps.compactMap { app -> (app: AppInfo, match: Int, frecency: Double)? in
-            let match = searchIndex.matchScore(app.key, query: normalized)
-            guard match > 0 else { return nil }
-            return (app, match, stats.score(for: app.key, now: now))
-        }
-        return scored.sorted { a, b in
-            if a.match != b.match { return a.match > b.match }
-            if a.frecency != b.frecency { return a.frecency > b.frecency }
-            return a.app.name.localizedStandardCompare(b.app.name) == .orderedAscending
-        }.map(\.app)
+        let terms = SearchIndex.queryTerms(query)
+        guard !terms.isEmpty else { return [] }
+        return rankedApps(terms: terms, now: Date()).map(\.app)
     }
 
-    // Launchpad search: top-level apps plus the folders holding a match (each folder once, at the
-    // rank of its best app), so results can still be opened / dragged like on the pages.
-    func searchEntries(_ query: String) -> [(entry: GridEntry, best: AppInfo)] {
-        let ranked = search(query)
-        guard !ranked.isEmpty else { return [] }
+    private func rankedApps(terms: [String], now: Date) -> [(app: AppInfo, rank: SearchRank)] {
+        apps.compactMap { app -> (app: AppInfo, rank: SearchRank)? in
+            let match = searchIndex.matchScore(app.key, terms: terms)
+            guard match > 0 else { return nil }
+            return (app: app, rank: SearchRank(match: match, frecency: stats.score(for: app.key, now: now), name: app.name))
+        }
+        .sorted { $0.rank < $1.rank }
+    }
+
+    // Launchpad search: top-level apps plus folders, each folder once. A folder shows up when one
+    // of its apps matches (ranked like its best app, which is highlighted when opened) or when its
+    // own name matches (then best is nil unless an app inside matches too).
+    func searchEntries(_ query: String) -> [(entry: GridEntry, best: AppInfo?)] {
+        let terms = SearchIndex.queryTerms(query)
+        guard !terms.isEmpty else { return [] }
+        let now = Date()
+
+        var folders: [FolderItem] = []
         var folderOf: [String: FolderItem] = [:]
         for page in layoutStore.layout.pages {
             for case .folder(let folder) in page {
+                folders.append(folder)
                 for key in folder.apps { folderOf[key] = folder }
             }
         }
-        var shownFolders = Set<String>()
-        var result: [(entry: GridEntry, best: AppInfo)] = []
-        for app in ranked {
-            guard let folder = folderOf[app.key] else {
-                result.append((entry: .app(app), best: app))
-                continue
+
+        // Ranked apps: top-level ones become results, the first one per folder is its best.
+        var candidates: [(rank: SearchRank, entry: GridEntry, best: AppInfo?)] = []
+        var bestInFolder: [String: (app: AppInfo, rank: SearchRank)] = [:]
+        for hit in rankedApps(terms: terms, now: now) {
+            if let folder = folderOf[hit.app.key] {
+                if bestInFolder[folder.id] == nil { bestInFolder[folder.id] = hit }
+            } else {
+                candidates.append((rank: hit.rank, entry: .app(hit.app), best: hit.app))
             }
-            guard shownFolders.insert(folder.id).inserted else { continue }
-            let list = folderApps(folder)
-            result.append((entry: list.count > 1 ? .folder(folder, list) : .app(app), best: app))
         }
-        return result
+
+        for folder in folders {
+            let list = folderApps(folder)
+            guard !list.isEmpty else { continue }
+            let best = bestInFolder[folder.id]
+            let nameMatch = SearchIndex.score(folderSearchEntry(folder.displayName), terms: terms)
+            guard best != nil || nameMatch > 0 else { continue }
+
+            let rank: SearchRank
+            if let best, best.rank.match >= nameMatch {
+                rank = SearchRank(match: best.rank.match, frecency: best.rank.frecency, name: folder.displayName)
+            } else {
+                let frecency = list.map { stats.score(for: $0.key, now: now) }.max() ?? 0
+                rank = SearchRank(match: nameMatch, frecency: frecency, name: folder.displayName)
+            }
+            if list.count > 1 {
+                candidates.append((rank: rank, entry: .folder(folder, list), best: best?.app))
+            } else {
+                candidates.append((rank: rank, entry: .app(list[0]), best: list[0]))   // single app left: shown as the app
+            }
+        }
+
+        return candidates.sorted { $0.rank < $1.rank }.map { (entry: $0.entry, best: $0.best) }
+    }
+
+    // Folder names are few but pinyin transforms are not free: cache entries by display name.
+    private func folderSearchEntry(_ name: String) -> SearchIndex.Entry {
+        if let cached = folderEntryCache[name] { return cached }
+        let entry = SearchIndex.folderEntry(name: name)
+        folderEntryCache[name] = entry
+        return entry
     }
 
     // Layout position of a displayed entry (search results → drag source).
@@ -795,5 +830,18 @@ private enum TapToClick {
         let global = CFPreferencesCopyValue("com.apple.mouse.tapBehavior" as CFString, kCFPreferencesAnyApplication,
                                             kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
         return (global as? Int) == 1
+    }
+}
+
+// Search order: match quality, then frecency, then name ("<" = shown first).
+nonisolated private struct SearchRank: Comparable {
+    let match: Int
+    let frecency: Double
+    let name: String
+
+    static func < (a: SearchRank, b: SearchRank) -> Bool {
+        if a.match != b.match { return a.match > b.match }
+        if a.frecency != b.frecency { return a.frecency > b.frecency }
+        return a.name.localizedStandardCompare(b.name) == .orderedAscending
     }
 }
