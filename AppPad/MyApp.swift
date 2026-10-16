@@ -30,6 +30,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     static func main() {
+        // `AppPad --mcp`: stdio proxy for AI clients, never starts the app UI.
+        if CommandLine.arguments.contains(MCPPaths.proxyArgument) { MCPProxy.run() }
         // Import data from the old AppsPad bundle id before controllers read it.
         LegacyMigration.runIfNeeded()
         let app = NSApplication.shared
@@ -43,7 +45,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         // Read while the launch Apple Event is still current.
         // Relaunch after an update also looks like a user open: stay silent then.
         let relaunchedByUpdate = UpdateController.consumeRelaunchMarker()
-        let openedByUser = !relaunchedByUpdate && LaunchOrigin.isUserOpen()
+        // Started by the MCP proxy for an AI client: stay in the menu bar.
+        let launchedForMCP = CommandLine.arguments.contains(MCPPaths.launchArgument)
+        let openedByUser = !relaunchedByUpdate && !launchedForMCP && LaunchOrigin.isUserOpen()
         // Theme first: wallpaper prewarm picks blur params for the theme in effect.
         applyTheme()
         NSApp.mainMenu = MainMenu.build()
@@ -84,6 +88,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
                 && self.settings?.isVisible != true
         }
         UpdateController.shared.start()
+        // AI clients (MCP): runs count toward frecency like panel runs.
+        MCPHost.shared.recordUse = { [weak self] key in self?.launchpad.recordUse(key) }
+        MCPHost.shared.launch()
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
         PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
@@ -130,6 +137,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             self.workflows.hide()
             self.handOffActivation { [weak self] in self?.launchpad.show() }
         }
+    }
+
+    // Removes the MCP socket so waiting proxies fail fast instead of hanging.
+    func applicationWillTerminate(_ notification: Notification) {
+        MCPHost.shared.shutdown()
     }
 
     // apppad://import-workflow?url=… from the Workflow Market (apppad-dev:// in Dev).

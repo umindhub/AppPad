@@ -7,6 +7,10 @@ import SwiftUI
 final class ShortcutRecorderView: NSView {
     var combo: KeyCombo? { didSet { needsDisplay = true } }
     var onChange: ((KeyCombo?) -> Void)?
+    // Called (async) when a recording session ends or an auto-start fails.
+    var onEnd: (() -> Void)?
+    // Start recording as soon as the view lands in a window (one-shot).
+    var autoStart = false
     private var isRecording = false { didSet { needsDisplay = true } }
     private var allowFocus = false
 
@@ -46,11 +50,21 @@ final class ShortcutRecorderView: NSView {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if let window {
-            NotificationCenter.default.addObserver(
-                self, selector: #selector(windowDidResignKey(_:)),
-                name: NSWindow.didResignKeyNotification, object: window
-            )
+        guard let window else { return }
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(windowDidResignKey(_:)),
+            name: NSWindow.didResignKeyNotification, object: window
+        )
+        guard autoStart else { return }
+        autoStart = false
+        // Next turn: SwiftUI may still be attaching the hierarchy.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            self.allowFocus = true
+            if !window.makeFirstResponder(self) || !self.isRecording {
+                self.allowFocus = false
+                self.notifyEnd()
+            }
         }
     }
 
@@ -64,6 +78,13 @@ final class ShortcutRecorderView: NSView {
         guard isRecording else { return }
         isRecording = false
         HotKeyCenter.shared.resume()
+        notifyEnd()
+    }
+
+    // Async: may fire during a SwiftUI update (view removal).
+    private func notifyEnd() {
+        guard let onEnd else { return }
+        DispatchQueue.main.async { onEnd() }
     }
 
     // ⌘-combos arrive here before keyDown.
@@ -125,12 +146,16 @@ final class ShortcutRecorderView: NSView {
 // SwiftUI bridge for the settings window.
 struct ShortcutRecorder: NSViewRepresentable {
     @Binding var combo: KeyCombo?
+    var autoStart = false
+    var onEnd: (() -> Void)? = nil
 
     func makeNSView(context: Context) -> ShortcutRecorderView {
         let view = ShortcutRecorderView()
         view.combo = combo
+        view.autoStart = autoStart
         let binding = $combo
         view.onChange = { binding.wrappedValue = $0 }
+        view.onEnd = onEnd
         return view
     }
 
@@ -138,6 +163,7 @@ struct ShortcutRecorder: NSViewRepresentable {
         view.combo = combo
         let binding = $combo
         view.onChange = { binding.wrappedValue = $0 }
+        view.onEnd = onEnd
     }
 
     // Take the .frame size; otherwise the 170 pt intrinsic width overflows narrower frames

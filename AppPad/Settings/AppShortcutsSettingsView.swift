@@ -3,11 +3,12 @@ import AppKit
 import UniformTypeIdentifiers
 
 // One scanned app with its Contacts-style index letter (CJK → Latin, e.g. 访达 → F).
-nonisolated struct AppShortcutEntry: Identifiable, Sendable {
+nonisolated struct AppShortcutEntry: Identifiable, Equatable, Sendable {
     let app: AppInfo
     let letter: String      // "A"…"Z" or "#"
     let sortKey: String     // latinized, lowercased
     let searchKey: String   // name + bundle name + latinized (no spaces)
+    let compactKey: String  // searchKey without spaces (precomputed for filtering)
 
     var id: String { app.key }
 
@@ -19,6 +20,7 @@ nonisolated struct AppShortcutEntry: Identifiable, Sendable {
         sortKey = latin.lowercased()
         letter = Self.indexLetter(latin)
         searchKey = (app.name + " " + app.bundleName + " " + latin.replacingOccurrences(of: " ", with: "")).lowercased()
+        compactKey = searchKey.replacingOccurrences(of: " ", with: "")
     }
 
     private static func latinize(_ s: String) -> String {
@@ -75,21 +77,6 @@ private enum ShortcutAppsCache {
     static var entries: [AppShortcutEntry]?
 }
 
-// Small icon cache for this tab (rows re-render often).
-@MainActor
-private final class ShortcutIconCache {
-    static let shared = ShortcutIconCache()
-    private var cache: [String: NSImage] = [:]
-
-    func icon(path: String) -> NSImage {
-        if let image = cache[path] { return image }
-        let image = NSWorkspace.shared.icon(forFile: path)
-        image.size = NSSize(width: 44, height: 44)
-        cache[path] = image
-        return image
-    }
-}
-
 // Settings → App Shortcuts tab: per-app global hotkeys (Raycast style).
 // Top: apps with a shortcut. Below: every scanned app (assigned ones included), grouped A–Z like Contacts.
 // Both places edit the same prefs entry, so changes show up in both at once.
@@ -99,6 +86,8 @@ struct AppShortcutsSettingsView: View {
     @State private var loaded = ShortcutAppsCache.entries != nil
     @State private var query = ""
     @State private var scrollAnchor = ScrollAnchor()
+    // Row currently showing the live recorder ("top:<key>" / "az:<key>"); all others draw a cheap pill.
+    @State private var editingID: String?
 
     // Extra scroll-content margin so the index bar fits between the cards and the scroller.
     private static let formInset: CGFloat = 24
@@ -109,15 +98,17 @@ struct AppShortcutsSettingsView: View {
         NSScroller.scrollerWidth(for: .regular, scrollerStyle: NSScroller.preferredScrollerStyle)
 
     var body: some View {
-        ScrollViewReader { proxy in
+        // Derived once per update, shared by the form and the index bar.
+        let groups = makeGroups()
+        let present = Set(groups.map(\.letter))
+        return ScrollViewReader { proxy in
             VStack(spacing: 0) {
                 searchBar
-                form
+                form(groups: groups, assigned: makeAssigned())
                     .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
                     .overlay(alignment: .trailing) {
-                        LetterIndexBar(letters: AppShortcutEntry.letters,
-                                       available: Set(groups.map(\.letter))) { letter in
-                            guard let target = scrollTarget(for: letter) else { return }
+                        LetterIndexBar(letters: AppShortcutEntry.letters, available: present) { letter in
+                            guard let target = Self.scrollTarget(for: letter, present: present) else { return }
                             proxy.scrollTo(target, anchor: .top)
                         }
                         .padding(.trailing, Self.scrollerWidth + 2)
@@ -128,8 +119,9 @@ struct AppShortcutsSettingsView: View {
             // Show the cached list at once, then refresh (apps may have been installed / removed).
             let fresh = await Task.detached(priority: .userInitiated) { AppShortcutEntry.loadAll() }.value
             ShortcutAppsCache.entries = fresh
-            entries = fresh
-            loaded = true
+            // Unchanged scan → no second rebuild of every row.
+            if fresh != entries { entries = fresh }
+            if !loaded { loaded = true }
         }
         .onDisappear {
             // Rows added via "Set Shortcut…" but never recorded.
@@ -154,8 +146,12 @@ struct AppShortcutsSettingsView: View {
 
     private static func headerID(_ letter: String) -> String { "letter-header-" + letter }
 
-    private var form: some View {
-        Form {
+    private func form(groups: [LetterGroup], assigned: [AppHotKey]) -> some View {
+        // Lookups built once instead of a linear search per row.
+        let combos = Dictionary(prefs.appHotKeys.compactMap { hk in hk.combo.map { (hk.key, $0) } },
+                                uniquingKeysWith: { first, _ in first })
+        let scannedKeys = Set(entries.map(\.app.key))
+        return Form {
             Section {
                 if assigned.isEmpty {
                     Group {
@@ -169,7 +165,7 @@ struct AppShortcutsSettingsView: View {
                     .foregroundStyle(.secondary)
                 } else {
                     ForEach(assigned, id: \.key) { item in
-                        assignedRow(item)
+                        assignedRow(item, scanned: scannedKeys.contains(item.key))
                     }
                 }
             } header: {
@@ -209,7 +205,7 @@ struct AppShortcutsSettingsView: View {
             ForEach(groups) { group in
                 Section {
                     ForEach(group.items) { entry in
-                        unassignedRow(entry)
+                        unassignedRow(entry, combo: combos[entry.app.key])
                     }
                 } header: {
                     // Scroll target: the letter header, not the first row (which hid the header).
@@ -228,10 +224,12 @@ struct AppShortcutsSettingsView: View {
     }
 
     // Assigned (and pending "Set Shortcut…") rows, sorted by name.
-    private var assigned: [AppHotKey] {
+    private func makeAssigned() -> [AppHotKey] {
         let q = normalizedQuery
+        let keys: [String: String] = q.isEmpty ? [:] : Dictionary(
+            entries.map { ($0.app.key, $0.searchKey) }, uniquingKeysWith: { first, _ in first })
         return prefs.appHotKeys
-            .filter { q.isEmpty || $0.name.lowercased().contains(q) || searchKey(for: $0.key)?.contains(q) == true }
+            .filter { q.isEmpty || $0.name.lowercased().contains(q) || keys[$0.key]?.contains(q) == true }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
@@ -239,16 +237,10 @@ struct AppShortcutsSettingsView: View {
         prefs.appHotKeys.filter { $0.combo != nil }.count
     }
 
-    private func searchKey(for key: String) -> String? {
-        entries.first { $0.app.key == key }?.searchKey
-    }
-
     // All scanned apps (assigned ones stay in place), grouped by letter.
-    private var groups: [LetterGroup] {
+    private func makeGroups() -> [LetterGroup] {
         let q = normalizedQuery.replacingOccurrences(of: " ", with: "")
-        let visible = entries.filter { entry in
-            q.isEmpty || entry.searchKey.replacingOccurrences(of: " ", with: "").contains(q)
-        }
+        let visible = q.isEmpty ? entries : entries.filter { $0.compactKey.contains(q) }
         var result: [LetterGroup] = []
         for entry in visible {
             if result.last?.letter == entry.letter {
@@ -261,22 +253,23 @@ struct AppShortcutsSettingsView: View {
     }
 
     // Letter tapped → its section header, or the next letter that has rows.
-    private func scrollTarget(for letter: String) -> String? {
-        let present = Set(groups.map(\.letter))
+    private static func scrollTarget(for letter: String, present: Set<String>) -> String? {
         guard let start = AppShortcutEntry.letters.firstIndex(of: letter) else { return nil }
         for l in AppShortcutEntry.letters[start...] where present.contains(l) {
-            return Self.headerID(l)
+            return headerID(l)
         }
-        return groups.last.map { Self.headerID($0.letter) }
+        return AppShortcutEntry.letters.last { present.contains($0) }.map(headerID)
     }
 
     // MARK: - Rows
 
-    private func assignedRow(_ value: AppHotKey) -> some View {
+    private func assignedRow(_ value: AppHotKey, scanned: Bool) -> some View {
         let conflict = prefs.conflictName(for: value.combo, excluding: .app(value.key))
-        let missing = AppActivator.resolveURL(value) == nil
+        // Launch Services lookup only for apps the scan didn't find.
+        let missing = !scanned && AppActivator.resolveURL(value) == nil
+        let rowID = "top:" + value.key
         return HStack(spacing: 8) {
-            Image(nsImage: ShortcutIconCache.shared.icon(path: value.path))
+            Image(nsImage: IconCache.shared.icon(path: value.path))
                 .resizable()
                 .frame(width: 22, height: 22)
                 .opacity(missing ? 0.4 : 1)
@@ -299,8 +292,11 @@ struct AppShortcutsSettingsView: View {
                     .foregroundStyle(.orange)
                     .help(Text("Only one of them will work."))
             }
-            ShortcutRecorder(combo: comboBinding(key: value.key))
-                .frame(width: 150, height: 22)
+            RecorderSlot(combo: value.combo,
+                         isEditing: editingID == rowID,
+                         binding: comboBinding(key: value.key),
+                         onEdit: { editingID = rowID },
+                         onEnd: { endEditing(rowID) })
             Button {
                 prefs.appHotKeys.removeAll { $0.key == value.key }
             } label: {
@@ -313,24 +309,23 @@ struct AppShortcutsSettingsView: View {
         }
     }
 
-    private func unassignedRow(_ entry: AppShortcutEntry) -> some View {
-        let combo = prefs.appHotKeys.first { $0.key == entry.app.key }?.combo
-        let conflict = prefs.conflictName(for: combo, excluding: .app(entry.app.key))
-        return HStack(spacing: 8) {
-            Image(nsImage: ShortcutIconCache.shared.icon(path: entry.app.url.path))
-                .resizable()
-                .frame(width: 22, height: 22)
-            Text(entry.app.name)
-                .lineLimit(1)
-            Spacer()
-            if let conflict {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .help(Text("Same shortcut as \(conflict)"))
-            }
-            ShortcutRecorder(combo: comboBinding(key: entry.app.key, app: entry.app))
-                .frame(width: 150, height: 22)
-        }
+    private func unassignedRow(_ entry: AppShortcutEntry, combo: KeyCombo?) -> some View {
+        let rowID = "az:" + entry.app.key
+        return AppShortcutRow(
+            entry: entry,
+            combo: combo,
+            conflict: prefs.conflictName(for: combo, excluding: .app(entry.app.key)),
+            isEditing: editingID == rowID,
+            binding: comboBinding(key: entry.app.key, app: entry.app),
+            onEdit: { editingID = rowID },
+            onEnd: { endEditing(rowID) }
+        )
+        .equatable()
+    }
+
+    // Only clears if no other row took over meanwhile.
+    private func endEditing(_ rowID: String) {
+        if editingID == rowID { editingID = nil }
     }
 
     // Shared by both lists. Recording adds/updates the prefs entry (shows in "With Shortcuts");
@@ -380,6 +375,82 @@ struct AppShortcutsSettingsView: View {
         }
         // Single assignment → one save / one hotkey re-registration.
         if added.count != prefs.appHotKeys.count { prefs.appHotKeys = added }
+    }
+}
+
+// One A–Z row. Equatable so SwiftUI skips unchanged rows (closures are not compared).
+private struct AppShortcutRow: View, Equatable {
+    let entry: AppShortcutEntry
+    let combo: KeyCombo?
+    let conflict: String?
+    let isEditing: Bool
+    let binding: Binding<KeyCombo?>
+    let onEdit: () -> Void
+    let onEnd: () -> Void
+
+    nonisolated static func == (a: Self, b: Self) -> Bool {
+        a.entry == b.entry && a.combo == b.combo && a.conflict == b.conflict && a.isEditing == b.isEditing
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(nsImage: IconCache.shared.icon(for: entry.app))
+                .resizable()
+                .frame(width: 22, height: 22)
+            Text(entry.app.name)
+                .lineLimit(1)
+            Spacer()
+            if let conflict {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .help(Text("Same shortcut as \(conflict)"))
+            }
+            RecorderSlot(combo: combo, isEditing: isEditing, binding: binding, onEdit: onEdit, onEnd: onEnd)
+        }
+    }
+}
+
+// Live NSView recorder only for the row being edited; a plain SwiftUI pill everywhere else
+// (hundreds of NSViewRepresentables made the tab slow to open).
+private struct RecorderSlot: View {
+    let combo: KeyCombo?
+    let isEditing: Bool
+    let binding: Binding<KeyCombo?>
+    let onEdit: () -> Void
+    let onEnd: () -> Void
+
+    var body: some View {
+        Group {
+            if isEditing {
+                ShortcutRecorder(combo: binding, autoStart: true, onEnd: onEnd)
+            } else {
+                ShortcutPill(combo: combo, action: onEdit)
+            }
+        }
+        .frame(width: 150, height: 22)
+    }
+}
+
+// Looks like ShortcutRecorderView at rest.
+private struct ShortcutPill: View {
+    let combo: KeyCombo?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
+                Text(verbatim: combo?.displayString ?? String(localized: "Click to record"))
+                    .font(.system(size: 12))
+                    .foregroundStyle(combo == nil ? Color(nsColor: .secondaryLabelColor) : Color(nsColor: .labelColor))
+                    .lineLimit(1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
