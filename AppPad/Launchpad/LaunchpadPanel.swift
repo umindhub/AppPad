@@ -103,7 +103,7 @@ final class LaunchpadPanel: NSPanel {
     // here; whichever of the replay / a real click comes second is dropped, so it acts once.
 
     private static let replayWindow: TimeInterval = 0.35
-    private var lastRealMouseDown: TimeInterval = -1
+    private(set) var lastRealMouseDown: TimeInterval = -1
     private var lastReplay: TimeInterval = -1
     private var dropNextMouseUp = false
     private var isReplaying = false

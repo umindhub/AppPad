@@ -19,14 +19,15 @@ extension LaunchpadViewController: PageGridDelegate {
     func grid(_ grid: PageGridView, didClick index: Int) {
         // A drop that landed but is not committed yet: this grid still shows the old layout
         // (e.g. the old contents of a folder that just got an app). Commit, then click the
-        // rebuilt cell under the pointer.
-        if pendingDrop != nil {
+        // rebuilt cell under the pointer. Same when the drop committed between mouse down and up:
+        // the click then arrives from a grid that is no longer in the window.
+        if pendingDrop != nil || grid.window == nil {
             let location = NSApp.currentEvent?.locationInWindow
             flushPendingDrop(immediate: true)
             view.layoutSubtreeIfNeeded()
             guard let location, let content = view.window?.contentView,
                   let cell = content.hitTest(content.superview?.convert(location, from: nil) ?? location) as? GridCellView,
-                  let fresh = cell.grid, fresh !== grid else { return }
+                  let fresh = cell.grid, fresh !== grid, fresh.window != nil else { return }
             self.grid(fresh, didClick: cell.index)
             return
         }
@@ -52,7 +53,12 @@ extension LaunchpadViewController: PageGridDelegate {
     }
 
     func gridDidClickBackground(_ grid: PageGridView) {
-        guard !isDropInFlight else { return }     // see isDropInFlight
+        // Pressed on a grid that a drop commit has since replaced: not a click on empty space.
+        guard grid.window != nil else {
+            CloseLog.note("launchpad: background click ignored (stale grid)")
+            return
+        }
+        guard !isDropSettling else { return }     // see isDropSettling
         if case .folder = grid.context {
             // Empty space inside an open folder never closes the panel.
             if isEditingLayout { setEditingLayout(false) }

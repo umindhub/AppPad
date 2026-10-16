@@ -1,4 +1,15 @@
 import AppKit
+import os
+
+// Why a panel closed (Console / `log stream`, category "close").
+// Callers just pass a String, so other files need no `import os`.
+enum CloseLog {
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "AppPad", category: "close")
+
+    static func note(_ message: String) {
+        logger.notice("\(message, privacy: .public)")
+    }
+}
 
 // Owns the panel, the installed-app catalog, the layout and launch stats.
 final class LaunchpadController: NSObject, NSWindowDelegate {
@@ -91,7 +102,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         }
         PinchGestureMonitor.shared.onTap = { [weak self] in self?.handleTrackpadTap() }
         // Instant close, no fade (the desktop already changed).
-        spaceGuard = PanelSpaceGuard(panel: panel) { [weak self] in self?.hide() }
+        spaceGuard = PanelSpaceGuard(panel: panel) { [weak self] in
+            CloseLog.note("launchpad: space changed")
+            self?.hide()
+        }
 
         lastCapacity = capacity
         applyAppearance()
@@ -469,14 +483,19 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Also while a pinch open is running or just finished: a tap there cancels (closes) it.
     private func handleTrackpadTap() {
         guard panel.isVisible, panel.isKeyWindow, !isFadingOut, TapToClick.isEnabled else { return }
+        // Drag / drop landing or just committed: a synthesized click could hit stale empty space.
+        guard !viewController.isDropSettling else { return }
+        // Only the first tap after a pinch gets eaten; once a real click arrived, stop replaying.
         let pinchOpening = transition == .opening
-            || ProcessInfo.processInfo.systemUptime - lastPinchOpen < Self.pinchTapWindow
+            || (ProcessInfo.processInfo.systemUptime - lastPinchOpen < Self.pinchTapWindow
+                && panel.lastRealMouseDown < pinchOpenBegan)
         guard pinchOpening || (transition == nil && PagerView.isScrollActive) else { return }
         let point = panel.mouseLocationOutsideOfEventStream
         guard let content = panel.contentView,
               content.bounds.contains(content.convert(point, from: nil)),
               viewController.isEmptySpace(atWindowPoint: point)
         else { return }
+        CloseLog.note("launchpad: replay tap (pinch: \(pinchOpening))")
         panel.replayClick(atWindowPoint: point)
     }
 
@@ -498,6 +517,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var transitionToken = 0   // invalidates stale finish animations
     // Last pinch-open activity: macOS eats taps right after a system gesture, so they are replayed.
     private var lastPinchOpen: TimeInterval = -1
+    // Start of the last pinch open (real clicks after it end the tap-replay window).
+    private var pinchOpenBegan: TimeInterval = -1
     private static let pinchTapWindow: TimeInterval = 1.0
 
     // Icons start this much larger and settle to 1× as the panel fades in.
@@ -509,6 +530,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         transition = .opening
         transitionProgress = 0
         lastPinchOpen = ProcessInfo.processInfo.systemUptime
+        pinchOpenBegan = lastPinchOpen
         applyVisibility(0)
     }
 
@@ -602,6 +624,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
         if panel.isVisible, !isHiding, !isFadingOut {
             lastOutsideClose = ProcessInfo.processInfo.systemUptime
+            let keyWindow = NSApp.keyWindow?.className ?? "none"
+            CloseLog.note("launchpad: resigned key (key window: \(keyWindow))")
         }
         hide(animated: true)
     }
@@ -690,6 +714,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // MARK: - Actions
 
     func launch(_ app: AppInfo) {
+        let key = app.key
+        CloseLog.note("launchpad: launch \(key)")
         stats.record(app.key, manual: true)
         hide()
         AppActivator.open(app.url)

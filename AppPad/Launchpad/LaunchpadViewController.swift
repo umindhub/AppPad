@@ -38,6 +38,10 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var optionHoldTask: Task<Void, Never>?   // hold ⌥ → edit mode (+Edit.swift)
     // Drop landed visually but the layout is not committed yet (+Drag.swift); run(immediate).
     var pendingDrop: (token: UUID, run: (Bool) -> Void)?
+    // Short quiet time after a drop commits: the pages were just rebuilt, so a click that started
+    // on the old cells / grids must not count as "empty space" (+Drag.swift sets it).
+    var dropQuietUntil: TimeInterval = 0
+    static let dropQuietInterval: TimeInterval = 0.6
 
     private let emptyLabel = NSTextField(labelWithString: String(localized: "No Results"))
 
@@ -539,12 +543,17 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     // Empty area click: leave edit mode first; otherwise close the panel (macOS 15 Launchpad)
     // or do nothing, depending on Settings.
     func handleBackgroundClick() {
-        if confirmOverlay != nil || isDropInFlight { return }
+        if confirmOverlay != nil { return }
+        if isDropSettling {
+            CloseLog.note("launchpad: background click ignored (drop settling)")
+            return
+        }
         if isEditingLayout {
             setEditingLayout(false)
             return
         }
         if prefs.backgroundClickAction == .closePanel {
+            CloseLog.note("launchpad: background click")
             controller?.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
         }
     }
@@ -554,6 +563,11 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     // on "empty" space. Such clicks must not close the panel or leave edit mode.
     var isDropInFlight: Bool {
         drag != nil || systemDrag != nil || pendingDrop != nil || dragImageView.superview != nil
+    }
+
+    // In flight, or committed so recently that a click may have started on the old layout.
+    var isDropSettling: Bool {
+        isDropInFlight || ProcessInfo.processInfo.systemUptime < dropQuietUntil
     }
 
     // Empty space for a replayed trackpad tap: page / grid gaps, the root, outside an open folder.

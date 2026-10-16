@@ -475,6 +475,7 @@ extension LaunchpadViewController {
                 self.reloadAll()                                       // cancelled: restore
             }
             self.finishDragImage()
+            self.dropQuietUntil = ProcessInfo.processInfo.systemUptime + Self.dropQuietInterval
         })
         // Merges wait for the gentle gap-closing spring so the reload does not cut it short.
         let commitDelay = isMerge ? Self.mergeCommitMilliseconds : duration + 10
