@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.0.8
+
+### Added
+
+#### Launchpad
+- Uninstalling an app that was installed with Homebrew (`brew install --cask`) now also removes it from Homebrew: after the app and its leftovers are in the Trash, AppPad runs `brew uninstall --cask` for its cask. Without Homebrew, or for apps that aren't a cask, nothing changes.
+- If Homebrew can't finish on its own (for example when the cask needs an administrator password), AppPad shows the command to run in Terminal, with a button to copy it.
+
+#### Workflows
+- In the Workflow panel, the result of a typed argument now starts with a green checkmark when it is valid and a red cross when it isn't.
+
+### Changed
+- Switching from Launchpad to the Clipboard or Workflow panel: the panel's shadow now fades in during the morph instead of appearing after it.
+- Panel shadows are drawn by AppPad and stay outside the panel. With a translucent background, the Clipboard and Workflow panels now look exactly like Launchpad, with the same blur and transparency and no extra darkening.
+- Workflow panel: a valid argument result is shown in the normal text color instead of green; an invalid one stays red.
+- Choosing Launchpad, Clipboard or Workflows in the menu-bar menu while another panel is open now switches the same way as ⌘⇧J / ⌘⇧K.
+
+### Fixed
+- Switching between the Clipboard and Workflow panels with ⌘⇧J / ⌘⇧K could flash for a moment.
+- Opening a panel from the menu bar while another one was open briefly showed the desktop.
+
 ## v1.0.7
 
 ### Added
