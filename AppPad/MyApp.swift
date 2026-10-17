@@ -100,11 +100,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         UpdateController.shared.isIdle = { [weak self] in
             guard let self else { return true }
             return !self.launchpad.isBusy && !self.clipboard.isActive && !self.workflows.isActive
-                && self.settings?.isVisible != true
+                && self.settings?.isVisible != true && !OnboardingGuide.isVisible
         }
         // "Up to date" notice closed: focus back to the app the user was in.
         UpdateController.shared.onNoticeClosed = { [weak self] in
-            guard let self, self.settings?.isVisible != true else { return }
+            guard let self, self.settings?.isVisible != true, !OnboardingGuide.isVisible else { return }
             self.handOffActivation()
         }
         UpdateController.shared.start()
@@ -114,17 +114,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
         PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
-        // One-time hints, one after the other, only while no panel is up
-        // (a guide under the full-screen Launchpad left nothing clickable).
-        Task { @MainActor [weak self] in
-            await self?.waitUntilPanelsIdle()
-            // Which system gestures to turn off (in order).
-            PinchSetupGuide.showOnceIfNeeded {
-                Task { @MainActor [weak self] in
-                    await self?.waitUntilPanelsIdle()
-                    // ⌘Space is Spotlight's until the user frees it.
-                    SpotlightShortcut.showGuideOnceIfNeeded()
-                }
+        // Welcome guide (features, pinch gestures, Spotlight's ⌘Space, permissions).
+        // Replaces the old one-time pinch / Spotlight hints; new installs only.
+        OnboardingGuide.onClose = { [weak self] openAppPad in self?.onboardingDidClose(openAppPad: openAppPad) }
+        let showsOnboarding = !launchedForMCP && !launchedByNotification && OnboardingGuide.needsShowing
+        if showsOnboarding {
+            Task { @MainActor [weak self] in
+                // User open: guide instead of Launchpad. Login launch: wait until no panel is up
+                // (a window under the full-screen Launchpad left nothing clickable).
+                if !openedByUser { await self?.waitUntilPanelsIdle() }
+                OnboardingGuide.show()
             }
         }
         NotificationCenter.default.addObserver(
@@ -136,7 +135,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         }
         // Banner click → Settings › Workflows (a click from the launch is flushed here).
         WorkflowNotifier.shared.onOpen = { [weak self] in self?.showWorkflowSettings() }
-        if openedByUser { openLaunchpadAfterColdLaunch() }
+        if openedByUser && !showsOnboarding { openLaunchpadAfterColdLaunch() }
+    }
+
+    // "Open AppPad" on the last page opens Launchpad; otherwise focus goes back where it was.
+    private func onboardingDidClose(openAppPad: Bool) {
+        let settingsOpen = settings?.isVisible == true
+        if openAppPad {
+            clipboard.hide()
+            workflows.hide()
+            if settingsOpen {
+                launchpad.show()
+            } else {
+                handOffActivation { [weak self] in self?.launchpad.show() }
+            }
+        } else if settingsOpen {
+            settings?.show()
+        } else {
+            handOffActivation()
+        }
     }
 
     // True if the launch came from a banner click; the click is queued for the handler.

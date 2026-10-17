@@ -74,6 +74,104 @@ enum SpotlightShortcut {
         return flags.rawValue
     }
 
+    // MARK: - Turning Spotlight's shortcut off / on
+
+    enum ToggleResult {
+        case applied        // saved and active right away
+        case needsRelogin   // saved; the running session still uses the old state
+        case failed         // could not be saved: change it in System Settings
+    }
+
+    private static let domain = "com.apple.symbolichotkeys" as CFString
+    private static let hotKeysKey = "AppleSymbolicHotKeys" as CFString
+    private static let spotlightID: Int32 = 64
+    // ' ', kVK_Space, ⌘ (system default when the entry was never customized).
+    private static let defaultParameters: [Int] = [32, Int(kVK_Space), Int(NSEvent.ModifierFlags.command.rawValue)]
+
+    // True while "Show Spotlight search" is turned off (by AppPad or by the user).
+    static var isTurnedOff: Bool {
+        guard let entry = storedEntry() else { return false }
+        return (entry["enabled"] as? NSNumber)?.boolValue == false
+    }
+
+    // Live state of the running session, nil if the private API is missing.
+    static var isEnabledInSession: Bool? {
+        guard let fn = sessionIsEnabled else { return nil }
+        return fn(spotlightID)
+    }
+
+    // Persists the change in com.apple.symbolichotkeys and applies it to the session,
+    // so no log out is needed. A custom Spotlight key combination is kept as it is.
+    @discardableResult
+    static func setSpotlightSearchEnabled(_ enabled: Bool) -> ToggleResult {
+        var all = (CFPreferencesCopyValue(hotKeysKey, domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+                   as? [String: Any]) ?? [:]
+        var entry = all[String(spotlightID)] as? [String: Any] ?? [:]
+        if entry["value"] == nil {
+            entry["value"] = ["parameters": defaultParameters, "type": "standard"] as [String: Any]
+        }
+        entry["enabled"] = enabled
+        all[String(spotlightID)] = entry
+        CFPreferencesSetValue(hotKeysKey, all as CFDictionary, domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+        CFPreferencesSynchronize(domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+
+        let stored = (storedEntry()?["enabled"] as? NSNumber)?.boolValue
+        guard stored == enabled else { return .failed }
+
+        let sessionOK = applyToSession(enabled)
+        runActivateSettings()
+        // Re-register the Workflow hotkey now that the key may be free (also refreshes the menu ⚠︎).
+        NotificationCenter.default.post(name: .preferencesDidChange, object: nil)
+        return sessionOK ? .applied : .needsRelogin
+    }
+
+    private static func storedEntry() -> [String: Any]? {
+        let all = CFPreferencesCopyValue(hotKeysKey, domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+            as? [String: Any]
+        return all?[String(spotlightID)] as? [String: Any]
+    }
+
+    // MARK: Session (SkyLight private API)
+
+    private typealias SetEnabledFn = @convention(c) (Int32, Bool) -> Int32
+    private typealias IsEnabledFn = @convention(c) (Int32) -> Bool
+
+    private static let skyLight: UnsafeMutableRawPointer? =
+        dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_LAZY)
+
+    private static func symbol<T>(_ names: [String], as type: T.Type) -> T? {
+        let handles = [skyLight, UnsafeMutableRawPointer(bitPattern: -2)]   // -2 = RTLD_DEFAULT
+        for handle in handles.compactMap({ $0 }) {
+            for name in names {
+                if let sym = dlsym(handle, name) { return unsafeBitCast(sym, to: type) }
+            }
+        }
+        return nil
+    }
+
+    private static let sessionSetEnabled = symbol(
+        ["SLSSetSymbolicHotKeyEnabled", "CGSSetSymbolicHotKeyEnabled"], as: SetEnabledFn.self)
+    private static let sessionIsEnabled = symbol(
+        ["SLSIsSymbolicHotKeyEnabled", "CGSIsSymbolicHotKeyEnabled"], as: IsEnabledFn.self)
+
+    private static func applyToSession(_ enabled: Bool) -> Bool {
+        guard let set = sessionSetEnabled, set(spotlightID, enabled) == 0 else { return false }
+        if let live = isEnabledInSession { return live == enabled }
+        return true
+    }
+
+    // Asks running processes to reload the hotkey preferences (best effort, async).
+    private static func runActivateSettings() {
+        let path = "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings"
+        guard FileManager.default.isExecutableFile(atPath: path) else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = ["-u"]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try? process.run()
+    }
+
     static func openKeyboardShortcuts() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {
             NSWorkspace.shared.open(url)
