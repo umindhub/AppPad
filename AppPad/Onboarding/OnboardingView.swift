@@ -1,9 +1,11 @@
 import SwiftUI
 import AppKit
 import Combine
+import Carbon.HIToolbox
+import UniformTypeIdentifiers
 
 enum OnboardingPage: Int, CaseIterable {
-    case welcome, features, pinch, spotlight, ai, permissions, done
+    case welcome, features, pinch, clipboard, spotlight, appShortcuts, ai, permissions, done
 }
 
 // Paged welcome guide hosted by OnboardingGuide's window.
@@ -18,6 +20,8 @@ struct OnboardingView: View {
     @State private var forward = true
     // Bumped every second / on activation: system state may change in System Settings.
     @State private var tick = 0
+    @State private var scrubbingDots = false
+    @State private var hoveringDots = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     init(prefs: Preferences, onFinish: @escaping () -> Void, onSkip: @escaping () -> Void) {
@@ -44,6 +48,9 @@ struct OnboardingView: View {
         .frame(width: Self.size.width, height: Self.size.height)
         .background(escapeButton)
         .onReceive(timer) { _ in tick &+= 1 }
+        .onReceive(NotificationCenter.default.publisher(for: .onboardingSwipe)) { note in
+            if let delta = note.userInfo?["step"] as? Int { step(delta) }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             tick &+= 1
         }
@@ -55,7 +62,9 @@ struct OnboardingView: View {
         case .welcome: WelcomePage()
         case .features: FeaturesPage(prefs: prefs)
         case .pinch: PinchPage(prefs: prefs, glass: useGlass)
+        case .clipboard: ClipboardPage(prefs: prefs)
         case .spotlight: SpotlightPage(prefs: prefs, glass: useGlass, tick: tick)
+        case .appShortcuts: AppShortcutsPage(prefs: prefs, glass: useGlass)
         case .ai: AIPage(glass: useGlass)
         case .permissions: PermissionsPage(glass: useGlass, tick: tick)
         case .done: DonePage(prefs: prefs)
@@ -120,17 +129,46 @@ struct OnboardingView: View {
         .padding(.vertical, 18)
     }
 
+    // Tap anywhere on the dots to jump; press and drag to scrub through pages.
+    private static let dotPitch: CGFloat = 16
+    private static let dotInset: CGFloat = 8
+
     private var pageDots: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 0) {
             ForEach(OnboardingPage.allCases, id: \.self) { item in
                 Circle()
                     .fill(item == page ? Color.accentColor : Color.primary.opacity(0.2))
-                    .frame(width: 7, height: 7)
-                    .contentShape(Rectangle().inset(by: -4))
-                    .onTapGesture { go(to: item) }
+                    .frame(width: item == page ? 8 : 7, height: item == page ? 8 : 7)
+                    .frame(width: Self.dotPitch, height: 24)
             }
         }
+        .padding(.horizontal, Self.dotInset)
+        .background(
+            Capsule().fill(Color.primary.opacity(scrubbingDots ? 0.10 : (hoveringDots ? 0.05 : 0)))
+        )
+        .contentShape(Capsule())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    scrubbingDots = true
+                    scrubDots(to: value.location.x)
+                }
+                .onEnded { value in
+                    scrubDots(to: value.location.x)
+                    scrubbingDots = false
+                }
+        )
+        .onHover { hoveringDots = $0 }
+        .animation(.easeOut(duration: 0.15), value: scrubbingDots)
+        .animation(.easeOut(duration: 0.15), value: hoveringDots)
         .animation(.easeOut(duration: 0.2), value: page)
+    }
+
+    private func scrubDots(to x: CGFloat) {
+        let count = OnboardingPage.allCases.count
+        let index = Int(((x - Self.dotInset) / Self.dotPitch).rounded(.down))
+        guard let target = OnboardingPage(rawValue: min(max(index, 0), count - 1)) else { return }
+        go(to: target)
     }
 
     // Esc closes the guide on every page.
@@ -153,10 +191,20 @@ private struct WelcomePage: View {
                 .resizable()
                 .interpolation(.high)
                 .frame(width: 128, height: 128)
-            OnboardingTitle(
-                title: String(localized: "Welcome to AppPad"),
-                subtitle: String(localized: "A fast Launchpad for your Mac, plus clipboard history, workflows and window control — all from the menu bar.")
-            )
+            VStack(spacing: 10) {
+                Text("Welcome to AppPad")
+                    .font(.system(size: 30, weight: .bold))
+                Text("Built for Mac: the fast, authentic Launchpad, just like in macOS 15.")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .multilineTextAlignment(.center)
+                Text("Plus clipboard history, workflows, window control and app shortcuts — all from the menu bar.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 620)
+            }
+            .fixedSize(horizontal: false, vertical: true)
             Text("Setup takes about a minute.")
                 .font(.callout)
                 .foregroundStyle(.tertiary)
@@ -334,10 +382,181 @@ private struct SpotlightPage: View {
     }
 }
 
+private struct ClipboardPage: View {
+    @ObservedObject var prefs: Preferences
+
+    var body: some View {
+        SplitPage(
+            symbol: "doc.on.clipboard",
+            title: String(localized: "Everything you copy, one shortcut away"),
+            subtitle: String(localized: "AppPad keeps the text, images and files you copy. Items you save stay until you remove them.")
+        ) {
+            OnboardingCard {
+                Toggle(isOn: $prefs.clipboardEnabled) {
+                    Text("Enable clipboard history").fontWeight(.medium)
+                }
+                .toggleStyle(.switch)
+                if prefs.clipboardEnabled {
+                    Divider()
+                    shortcutRow(String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString)
+                    shortcutRow(String(localized: "Saved items"), prefs.clipboardSavedHotKey?.displayString)
+                }
+            }
+            if prefs.clipboardEnabled {
+                OnboardingCard {
+                    tipRow("⌘1–⌘0", String(localized: "Paste one of the first ten items"))
+                    tipRow("⌘S", String(localized: "Save the selected item"))
+                    tipRow("⌘↩", String(localized: "Name a saved item or edit its text"))
+                    tipRow(String(localized: "Click the Safari icon to show only items copied from Safari")) {
+                        AppFilterChip(icon: Self.safariIcon)
+                    }
+                }
+            }
+        }
+    }
+
+    private func shortcutRow(_ title: String, _ value: String?) -> some View {
+        HStack {
+            Text(verbatim: title)
+            Spacer()
+            if let value { KeyChip(text: value) }
+        }
+    }
+
+    // Safari's icon, or the generic app icon if it is missing.
+    private static var safariIcon: NSImage {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Safari") {
+            return NSWorkspace.shared.icon(forFile: url.path)
+        }
+        return NSWorkspace.shared.icon(for: .application)
+    }
+
+    private func tipRow(_ keys: String, _ text: String) -> some View {
+        tipRow(text) { KeyChip(text: keys) }
+    }
+
+    private func tipRow<Leading: View>(_ text: String, @ViewBuilder leading: () -> Leading) -> some View {
+        HStack(spacing: 12) {
+            leading()
+                .frame(width: 76, alignment: .leading)
+            Text(verbatim: text)
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+private struct AppShortcutsPage: View {
+    @ObservedObject var prefs: Preferences
+    var glass: Bool
+
+    private static let safariKey = "com.apple.Safari"
+    // ⌃⌘J, the example shortcut for Safari.
+    private static let example = KeyCombo(keyCode: UInt32(kVK_ANSI_J),
+                                          modifiers: UInt32(cmdKey | controlKey),
+                                          keyLabel: "J")
+
+    init(prefs: Preferences, glass: Bool) {
+        self.prefs = prefs
+        self.glass = glass
+    }
+
+    private var safariURL: URL? {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: Self.safariKey)
+    }
+
+    var body: some View {
+        SplitPage(
+            symbol: "keyboard",
+            title: String(localized: "A shortcut for every app"),
+            subtitle: String(localized: "Press it to open or switch to the app, and press it again to hide it. It works wherever you are.")
+        ) {
+            if let url = safariURL {
+                OnboardingCard {
+                    Text("Try it with Safari:")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    safariRow(url)
+                }
+            }
+            OnboardingCard {
+                Text("Add more in Settings › App Shortcuts, or choose Set Shortcut… on an app in AppPad.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Spacer()
+                    Button("Open App Shortcuts") { OnboardingGuide.openSettings?(.shortcuts) }
+                        .onboardingSecondary(glass: glass)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func safariRow(_ url: URL) -> some View {
+        let combo = Self.example
+        let comboText = combo.displayString
+        let current = prefs.appHotKeys.first { $0.key == Self.safariKey }?.combo
+        let conflict = prefs.conflictName(for: combo, excluding: .app(Self.safariKey))
+
+        HStack(spacing: 12) {
+            Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 40, height: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "Safari").fontWeight(.medium)
+                if current == combo {
+                    Label {
+                        Text(verbatim: String(localized: "Press \(comboText) to try it."))
+                    } icon: {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    }
+                    .font(.callout)
+                } else if let current {
+                    Text(verbatim: String(localized: "Safari already uses \(current.displayString)."))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                } else if let conflict {
+                    Text(verbatim: String(localized: "\(comboText) is already used by \(conflict)."))
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                }
+            }
+            Spacer(minLength: 8)
+            KeyChip(text: current?.displayString ?? comboText)
+            if current == combo {
+                Button("Remove") { setSafari(nil, url: url) }
+                    .onboardingSecondary(glass: glass, size: .regular)
+            } else if current == nil {
+                Button(String(localized: "Set \(comboText) for Safari")) { setSafari(combo, url: url) }
+                    .onboardingProminent(glass: glass, size: .regular)
+                    .disabled(conflict != nil)
+            }
+        }
+    }
+
+    // Same storage as Settings › App Shortcuts; hotkeys re-register via preferencesDidChange.
+    private func setSafari(_ combo: KeyCombo?, url: URL) {
+        if let index = prefs.appHotKeys.firstIndex(where: { $0.key == Self.safariKey }) {
+            if let combo {
+                prefs.appHotKeys[index].combo = combo
+            } else {
+                prefs.appHotKeys.remove(at: index)
+            }
+        } else if let combo {
+            let name = (FileManager.default.displayName(atPath: url.path) as NSString).deletingPathExtension
+            prefs.appHotKeys.append(AppHotKey(key: Self.safariKey, path: url.path, name: name, combo: combo))
+        }
+    }
+}
+
 private struct AIPage: View {
     @ObservedObject private var host = MCPHost.shared
     var glass: Bool
-    @State private var client: Client = .claudeCode
+    @State private var client: Client = .other
     @State private var copied: String?
 
     private enum Client { case claudeCode, other }
@@ -370,30 +589,30 @@ private struct AIPage: View {
                 .toggleStyle(.switch)
                 if host.enabled {
                     Divider()
-                    HStack {
-                        Picker(selection: $client) {
-                            Text(verbatim: "Claude Code").tag(Client.claudeCode)
-                            Text("Other clients").tag(Client.other)
-                        } label: {
-                            EmptyView()
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .fixedSize()
-                        Spacer()
-                        statusText.font(.callout)
+                    Picker(selection: $client) {
+                        Text("Claude Desktop, Cursor and other clients").tag(Client.other)
+                        Text(verbatim: "Claude Code").tag(Client.claudeCode)
+                    } label: {
+                        EmptyView()
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
                     snippet(client == .claudeCode ? MCPClientConfig.claudeCodeCommand : MCPClientConfig.json)
-                    Group {
-                        if client == .claudeCode {
-                            Text("Run once in Terminal.")
-                        } else {
-                            Text("Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client.")
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Group {
+                            if client == .claudeCode {
+                                Text("Run once in Terminal.")
+                            } else {
+                                Text("Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client.")
+                            }
                         }
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 8)
+                        statusText
                     }
                     .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             OnboardingCard {
@@ -713,6 +932,22 @@ private struct FeatureCard: View {
     }
 }
 
+// Looks like an app filter chip in the Clipboard panel.
+private struct AppFilterChip: View {
+    var icon: NSImage
+
+    var body: some View {
+        Image(nsImage: icon)
+            .resizable()
+            .interpolation(.high)
+            .frame(width: 18, height: 18)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(Color.accentColor.opacity(0.18)))
+            .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.5)))
+    }
+}
+
 private struct KeyChip: View {
     var text: String
 
@@ -729,7 +964,7 @@ private struct KeyChip: View {
 // Liquid Glass buttons on macOS 26 with glass controls on, standard styles otherwise.
 private extension View {
     @ViewBuilder
-    func onboardingProminent(glass: Bool, size: ControlSize = .large) -> some View {
+    func onboardingProminent(glass: Bool, size: SwiftUI.ControlSize = .large) -> some View {
         if glass {
             if #available(macOS 26.0, *) {
                 self.buttonStyle(.glassProminent).controlSize(size)
@@ -742,7 +977,7 @@ private extension View {
     }
 
     @ViewBuilder
-    func onboardingSecondary(glass: Bool, size: ControlSize = .large) -> some View {
+    func onboardingSecondary(glass: Bool, size: SwiftUI.ControlSize = .large) -> some View {
         if glass {
             if #available(macOS 26.0, *) {
                 self.buttonStyle(.glass).controlSize(size)

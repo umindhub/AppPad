@@ -4,6 +4,64 @@
     "" : {
 
     },
+    "%@ is already used by %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ wird bereits von %2$@ verwendet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ya lo usa %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ est déjà utilisé par %2$@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ è già usata da %2$@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ はすでに %2$@ で使用されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@은(는) 이미 %2$@에서 사용 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ wordt al gebruikt door %2$@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 已被“%2$@”使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 已被「%2$@」使用。"
+          }
+        }
+      }
+    },
     "%@ now opens Workflows." : {
       "localizations" : {
         "de" : {
@@ -62,60 +120,60 @@
         }
       }
     },
-    "A fast Launchpad for your Mac, plus clipboard history, workflows and window control — all from the menu bar." : {
+    "A shortcut for every app" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ein schnelles Launchpad für deinen Mac, dazu Zwischenablage-Verlauf, Workflows und Fenstersteuerung – alles über die Menüleiste."
+            "value" : "Ein Kurzbefehl für jede App"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un Launchpad rápido para tu Mac, con historial del portapapeles, flujos de trabajo y control de ventanas, todo desde la barra de menús."
+            "value" : "Un atajo para cada app"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un Launchpad rapide pour votre Mac, avec historique du presse-papiers, flux de travail et contrôle des fenêtres, le tout depuis la barre des menus."
+            "value" : "Un raccourci pour chaque app"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un Launchpad veloce per il tuo Mac, con cronologia degli appunti, flussi di lavoro e controllo delle finestre, tutto dalla barra dei menu."
+            "value" : "Un’abbreviazione per ogni app"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mac のための高速な Launchpad。クリップボード履歴、ワークフロー、ウインドウ操作もすべてメニューバーから。"
+            "value" : "アプリごとにショートカットを"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mac을 위한 빠른 Launchpad. 클립보드 기록, 워크플로, 윈도우 제어까지 모두 메뉴 막대에서 사용할 수 있습니다."
+            "value" : "모든 앱에 단축키를"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Een snel Launchpad voor je Mac, plus klembordgeschiedenis, workflows en vensterbeheer – allemaal vanuit de menubalk."
+            "value" : "Een sneltoets voor elke app"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为 Mac 打造的快速启动台，还有剪切板历史、工作流和窗口控制，全部在菜单栏中。"
+            "value" : "每个 App 一个快捷键"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "為 Mac 打造的快速啟動台，還有剪貼簿記錄、工作流程和視窗控制，全都在選單列中。"
+            "value" : "每個 App 一個快速鍵"
           }
         }
       }
@@ -174,6 +232,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輔助使用"
+          }
+        }
+      }
+    },
+    "Add more in Settings › App Shortcuts, or choose Set Shortcut… on an app in AppPad." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere fügst du unter Einstellungen › App-Kurzbefehle hinzu oder wählst bei einer App in AppPad „Kurzbefehl festlegen …“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade más en Ajustes › Atajos de apps, o elige Definir atajo… en una app de AppPad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez-en d’autres dans Réglages › Raccourcis d’apps, ou choisissez Définir un raccourci… sur une app dans AppPad."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungine altre in Impostazioni › Abbreviazioni app, oppure scegli Imposta abbreviazione… su un’app in AppPad."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「設定」›「アプリのショートカット」で追加するか、AppPad でアプリの「ショートカットを設定…」を選びます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 › 앱 단축키에서 추가하거나, AppPad에서 앱의 단축키 설정…을 선택하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voeg er meer toe via Instellingen › App-sneltoetsen, of kies ‘Stel sneltoets in…’ bij een app in AppPad."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以在“设置”›“App 快捷键”中添加更多，或在 AppPad 中对 App 选择“设置快捷键…”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以在「設定」›「App 快速鍵」中加入更多，或在 AppPad 中對 App 選擇「設定快速鍵⋯」。"
           }
         }
       }
@@ -294,6 +410,64 @@
         }
       }
     },
+    "AppPad keeps the text, images and files you copy. Items you save stay until you remove them." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad bewahrt kopierte Texte, Bilder und Dateien auf. Gesicherte Objekte bleiben, bis du sie entfernst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad guarda los textos, imágenes y archivos que copias. Los elementos que guardas se conservan hasta que los eliminas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad conserve les textes, images et fichiers que vous copiez. Les éléments enregistrés restent jusqu’à ce que vous les supprimiez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad conserva testi, immagini e file che copi. Gli elementi salvati restano finché non li rimuovi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたテキスト、画像、ファイルを AppPad が保管します。保存した項目は削除するまで残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사한 텍스트, 이미지, 파일을 AppPad가 보관합니다. 저장한 항목은 직접 제거할 때까지 남아 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad bewaart de tekst, afbeeldingen en bestanden die je kopieert. Bewaarde onderdelen blijven tot je ze verwijdert."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 会保留你复制过的文本、图片和文件。已保存的项目会一直保留，直到你移除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 會保留你拷貝過的文字、影像和檔案。已儲存的項目會一直保留，直到你移除。"
+          }
+        }
+      }
+    },
     "AppPad works without these, but some features need them. You can change them later in System Settings." : {
       "localizations" : {
         "de" : {
@@ -406,6 +580,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上一步"
+          }
+        }
+      }
+    },
+    "Built for Mac: the fast, authentic Launchpad, just like in macOS 15." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für den Mac gemacht: das schnelle, originalgetreue Launchpad – genau wie in macOS 15."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creado para Mac: el Launchpad rápido y auténtico, igual que en macOS 15."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conçu pour le Mac : le Launchpad rapide et authentique, comme dans macOS 15."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creato per Mac: il Launchpad veloce e autentico, proprio come in macOS 15."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac のために作られた、本物そのままの高速な Launchpad。macOS 15 と同じ使い心地です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac을 위해 만든, 오리지널 그대로의 빠른 Launchpad. macOS 15와 똑같습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemaakt voor de Mac: het snelle, echte Launchpad, net als in macOS 15."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为 Mac 打造，原汁原味的快速启动台，就像 macOS 15 一样。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為 Mac 打造，原汁原味的快速啟動台，就像 macOS 15 一樣。"
+          }
+        }
+      }
+    },
+    "Click the Safari icon to show only items copied from Safari" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klicke auf das Safari-Symbol, um nur aus Safari kopierte Objekte zu sehen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en el icono de Safari para ver solo lo copiado desde Safari"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliquez sur l’icône de Safari pour n’afficher que les éléments copiés depuis Safari"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fai clic sull’icona di Safari per vedere solo gli elementi copiati da Safari"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari のアイコンをクリックすると、Safari からコピーした項目だけを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari 아이콘을 클릭하면 Safari에서 복사한 항목만 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klik op het Safari-symbool om alleen onderdelen uit Safari te tonen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击 Safari 图标，只显示从 Safari 复制的项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按一下 Safari 圖像，只顯示從 Safari 拷貝的項目"
           }
         }
       }
@@ -580,6 +870,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一切都在選單列中。所有快速鍵都可以在「設定」中更改。"
+          }
+        }
+      }
+    },
+    "Everything you copy, one shortcut away" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles Kopierte, nur einen Kurzbefehl entfernt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo lo que copias, a un atajo de distancia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout ce que vous copiez, à portée de raccourci"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutto ciò che copi, a portata di abbreviazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたものすべてを、ショートカットひとつで"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사한 모든 것을 단축키 하나로"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles wat je kopieert, één sneltoets verderop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制过的一切，一个快捷键就能找回"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷貝過的一切，一個快速鍵就能找回"
           }
         }
       }
@@ -1222,6 +1570,122 @@
         }
       }
     },
+    "Name a saved item or edit its text" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichertes Objekt benennen oder seinen Text bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poner nombre a un elemento guardado o editar su texto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nommer un élément enregistré ou modifier son texte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assegna un nome a un elemento salvato o modificane il testo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した項目に名前を付ける、またはテキストを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장한 항목에 이름을 붙이거나 텍스트 편집"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geef een bewaard onderdeel een naam of wijzig de tekst"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为已保存的剪切内容命名或编辑其文本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為已儲存的剪貼內容命名或編輯其文字"
+          }
+        }
+      }
+    },
+    "Open App Shortcuts" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Kurzbefehle öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir atajos de apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les raccourcis d’apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri abbreviazioni app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのショートカットを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 단축키 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open app-sneltoetsen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 App 快捷键"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開 App 快速鍵"
+          }
+        }
+      }
+    },
     "Open AppPad with a pinch" : {
       "localizations" : {
         "de" : {
@@ -1338,60 +1802,60 @@
         }
       }
     },
-    "Other clients" : {
+    "Paste one of the first ten items" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Andere Clients"
+            "value" : "Eines der ersten zehn Objekte einsetzen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otros clientes"
+            "value" : "Pegar uno de los diez primeros elementos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autres clients"
+            "value" : "Coller l’un des dix premiers éléments"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Altri client"
+            "value" : "Incolla uno dei primi dieci elementi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "その他のクライアント"
+            "value" : "最初の 10 項目のいずれかをペースト"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기타 클라이언트"
+            "value" : "처음 10개 항목 중 하나 붙여넣기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Andere clients"
+            "value" : "Plak een van de eerste tien onderdelen"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "其他客户端"
+            "value" : "粘贴前十项中的一项"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "其他用戶端"
+            "value" : "貼上前十項中的一項"
           }
         }
       }
@@ -1570,6 +2034,180 @@
         }
       }
     },
+    "Plus clipboard history, workflows, window control and app shortcuts — all from the menu bar." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dazu Zwischenablage-Verlauf, Workflows, Fenstersteuerung und App-Kurzbefehle – alles über die Menüleiste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Además, historial del portapapeles, flujos de trabajo, control de ventanas y atajos de apps, todo desde la barra de menús."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec en plus l’historique du presse-papiers, les flux de travail, le contrôle des fenêtres et les raccourcis d’apps, le tout depuis la barre des menus."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In più cronologia degli appunti, flussi di lavoro, controllo delle finestre e abbreviazioni app, tutto dalla barra dei menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "さらに、クリップボード履歴、ワークフロー、ウインドウ操作、アプリのショートカットもすべてメニューバーから。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 기록, 워크플로, 윈도우 제어, 앱 단축키까지 모두 메뉴 막대에서 사용할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus klembordgeschiedenis, workflows, vensterbeheer en app-sneltoetsen – allemaal vanuit de menubalk."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还有剪切板历史、工作流、窗口控制和 App 快捷键，全部在菜单栏中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還有剪貼簿記錄、工作流程、視窗控制和 App 快速鍵，全都在選單列中。"
+          }
+        }
+      }
+    },
+    "Press %@ to try it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drücke %@, um es auszuprobieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsa %@ para probarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur %@ pour essayer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premi %@ per provarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ を押して試してみましょう。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@을(를) 눌러 사용해 보세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Druk op %@ om het te proberen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按 %@ 试试看。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按 %@ 試試看。"
+          }
+        }
+      }
+    },
+    "Press it to open or switch to the app, and press it again to hide it. It works wherever you are." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drücke ihn, um die App zu öffnen oder zu ihr zu wechseln, und noch einmal, um sie auszublenden. Das funktioniert überall."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Púlsalo para abrir la app o cambiar a ella, y vuelve a pulsarlo para ocultarla. Funciona estés donde estés."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez dessus pour ouvrir l’app ou y basculer, et appuyez à nouveau pour la masquer. Cela fonctionne partout."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premila per aprire l’app o passare a essa, e premila di nuovo per nasconderla. Funziona ovunque ti trovi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "押すとアプリが開くか前面に切り替わり、もう一度押すと隠れます。どこからでも使えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "누르면 앱이 열리거나 앱으로 전환되고, 다시 누르면 가려집니다. 어디서든 작동합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Druk erop om de app te openen of ernaar te wisselen, en druk nog eens om hem te verbergen. Het werkt overal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按一下打开或切换到该 App，再按一下即可隐藏。在任何地方都能用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按一下打開或切換到該 App，再按一下即可隱藏。在任何地方都能用。"
+          }
+        }
+      }
+    },
     "Restore Spotlight Shortcut" : {
       "localizations" : {
         "de" : {
@@ -1624,6 +2262,180 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "恢復 Spotlight 快速鍵"
+          }
+        }
+      }
+    },
+    "Safari already uses %@." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari verwendet bereits %@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari ya usa %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari utilise déjà %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari usa già %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari にはすでに %@ が設定されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari에는 이미 %@이(가) 지정되어 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari gebruikt al %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari 已在使用 %@。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari 已在使用 %@。"
+          }
+        }
+      }
+    },
+    "Save the selected item" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewähltes Objekt sichern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar el elemento seleccionado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer l’élément sélectionné"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva l’elemento selezionato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した項目を保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목 저장"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar het geselecteerde onderdeel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存所选项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存所選項目"
+          }
+        }
+      }
+    },
+    "Set %@ for Safari" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ für Safari festlegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asignar %@ a Safari"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attribuer %@ à Safari"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imposta %@ per Safari"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari に %@ を設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari에 %@ 지정"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stel %@ in voor Safari"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为 Safari 设置 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為 Safari 設定 %@"
           }
         }
       }
@@ -1914,6 +2726,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "試著這樣告訴你的 AI 助理："
+          }
+        }
+      }
+    },
+    "Try it with Safari:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probier es mit Safari aus:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pruébalo con Safari:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez avec Safari :"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prova con Safari:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari で試してみましょう:"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari로 사용해 보세요:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer het met Safari:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 Safari 试试："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 Safari 試試："
           }
         }
       }
@@ -4461,13 +5331,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存项目快捷键）仅显示已保存项目。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⇧⌫ 删除。输入“App名::文本”可按 App 筛选。"
+            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存的剪切内容快捷键）仅显示已保存的剪切内容。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⇧⌫ 删除。输入“App名::文本”可按 App 筛选。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪貼簿之間切換；「已儲存」按鈕（或已儲存項目快速鍵）僅顯示已儲存項目。⌘1–⌘0 貼上前十個項目，⌘J / ⌘K 等同 ↓ / ↑ 移動，⌘S 儲存，⌘⇧⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
+            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪貼簿之間切換；「已儲存」按鈕（或已儲存的剪貼內容快速鍵）僅顯示已儲存的剪貼內容。⌘1–⌘0 貼上前十個項目，⌘J / ⌘K 等同 ↓ / ↑ 移動，⌘S 儲存，⌘⇧⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
           }
         }
       }
@@ -30010,13 +30880,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已保存项目"
+            "value" : "已保存的剪切内容"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已儲存項目"
+            "value" : "已儲存的剪貼內容"
           }
         }
       }
@@ -30242,13 +31112,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已保存项目快捷键"
+            "value" : "已保存的剪切内容快捷键"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已儲存項目快速鍵"
+            "value" : "已儲存的剪貼內容快速鍵"
           }
         }
       }
@@ -30764,13 +31634,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜索已保存项目"
+            "value" : "搜索已保存的剪切内容"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜尋已儲存項目"
+            "value" : "搜尋已儲存的剪貼內容"
           }
         }
       }
@@ -32858,13 +33728,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "仅显示已保存项目"
+            "value" : "仅显示已保存的剪切内容"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "僅顯示已儲存項目"
+            "value" : "僅顯示已儲存的剪貼內容"
           }
         }
       }

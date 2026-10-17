@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-// First-launch welcome guide: features, four-finger pinch, Spotlight's ⌘Space, permissions.
+// First-launch welcome guide: features, pinch, clipboard, Spotlight's ⌘Space, app shortcuts, AI, permissions.
 // Replaces the separate one-time pinch and Spotlight guides; can be reopened from Settings › About.
 enum OnboardingGuide {
     private static let shownKey = "onboardingShown"
@@ -10,6 +10,8 @@ enum OnboardingGuide {
 
     // Called when the guide closes; true = finished with "Open AppPad".
     static var onClose: ((Bool) -> Void)?
+    // Opens Settings on a tab (set by AppDelegate).
+    static var openSettings: ((SettingsTab) -> Void)?
 
     private static var controller: OnboardingWindowController?
 
@@ -44,6 +46,74 @@ enum OnboardingGuide {
     }
 }
 
+extension Notification.Name {
+    // userInfo["step"]: +1 next page, -1 previous page.
+    static let onboardingSwipe = Notification.Name("AppPadOnboardingSwipe")
+}
+
+// Two-finger horizontal swipe (trackpad) or horizontal wheel (mouse) → one page per gesture.
+private final class OnboardingSwipeTracker {
+    private var monitor: Any?
+    private var distance: CGFloat = 0
+    private var vertical: CGFloat = 0
+    private var fired = false
+    private var lastWheelStep = Date.distantPast
+
+    private static let threshold: CGFloat = 40
+    private static let wheelCooldown: TimeInterval = 0.35
+
+    init(window: NSWindow) {
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self, weak window] event in
+            guard let self, let window, event.window === window else { return event }
+            self.handle(event)
+            return event
+        }
+    }
+
+    func stop() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+    }
+
+    private func handle(_ event: NSEvent) {
+        // Finger direction, independent of the natural scrolling setting.
+        let dx = event.isDirectionInvertedFromDevice ? event.scrollingDeltaX : -event.scrollingDeltaX
+
+        // Mouse wheel / no gesture phase: one step per notch, with a short cooldown.
+        if event.phase.isEmpty && event.momentumPhase.isEmpty {
+            guard abs(event.scrollingDeltaX) > abs(event.scrollingDeltaY), dx != 0,
+                  Date().timeIntervalSince(lastWheelStep) > Self.wheelCooldown else { return }
+            lastWheelStep = Date()
+            post(dx < 0 ? 1 : -1)
+            return
+        }
+        // Momentum after the fingers lift never turns another page.
+        guard event.momentumPhase.isEmpty else { return }
+
+        if event.phase.contains(.began) {
+            distance = 0
+            vertical = 0
+            fired = false
+        }
+        distance += dx
+        vertical += abs(event.scrollingDeltaY)
+        // Fingers to the left = next page, like Launchpad.
+        if !fired, abs(distance) > Self.threshold, abs(distance) > vertical {
+            fired = true
+            post(distance < 0 ? 1 : -1)
+        }
+        if event.phase.contains(.ended) || event.phase.contains(.cancelled) {
+            distance = 0
+            vertical = 0
+            fired = false
+        }
+    }
+
+    private func post(_ step: Int) {
+        NotificationCenter.default.post(name: .onboardingSwipe, object: nil, userInfo: ["step": step])
+    }
+}
+
 // ⌘W closes the guide (agent app: no File menu).
 private final class OnboardingWindow: NSWindow {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
@@ -62,6 +132,7 @@ private final class OnboardingWindowController: NSObject, NSWindowDelegate {
     private let window: NSWindow
     private var onClose: ((Bool) -> Void)?
     private var finished = false
+    private var swipeTracker: OnboardingSwipeTracker?
 
     init(onClose: @escaping (Bool) -> Void) {
         self.onClose = onClose
@@ -86,6 +157,7 @@ private final class OnboardingWindowController: NSObject, NSWindowDelegate {
         )
         window.contentView = NSHostingView(rootView: view)
         window.setContentSize(OnboardingView.size)
+        swipeTracker = OnboardingSwipeTracker(window: window)
     }
 
     func present() {
@@ -108,6 +180,8 @@ private final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        swipeTracker?.stop()
+        swipeTracker = nil
         let callback = onClose
         onClose = nil
         let result = finished

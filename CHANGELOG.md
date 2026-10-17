@@ -13,10 +13,13 @@ Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses i
 #### Welcome Guide
 - On first launch AppPad now opens a welcome guide instead of Launchpad: a short tour of the features, followed by a few setup steps. Every step can be skipped, and Esc or ⌘W closes the guide.
 - Four-finger pinch: turn it on or off, see which macOS gestures to turn off and in which order, and open Trackpad settings with one click.
+- Clipboard: turn the history on or off, see its shortcuts and the most useful keys (⌘1–⌘0, ⌘S, ⌘↩), and how clicking an app's icon shows only what was copied from that app.
 - ⌘Space for Workflows: turn off Spotlight's shortcut with one click. The change takes effect right away, without logging out, and can be undone on the same page. If it can't be changed automatically, the guide points to Keyboard settings.
+- App Shortcuts: try it by giving Safari ⌃⌘J with one click, then add more in Settings › App Shortcuts.
 - AI writes workflows: turn on AI Assistants (MCP), copy the setup for Claude Code or other clients, and try example prompts. Every workflow the AI writes still needs your approval.
 - Permissions and startup: grant Accessibility (needed for pasting and window control) and turn on launch at login, with a live status for each.
 - The last page lists the shortcuts for Launchpad, Clipboard, Saved items and Workflows; "Open AppPad" goes straight to Launchpad.
+- Swipe left or right with two fingers, or click or drag along the dots at the bottom, to move between pages.
 - Reopen the guide at any time from Settings › About › Show Welcome Guide….
 
 ### Changed

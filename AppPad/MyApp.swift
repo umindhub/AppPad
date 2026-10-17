@@ -117,6 +117,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         // Welcome guide (features, pinch gestures, Spotlight's ⌘Space, permissions).
         // Replaces the old one-time pinch / Spotlight hints; new installs only.
         OnboardingGuide.onClose = { [weak self] openAppPad in self?.onboardingDidClose(openAppPad: openAppPad) }
+        OnboardingGuide.openSettings = { [weak self] tab in
+            UserDefaults.standard.set(tab.rawValue, forKey: SettingsTab.storageKey)
+            self?.showSettings()
+        }
         let showsOnboarding = !launchedForMCP && !launchedByNotification && OnboardingGuide.needsShowing
         if showsOnboarding {
             Task { @MainActor [weak self] in
