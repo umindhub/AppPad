@@ -610,7 +610,7 @@ final class WorkflowRunner: ObservableObject {
         let exact = "set volume output volume \(level)"
         guard MediaKeys.canPost() else {
             var r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", exact], timeout: 10))
-            if r.success { r.output = String(localized: "Volume \(level)%") }
+            if r.success { r.output = Self.volumeText(level) }
             return r
         }
         // One key = 1/16 (6.25). Below 7 there is no room under the target, so come down from above.
@@ -622,8 +622,14 @@ final class WorkflowRunner: ObservableObject {
         MediaKeys.press(up ? .soundUp : .soundDown)      // also unmutes, like the hardware key
         try? await Task.sleep(for: .milliseconds(150))
         r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", exact], timeout: 10))
-        if r.success { r.output = String(localized: "Volume \(level)%") }
+        if r.success { r.output = Self.volumeText(level) }
         return r
+    }
+
+    // Percent is formatted per locale (e.g. "50 %" in German), not hard-coded into the string.
+    private static func volumeText(_ level: Int) -> String {
+        let percent = (Double(level) / 100).formatted(.percent.precision(.fractionLength(0)))
+        return String(localized: "Volume \(percent)")
     }
 
     // Mute key when allowed (system HUD), otherwise the silent AppleScript toggle.

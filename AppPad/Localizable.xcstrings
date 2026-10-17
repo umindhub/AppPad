@@ -2619,65 +2619,6 @@
         }
       }
     },
-    "⌘⇧J / ⌘⇧K  AppPad" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K  AppPad"
-          }
-        }
-      }
-    },
     "⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app." : {
       "localizations" : {
         "de" : {
@@ -3026,60 +2967,60 @@
         }
       }
     },
-    "Above 0% transparency the open windows behind show through, blurred by the Blur value." : {
+    "Above %@ transparency the open windows behind show through, blurred by the Blur value." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ab einer Transparenz über 0 % scheinen die geöffneten Fenster dahinter durch, unscharf gemäß dem Unschärfewert."
+            "value" : "Ab einer Transparenz über %@ scheinen die geöffneten Fenster dahinter durch, unscharf gemäß dem Unschärfewert."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Con una transparencia superior al 0 % se ven las ventanas abiertas detrás, desenfocadas según el valor de desenfoque."
+            "value" : "Con una transparencia superior al %@ se ven las ventanas abiertas detrás, desenfocadas según el valor de desenfoque."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Au-delà de 0 % de transparence, les fenêtres ouvertes derrière transparaissent, floutées selon la valeur de flou."
+            "value" : "Au-delà de %@ de transparence, les fenêtres ouvertes derrière transparaissent, floutées selon la valeur de flou."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Con una trasparenza superiore allo 0% si vedono le finestre aperte dietro, sfocate secondo il valore di sfocatura."
+            "value" : "Con una trasparenza superiore allo %@ si vedono le finestre aperte dietro, sfocate secondo il valore di sfocatura."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透明度が 0% より大きいときは、後ろの開いているウインドウが透けて見え、ぼかしの値でぼかされます。"
+            "value" : "透明度が %@ より大きいときは、後ろの開いているウインドウが透けて見え、ぼかしの値でぼかされます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "투명도가 0%보다 크면 뒤에 열린 윈도우가 비쳐 보이며 흐림 값만큼 흐려집니다."
+            "value" : "투명도가 %@보다 크면 뒤에 열린 윈도우가 비쳐 보이며 흐림 값만큼 흐려집니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boven 0% transparantie schijnen de geopende vensters erachter door, vervaagd volgens de vervagingswaarde."
+            "value" : "Boven %@ transparantie schijnen de geopende vensters erachter door, vervaagd volgens de vervagingswaarde."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透明度大于 0% 时会透出后面已打开的窗口，并按模糊度进行模糊。"
+            "value" : "透明度大于 %@ 时会透出后面已打开的窗口，并按模糊度进行模糊。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透明度大於 0% 時會透出後面已打開的視窗，並按模糊度進行模糊。"
+            "value" : "透明度大於 %@ 時會透出後面已打開的視窗，並按模糊度進行模糊。"
           }
         }
       }
@@ -5577,65 +5518,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPad 設定"
-          }
-        }
-      }
-    },
-    "AppPad shortcut" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad-Kurzbefehl"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Atajo de AppPad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Raccourci d’AppPad"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbreviazione AppPad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad のショートカット"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 단축키"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad-sneltoets"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 快捷键"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 快速鍵"
           }
         }
       }
@@ -9649,65 +9531,6 @@
         }
       }
     },
-    "Custom" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eigene"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personalizado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personnalisé"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personalizzato"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カスタム"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사용자화"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aangepast"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自定"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自訂"
-          }
-        }
-      }
-    },
     "Custom color" : {
       "localizations" : {
         "de" : {
@@ -13470,65 +13293,6 @@
         }
       }
     },
-    "Follow screen size" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bildschirmgröße folgen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Según el tamaño de pantalla"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suivre la taille de l’écran"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Segui le dimensioni dello schermo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "画面サイズに合わせる"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "화면 크기에 맞춤"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volg schermgrootte"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "跟随屏幕尺寸"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "跟隨螢幕大小"
-          }
-        }
-      }
-    },
     "Fonts" : {
       "localizations" : {
         "de" : {
@@ -14517,65 +14281,6 @@
         }
       }
     },
-    "Height: %lld pt" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Höhe: %lld pt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altura: %lld pt"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hauteur : %lld pt"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altezza: %lld pt"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高さ: %lld pt"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "높이: %lld pt"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hoogte: %lld pt"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高度：%lld pt"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高度：%lld pt"
-          }
-        }
-      }
-    },
     "Hidden files are hidden." : {
       "localizations" : {
         "de" : {
@@ -15153,65 +14858,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "HTTP 請求"
-          }
-        }
-      }
-    },
-    "https://api.example.com/path" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "https://api.example.com/path"
           }
         }
       }
@@ -19808,65 +19454,6 @@
         }
       }
     },
-    "No app shortcuts yet. Add an app, or right-click an app in AppPad › Set Shortcut…." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noch keine App-Kurzbefehle. Füge eine App hinzu oder klicke in AppPad mit der rechten Maustaste auf eine App › Kurzbefehl festlegen …."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aún no hay atajos de apps. Añade una app o haz clic derecho en una app en AppPad › Definir atajo…."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun raccourci d’app pour l’instant. Ajoutez une app ou faites un clic droit sur une app dans AppPad › Définir un raccourci…."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna abbreviazione app. Aggiungi un’app oppure fai clic destro su un’app in AppPad › Imposta abbreviazione…."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリのショートカットはまだありません。アプリを追加するか、AppPad でアプリを右クリック ›「ショートカットを設定…」を選択してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "아직 앱 단축키가 없습니다. 앱을 추가하거나 AppPad에서 앱을 오른쪽 클릭 › 단축키 설정…을 선택하십시오."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nog geen app-sneltoetsen. Voeg een app toe of klik in AppPad met de rechtermuisknop op een app › Stel sneltoets in…."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚无 App 快捷键。请添加 App，或在 AppPad 中右键点按 App › “设置快捷键…”。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚無 App 快速鍵。請加入 App，或在 AppPad 中用右鍵按一下 App ›「設定快速鍵⋯」。"
-          }
-        }
-      }
-    },
     "No app shortcuts yet. Click a field below to record one." : {
       "localizations" : {
         "de" : {
@@ -21777,65 +21364,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打開 AppPad"
-          }
-        }
-      }
-    },
-    "Open Clipboard" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zwischenablage öffnen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abrir portapapeles"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir le presse-papiers"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apri Appunti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "クリップボードを開く"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "클립보드 열기"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open klembord"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开剪切板"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打開剪貼簿"
           }
         }
       }
@@ -23876,7 +23404,7 @@
       }
     },
     "Quit all running apps. Finder and AppPad stay open." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -24104,65 +23632,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "結束正在執行的 App"
-          }
-        }
-      }
-    },
-    "Quit the app and try again." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beende die App und versuche es erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cierra la app y vuelve a intentarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quittez l’app et réessayez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esci dall’app e riprova."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリを終了してからもう一度お試しください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱을 종료한 후 다시 시도하십시오."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stop de app en probeer het opnieuw."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请退出该 App 后重试。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請結束該 App 後再試一次。"
           }
         }
       }
@@ -30852,65 +30321,6 @@
         }
       }
     },
-    "Size" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Größe"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tamaño"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Taille"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dimensioni"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "サイズ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "크기"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grootte"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尺寸"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "大小"
-          }
-        }
-      }
-    },
     "Skip" : {
       "localizations" : {
         "de" : {
@@ -33478,65 +32888,6 @@
         }
       }
     },
-    "The app will be moved to the Trash." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die App wird in den Papierkorb gelegt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app se trasladará a la papelera."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app sera placée dans la corbeille."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app verrà spostata nel Cestino."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリがゴミ箱に入れられます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱이 휴지통으로 이동됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De app wordt naar de prullenmand verplaatst."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该 App 将被移到废纸篓。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此 App 將被丟到垃圾桶。"
-          }
-        }
-      }
-    },
     "The app will be moved to the Trash. No related files were found." : {
       "localizations" : {
         "de" : {
@@ -34229,65 +33580,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「捷徑」App 中沒有「%@」。"
-          }
-        }
-      }
-    },
-    "The shortcut could not be registered. It may be used by another app." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Kurzbefehl konnte nicht registriert werden. Möglicherweise wird er von einer anderen App verwendet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido registrar el atajo. Puede que lo esté usando otra app."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le raccourci n’a pas pu être enregistré. Il est peut-être utilisé par une autre app."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile registrare l’abbreviazione. Potrebbe essere usata da un’altra app."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ショートカットを登録できませんでした。別のアプリで使用されている可能性があります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "단축키를 등록할 수 없습니다. 다른 앱에서 사용 중일 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De sneltoets kon niet worden geregistreerd. Mogelijk wordt deze door een andere app gebruikt."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法注册快捷键，可能已被其他 App 占用。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無法註冊快速鍵，可能已被其他 App 使用。"
           }
         }
       }
@@ -37664,60 +36956,60 @@
         }
       }
     },
-    "Volume %lld%%" : {
+    "Volume %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lautstärke %lld %%"
+            "value" : "Lautstärke %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Volumen %lld %%"
+            "value" : "Volumen %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Volume %lld %%"
+            "value" : "Volume %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Volume %lld%%"
+            "value" : "Volume %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "音量 %lld%%"
+            "value" : "音量 %@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "음량 %lld%%"
+            "value" : "음량 %@"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Volume %lld%%"
+            "value" : "Volume %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "音量 %lld%%"
+            "value" : "音量 %@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "音量 %lld%%"
+            "value" : "音量 %@"
           }
         }
       }
@@ -38298,65 +37590,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "寬度"
-          }
-        }
-      }
-    },
-    "Width: %lld pt" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Breite: %lld pt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anchura: %lld pt"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Largeur : %lld pt"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Larghezza: %lld pt"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "幅: %lld pt"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "너비: %lld pt"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Breedte: %lld pt"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "宽度：%lld pt"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "寬度：%lld pt"
           }
         }
       }

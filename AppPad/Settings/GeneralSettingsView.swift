@@ -114,7 +114,7 @@ struct BackgroundSection: View {
                     if settings.style == .wallpaper {
                         Text("Blur and Tint apply to the desktop wallpaper.")
                     } else {
-                        Text("Above 0% transparency the open windows behind show through, blurred by the Blur value.")
+                        Text("Above \(Double(0).formatted(.percent)) transparency the open windows behind show through, blurred by the Blur value.")
                     }
                     Text("Each background keeps its own values for the light and dark theme.")
                 }

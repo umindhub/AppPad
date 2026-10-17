@@ -1,5 +1,6 @@
 import AppKit
 import QuartzCore
+import SwiftUI   // RoundedRectangle(.continuous) for the app-icon squircle
 
 enum DeleteBadgeKind {
     case none
@@ -280,12 +281,24 @@ final class GridCellView: FlippedView {
             NSColor.labelColor.withAlphaComponent(0.22).setFill()
             NSBezierPath(roundedRect: plate, xRadius: plate.width * 0.24, yRadius: plate.width * 0.24).fill()
         }
-        guard isSelected else { return }
-        let width = min(bounds.width - 4, iconSize + 36)
-        let rect = NSRect(x: (bounds.width - width) / 2, y: icon.minY - 8,
-                          width: width, height: iconSize + Self.gap + Self.labelHeight + 16)
-        NSColor.labelColor.withAlphaComponent(0.12).setFill()
-        NSBezierPath(roundedRect: rect, xRadius: 14, yRadius: 14).fill()
+        guard isSelected, let context = NSGraphicsContext.current?.cgContext else { return }
+        let rect = selectionRect(icon: icon)
+        let shape = RoundedRectangle(cornerRadius: (rect.width * Self.plateCornerRatio).rounded(), style: .continuous)
+        context.addPath(shape.path(in: rect).cgPath)
+        context.setFillColor(NSColor.labelColor.withAlphaComponent(0.12).cgColor)
+        context.fillPath()
+    }
+
+    // Corner as a share of the plate side: 22.5% (icon shape) looks too round, the icon's own radius too square.
+    private static let plateCornerRatio: CGFloat = 0.16
+
+    // Square plate around icon + label; shrinks evenly (stays square) when the cell is too small.
+    private func selectionRect(icon: NSRect) -> NSRect {
+        let content = iconSize + Self.gap + Self.labelHeight
+        let side = floor(min(content + 16, bounds.width - 4, bounds.height - 2))
+        let centerY = icon.minY + content / 2
+        let y = min(max(1, centerY - side / 2), bounds.height - 1 - side)
+        return NSRect(x: ((bounds.width - side) / 2).rounded(), y: y.rounded(), width: side, height: side)
     }
 
     override func viewDidChangeEffectiveAppearance() {
