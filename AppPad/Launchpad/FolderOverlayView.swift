@@ -31,6 +31,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private let titleField = CrispTextField()
     private let pager = PagerView()
     private let indicator = PageIndicatorView()
+    // Morph proxies are plain layers here: moving them costs no AppKit view work per frame.
+    private let stage = MorphStageView()
     private let columns: Int
     private let cellWidth: CGFloat
     private let rowHeight: CGFloat
@@ -44,6 +46,9 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private var openFlights: [Flight]?
     private var openStep: ((CGFloat) -> Void)?
     private var openProgress: CGFloat = 0
+    // Name / title snapshots, reused by the close morph (and the next open of this overlay).
+    private var nameSnapshots: [SnapshotKey: CGImage] = [:]
+    private var titleSnapshot: (text: String, image: CGImage)?
     // Leftover after a drag out of the folder ended: invisible, must not take clicks.
     var passesClicks = false
 
@@ -82,8 +87,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
         pager.onProgress = { [weak self] progress in self?.indicator.progress = progress }
         indicator.style = Preferences.shared.pageIndicatorStyle
-        indicator.glass = Preferences.shared.glassControls
-        indicator.isHidden = true
+        indicator.isHidden = true      // glass is set up in layout, only for paged folders
         indicator.onSelect = { [weak self] page in self?.pager.scrollTo(page: page, animated: true) }
 
         outsideBlur.material = .fullScreenUI
@@ -100,6 +104,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         content.addSubview(pager)
         addSubview(titleField)       // outside the sheet
         addSubview(indicator)        // between name and sheet
+        stage.isHidden = true
+        addSubview(stage)            // morph proxies on top of everything
 
         grid.setEntries(apps.map { GridEntry.app($0) })
     }
@@ -129,6 +135,19 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         applyContrastColors()
+        nameSnapshots.removeAll()
+        titleSnapshot = nil
+    }
+
+    override func viewDidChangeBackingProperties() {
+        super.viewDidChangeBackingProperties()
+        nameSnapshots.removeAll()
+        titleSnapshot = nil
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window == nil { stopTimeline() }
     }
 
     // Outside darker than the sheet in both appearances (light: subtle, dark: deeper).
@@ -166,6 +185,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         let boxX = ((bounds.width - width) / 2).rounded()
         boxFrame = NSRect(x: boxX, y: groupTop + Self.titleHeight + gap, width: width, height: height)
         outsideBlur.frame = bounds
+        stage.frame = bounds
         if !isAnimating { backdrop.frame = boxFrame }
         content.frame = boxFrame
 
@@ -184,8 +204,9 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
         indicator.isHidden = !isPaged
         indicator.style = Preferences.shared.pageIndicatorStyle
-        indicator.glass = Preferences.shared.glassControls
         indicator.pageCount = pageCount
+        // Glass track is costly to build: only for folders that actually show the indicator.
+        indicator.glass = isPaged && Preferences.shared.glassControls
         // Centered between the name's text (its baseline — the field frame has empty space below
         // the glyphs) and the sheet's top edge.
         let textBottom = titleField.frame.minY + titleField.firstBaselineOffsetFromTop
@@ -250,6 +271,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     // MARK: - Open / close morph
     // One display-link timeline drives the backdrop, every icon and the outside blur together,
     // so the icons can never run ahead of the folder.
+    // Cost per frame is kept to layer geometry: proxies are CALayers with prebuilt contents
+    // (cached icon renders, cached name snapshots), not views that resolve images on resize.
 
     func animateOpen() {
         guard let tile = sourceTile else { return }
@@ -261,6 +284,9 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
         isAnimating = true
         setChromeAlpha(0)
+        // Real grid stays hidden during the morph: its first draw (all icons, all names) is
+        // moved off the first frame and lands under the proxies at the end.
+        content.isHidden = true
         outsideBlur.alphaValue = 0
         let step: (CGFloat) -> Void = { [weak self, weak tile] p in
             guard let self else { return }
@@ -269,10 +295,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.backdrop.setCornerRadius(startRadius + (Self.cornerRadius - startRadius) * p)
             self.outsideBlur.alphaValue = min(1, p)
             tile?.concealedLabelAlpha = 1 - Self.smoothstep(0, 0.4, p)   // page name fades out
-            for flight in flights {
-                flight.view.frame = Self.lerp(flight.start, flight.end, p)
-                flight.view.alphaValue = flight.fade.alpha(p, opening: true)
-            }
+            for flight in flights { flight.apply(p, opening: true) }
         }
         openFlights = flights
         openStep = step
@@ -284,9 +307,11 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.isAnimating = false
             self.backdrop.frame = box
             tile.concealedLabelAlpha = 0
-            // Proxies render exactly like the real content at its final spots: swap instantly.
+            self.content.isHidden = false
             self.setChromeAlpha(1)
-            flights.forEach { $0.view.removeFromSuperview() }
+            // Proxies match the real content at its final spots; they stay one more frame so
+            // the grid has been drawn before they go (no empty frame in between).
+            self.deferredCleanup = flights.map(\.layer)
         })
     }
 
@@ -304,8 +329,10 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
                 return
             }
             // Drag out while opening (rare): drop the opening proxies, close from the real layout.
-            openFlights.forEach { $0.view.removeFromSuperview() }
+            openFlights.forEach { $0.layer.removeFromSuperlayer() }
+            content.isHidden = false
         }
+        flushDeferredCleanup()
         let plate = convert(tile.visualIconRect, from: tile)
         let box = backdrop.frame
         let flights = iconFlights(tile: tile, excluding: excluded, opening: false)
@@ -319,17 +346,15 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.backdrop.setCornerRadius(Self.cornerRadius + (endRadius - Self.cornerRadius) * p)
             self.outsideBlur.alphaValue = max(0, 1 - p)
             tile.concealedLabelAlpha = Self.smoothstep(0.55, 1, p)       // page name fades back in
-            for flight in flights {
-                flight.view.frame = Self.lerp(flight.start, flight.end, p)
-                flight.view.alphaValue = flight.fade.alpha(p, opening: false)
-            }
+            for flight in flights { flight.apply(p, opening: false) }
         }, completion: { [weak self] in
             guard let self else { return }
             // Hand over to the tile: it reappears exactly where the morph ended.
             self.sourceTile?.isConcealed = false
             self.sourceTile?.concealedLabelAlpha = 0
             self.backdrop.alphaValue = 0
-            flights.forEach { $0.view.removeFromSuperview() }
+            flights.forEach { $0.layer.removeFromSuperlayer() }
+            self.hideStageIfEmpty()
             completion()
         })
     }
@@ -348,7 +373,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.sourceTile?.concealedLabelAlpha = 0
             self.backdrop.alphaValue = 0
             self.outsideBlur.alphaValue = 0
-            flights.forEach { $0.view.removeFromSuperview() }
+            flights.forEach { $0.layer.removeFromSuperlayer() }
+            self.hideStageIfEmpty()
             completion()
         })
     }
@@ -356,16 +382,21 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     // MARK: - Timeline
 
     private var link: CADisplayLink?
-    private var timelineStart: CFTimeInterval = 0
+    private var timelineStart: CFTimeInterval?     // set on the first frame
     private var timelineDuration: Double = 0
     private var timelineCurve: (Double) -> Double = { $0 }
     private var timelineStep: ((CGFloat) -> Void)?
     private var timelineDone: (() -> Void)?
+    private var deferredCleanup: [CALayer] = []
 
     private func run(duration: Double, curve: @escaping (Double) -> Double,
                      step: @escaping (CGFloat) -> Void, completion: @escaping () -> Void) {
         link?.invalidate()
-        timelineStart = CACurrentMediaTime()
+        link = nil
+        flushDeferredCleanup()
+        // The clock starts on the first display frame, not now: setup work and the first
+        // commit can take a while, and starting earlier would skip the start of the motion.
+        timelineStart = nil
         timelineDuration = duration
         timelineCurve = curve
         timelineStep = step
@@ -379,19 +410,48 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     // The last step and the completion (proxy → real view swap) share one transaction,
     // so the swap lands in the same frame as the final pose.
     @objc private func tick(_ displayLink: CADisplayLink) {
-        let t = min(1, (CACurrentMediaTime() - timelineStart) / timelineDuration)
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        timelineStep?(CGFloat(t >= 1 ? 1 : timelineCurve(t)))
+        defer { CATransaction.commit() }
+        guard let step = timelineStep else {
+            // One frame after the end: leftover proxies go.
+            flushDeferredCleanup()
+            stopLink()
+            return
+        }
+        let start = timelineStart ?? displayLink.timestamp
+        timelineStart = start
+        let t = min(1, (displayLink.targetTimestamp - start) / timelineDuration)
+        step(CGFloat(t >= 1 ? 1 : timelineCurve(t)))
         if t >= 1 {
-            link?.invalidate()
-            link = nil
             let done = timelineDone
             timelineStep = nil
             timelineDone = nil
             done?()
+            if deferredCleanup.isEmpty { stopLink() }
         }
-        CATransaction.commit()
+    }
+
+    private func stopLink() {
+        link?.invalidate()
+        link = nil
+    }
+
+    private func flushDeferredCleanup() {
+        guard !deferredCleanup.isEmpty else { return }
+        deferredCleanup.forEach { $0.removeFromSuperlayer() }
+        deferredCleanup.removeAll()
+        hideStageIfEmpty()
+    }
+
+    private func hideStageIfEmpty() {
+        if stage.layer?.sublayers?.isEmpty ?? true { stage.isHidden = true }
+    }
+
+    // Removed from the window mid-morph: no frames will come, finish without animating.
+    private func stopTimeline() {
+        stopLink()
+        flushDeferredCleanup()
     }
 
     // Critically damped spring, normalised to reach 1 at t = 1.
@@ -412,7 +472,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         return t * t * (3 - 2 * t)
     }
 
-    private static func lerp(_ a: NSRect, _ b: NSRect, _ p: CGFloat) -> NSRect {
+    fileprivate static func lerp(_ a: NSRect, _ b: NSRect, _ p: CGFloat) -> NSRect {
         NSRect(x: a.minX + (b.minX - a.minX) * p,
                y: a.minY + (b.minY - a.minY) * p,
                width: a.width + (b.width - a.width) * p,
@@ -437,13 +497,31 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     }
 
     private struct Flight {
-        let view: NSView
+        let layer: CALayer
         let start: NSRect
         let end: NSRect
         let fade: Fade
+        let fullWidth: CGFloat      // icons: real width (filter choice); 0 for names
+
+        func apply(_ p: CGFloat, opening: Bool) {
+            let rect = FolderOverlayView.lerp(start, end, p)
+            layer.frame = rect
+            layer.opacity = Float(fade.alpha(p, opening: opening))
+            // Mipmaps only when strongly shrunk; near full size match the live image view.
+            if fullWidth > 0 {
+                let filter: CALayerContentsFilter = rect.width < fullWidth * 0.5 ? .trilinear : .linear
+                if layer.minificationFilter != filter { layer.minificationFilter = filter }
+            }
+        }
     }
 
-    // Snapshot proxies flying between the folder tile and their real spots.
+    private struct SnapshotKey: Hashable {
+        let cell: ObjectIdentifier
+        let selected: Bool
+        let dropTarget: Bool
+    }
+
+    // Proxies flying between the folder tile and their real spots.
     // Each cell is split in two proxies with the same motion: the icon part and the name part.
     // The name fades (in late when opening, out early when closing) instead of popping at the
     // tiny end size. The folder title flies and fades the same way.
@@ -454,6 +532,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         let box = boxFrame
         let boxScale = plate.width / max(box.width, 1)
         let visibleArea = convert(pager.bounds, from: pager)   // cells of the shown page only
+        let backingScale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
 
         // Box space → tile space (uniform, centered).
         func collapsed(_ rect: NSRect) -> NSRect {
@@ -462,17 +541,16 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
                    width: rect.width * boxScale, height: rect.height * boxScale)
         }
 
+        stage.isHidden = false
         var flights: [Flight] = []
-        func addProxy(_ proxy: NSView, real: NSRect, small: NSRect, fade: Fade) {
-            proxy.frame = opening ? small : real
-            proxy.alphaValue = fade.alpha(0, opening: opening)
-            addSubview(proxy)
-            (proxy as? IconProxyView)?.fixOrientation()
-            flights.append(Flight(view: proxy, start: opening ? small : real, end: opening ? real : small, fade: fade))
-        }
-        func addFlight(snapshotOf view: NSView, part: NSRect, real: NSRect, small: NSRect, fade: Fade) {
-            guard let image = snapshot(view, rect: part) else { return }
-            addProxy(IconProxyView(image: image), real: real, small: small, fade: fade)
+        func addProxy(contents: Any, scale: CGFloat, real: NSRect, small: NSRect, fade: Fade, isIcon: Bool) {
+            let layer = MorphStageView.makeLayer(contents: contents, scale: scale, mipmapped: isIcon)
+            let start = opening ? small : real
+            layer.frame = start
+            layer.opacity = Float(fade.alpha(0, opening: opening))
+            stage.add(layer)
+            flights.append(Flight(layer: layer, start: start, end: opening ? real : small,
+                                  fade: fade, fullWidth: isIcon ? real.width : 0))
         }
 
         for (index, cell) in grid.cells.enumerated() where index != excluded {
@@ -496,40 +574,61 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
                 shrink = collapsed
             }
 
-            // Icon: not a bitmap snapshot (cacheDisplay renders it duller than the live icon, which
-            // lit up when swapped in at the end). Same NSImage in an NSImageView, exactly like the
-            // cell's own image view and the drag image → the swap shows no change.
+            // Icon: not a bitmap snapshot (cacheDisplay renders it duller than the live icon).
+            // The same NSImage, turned into layer contents the way an image view does it.
             let iconReal = convert(cell.iconRect, from: cell)
-            addProxy(Self.iconProxy(cell.snapshotIcon()), real: iconReal, small: shrink(iconReal),
-                     fade: tileIndex < 9 ? .none : .whole)
+            let icon = iconContents(index: index, cell: cell, scale: backingScale)
+            addProxy(contents: icon.contents, scale: icon.scale, real: iconReal, small: shrink(iconReal),
+                     fade: tileIndex < 9 ? .none : .whole, isIcon: true)
             // Name: snapshot below the middle of the icon → name gap (cell coordinates, flipped).
             let split = (cell.iconRect.maxY + GridCellView.gap / 2).rounded()
             let namePart = NSRect(x: 0, y: split, width: cell.bounds.width, height: cell.bounds.height - split)
             let nameReal = convert(namePart, from: cell)
-            addFlight(snapshotOf: cell, part: namePart, real: nameReal, small: shrink(nameReal), fade: .text)
+            if let name = nameSnapshot(cell, part: namePart) {
+                addProxy(contents: name, scale: backingScale, real: nameReal, small: shrink(nameReal),
+                         fade: .text, isIcon: false)
+            }
         }
 
         let titleRect = convert(titleField.bounds, from: titleField)
-        addFlight(snapshotOf: titleField, part: titleField.bounds, real: titleRect, small: collapsed(titleRect), fade: .text)
+        if let title = titleImage() {
+            addProxy(contents: title, scale: backingScale, real: titleRect, small: collapsed(titleRect),
+                     fade: .text, isIcon: false)
+        }
         return flights
     }
 
-    // Rendered like GridCellView's imageView (same scaling, layer-backed).
-    private static func iconProxy(_ image: NSImage) -> NSImageView {
-        let view = NSImageView()
-        view.imageScaling = .scaleProportionallyUpOrDown
-        view.wantsLayer = true
-        view.image = image
-        return view
+    // Apps: cached per app (shared with the launcher warm-up); anything else rendered on the spot.
+    private func iconContents(index: Int, cell: GridCellView, scale: CGFloat) -> (contents: Any, scale: CGFloat) {
+        if grid.entries.indices.contains(index), case .app(let app) = grid.entries[index] {
+            return IconCache.shared.layerContents(for: app, scale: scale)
+        }
+        let image = cell.snapshotIcon()
+        let contentsScale = image.recommendedLayerContentsScale(scale)
+        return (image.layerContents(forContentsScale: contentsScale), contentsScale)
     }
 
-    private func snapshot(_ view: NSView, rect: NSRect) -> NSImage? {
+    private func nameSnapshot(_ cell: GridCellView, part: NSRect) -> CGImage? {
+        let key = SnapshotKey(cell: ObjectIdentifier(cell), selected: cell.isSelected, dropTarget: cell.isDropTarget)
+        if let hit = nameSnapshots[key] { return hit }
+        guard let image = snapshot(cell, rect: part) else { return nil }
+        nameSnapshots[key] = image
+        return image
+    }
+
+    private func titleImage() -> CGImage? {
+        let text = titleField.stringValue
+        if let titleSnapshot, titleSnapshot.text == text { return titleSnapshot.image }
+        guard let image = snapshot(titleField, rect: titleField.bounds) else { return nil }
+        titleSnapshot = (text, image)
+        return image
+    }
+
+    private func snapshot(_ view: NSView, rect: NSRect) -> CGImage? {
         guard rect.width > 0, rect.height > 0,
               let rep = view.bitmapImageRepForCachingDisplay(in: rect) else { return nil }
         view.cacheDisplay(in: rect, to: rep)
-        let image = NSImage(size: rect.size)
-        image.addRepresentation(rep)
-        return image
+        return rep.cgImage
     }
 
     // MARK: - Title editing
@@ -629,32 +728,50 @@ final class FolderBoxView: FlippedView {
     override func mouseDown(with event: NSEvent) {}
 }
 
-// Layer-hosting image view: contents scale with the frame (no NSImageView layout drift).
-final class IconProxyView: NSView {
-    init(image: NSImage) {
-        super.init(frame: .zero)
-        let hosted = CALayer()
-        hosted.contents = image
-        hosted.contentsGravity = .resizeAspect
-        hosted.magnificationFilter = .linear
-        hosted.minificationFilter = .trilinear
-        layer = hosted
+// Layer-hosting stage for the morph proxies (plain CALayers, no views).
+// Sublayer space is made y-down like the flipped overlay; image layers are flipped back
+// so their contents stay upright, whatever flip the ancestor layers carry.
+final class MorphStageView: NSView {
+    private let root = CALayer()
+
+    private static let noActions: [String: CAAction] = {
+        var actions: [String: CAAction] = [:]
+        for key in ["position", "bounds", "frame", "opacity", "contents", "hidden", "transform",
+                    "minificationFilter", "sublayers", "onOrderIn", "onOrderOut"] {
+            actions[key] = NSNull()
+        }
+        return actions
+    }()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        root.actions = Self.noActions
+        layer = root
         wantsLayer = true
-    }
-
-    // A hosted layer inside flipped AppKit views renders its contents upside down;
-    // flip it back once it is in the layer tree.
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        fixOrientation()
-    }
-
-    func fixOrientation() {
-        guard let layer, layer.superlayer != nil, layer.contentsAreFlipped() else { return }
-        layer.isGeometryFlipped.toggle()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    static func makeLayer(contents: Any, scale: CGFloat, mipmapped: Bool) -> CALayer {
+        let layer = CALayer()
+        layer.actions = noActions
+        layer.contents = contents
+        layer.contentsScale = scale
+        layer.contentsGravity = .resizeAspect
+        layer.magnificationFilter = .linear
+        layer.minificationFilter = mipmapped ? .trilinear : .linear
+        return layer
+    }
+
+    func add(_ layer: CALayer) {
+        // y-down sublayer space (matches the flipped overlay coordinates).
+        if root.superlayer != nil, !root.contentsAreFlipped() { root.isGeometryFlipped.toggle() }
+        root.addSublayer(layer)
+        // Upright contents.
+        if layer.contentsAreFlipped() { layer.isGeometryFlipped.toggle() }
     }
 }

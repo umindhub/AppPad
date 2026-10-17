@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.0
+
+### Changed
+- Launchpad: opening and closing a folder is now smoother and more responsive, with less work done per frame during the animation.
+
 ## v1.0.9
 
 ### Added

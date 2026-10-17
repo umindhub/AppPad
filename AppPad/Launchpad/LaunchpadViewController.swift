@@ -144,10 +144,12 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     func reloadAll(refreshFolder: Bool = true) {
         _ = view
         guard let controller, drag == nil else { return }
-        let pages = controller.displayPages().enumerated().map { index, entries in
+        let displayPages = controller.displayPages()
+        let pages = displayPages.enumerated().map { index, entries in
             makePageGrid(page: index, entries: entries)
         }
         pager.setPages(pages)
+        warmFolderIcons(displayPages)
         if isSearching { updateSearch(fromReload: true) }
         if let overlay = folderOverlay {
             if refreshFolder {
@@ -159,6 +161,21 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         }
         syncIndicator()
         view.needsLayout = true
+    }
+
+    // Apps inside folders are on no page, so their icons were never rendered at full size:
+    // render the first page's worth of each folder in idle slices, so opening never waits.
+    private static let warmAppsPerFolder = 24
+
+    private func warmFolderIcons(_ pages: [[GridEntry]]) {
+        var apps: [AppInfo] = []
+        for entries in pages {
+            for case .folder(_, let folderApps) in entries {
+                apps.append(contentsOf: folderApps.prefix(Self.warmAppsPerFolder))
+            }
+        }
+        let scale = view.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+        IconCache.shared.warm(apps, scale: scale)
     }
 
     func makePageGrid(page: Int, entries: [GridEntry]) -> PageGridView {
