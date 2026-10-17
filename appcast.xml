@@ -5,6 +5,20 @@
     <link>https://apppad.pages.dev/appcast.xml</link>
     <language>en</language>
     <item>
+      <title>Version 1.1.0</title>
+      <pubDate>Sat, 17 Oct 2026 02:55:39 GMT</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+<h3>Changed</h3>
+<ul>
+<li>Launchpad: opening and closing a folder is now smoother and more responsive, with less work done per frame during the animation.</li>
+</ul>
+      ]]></description>
+      <enclosure url="https://github.com/umindhub/AppPad/releases/download/v1.1.0/AppPad-1.1.0.dmg" type="application/octet-stream" sparkle:edSignature="q9eTU5vB42g3AIa1GTi7JfJJATWDkO6PRQdLFuadkjAFtc1SJKcGZeoxOwcsUJi/XLjuQJtomc7qreILTmsKAw==" length="9400826"/>
+    </item>
+    <item>
       <title>Version 1.0.9</title>
       <pubDate>Fri, 16 Oct 2026 14:02:11 GMT</pubDate>
       <sparkle:version>10</sparkle:version>
