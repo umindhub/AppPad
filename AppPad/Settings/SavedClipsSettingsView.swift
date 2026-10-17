@@ -379,7 +379,7 @@ private struct SavedClipRow: View {
 }
 
 // Sheet editor for a text item's content. Plain text, no smart quotes / dashes (CodeTextView),
-// so the pasted result is exactly what was typed. ⌘↩ saves (↩ inserts a newline), Esc cancels.
+// so the pasted result is exactly what was typed. ⌘S / ⌘↩ save and close (↩ inserts a newline), Esc cancels.
 private struct ClipContentEditor: View {
     let draft: ClipContentDraft
     var onSave: (String) -> ClipTextUpdate
@@ -424,13 +424,32 @@ private struct ClipContentEditor: View {
                     .keyboardShortcut(.return, modifiers: .command)
                     .buttonStyle(.borderedProminent)
                     .disabled(!canSave)
-                    .help("⌘↩")
+                    .help(Text(verbatim: "⌘S  ⌘↩"))
             }
+        }
+        // ⌘S: always enabled, so it also closes when nothing changed.
+        .background {
+            Button("", action: saveAndClose)
+                .keyboardShortcut("s", modifiers: .command)
+                .opacity(0)
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
         }
         .padding(20)
         .frame(width: 620, height: 440)
         .onAppear { text = draft.text }
         .onChange(of: text) { error = nil }
+    }
+
+    // Unchanged → close; empty → beep; otherwise same path as the Save button.
+    private func saveAndClose() {
+        if text == draft.text {
+            dismiss()
+        } else if canSave {
+            save()
+        } else {
+            NSSound.beep()
+        }
     }
 
     private func save() {
