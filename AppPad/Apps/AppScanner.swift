@@ -108,6 +108,9 @@ nonisolated enum AppScanner {
         // Read the bundle through symlinks (Safari: /Applications/Safari.app -> cryptex),
         // but keep the original url for display, launch and layout.
         let resolved = url.resolvingSymlinksInPath()
+        if let plist = installPlaceholderInfo(at: resolved) {
+            return placeholderInfo(url, resolved: resolved, plist: plist)
+        }
         let bundle = Bundle(url: resolved) ?? Bundle(url: url)
         let plist = bundle?.infoDictionary ?? [:]
         if isTrue(plist["LSBackgroundOnly"]) { return nil }
@@ -133,6 +136,59 @@ nonisolated enum AppScanner {
             isSystem: isSystem,
             isUtility: url.deletingLastPathComponent().lastPathComponent == "Utilities",
             isAppStore: fm.fileExists(atPath: receipt)
+        )
+    }
+
+    // MARK: - App Store install placeholders
+
+    // While the App Store downloads an app, /Applications/<Name>.app has no Contents/, only
+    // Wrapper/<Name>.app (Info.plist + Icon.png, no executable) and a WrappedBundle link.
+    // Installed iPhone / iPad apps use the same layout, but with the executable: not placeholders.
+    static func installPlaceholderInfo(at url: URL) -> [String: Any]? {
+        let fm = FileManager.default
+        guard !fm.fileExists(atPath: url.appendingPathComponent("Contents").path),
+              let wrapped = wrappedApp(in: url),
+              let plist = NSDictionary(contentsOf: wrapped.appendingPathComponent("Info.plist")) as? [String: Any]
+        else { return nil }
+        if let executable = plist["CFBundleExecutable"] as? String, !executable.isEmpty,
+           fm.fileExists(atPath: wrapped.appendingPathComponent(executable).path) {
+            return nil
+        }
+        return plist
+    }
+
+    // Wrapper/<Name>.app, via the WrappedBundle link when present.
+    static func wrappedApp(in url: URL) -> URL? {
+        let fm = FileManager.default
+        let link = url.appendingPathComponent("WrappedBundle")
+        let target = link.resolvingSymlinksInPath()
+        if target.path != link.path, target.pathExtension == "app", fm.fileExists(atPath: target.path) {
+            return target
+        }
+        let wrapper = url.appendingPathComponent("Wrapper", isDirectory: true)
+        let names = (try? fm.contentsOfDirectory(atPath: wrapper.path)) ?? []
+        return names.sorted().first { $0.hasSuffix(".app") }.map { wrapper.appendingPathComponent($0) }
+    }
+
+    // Same key as the finished app (bundle id), so it keeps its place in the layout.
+    private static func placeholderInfo(_ url: URL, resolved: URL, plist: [String: Any]) -> AppInfo {
+        let fm = FileManager.default
+        let wrapper = resolved.appendingPathComponent("Wrapper", isDirectory: true)
+        let store = NSDictionary(contentsOf: wrapper.appendingPathComponent("iTunesMetadata.plist")) as? [String: Any]
+        let bundleID = (plist["CFBundleIdentifier"] as? String) ?? (store?["softwareVersionBundleId"] as? String)
+        var name = fm.displayName(atPath: url.path)
+        if name.hasSuffix(".app") { name = String(name.dropLast(4)) }
+        return AppInfo(
+            key: bundleID ?? url.path,
+            bundleID: bundleID,
+            url: url,
+            name: name,
+            bundleName: plist["CFBundleName"] as? String ?? url.deletingPathExtension().lastPathComponent,
+            category: plist["LSApplicationCategoryType"] as? String,
+            isSystem: false,
+            isUtility: url.deletingLastPathComponent().lastPathComponent == "Utilities",
+            isAppStore: store != nil,
+            isInstalling: true
         )
     }
 

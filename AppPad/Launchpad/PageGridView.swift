@@ -182,7 +182,7 @@ final class PageGridView: FlippedView {
     }
 
     private func badgeKind(for entry: GridEntry) -> DeleteBadgeKind {
-        guard case .app(let app) = entry, !app.isSystem,
+        guard case .app(let app) = entry, !app.isSystem, !app.isInstalling,
               app.bundleID != Bundle.main.bundleIdentifier else { return .none }
         return app.isAppStore ? .appStore : .other
     }

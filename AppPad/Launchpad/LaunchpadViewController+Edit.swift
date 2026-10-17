@@ -54,7 +54,8 @@ extension LaunchpadViewController: PageGridDelegate {
     }
 
     func grid(_ grid: PageGridView, didRequestDelete index: Int) {
-        guard grid.entries.indices.contains(index), case .app(let app) = grid.entries[index] else { return }
+        guard grid.entries.indices.contains(index), case .app(let app) = grid.entries[index],
+              !UninstallProgress.shared.isActive(app.key) else { return }
         presentDelete(app)
     }
 
@@ -173,22 +174,13 @@ extension LaunchpadViewController: PageGridDelegate {
     }
 
     private func showDeleteConfirm(_ app: AppInfo, scan: AppUninstaller.Scan) {
-        let isRunning = app.bundleID.map { !NSRunningApplication.runningApplications(withBundleIdentifier: $0).isEmpty } ?? false
         let title = app.isAppStore
             ? String(localized: "Delete “\(app.name)”?")
             : String(localized: "Uninstall “\(app.name)”?")
         let leftovers = scan.leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
         // App bundle first, always on (it is what gets deleted).
         let items = [ConfirmOverlayView.CheckItem(url: app.url, checked: true, locked: true)] + leftovers
-        var message = leftovers.isEmpty
-            ? String(localized: "The app will be moved to the Trash. No related files were found.")
-            : String(localized: "The app and the checked related files will be moved to the Trash.")
-        if leftovers.contains(where: { $0.url.path.hasPrefix("/Library/") }) {
-            message += "\n" + String(localized: "Files in /Library may require an administrator password.")
-        }
-        if isRunning {
-            message += "\n" + String(localized: "The app is running and will be quit first.")
-        }
+        let message = String(localized: "The app will be moved to the Trash.")
         showConfirm(
             icon: IconCache.shared.icon(for: app), title: title, message: message, items: items,
             confirmTitle: String(localized: "Move to Trash"), destructive: true
@@ -200,49 +192,135 @@ extension LaunchpadViewController: PageGridDelegate {
         }
     }
 
+    // Progress pill under the icon while the uninstall runs; the layout changes only after the
+    // success animation (icon shrinks away, the gap closes). Failure: pill stops red, then the dialog.
     private func performUninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) {
         dismissConfirm(animated: true)
+        let progress = UninstallProgress.shared
+        guard let controller, !progress.isActive(app.key) else { return }
+        progress.begin(app.key)
+        refreshUninstallCells(key: app.key)
+        controller.beginUninstall()
         Task { [weak self] in
-            guard let controller = self?.controller else { return }
-            let result = await controller.uninstall(app, bundleIDs: bundleIDs, extra: extra)
-            guard let self else { return }
-            let icon = IconCache.shared.icon(for: app)
-            if !result.appRemoved {
-                self.showConfirm(
-                    icon: icon,
-                    title: String(localized: "Couldn’t move “\(app.name)” to the Trash."),
-                    message: String(localized: "Quit the app and try again. Deleting it may also require an administrator password."),
-                    items: [], confirmTitle: String(localized: "OK"), destructive: false, showsCancel: false
-                ) { [weak self] _ in self?.dismissConfirm(animated: true) }
-            } else if !result.failed.isEmpty {
-                // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
-                var message = String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder.")
-                if let cask = result.homebrewFailedCask { message += "\n\n" + Self.homebrewHelp(cask) }
-                self.showConfirm(
-                    icon: icon,
-                    title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash."),
-                    message: message,
-                    items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
-                    confirmTitle: String(localized: "Show in Finder"), destructive: false
-                ) { [weak self] urls in
-                    self?.dismissConfirm(animated: true)
-                    guard !urls.isEmpty else { return }
-                    self?.controller?.hide()
-                    NSWorkspace.shared.activateFileViewerSelecting(urls)
-                }
-            } else if let cask = result.homebrewFailedCask {
-                // App is in the Trash, only the Homebrew record is left (e.g. its uninstall needs sudo).
-                self.showConfirm(
-                    icon: icon,
-                    title: String(localized: "Homebrew couldn’t remove the cask of “\(app.name)”."),
-                    message: Self.homebrewHelp(cask),
-                    items: [], confirmTitle: String(localized: "Copy Command"), destructive: false
-                ) { [weak self] _ in
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(HomebrewCask.command(for: cask), forType: .string)
-                    self?.dismissConfirm(animated: true)
-                }
+            let result = await AppUninstaller.uninstall(app, bundleIDs: bundleIDs, extra: extra) { on in
+                controller.setAuthorizing(on)
             }
+            progress.finish(app.key, success: result.appRemoved)
+            let visible = self?.view.window?.isVisible == true
+            if result.appRemoved {
+                if visible {
+                    try? await Task.sleep(for: .seconds(UninstallProgress.successDuration))
+                    self?.closeUninstallGap(key: app.key)
+                    try? await Task.sleep(for: .milliseconds(350))
+                }
+                progress.clear(app.key)
+                controller.endUninstall(removing: app)
+            } else {
+                controller.endUninstall(removing: nil)
+                Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(UninstallProgress.failureDuration))
+                    progress.clear(app.key)
+                    self?.refreshUninstallCells(key: app.key)
+                }
+                // Let the red pill be seen before the dialog covers the grid.
+                if visible, result.failure != .cancelled { try? await Task.sleep(for: .milliseconds(450)) }
+            }
+            self?.reportUninstall(app, result: result)
+        }
+    }
+
+    private func reportUninstall(_ app: AppInfo, result: AppUninstaller.Result) {
+        let icon = IconCache.shared.icon(for: app)
+        if !result.appRemoved {
+            let title = String(localized: "Couldn’t move “\(app.name)” to the Trash.")
+            switch result.failure ?? .other("") {
+            case .cancelled:
+                return   // password prompt cancelled by the user
+            case .automationDenied:
+                showConfirm(
+                    icon: icon, title: title,
+                    message: String(localized: "This app belongs to the system administrator, so AppPad asks Finder to delete it. Allow AppPad to control Finder in System Settings › Privacy & Security › Automation, then try again."),
+                    items: [], confirmTitle: String(localized: "Open System Settings"), destructive: false
+                ) { [weak self] _ in
+                    self?.dismissConfirm(animated: true)
+                    self?.controller?.hide()
+                    Self.openAutomationSettings()
+                }
+            case .stillRunning:
+                showErrorConfirm(icon: icon, title: title,
+                                 message: String(localized: "The app didn’t quit. Quit it and try again."))
+            case .other(let description):
+                showErrorConfirm(icon: icon, title: title, message: description.isEmpty
+                    ? String(localized: "Try again. Deleting it may require an administrator password.")
+                    : description)
+            }
+        } else if !result.failed.isEmpty {
+            // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
+            var message = String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder.")
+            if let cask = result.homebrewFailedCask { message += "\n\n" + Self.homebrewHelp(cask) }
+            showConfirm(
+                icon: icon,
+                title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash."),
+                message: message,
+                items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
+                confirmTitle: String(localized: "Show in Finder"), destructive: false
+            ) { [weak self] urls in
+                self?.dismissConfirm(animated: true)
+                guard !urls.isEmpty else { return }
+                self?.controller?.hide()
+                NSWorkspace.shared.activateFileViewerSelecting(urls)
+            }
+        } else if let cask = result.homebrewFailedCask {
+            // App is in the Trash, only the Homebrew record is left (e.g. its uninstall needs sudo).
+            showConfirm(
+                icon: icon,
+                title: String(localized: "Homebrew couldn’t remove the cask of “\(app.name)”."),
+                message: Self.homebrewHelp(cask),
+                items: [], confirmTitle: String(localized: "Copy Command"), destructive: false
+            ) { [weak self] _ in
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(HomebrewCask.command(for: cask), forType: .string)
+                self?.dismissConfirm(animated: true)
+            }
+        }
+    }
+
+    private func showErrorConfirm(icon: NSImage?, title: String, message: String) {
+        showConfirm(icon: icon, title: title, message: message, items: [],
+                    confirmTitle: String(localized: "OK"), destructive: false, showsCancel: false
+        ) { [weak self] _ in self?.dismissConfirm(animated: true) }
+    }
+
+    private static func openAutomationSettings() {
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Automation",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation",
+        ]
+        for string in urls {
+            if let url = URL(string: string), NSWorkspace.shared.open(url) { return }
+        }
+    }
+
+    // MARK: - Uninstall progress cells
+
+    // Every grid that can show the app: pages, search results, the open folder.
+    private var uninstallGrids: [PageGridView] {
+        (pager.pages + resultsPager.pages).compactMap { $0 as? PageGridView } + [folderOverlay?.grid].compactMap { $0 }
+    }
+
+    private func refreshUninstallCells(key: String) {
+        for grid in uninstallGrids {
+            for cell in grid.cells where cell.appKey == key { cell.refreshUninstallState() }
+        }
+    }
+
+    // The trashed app's slot closes: the following icons slide back by one before the reload.
+    private func closeUninstallGap(key: String) {
+        for grid in uninstallGrids {
+            guard let index = grid.cells.firstIndex(where: { $0.appKey == key }) else { continue }
+            grid.cells[index].alphaValue = 0
+            let slots = grid.cells.indices.map { $0 < index ? $0 : ($0 == index ? -1 : $0 - 1) }
+            grid.applyArrangement(slots, animated: true)
         }
     }
 

@@ -43,7 +43,7 @@ nonisolated struct AppShortcutEntry: Identifiable, Equatable, Sendable {
         // so each copy has its own shortcut.
         var seenPaths = Set<String>()
         let unique = (AppScanner.scanAll() + AppScanner.scanExtraLocations())
-            .filter { seenPaths.insert($0.url.standardizedFileURL.path).inserted }
+            .filter { !$0.isInstalling && seenPaths.insert($0.url.standardizedFileURL.path).inserted }
         let idCounts = Dictionary(grouping: unique, by: { $0.key }).mapValues(\.count)
         let apps = unique.map { app -> AppInfo in
             guard idCounts[app.key, default: 0] > 1 else { return app }

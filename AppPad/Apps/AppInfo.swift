@@ -11,4 +11,5 @@ nonisolated struct AppInfo: Hashable, Sendable {
     let isSystem: Bool       // ships with macOS (cannot be deleted)
     let isUtility: Bool      // lives in a "Utilities" folder
     let isAppStore: Bool     // has a Mac App Store receipt
+    var isInstalling = false // App Store download placeholder (not launchable yet)
 }

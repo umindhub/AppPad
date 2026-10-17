@@ -13,7 +13,15 @@ final class IconCache {
     private var warmTask: Task<Void, Never>?
 
     func icon(for app: AppInfo) -> NSImage {
-        icon(path: app.url.path)
+        guard app.isInstalling else { return icon(path: app.url.path) }
+        // Download placeholder: the App Store puts the real icon next to the stub Info.plist.
+        let path = app.url.path
+        if let image = cache[path] { return image }
+        let png = AppScanner.wrappedApp(in: app.url.resolvingSymlinksInPath())?.appendingPathComponent("Icon.png")
+        let image = png.flatMap { NSImage(contentsOf: $0) } ?? NSWorkspace.shared.icon(forFile: path)
+        image.size = NSSize(width: 128, height: 128)
+        cache[path] = image
+        return image
     }
 
     func icon(path: String) -> NSImage {

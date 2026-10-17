@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.3
+
+### Added
+- Launchpad: apps downloading from the App Store show up right away, dimmed with a progress bar, and become normal once installed.
+- Launchpad: deleting an app shows a progress bar under its icon; the icon disappears when it's done.
+
+### Changed
+- Uninstall: app settings and data in the sandbox containers are kept, as when deleting from Finder, so reinstalling restores them.
+
+### Fixed
+- Uninstall: App Store apps and other apps owned by the system can be deleted again (Finder asks for your password or Touch ID). Leftovers in `/Library` are removed the same way.
+- Uninstall: widgets and extensions still running from the app no longer block deleting it.
+
 ## v1.1.2
 
 ### Changed

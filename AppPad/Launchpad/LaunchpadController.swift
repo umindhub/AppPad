@@ -38,6 +38,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var watcher: AppDirectoryWatcher?
     private var rescanTask: Task<Void, Never>?
     private var rescanDebounce: Task<Void, Never>?
+    // Uninstalls whose progress animation is still running: catalog rescans wait for them,
+    // otherwise the trashed app's cell would vanish mid-animation.
+    private var uninstallsInFlight = 0
+    private var rescanAfterUninstall = false
+    // Finder password prompt up: losing key to it must not close the panel.
+    private var isAuthorizing = false
     private var lastCapacity = 0
     private var isHiding = false
     // When the panel last closed because it lost key (click outside).
@@ -117,6 +123,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         watcher = AppDirectoryWatcher(paths: paths) { [weak self] in
             self?.scheduleRescan()
         }
+        InstallProgressMonitor.shared.start(
+            folders: AppScanner.roots.filter { !$0.path.hasPrefix("/System/") && FileManager.default.fileExists(atPath: $0.path) }
+        )
     }
 
     // MARK: - Catalog
@@ -144,12 +153,17 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     }
 
     private func apply(apps newApps: [AppInfo], index: SearchIndex) {
+        guard uninstallsInFlight == 0 else {
+            rescanAfterUninstall = true
+            return
+        }
         apps = newApps
         appsByKey = Dictionary(newApps.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         searchIndex = index
         stats.seedIfNeeded(newApps)
         IconCache.shared.invalidate()
         layoutStore.reconcile(apps: newApps, capacity: capacity)
+        InstallProgressMonitor.shared.sync(installing: newApps.filter(\.isInstalling).map(\.url))
         viewController.reloadAll()
         warmUpIfNeeded()
     }
@@ -230,10 +244,13 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         folder.apps.compactMap { appsByKey[$0] }
     }
 
+    // Workflow panel / search API: App Store downloads in progress can't be opened yet.
+    private var launchableApps: [AppInfo] { apps.filter { !$0.isInstalling } }
+
     // Every app, most used first (Workflow panel with an empty search).
     func appsByFrecency() -> [AppInfo] {
         let now = Date()
-        return apps
+        return launchableApps
             .map { (app: $0, score: stats.score(for: $0.key, now: now)) }
             .sorted { a, b in
                 if a.score != b.score { return a.score > b.score }
@@ -247,6 +264,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Workflow panel: every app with its match score (0 = no match; empty query → all match).
     func scoredApps(matching query: String) -> [(app: AppInfo, match: Int)] {
         let normalized = SearchIndex.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        let apps = launchableApps
         guard !normalized.isEmpty else { return apps.map { (app: $0, match: 1) } }
         // "final-cut-pro" (a name completed in the panel) also matches as "final cut pro".
         let spaced = normalized.contains("-") ? normalized.replacingOccurrences(of: "-", with: " ") : nil
@@ -283,11 +301,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     func search(_ query: String) -> [AppInfo] {
         let terms = SearchIndex.queryTerms(query)
         guard !terms.isEmpty else { return [] }
-        return rankedApps(terms: terms, now: Date()).map(\.app)
+        return rankedApps(terms: terms, now: Date(), includeInstalling: false).map(\.app)
     }
 
-    private func rankedApps(terms: [String], now: Date) -> [(app: AppInfo, rank: SearchRank)] {
-        apps.compactMap { app -> (app: AppInfo, rank: SearchRank)? in
+    // Launchpad search keeps downloads in progress (they are in the grid too).
+    private func rankedApps(terms: [String], now: Date, includeInstalling: Bool = true) -> [(app: AppInfo, rank: SearchRank)] {
+        (includeInstalling ? apps : launchableApps).compactMap { app -> (app: AppInfo, rank: SearchRank)? in
             let match = searchIndex.matchScore(app.key, terms: terms)
             guard match > 0 else { return nil }
             return (app: app, rank: SearchRank(match: match, frecency: stats.score(for: app.key, now: now), name: app.name))
@@ -664,6 +683,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // Click outside the panel → close.
     func windowDidResignKey(_ notification: Notification) {
         guard !PanelSwitch.isOutgoing(panel) else { return }   // next panel took key
+        guard !isAuthorizing else {
+            CloseLog.note("launchpad: resigned key to the password prompt (kept open)")
+            return
+        }
         if panel.isVisible, !isHiding, !isFadingOut {
             lastOutsideClose = ProcessInfo.processInfo.systemUptime
             let keyWindow = NSApp.keyWindow?.className ?? "none"
@@ -756,6 +779,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // MARK: - Actions
 
     func launch(_ app: AppInfo) {
+        guard !app.isInstalling else { return }   // still downloading
         let key = app.key
         CloseLog.note("launchpad: launch \(key)")
         stats.record(app.key, manual: true)
@@ -782,14 +806,33 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     var installedBundleIDs: Set<String> { Set(apps.compactMap(\.bundleID)) }
 
-    func uninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) async -> AppUninstaller.Result {
-        let result = await AppUninstaller.uninstall(app, bundleIDs: bundleIDs, extra: extra)
-        guard result.appRemoved else { return result }
-        layoutStore.remove(appKey: app.key, capacity: capacity)
-        apps.removeAll { $0.key == app.key }
-        appsByKey[app.key] = nil
-        viewController.reloadAll()
-        return result
+    // Call endUninstall when the progress animation is done (the layout changes only then).
+    func beginUninstall() {
+        uninstallsInFlight += 1
+    }
+
+    // Around Finder's password prompt: stay open, take key back when it is gone.
+    func setAuthorizing(_ authorizing: Bool) {
+        isAuthorizing = authorizing
+        guard !authorizing, panel.isVisible, !isHiding, !isFadingOut else { return }
+        panel.makeKey()
+        viewController.focusSearch()
+    }
+
+    // removing: the app that was trashed (nil when it failed).
+    func endUninstall(removing app: AppInfo?) {
+        uninstallsInFlight = max(0, uninstallsInFlight - 1)
+        if let app {
+            layoutStore.remove(appKey: app.key, capacity: capacity)
+            apps.removeAll { $0.key == app.key }
+            appsByKey[app.key] = nil
+        }
+        if app != nil { viewController.reloadAll() }
+        // A scan skipped meanwhile may predate the trash move: scan again instead of applying it.
+        if uninstallsInFlight == 0, rescanAfterUninstall {
+            rescanAfterUninstall = false
+            rescan()
+        }
     }
 
     func applyPreferences() {

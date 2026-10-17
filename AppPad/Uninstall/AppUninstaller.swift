@@ -1,14 +1,21 @@
 import AppKit
+import Darwin
 import Security
 
 // AppCleaner-style uninstall: finds an app's related files in ~/Library and /Library
 // (by bundle id, embedded helper / extension ids and app-group ids), then moves them to the Trash.
-// Root-owned items go through NSWorkspace.recycle, which asks for an admin password itself.
+// Everything goes through NSWorkspace.recycle first (no prompt). That never asks for a password, so
+// root-owned items (App Store / pkg-installed apps, /Library files) fail with EACCES, and App
+// Management can refuse others: those are deleted by Finder via Apple Events, which shows the admin
+// password prompt itself and keeps "Put Back" working. Finder is brought to the front for the
+// prompt (a background requester gets an inactive dialog, Touch ID disabled).
+// Processes still running from inside the bundle (widgets, extensions, XPC) are stopped first:
+// they never show up as NSRunningApplication, but keep the bundle "in use".
 // Second pass: an app installed as a Homebrew cask is also removed from Homebrew (see HomebrewCask).
 nonisolated enum AppUninstaller {
     nonisolated struct Leftover: Sendable {
         let url: URL
-        let matchedByBundleID: Bool   // name-only / shared-group matches are unchecked by default
+        let matchedByBundleID: Bool   // checked by default (name-only matches are not)
     }
 
     nonisolated struct Scan: Sendable {
@@ -16,15 +23,25 @@ nonisolated enum AppUninstaller {
         let bundleIDs: [String]       // main id first, then embedded helpers (quit before trashing)
     }
 
+    // Why the app bundle itself stayed on disk.
+    nonisolated enum Failure: Sendable, Equatable {
+        case stillRunning             // the app did not quit
+        case cancelled                // admin password prompt cancelled
+        case automationDenied         // AppPad may not control Finder (Privacy › Automation)
+        case other(String)            // system error description (may be empty)
+    }
+
     nonisolated struct Result: Sendable {
         let appRemoved: Bool
         let failed: [URL]             // related files still on disk
+        var failure: Failure? = nil   // set when appRemoved is false
         var homebrewFailedCask: String? = nil   // cask whose `brew uninstall` failed
     }
 
     // Children named "<id>" or "<id>.<suffix>" (plist, binarycookies, savedState, ShipIt…).
+    // "Application Scripts" is user data of the sandbox container (see scan): kept for now.
     private static let userPrefixFolders = [
-        "Application Support", "Application Scripts", "Caches", "HTTPStorages", "Cookies",
+        "Application Support", /* "Application Scripts", */ "Caches", "HTTPStorages", "Cookies",
         "WebKit", "Logs", "Preferences", "Preferences/ByHost", "Saved Application State",
     ]
     private static let systemPrefixFolders = ["Application Support", "Caches", "Preferences", "Logs"]
@@ -78,20 +95,23 @@ nonisolated enum AppUninstaller {
 
         scanFolders(userLibrary, prefix: userPrefixFolders, launch: userLaunchFolders)
 
-        // Sandbox containers: exact names only (listing other apps' containers can trigger a privacy prompt).
+        // User data is kept for now: ~/Library/Containers and ~/Library/Group Containers hold the app's
+        // settings and often its documents. Deleting an App Store app in Finder / Launchpad keeps them
+        // too, so a reinstall gets everything back. (macOS also protects them: removing them shows a
+        // privacy prompt and still fails, and even listing Group Containers can prompt.)
+        /*
         for id in ids {
-            add(userLibrary.appendingPathComponent("Containers/\(id)", isDirectory: true), byID: true)
+            add(userLibrary.appendingPathComponent("Containers/\(id)", isDirectory: true), byID: false)
         }
-
-        // Group containers: declared app groups; groups not named after this app may be shared → unchecked.
         let groupsDir = userLibrary.appendingPathComponent("Group Containers", isDirectory: true)
         for group in appGroups(of: app.url) {
-            add(groupsDir.appendingPathComponent(group, isDirectory: true), byID: group.contains(mainID))
+            add(groupsDir.appendingPathComponent(group, isDirectory: true), byID: false)
         }
         let groupNames = (try? fm.contentsOfDirectory(atPath: groupsDir.path)) ?? []
         for name in groupNames where name.contains(mainID) {
-            add(groupsDir.appendingPathComponent(name, isDirectory: true), byID: true)
+            add(groupsDir.appendingPathComponent(name, isDirectory: true), byID: false)
         }
+        */
 
         scanFolders(systemLibrary, prefix: systemPrefixFolders, launch: systemLaunchFolders)
         addNameMatches(app, library: userLibrary, add: add)
@@ -158,14 +178,30 @@ nonisolated enum AppUninstaller {
 
     // MARK: - Uninstall
 
+    // authorizing(true/false) brackets a Finder password prompt (the caller keeps its panel open).
     @MainActor
-    static func uninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL]) async -> Result {
+    static func uninstall(_ app: AppInfo, bundleIDs: [String], extra: [URL],
+                          authorizing: (Bool) -> Void = { _ in }) async -> Result {
         guard await quitIfRunning(app, helperIDs: Array(bundleIDs.dropFirst())) else {
-            return Result(appRemoved: false, failed: extra)
+            return Result(appRemoved: false, failed: extra, failure: .stillRunning)
         }
         // App first: if that fails (or the password prompt is cancelled) nothing else is touched.
-        await recycle([app.url])
-        guard !exists(app.url) else { return Result(appRemoved: false, failed: extra) }
+        await stopProcesses(inside: app.url)
+        var error = await recycle([app.url])
+        if exists(app.url), !isPermissionError(error) {
+            // A widget may have been relaunched in between: stop it again and retry once.
+            await stopProcesses(inside: app.url)
+            error = await recycle([app.url])
+        }
+        if exists(app.url), isPermissionError(error) {
+            // Root-owned bundle: Finder asks for the admin password.
+            if let finderFailure = await trashWithFinder([app.url], authorizing: authorizing), exists(app.url) {
+                return Result(appRemoved: false, failed: extra, failure: finderFailure)
+            }
+        }
+        guard !exists(app.url) else {
+            return Result(appRemoved: false, failed: extra, failure: failure(for: error))
+        }
 
         await unloadLaunchAgents(extra)
         await recycle(extra)
@@ -173,12 +209,157 @@ nonisolated enum AppUninstaller {
         for url in extra where exists(url) {
             try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
         }
+        // Root-owned leftovers in /Library: one Finder call, one password prompt.
+        let system = extra.filter { exists($0) && $0.standardizedFileURL.path.hasPrefix("/Library/") }
+        if !system.isEmpty {
+            _ = await trashWithFinder(system, authorizing: authorizing)
+        }
         var result = Result(appRemoved: true, failed: extra.filter(exists))
         if !app.isAppStore, !app.isSystem,
            case .failed(let token) = await HomebrewCask.remove(appFileName: app.url.lastPathComponent) {
             result.homebrewFailedCask = token
         }
         return result
+    }
+
+    private static func failure(for error: Error?) -> Failure {
+        guard let error else { return .other("") }
+        let ns = error as NSError
+        for e in errorChain(ns) {
+            if e.domain == NSCocoaErrorDomain, e.code == NSUserCancelledError { return .cancelled }
+            if e.domain == NSOSStatusErrorDomain, e.code == Int(errAuthorizationCanceled) || e.code == -128 {
+                return .cancelled   // -128 = userCanceledErr
+            }
+        }
+        return .other(ns.localizedDescription)
+    }
+
+    // Write permission missing (EACCES / NSFileWriteNoPermissionError / afpAccessDenied).
+    private static func isPermissionError(_ error: Error?) -> Bool {
+        guard let error else { return false }
+        return errorChain(error as NSError).contains { e in
+            (e.domain == NSCocoaErrorDomain && e.code == NSFileWriteNoPermissionError)
+                || (e.domain == NSPOSIXErrorDomain && (e.code == Int(EACCES) || e.code == Int(EPERM)))
+                || (e.domain == NSOSStatusErrorDomain && e.code == -5000)   // afpAccessDenied
+        }
+    }
+
+    // The error plus its nested underlying errors (single and multiple).
+    private static func errorChain(_ error: NSError) -> [NSError] {
+        var result: [NSError] = []
+        var queue = [error]
+        while let next = queue.first, result.count < 16 {
+            queue.removeFirst()
+            result.append(next)
+            if let single = next.userInfo[NSUnderlyingErrorKey] as? NSError { queue.append(single) }
+            if let many = next.userInfo[NSMultipleUnderlyingErrorsKey] as? [NSError] { queue.append(contentsOf: many) }
+        }
+        return result
+    }
+
+    // MARK: - Finder fallback
+
+    // osascript runs out of process, so the password prompt never blocks AppPad's main thread.
+    // nil = Finder reported success.
+    @MainActor
+    private static func trashWithFinder(_ urls: [URL], authorizing: (Bool) -> Void) async -> Failure? {
+        func quoted(_ url: URL) -> String {
+            let path = url.path
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "\"", with: "\\\"")
+            return "POSIX file \"\(path)\" as alias"
+        }
+        let items = urls.map(quoted).joined(separator: ", ")
+        let lines = [
+            "tell application \"Finder\"",
+            "activate",   // frontmost requester → active password dialog with Touch ID
+            "delete {\(items)}",
+            "end tell",
+        ]
+        authorizing(true)
+        NSApp.yieldActivation(toApplicationWithBundleIdentifier: "com.apple.finder")
+        let output = await Task.detached { runOsascript(lines) }.value
+        authorizing(false)
+        guard output.status != 0 else { return nil }
+        NSLog("Finder delete failed (\(output.status)): \(output.stderr)")
+        if output.stderr.contains("(-128)") { return .cancelled }
+        if output.stderr.contains("(-1743)") || output.stderr.contains("(-1744)") { return .automationDenied }
+        return .other(cleanAppleScriptError(output.stderr))
+    }
+
+    nonisolated private static func runOsascript(_ lines: [String]) -> (status: Int32, stderr: String) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = lines.flatMap { ["-e", $0] }
+        let errorPipe = Pipe()
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = errorPipe
+        do {
+            try process.run()
+        } catch {
+            return (-1, error.localizedDescription)
+        }
+        let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return (process.terminationStatus, String(decoding: data, as: UTF8.self))
+    }
+
+    // "0:58: execution error: Finder got an error: … (-10006)" → "Finder got an error: …"
+    nonisolated private static func cleanAppleScriptError(_ text: String) -> String {
+        var message = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let range = message.range(of: "execution error: ") { message = String(message[range.upperBound...]) }
+        if let range = message.range(of: #"\s*\(-?\d+\)$"#, options: .regularExpression) { message.removeSubrange(range) }
+        return message
+    }
+
+    // MARK: - Bundle processes
+
+    // SIGTERM everything running from inside the bundle, SIGKILL what is left after 1.5 s.
+    @MainActor
+    private static func stopProcesses(inside appURL: URL) async {
+        let pids = await Task.detached { processes(inside: appURL) }.value
+        guard !pids.isEmpty else { return }
+        NSLog("Uninstall: stopping \(pids.count) process(es) inside \(appURL.path)")
+        pids.forEach { _ = kill($0, SIGTERM) }
+        for _ in 0..<15 {
+            try? await Task.sleep(for: .milliseconds(100))
+            if !pids.contains(where: isAlive) { return }
+        }
+        pids.filter(isAlive).forEach { _ = kill($0, SIGKILL) }
+        try? await Task.sleep(for: .milliseconds(200))
+    }
+
+    // Own-user processes whose executable lives in the bundle (other users' are not killable anyway).
+    nonisolated private static func processes(inside appURL: URL) -> [pid_t] {
+        let base = appURL.standardizedFileURL.path
+        let resolved = appURL.resolvingSymlinksInPath().path
+        let prefixes = Set([base, resolved, "/System/Volumes/Data" + resolved]).map { $0 + "/" }
+
+        let count = proc_listallpids(nil, 0)
+        guard count > 0 else { return [] }
+        var pids = [pid_t](repeating: 0, count: Int(count) + 64)
+        let filled = proc_listallpids(&pids, Int32(pids.count * MemoryLayout<pid_t>.size))
+        guard filled > 0 else { return [] }
+
+        let me = getpid()
+        let uid = getuid()
+        var buffer = [UInt8](repeating: 0, count: 4096)   // PROC_PIDPATHINFO_MAXSIZE
+        var result: [pid_t] = []
+        for pid in pids.prefix(Int(filled)) where pid > 0 && pid != me {
+            let length = Int(proc_pidpath(pid, &buffer, UInt32(buffer.count)))
+            guard length > 0 else { continue }
+            let path = String(decoding: buffer.prefix(length), as: UTF8.self)
+            guard prefixes.contains(where: { path.hasPrefix($0) }) else { continue }
+            var info = proc_bsdinfo()
+            let size = Int32(MemoryLayout<proc_bsdinfo>.size)
+            if proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size, info.pbi_uid != uid { continue }
+            result.append(pid)
+        }
+        return result
+    }
+
+    nonisolated private static func isAlive(_ pid: pid_t) -> Bool {
+        kill(pid, 0) == 0
     }
 
     // Quit the app (and its running helpers); true when the app itself is no longer running.
@@ -198,13 +379,15 @@ nonisolated enum AppUninstaller {
         return false
     }
 
-    @MainActor
-    private static func recycle(_ urls: [URL]) async {
-        guard !urls.isEmpty else { return }
+    @MainActor @discardableResult
+    private static func recycle(_ urls: [URL]) async -> Error? {
+        guard !urls.isEmpty else { return nil }
         do {
             _ = try await NSWorkspace.shared.recycle(urls)
+            return nil
         } catch {
             NSLog("Move to Trash failed: \(error)")
+            return error
         }
     }
 

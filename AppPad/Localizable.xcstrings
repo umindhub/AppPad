@@ -12945,64 +12945,6 @@
         }
       }
     },
-    "Files in /Library may require an administrator password." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für Dateien in /Library ist eventuell ein Administratorpasswort erforderlich."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los archivos de /Library pueden requerir una contraseña de administrador."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les fichiers situés dans /Library peuvent nécessiter un mot de passe administrateur."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I file in /Library potrebbero richiedere una password di amministratore."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "/Library 内のファイルには管理者パスワードが必要な場合があります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "/Library에 있는 파일은 관리자 암호가 필요할 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voor bestanden in /Library kan een beheerderswachtwoord nodig zijn."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "/Library 中的文件可能需要管理员密码。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "/Library 中的檔案可能需要管理者密碼。"
-          }
-        }
-      }
-    },
     "Fill the screen without entering full screen" : {
       "localizations" : {
         "de" : {
@@ -23636,64 +23578,6 @@
         }
       }
     },
-    "Quit the app and try again. Deleting it may also require an administrator password." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beende die App und versuche es erneut. Zum Löschen ist eventuell auch ein Administratorpasswort erforderlich."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cierra la app e inténtalo de nuevo. Es posible que también se necesite una contraseña de administrador para eliminarla."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quittez l’app et réessayez. Sa suppression peut aussi nécessiter un mot de passe administrateur."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi l’app e riprova. Per eliminarla potrebbe essere necessaria anche una password di amministratore."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリを終了してからもう一度お試しください。削除には管理者パスワードが必要な場合もあります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱을 종료한 후 다시 시도하십시오. 삭제하려면 관리자 암호가 필요할 수도 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stop de app en probeer het opnieuw. Voor het verwijderen kan ook een beheerderswachtwoord nodig zijn."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请退出该 App 后重试。删除它可能还需要管理员密码。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請結束此 App 後再試一次。刪除它可能還需要管理者密碼。"
-          }
-        }
-      }
-    },
     "quit, close" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -32772,180 +32656,6 @@
         }
       }
     },
-    "The app and the checked related files will be moved to the Trash." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die App und die markierten zugehörigen Dateien werden in den Papierkorb gelegt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app y los archivos relacionados marcados se trasladarán a la papelera."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app et les fichiers associés cochés seront placés dans la corbeille."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app e i file correlati selezionati verranno spostati nel Cestino."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリとチェックした関連ファイルがゴミ箱に入れられます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱과 선택한 관련 파일이 휴지통으로 이동됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De app en de aangevinkte gerelateerde bestanden worden naar de prullenmand verplaatst."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该 App 及勾选的相关文件将被移到废纸篓。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此 App 及勾選的相關檔案將被丟到垃圾桶。"
-          }
-        }
-      }
-    },
-    "The app is running and will be quit first." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die App wird ausgeführt und zuerst beendet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app está abierta y se cerrará primero."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app est ouverte et sera d’abord quittée."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app è in esecuzione e verrà chiusa prima."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリは実行中のため、先に終了します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱이 실행 중이므로 먼저 종료됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De app is actief en wordt eerst gestopt."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该 App 正在运行，将先退出。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此 App 正在執行，將先結束。"
-          }
-        }
-      }
-    },
-    "The app will be moved to the Trash. No related files were found." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die App wird in den Papierkorb gelegt. Es wurden keine zugehörigen Dateien gefunden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app se trasladará a la papelera. No se han encontrado archivos relacionados."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app sera placée dans la corbeille. Aucun fichier associé n’a été trouvé."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app verrà spostata nel Cestino. Non sono stati trovati file correlati."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリがゴミ箱に入れられます。関連ファイルは見つかりませんでした。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱이 휴지통으로 이동됩니다. 관련 파일을 찾지 못했습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De app wordt naar de prullenmand verplaatst. Er zijn geen gerelateerde bestanden gevonden."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该 App 将被移到废纸篓。未找到相关文件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此 App 將被丟到垃圾桶。找不到相關檔案。"
-          }
-        }
-      }
-    },
     "The AppPad layout is always replaced. Apps not installed on this Mac are skipped; apps missing from the backup are added at the end." : {
       "localizations" : {
         "de" : {
@@ -39217,6 +38927,296 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取代版本 %@"
+          }
+        }
+      }
+    },
+    "Open System Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemeinstellungen öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Ajustes del Sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Réglages Système"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Impostazioni di Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Systeeminstellingen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开系统设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開系統設定"
+          }
+        }
+      }
+    },
+    "The app didn’t quit. Quit it and try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App wurde nicht beendet. Beende sie und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app no se ha cerrado. Ciérrala e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app ne s’est pas fermée. Quittez-la, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app non è stata chiusa. Chiudila e riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリが終了しませんでした。終了してからもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱이 종료되지 않았습니다. 앱을 종료한 후 다시 시도하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app is niet gestopt. Stop de app en probeer het opnieuw."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该 App 未能退出。请退出后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 App 未能結束。請結束後再試一次。"
+          }
+        }
+      }
+    },
+    "Try again. Deleting it may require an administrator password." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versuche es erneut. Zum Löschen ist eventuell ein Administratorpasswort erforderlich."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inténtalo de nuevo. Es posible que se necesite una contraseña de administrador para eliminarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayez. Sa suppression peut nécessiter un mot de passe administrateur."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova. Per eliminarla potrebbe essere necessaria una password di amministratore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もう一度お試しください。削除には管理者パスワードが必要な場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도하십시오. 삭제하려면 관리자 암호가 필요할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer het opnieuw. Voor het verwijderen kan een beheerderswachtwoord nodig zijn."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请重试。删除它可能需要管理员密码。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請再試一次。刪除它可能需要管理者密碼。"
+          }
+        }
+      }
+    },
+    "This app belongs to the system administrator, so AppPad asks Finder to delete it. Allow AppPad to control Finder in System Settings › Privacy & Security › Automation, then try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App gehört dem Systemadministrator, deshalb lässt AppPad sie vom Finder löschen. Erlaube AppPad unter „Systemeinstellungen › Datenschutz & Sicherheit › Automation“, den Finder zu steuern, und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app pertenece al administrador del sistema, por lo que AppPad pide al Finder que la elimine. Permite que AppPad controle el Finder en Ajustes del Sistema › Privacidad y seguridad › Automatización e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app appartient à l’administrateur du système : AppPad demande donc au Finder de la supprimer. Autorisez AppPad à contrôler le Finder dans Réglages Système › Confidentialité et sécurité › Automatisation, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app appartiene all’amministratore di sistema, quindi AppPad chiede al Finder di eliminarla. Consenti ad AppPad di controllare il Finder in Impostazioni di Sistema › Privacy e sicurezza › Automazione, quindi riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリはシステム管理者が所有しているため、AppPad は Finder に削除を依頼します。「システム設定」›「プライバシーとセキュリティ」›「オートメーション」で AppPad に Finder の制御を許可してから、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 앱은 시스템 관리자 소유이므로 AppPad가 Finder에 삭제를 요청합니다. 시스템 설정 › 개인정보 보호 및 보안 › 자동화에서 AppPad가 Finder를 제어하도록 허용한 후 다시 시도하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze app is van de systeembeheerder, daarom laat AppPad de Finder hem verwijderen. Sta AppPad toe de Finder te bedienen bij Systeeminstellingen › Privacy en beveiliging › Automatisering en probeer het opnieuw."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 App 归系统管理员所有，因此 AppPad 会请求“访达”来删除它。请在“系统设置” › “隐私与安全性” › “自动化”中允许 AppPad 控制“访达”，然后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 App 屬於系統管理者，因此 AppPad 會請 Finder 刪除它。請在「系統設定」›「隱私權與安全性」›「自動化」中允許 AppPad 控制 Finder，然後再試一次。"
+          }
+        }
+      }
+    },
+    "The app will be moved to the Trash." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App wird in den Papierkorb gelegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app se trasladará a la papelera."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app sera placée dans la corbeille."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app verrà spostata nel Cestino."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリがゴミ箱に入れられます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱이 휴지통으로 이동됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app wordt naar de prullenmand verplaatst."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该 App 将被移到废纸篓。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 App 將被丟到垃圾桶。"
           }
         }
       }

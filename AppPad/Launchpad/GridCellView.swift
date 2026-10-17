@@ -44,6 +44,14 @@ final class GridCellView: FlippedView {
     private let folderIcon = FolderIconView()
     private let badge = DeleteBadgeView()
     private let label = CrispTextField(labelWithString: "")
+    private let uninstallPill = UninstallPillView()
+
+    // App shown by this cell (nil for folders); drives the uninstall / install progress pill.
+    private(set) var appKey: String?
+    private var installingURL: URL?          // App Store download in progress
+    private var uninstallFrame: UninstallProgress.Frame?
+    private var uninstallLink: CADisplayLink?
+    var isUninstalling: Bool { appKey.map { UninstallProgress.shared.isActive($0) } ?? false }
 
     private var isEditing = false
     private var badgeKind: DeleteBadgeKind = .none
@@ -78,6 +86,7 @@ final class GridCellView: FlippedView {
         label.textColor = .labelColor
         folderIcon.isHidden = true
         badge.isHidden = true
+        uninstallPill.isHidden = true
         badge.onTap = { [weak self] in
             guard let self else { return }
             self.grid?.cellDidRequestDelete(self)
@@ -87,6 +96,7 @@ final class GridCellView: FlippedView {
         iconContainer.addSubview(badge)
         addSubview(iconContainer)
         addSubview(label)
+        addSubview(uninstallPill)
         updateLabelShadow()
     }
 
@@ -96,8 +106,94 @@ final class GridCellView: FlippedView {
 
     private func updateVisibility() {
         alphaValue = isDragSource ? 0 : 1
-        iconContainer.alphaValue = isConcealed ? 0 : (isPressed ? 0.6 : 1)
-        label.alphaValue = isConcealed ? concealedLabelAlpha : 1
+        let vanish = CGFloat(uninstallFrame?.vanish ?? 0)
+        let dim = CGFloat(uninstallFrame?.iconAlpha ?? 1)
+        iconContainer.alphaValue = isConcealed ? 0 : (isPressed ? 0.6 : 1) * (1 - vanish) * dim
+        label.alphaValue = isConcealed ? concealedLabelAlpha : CGFloat(uninstallFrame?.labelAlpha ?? 1)
+    }
+
+    // MARK: - Uninstall progress
+
+    // Re-reads the shared progress state (a rebuilt cell picks up a running uninstall seamlessly).
+    func refreshUninstallState() {
+        if isUninstalling || installingURL != nil {
+            if uninstallLink == nil, window != nil {
+                let link = displayLink(target: self, selector: #selector(uninstallStep(_:)))
+                link.add(to: .main, forMode: .common)
+                uninstallLink = link
+            }
+            applyUninstallFrame()
+        } else {
+            stopUninstallProgress()
+        }
+    }
+
+    @objc private func uninstallStep(_ link: CADisplayLink) {
+        applyUninstallFrame()
+    }
+
+    private var progressFrame: UninstallProgress.Frame? {
+        guard let appKey else { return nil }
+        if let frame = UninstallProgress.shared.frame(for: appKey) { return frame }
+        if let installingURL { return InstallProgressMonitor.shared.frame(for: installingURL, key: appKey) }
+        return nil
+    }
+
+    private func applyUninstallFrame() {
+        guard let frame = progressFrame else {
+            stopUninstallProgress()
+            return
+        }
+        let wasActive = uninstallFrame != nil
+        uninstallFrame = frame
+        uninstallPill.isHidden = false
+        uninstallPill.alphaValue = CGFloat(frame.pillAlpha)
+        uninstallPill.progress = frame.progress
+        uninstallPill.failed = frame.failed
+        setIconScale(1 - 0.4 * CGFloat(frame.vanish))
+        if !wasActive { badge.isHidden = true }
+        updateVisibility()
+    }
+
+    private func stopUninstallProgress() {
+        uninstallLink?.invalidate()
+        uninstallLink = nil
+        guard uninstallFrame != nil else { return }
+        uninstallFrame = nil
+        uninstallPill.isHidden = true
+        setIconScale(1)
+        badge.isHidden = !isEditing || badgeKind == .none
+        updateVisibility()
+    }
+
+    // Shrinks the app icon around its center (vanish after a successful uninstall).
+    private func setIconScale(_ scale: CGFloat) {
+        guard let layer = imageView.layer else { return }
+        // Pivot relative to the anchor point (AppKit layers usually anchor at the origin).
+        let size = layer.bounds.size
+        let cx = (0.5 - layer.anchorPoint.x) * size.width
+        let cy = (0.5 - layer.anchorPoint.y) * size.height
+        var t = CATransform3DIdentity
+        if scale < 1 {
+            t = CATransform3DMakeTranslation(cx, cy, 0)
+            t = CATransform3DScale(t, scale, scale, 1)
+            t = CATransform3DTranslate(t, -cx, -cy, 0)
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer.transform = t
+        CATransaction.commit()
+    }
+
+    // The display link retains its target: only keep it while the cell is in a window.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window == nil {
+            uninstallLink?.invalidate()
+            uninstallLink = nil
+        } else if appKey != nil {
+            refreshUninstallState()
+        }
     }
 
     func configure(_ entry: GridEntry) {
@@ -107,12 +203,17 @@ final class GridCellView: FlippedView {
             imageView.isHidden = false
             folderIcon.isHidden = true
             label.stringValue = app.name
+            appKey = app.key
+            installingURL = app.isInstalling ? app.url : nil
         case .folder(let folder, let apps):
             folderIcon.icons = apps.prefix(9).map { IconCache.shared.icon(for: $0) }
             imageView.isHidden = true
             folderIcon.isHidden = false
             label.stringValue = folder.displayName
+            appKey = nil
+            installingURL = nil
         }
+        refreshUninstallState()
     }
 
     // Folder tile preview (e.g. without the app currently dragged out of it).
@@ -228,7 +329,7 @@ final class GridCellView: FlippedView {
         badgeKind = kind
         isEditing = editing
         badge.kind = kind
-        badge.isHidden = !editing || kind == .none
+        badge.isHidden = !editing || kind == .none || isUninstalling
         if editing { startWiggle() } else { iconContainer.layer?.removeAnimation(forKey: "wiggle") }
     }
 
@@ -271,6 +372,12 @@ final class GridCellView: FlippedView {
         folderIcon.frame = inner.insetBy(dx: iconSize * Self.folderInset, dy: iconSize * Self.folderInset)
         badge.frame = NSRect(x: inset - 6, y: inset - 6, width: Self.badgeSize, height: Self.badgeSize)
         label.frame = NSRect(x: 4, y: icon.maxY + Self.gap, width: bounds.width - 8, height: Self.labelHeight)
+        // Pill sits where the name is (the name fades out while it shows).
+        let pillWidth = min(bounds.width - 8, (iconSize * 0.86).rounded())
+        let pillHeight = max(4, (iconSize * 0.075).rounded())
+        uninstallPill.frame = NSRect(x: ((bounds.width - pillWidth) / 2).rounded(),
+                                     y: (label.frame.midY - pillHeight / 2).rounded(),
+                                     width: pillWidth, height: pillHeight)
         if isEditing { startWiggle() }
     }
 
@@ -366,6 +473,7 @@ final class GridCellView: FlippedView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        guard !isUninstalling else { return }
         isPressed = true
         isTracking = true
         isDragging = false
@@ -390,7 +498,7 @@ final class GridCellView: FlippedView {
 
     override func mouseDragged(with event: NSEvent) {
         // Drags bubbling up from a subview (delete badge) never start a move.
-        guard let grid, isTracking else { return }
+        guard let grid, isTracking, !isUninstalling else { return }
         if isDragging {
             grid.cellDragMoved(self, event: event)
             return
@@ -419,7 +527,7 @@ final class GridCellView: FlippedView {
     }
 
     override func menu(for event: NSEvent) -> NSMenu? {
-        grid?.menuForCell(self)
+        isUninstalling || installingURL != nil ? nil : grid?.menuForCell(self)
     }
 }
 
@@ -523,5 +631,216 @@ final class CrispTextField: NSTextField {
     override class var cellClass: AnyClass? {
         get { CrispTextFieldCell.self }
         set { super.cellClass = newValue }
+    }
+}
+
+// MARK: - Uninstall progress
+
+// Shared, time-based progress of running uninstalls (keyed by app key), so cells rebuilt by a
+// reload continue exactly where the old cell was. Running: 80% at 2.5 s, then creeping toward 97%.
+// Success: fill to 100%, then the icon shrinks away. Failure: stops red, then fades out.
+@MainActor
+final class UninstallProgress {
+    static let shared = UninstallProgress()
+
+    nonisolated struct Frame: Sendable {
+        var progress: Double      // 0…1 fill
+        var failed: Bool
+        var pillAlpha: Double
+        var labelAlpha: Double    // app name, hidden while the pill shows
+        var vanish: Double        // 0…1 icon shrinking away after success
+        var iconAlpha: Double = 1 // dimmed while an App Store download runs
+    }
+
+    private enum Phase {
+        case running
+        case succeeded(at: CFTimeInterval, from: Double)
+        case failed(at: CFTimeInterval, value: Double)
+    }
+
+    private struct Entry {
+        let start: CFTimeInterval
+        var phase: Phase
+    }
+
+    static let fillDuration: Double = 0.3
+    static let vanishDuration: Double = 0.3
+    static let failHold: Double = 0.7
+    static let failFade: Double = 0.3
+    private static let labelFade: Double = 0.2
+    static var successDuration: Double { fillDuration + vanishDuration }
+    static var failureDuration: Double { failHold + failFade }
+
+    private var entries: [String: Entry] = [:]
+
+    func isActive(_ key: String) -> Bool { entries[key] != nil }
+
+    func begin(_ key: String) {
+        entries[key] = Entry(start: CACurrentMediaTime(), phase: .running)
+    }
+
+    func finish(_ key: String, success: Bool) {
+        guard var entry = entries[key], case .running = entry.phase else { return }
+        let now = CACurrentMediaTime()
+        let value = Self.runningProgress(now - entry.start)
+        entry.phase = success ? .succeeded(at: now, from: value) : .failed(at: now, value: value)
+        entries[key] = entry
+    }
+
+    func clear(_ key: String) {
+        entries[key] = nil
+    }
+
+    // nil once nothing is shown any more (finished failure, cleared entry).
+    func frame(for key: String, now: CFTimeInterval = CACurrentMediaTime()) -> Frame? {
+        guard let entry = entries[key] else { return nil }
+        let labelOut = 1 - min(1, (now - entry.start) / Self.labelFade)
+        switch entry.phase {
+        case .running:
+            return Frame(progress: Self.runningProgress(now - entry.start), failed: false,
+                         pillAlpha: 1, labelAlpha: labelOut, vanish: 0)
+        case .succeeded(let at, let from):
+            let t = now - at
+            let fill = Self.easeOut(min(1, t / Self.fillDuration))
+            let vanish = Self.easeInOut(min(1, max(0, (t - Self.fillDuration) / Self.vanishDuration)))
+            return Frame(progress: from + (1 - from) * fill, failed: false,
+                         pillAlpha: 1 - vanish, labelAlpha: 0, vanish: vanish)
+        case .failed(let at, let value):
+            let t = now - at
+            guard t < Self.failureDuration else { return nil }
+            let fade = Self.easeInOut(min(1, max(0, (t - Self.failHold) / Self.failFade)))
+            return Frame(progress: value, failed: true, pillAlpha: 1 - fade,
+                         labelAlpha: max(labelOut, fade), vanish: 0)
+        }
+    }
+
+    // Ease-out to 80% at 2.5 s (slope matched at the joint), then 80% → 97% with a 6 s time constant.
+    private static func runningProgress(_ t: Double) -> Double {
+        let head = 2.5, headValue = 0.8, tail = 0.17, tau = 6.0
+        if t <= head {
+            let x = max(0, t / head)
+            let w = tail / tau * head / headValue      // linear share giving the joint slope
+            return headValue * ((1 - w) * (2 * x - x * x) + w * x)
+        }
+        return headValue + tail * (1 - exp(-(t - head) / tau))
+    }
+
+    private static func easeOut(_ x: Double) -> Double { 1 - (1 - x) * (1 - x) }
+    private static func easeInOut(_ x: Double) -> Double { x * x * (3 - 2 * x) }
+}
+
+// Thin rounded progress bar under an app icon while it is being uninstalled.
+final class UninstallPillView: NSView {
+    var progress: Double = 0 {
+        didSet { if oldValue != progress { needsDisplay = true } }
+    }
+    var failed = false {
+        didSet { if oldValue != failed { needsDisplay = true } }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let track = bounds
+        let radius = track.height / 2
+        NSColor.labelColor.withAlphaComponent(0.2).setFill()
+        NSBezierPath(roundedRect: track, xRadius: radius, yRadius: radius).fill()
+
+        var fill = track
+        fill.size.width = max(track.height, track.width * CGFloat(min(1, max(0, progress))))
+        (failed ? NSColor.systemRed : NSColor.controlAccentColor).setFill()
+        NSBezierPath(roundedRect: fill, xRadius: radius, yRadius: radius).fill()
+    }
+
+    // Never takes clicks (the cell decides).
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
+
+// MARK: - App Store install progress
+
+// Download progress of App Store install placeholders. The App Store publishes an NSProgress
+// for the bundle (Finder draws its pie from it): subscribe to the application folders and to
+// each placeholder. Without a published progress the pill creeps slowly toward 85%.
+// The App Store runs phases one after another (download 0→100%, then install 0→100%): the first
+// phase fills 0–85%, later ones the rest, and what is shown never goes back.
+@MainActor
+final class InstallProgressMonitor {
+    static let shared = InstallProgressMonitor()
+
+    private var folderTokens: [Any] = []
+    private var appTokens: [String: Any] = [:]                 // placeholder path → subscriber
+    private struct Track {
+        var phase = 0
+        var base = 0.0       // shown value when the current phase started
+        var lastRaw = 0.0    // last fraction of the current phase
+        var shown = 0.0      // monotonic value for the pill
+    }
+    private var tracks: [String: Track] = [:]                  // path → phases so far
+    private static let firstPhaseShare = 0.85                  // download phase share of the pill
+    private var observations: [String: NSKeyValueObservation] = [:]
+    private var firstSeen: [String: CFTimeInterval] = [:]      // app key → first shown
+
+    func start(folders: [URL]) {
+        guard folderTokens.isEmpty else { return }
+        folderTokens = folders.map(Self.subscribe)
+    }
+
+    // Called after every scan with the current placeholders.
+    func sync(installing urls: [URL]) {
+        let paths = Set(urls.map(Self.pathKey))
+        for (path, token) in appTokens where !paths.contains(path) {
+            Progress.removeSubscriber(token)
+            appTokens[path] = nil
+        }
+        for path in tracks.keys where !paths.contains(path) { tracks[path] = nil }
+        for url in urls where appTokens[Self.pathKey(url)] == nil {
+            appTokens[Self.pathKey(url)] = Self.subscribe(url)
+        }
+        if urls.isEmpty { firstSeen.removeAll() }
+    }
+
+    func frame(for url: URL, key: String, now: CFTimeInterval = CACurrentMediaTime()) -> UninstallProgress.Frame {
+        let seen = firstSeen[key] ?? now
+        if firstSeen[key] == nil { firstSeen[key] = now }
+        let progress = tracks[Self.pathKey(url)].map { max(0.03, $0.shown) }
+            ?? Self.firstPhaseShare * (1 - exp(-(now - seen) / 45))
+        return UninstallProgress.Frame(progress: progress, failed: false, pillAlpha: 1,
+                                       labelAlpha: 0, vanish: 0, iconAlpha: 0.45)
+    }
+
+    // raw: fraction of the published progress (nil = indeterminate, keeps what is shown).
+    private func update(_ path: String, raw: Double?) {
+        guard let raw else { return }
+        var track = tracks[path] ?? Track()
+        // A big drop means the next phase started (a new progress, or the same one reset).
+        if raw + 0.2 < track.lastRaw {
+            track.phase += 1
+            track.base = track.shown
+        }
+        track.lastRaw = raw
+        let value = track.phase == 0 ? Self.firstPhaseShare * raw : track.base + (1 - track.base) * raw
+        track.shown = max(track.shown, min(1, value))
+        tracks[path] = track
+    }
+
+    nonisolated private static func pathKey(_ url: URL) -> String {
+        url.standardizedFileURL.path.lowercased()   // APFS is case-insensitive by default
+    }
+
+    // The publishing handler runs on an arbitrary thread: state changes hop to the main actor.
+    nonisolated private static func subscribe(_ url: URL) -> Any {
+        Progress.addSubscriber(forFileURL: url) { progress in
+            let fileURL = progress.fileURL ?? progress.userInfo[.fileURLKey] as? URL
+            guard let fileURL, fileURL.pathExtension.lowercased() == "app" else { return nil }
+            let path = pathKey(fileURL)
+            NSLog("Install progress published: \(fileURL.path)")
+            let observation = progress.observe(\.fractionCompleted, options: [.initial, .new]) { progress, _ in
+                let value: Double? = progress.isIndeterminate ? nil : progress.fractionCompleted
+                Task { @MainActor in InstallProgressMonitor.shared.update(path, raw: value) }
+            }
+            Task { @MainActor in InstallProgressMonitor.shared.observations[path] = observation }
+            // Unpublished: keep the track (the next phase continues from it); sync() drops it.
+            return {
+                Task { @MainActor in InstallProgressMonitor.shared.observations[path] = nil }
+            }
+        }
     }
 }
