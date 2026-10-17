@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.1
+
+### Changed
+- Updates: the update prompt now counts down and closes itself when time runs out.
+
 ## v1.1.0
 
 ### Changed
