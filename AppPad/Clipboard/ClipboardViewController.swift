@@ -449,6 +449,10 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         switch key {
         case "j": moveSelection(1)
         case "k": moveSelection(-1)
+        case "c":
+            // Text selected in the search field: normal copy; otherwise copy the item (moves it to the top).
+            if let editor = searchField.currentEditor(), editor.selectedRange.length > 0 { return false }
+            activate(row: tableView.selectedRow, autoPaste: false)
         case "s": if let id = selectedItem?.id { toggleSaved(id) }
         case "w": controller?.hide()
         case ",":
