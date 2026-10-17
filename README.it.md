@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Sito web</a>
+  <a href="https://apppad.youmindhub.com">Sito web</a><br>
+  <a href="#wechat-donate">☕ Sostieni con WeChat</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - Qualsiasi elemento copiato può essere salvato
 - `⌘1`–`⌘0` per incollare rapidamente, filtro per app di origine, sintassi di ricerca `NomeApp::`, anteprima dal vivo
 
-### Flussi di lavoro
+### Flussi di lavoro & AI MCP
 - `⌘Space` apre il pannello Flussi di lavoro: app e flussi di lavoro ordinati insieme in base all’utilizzo
 - I flussi di lavoro eseguono script shell, AppleScript, Comandi Rapidi o richieste HTTP, con argomenti (es. `time 10`)
 - Integrati: Svuota il Cestino, Imposta timer, Imposta sveglia, Imposta volume, Esci da tutte le app…
 - I permessi dichiarati sono applicati da una vera sandbox (Consenti una volta / Non consentire / Consenti sempre)
 - Importa e condividi flussi di lavoro come file JSON o link
+- Server MCP integrato: gli assistenti IA compatibili con MCP possono richiamare e controllare direttamente i tuoi flussi di lavoro
+- L’IA può leggere tramite MCP le regole per scrivere flussi di lavoro e crearne di nuovi per te
+- I flussi di lavoro avviati dall’IA passano dalle stesse richieste di permesso e dalla stessa sandbox dei tuoi
 
 ### Calcolatrice
 - Digita un’espressione direttamente nel campo di ricerca del pannello Flussi di lavoro per calcolare (supporta la notazione scientifica)
@@ -114,6 +118,19 @@ Issue e pull request sono benvenute. Inviando un contributo accetti che venga pu
 ## Ringraziamenti
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — licenza MIT
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — licenza MIT
+
+<a id="wechat-donate"></a>
+
+## Sostieni AppPad
+
+AppPad è gratuito e open source. Se rende il tuo Mac un po’ più piacevole da usare, puoi offrirmi un caffè tramite WeChat: qualsiasi importo è apprezzato, e anche una stella su GitHub fa molto piacere. Grazie!
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>Scansiona con WeChat</sub>
+</p>
 
 ---
 

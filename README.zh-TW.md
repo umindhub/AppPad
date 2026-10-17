@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">官網</a>
+  <a href="https://apppad.youmindhub.com">官網</a><br>
+  <a href="#wechat-donate">☕ 微信讚賞</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - 拷貝的內容可儲存
 - `⌘1`–`⌘0` 快速貼上，來源 App 篩選和 `App名稱::` 搜尋語法，右側即時預覽
 
-### 工作流程
+### 工作流程 & AI MCP
 - `⌘Space` 開啟工作流程面板：App 與工作流程依使用頻率統一排序
 - 工作流程可執行 Shell 腳本、AppleScript、捷徑或 HTTP 請求，支援參數（如 `time 10`）
 - 內建：清空垃圾桶、設定倒數計時、設定鬧鐘、設定音量、結束所有 App……
 - 權限宣告由真正的沙盒強制執行（允許一次 / 不允許 / 永遠允許）
 - 以 JSON 檔案或連結匯入、分享工作流程
+- 內建 MCP 服務：支援 MCP 的 AI 助理可直接呼叫和控制你的工作流程
+- AI 可透過 MCP 讀取工作流程撰寫規範，直接幫你建立新的工作流程
+- AI 執行的工作流程與你手動執行一樣，經過同一套權限確認與沙盒
 
 ### 計算機
 - 在工作流程面板搜尋欄直接輸入算式即可計算（支援科學記號）
@@ -114,6 +118,19 @@ AppPad 採用分層授權：
 ## 致謝
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) —— MIT 授權
+- [Sparkle](https://github.com/sparkle-project/Sparkle) —— MIT 授權
+
+<a id="wechat-donate"></a>
+
+## 支持 AppPad
+
+AppPad 免費且開源。如果它讓你的 Mac 用起來更順手一點，歡迎用微信請我喝杯咖啡，金額隨意；幫專案點個 Star 也是很大的鼓勵。謝謝你！
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>使用微信掃一掃</sub>
+</p>
 
 ---
 

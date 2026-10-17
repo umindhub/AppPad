@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Website</a>
+  <a href="https://apppad.youmindhub.com">Website</a><br>
+  <a href="#wechat-donate">☕ Support via WeChat</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - Any copied item can be saved
 - `⌘1`–`⌘0` quick paste, source-app filter chips, `AppName::` search syntax, live preview
 
-### Workflows
+### Workflows & AI MCP
 - `⌘Space` opens the Workflow panel: apps and workflows ranked together by frecency
 - Workflows run shell scripts, AppleScript, Shortcuts or HTTP requests, with arguments (e.g. `time 10`)
 - Built-in: Empty Trash, Set Timer, Set Alarm, Set Volume, Quit All Apps…
 - Declared permissions enforced by a real sandbox (Allow Once / Don't Allow / Always Allow)
 - Import / share workflows as JSON files or links
+- Built-in MCP server: AI assistants that support MCP can call and control your workflows directly
+- AI can read the workflow-writing rules through MCP and create new workflows for you
+- Workflows run by AI go through the same permission prompts and sandbox as your own runs
 
 ### Calculator
 - Type a math expression right in the Workflow panel search field to calculate (scientific notation supported)
@@ -114,6 +118,19 @@ Issues and pull requests are welcome. By submitting a contribution you agree tha
 ## Acknowledgements
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT License
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT License
+
+<a id="wechat-donate"></a>
+
+## Support AppPad
+
+AppPad is free and open source. If it makes your Mac a little nicer to use, you’re welcome to buy me a coffee via WeChat — any amount is appreciated, and a star on GitHub means a lot too. Thank you!
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>Scan with WeChat</sub>
+</p>
 
 ---
 

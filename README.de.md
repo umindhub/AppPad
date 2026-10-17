@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Website</a>
+  <a href="https://apppad.youmindhub.com">Website</a><br>
+  <a href="#wechat-donate">☕ Per WeChat unterstützen</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - Jeder kopierte Eintrag kann gesichert werden
 - `⌘1`–`⌘0` zum schnellen Einsetzen, Filter nach Quell-App, Suchsyntax `AppName::`, Live-Vorschau
 
-### Workflows
+### Workflows & AI MCP
 - `⌘Space` öffnet das Workflow-Panel: Apps und Workflows gemeinsam nach Nutzung sortiert
 - Workflows führen Shell-Skripte, AppleScript, Kurzbefehle oder HTTP-Anfragen aus, auch mit Argumenten (z. B. `time 10`)
 - Integriert: Papierkorb entleeren, Timer stellen, Wecker stellen, Lautstärke einstellen, Alle Apps beenden …
 - Deklarierte Berechtigungen werden durch eine echte Sandbox erzwungen (Einmal erlauben / Nicht erlauben / Immer erlauben)
 - Workflows als JSON-Datei oder Link importieren und teilen
+- Integrierter MCP-Server: KI-Assistenten mit MCP-Unterstützung können deine Workflows direkt aufrufen und steuern
+- Die KI kann über MCP die Regeln zum Schreiben von Workflows lesen und neue Workflows für dich erstellen
+- Von der KI gestartete Workflows durchlaufen dieselben Berechtigungsabfragen und dieselbe Sandbox wie deine eigenen
 
 ### Rechner
 - Rechenausdruck direkt in das Suchfeld des Workflow-Panels eingeben (wissenschaftliche Notation wird unterstützt)
@@ -114,6 +118,19 @@ Issues und Pull Requests sind willkommen. Mit dem Einreichen eines Beitrags stim
 ## Danksagungen
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT-Lizenz
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT-Lizenz
+
+<a id="wechat-donate"></a>
+
+## AppPad unterstützen
+
+AppPad ist kostenlos und Open Source. Wenn es deinen Mac ein wenig angenehmer macht, freue ich mich über einen Kaffee per WeChat – jeder Betrag ist willkommen, und auch ein Stern auf GitHub bedeutet mir viel. Danke!
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>Mit WeChat scannen</sub>
+</p>
 
 ---
 

@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">웹사이트</a>
+  <a href="https://apppad.youmindhub.com">웹사이트</a><br>
+  <a href="#wechat-donate">☕ WeChat으로 후원</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - 복사한 항목을 저장 가능
 - `⌘1`–`⌘0` 빠른 붙여넣기, 원본 앱 필터, `앱이름::` 검색 문법, 실시간 미리보기
 
-### 워크플로
+### 워크플로 & AI MCP
 - `⌘Space`로 워크플로 패널 열기: 앱과 워크플로를 사용 빈도에 따라 함께 정렬
 - 워크플로로 셸 스크립트, AppleScript, 단축어, HTTP 요청을 실행하며 인자 지원(예: `time 10`)
 - 내장: 휴지통 비우기, 타이머 설정, 알람 설정, 음량 설정, 모든 앱 종료…
 - 선언된 권한을 실제 샌드박스로 강제(한 번 허용 / 허용 안 함 / 항상 허용)
 - JSON 파일이나 링크로 워크플로 가져오기 및 공유
+- MCP 서버 내장: MCP를 지원하는 AI 어시스턴트가 워크플로를 직접 호출하고 제어
+- AI가 MCP로 워크플로 작성 규칙을 읽고 새 워크플로를 만들어 줌
+- AI가 실행하는 워크플로도 직접 실행할 때와 같은 권한 확인과 샌드박스를 거침
 
 ### 계산기
 - 워크플로 패널 검색 필드에 수식을 바로 입력해 계산(과학적 표기법 지원)
@@ -114,6 +118,19 @@ AppPad는 분할 라이선스를 사용합니다:
 ## 감사의 말
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT 라이선스
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT 라이선스
+
+<a id="wechat-donate"></a>
+
+## AppPad 후원하기
+
+AppPad는 무료 오픈소스입니다. Mac을 조금이라도 더 편하게 쓰는 데 도움이 되었다면, WeChat으로 커피 한 잔 사 주시면 큰 힘이 됩니다. 금액은 마음 가는 대로 괜찮고, GitHub 스타도 큰 응원이 됩니다. 감사합니다!
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>WeChat으로 스캔</sub>
+</p>
 
 ---
 

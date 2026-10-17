@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Web サイト</a>
+  <a href="https://apppad.youmindhub.com">Web サイト</a><br>
+  <a href="#wechat-donate">☕ WeChat で応援</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - コピーした内容を保存可能
 - `⌘1`–`⌘0` ですばやくペースト、コピー元アプリで絞り込み、`アプリ名::` 検索構文、リアルタイムプレビュー
 
-### ワークフロー
+### ワークフロー & AI MCP
 - `⌘Space` でワークフローパネルを開く：アプリとワークフローを使用頻度でまとめて並べ替え
 - ワークフローはシェルスクリプト、AppleScript、ショートカット、HTTP リクエストを実行、引数にも対応（例：`time 10`）
 - 内蔵：ゴミ箱を空にする、タイマーを設定、アラームを設定、音量を設定、すべてのアプリを終了…
 - 宣言された権限を本物のサンドボックスで強制（1回のみ許可 / 許可しない / 常に許可）
 - JSON ファイルまたはリンクでワークフローを読み込み・共有
+- MCP サーバーを内蔵：MCP 対応の AI アシスタントからワークフローを直接呼び出し・操作
+- AI は MCP 経由でワークフローの作成ルールを読み取り、新しいワークフローを作成可能
+- AI が実行するワークフローも、手動実行と同じ権限確認とサンドボックスを経由
 
 ### 計算機
 - ワークフローパネルの検索フィールドに数式を入力するだけで計算（指数表記に対応）
@@ -114,6 +118,19 @@ Issue と Pull Request を歓迎します。コントリビューションを送
 ## 謝辞
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT ライセンス
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT ライセンス
+
+<a id="wechat-donate"></a>
+
+## AppPad を応援する
+
+AppPad は無料のオープンソースです。Mac が少しでも使いやすくなったと感じていただけたら、WeChat でコーヒーを一杯ごちそうしていただけるとうれしいです。金額はお気持ちで大丈夫です。GitHub のスターも大きな励みになります。ありがとうございます！
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>WeChat でスキャン</sub>
+</p>
 
 ---
 

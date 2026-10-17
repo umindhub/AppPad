@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Website</a>
+  <a href="https://apppad.youmindhub.com">Website</a><br>
+  <a href="#wechat-donate">☕ Steun via WeChat</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - Elk gekopieerd onderdeel kan worden bewaard
 - `⌘1`–`⌘0` om snel te plakken, filter op bron-app, zoeksyntaxis `AppNaam::`, live voorvertoning
 
-### Workflows
+### Workflows & AI MCP
 - `⌘Space` opent het workflowpaneel: apps en workflows samen gesorteerd op gebruik
 - Workflows voeren shellscripts, AppleScript, Opdrachten of HTTP-verzoeken uit, met argumenten (bijv. `time 10`)
 - Ingebouwd: Leeg prullenmand, Stel timer in, Stel wekker in, Stel volume in, Stop alle apps…
 - Opgegeven toestemmingen worden afgedwongen door een echte sandbox (Sta eenmaal toe / Sta niet toe / Sta altijd toe)
 - Workflows importeren en delen als JSON-bestand of link
+- Ingebouwde MCP-server: AI-assistenten met MCP-ondersteuning kunnen je workflows direct aanroepen en bedienen
+- De AI kan via MCP de regels voor het schrijven van workflows lezen en nieuwe workflows voor je maken
+- Workflows die de AI uitvoert, doorlopen dezelfde toestemmingsvragen en dezelfde sandbox als die van jezelf
 
 ### Rekenmachine
 - Typ een berekening direct in het zoekveld van het workflowpaneel (wetenschappelijke notatie wordt ondersteund)
@@ -114,6 +118,19 @@ Issues en pull requests zijn welkom. Door een bijdrage in te dienen ga je ermee 
 ## Dankbetuiging
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT-licentie
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT-licentie
+
+<a id="wechat-donate"></a>
+
+## Steun AppPad
+
+AppPad is gratis en open source. Maakt het je Mac net wat prettiger in gebruik? Dan kun je me via WeChat op een kopje koffie trakteren — elk bedrag wordt gewaardeerd, en een ster op GitHub betekent ook veel. Bedankt!
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>Scan met WeChat</sub>
+</p>
 
 ---
 

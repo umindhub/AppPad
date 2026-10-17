@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Site web</a>
+  <a href="https://apppad.youmindhub.com">Site web</a><br>
+  <a href="#wechat-donate">☕ Soutenir via WeChat</a>
 </p>
 
 <p align="center">
@@ -56,12 +57,15 @@ brew install --cask apppad
 - Tout élément copié peut être enregistré
 - `⌘1`–`⌘0` pour coller rapidement, filtre par app source, syntaxe de recherche `NomApp::`, aperçu en direct
 
-### Flux de travail
+### Flux de travail & AI MCP
 - `⌘Space` ouvre le panneau Flux de travail : apps et flux de travail classés ensemble selon leur utilisation
 - Les flux de travail exécutent des scripts shell, de l’AppleScript, des Raccourcis ou des requêtes HTTP, avec arguments (ex. `time 10`)
 - Intégrés : Vider la corbeille, Régler un minuteur, Régler une alarme, Régler le volume, Quitter toutes les apps…
 - Autorisations déclarées appliquées par un véritable sandbox (Autoriser une fois / Ne pas autoriser / Toujours autoriser)
 - Importez et partagez des flux de travail sous forme de fichiers JSON ou de liens
+- Serveur MCP intégré : les assistants IA compatibles MCP peuvent appeler et contrôler directement vos flux de travail
+- L’IA peut lire via MCP les règles d’écriture des flux de travail et en créer de nouveaux pour vous
+- Les flux de travail lancés par l’IA passent par les mêmes demandes d’autorisation et le même sandbox que les vôtres
 
 ### Calculatrice
 - Saisissez une expression directement dans le champ de recherche du panneau Flux de travail pour calculer (notation scientifique prise en charge)
@@ -114,6 +118,19 @@ Les issues et pull requests sont les bienvenues. En soumettant une contribution,
 ## Remerciements
 
 - [GRDB.swift](https://github.com/groue/GRDB.swift) — licence MIT
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — licence MIT
+
+<a id="wechat-donate"></a>
+
+## Soutenir AppPad
+
+AppPad est gratuit et open source. S’il rend votre Mac un peu plus agréable à utiliser, vous pouvez m’offrir un café via WeChat — tout montant est apprécié, et une étoile sur GitHub fait aussi très plaisir. Merci !
+
+<p align="center">
+  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <br>
+  <sub>Scanner avec WeChat</sub>
+</p>
 
 ---
 
