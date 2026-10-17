@@ -504,8 +504,8 @@ final class UpdateNoticeWindow: NSPanel {
     }
 }
 
-// Accent pill with a centered label. With a duration, the accent fill shrinks from both
-// ends toward the middle; the label is accent-colored over the track and white over the fill.
+// Accent pill with a centered label. With a duration, the whole pill shrinks from both
+// ends toward the middle (no track behind it); the label is white on the pill, accent outside.
 final class CountdownPillButton: NSView {
     var onPress: (() -> Void)?
 
@@ -557,22 +557,21 @@ final class CountdownPillButton: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         let rect = bounds
-        let pill = NSBezierPath(roundedRect: rect, xRadius: rect.height / 2, yRadius: rect.height / 2)
         let accent = NSColor.controlAccentColor
         let fillColor = isPressed ? (accent.shadow(withLevel: 0.2) ?? accent) : accent
 
-        NSGraphicsContext.saveGraphicsState()
-        pill.addClip()
-        accent.withAlphaComponent(0.18).setFill()
-        rect.fill()
-        let fillWidth = (rect.width * remaining).rounded()
-        let fillRect = NSRect(x: rect.midX - fillWidth / 2, y: rect.minY, width: fillWidth, height: rect.height)
-        fillColor.setFill()
-        fillRect.fill()
-        NSGraphicsContext.restoreGraphicsState()
+        // No track: the pill itself shrinks toward the middle, keeping round ends.
+        let width = (rect.width * remaining).rounded()
+        let pillRect = NSRect(x: rect.midX - width / 2, y: rect.minY, width: width, height: rect.height)
+        if width > 0 {
+            let radius = min(rect.height, width) / 2
+            fillColor.setFill()
+            NSBezierPath(roundedRect: pillRect, xRadius: radius, yRadius: radius).fill()
+        }
 
+        // Label: accent outside the pill, white on it.
         drawTitle(in: rect, color: accent, clip: nil)
-        drawTitle(in: rect, color: .white, clip: fillRect)
+        drawTitle(in: rect, color: .white, clip: pillRect)
     }
 
     private func drawTitle(in rect: NSRect, color: NSColor, clip: NSRect?) {
