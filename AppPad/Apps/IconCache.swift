@@ -64,6 +64,16 @@ final class IconCache {
         }
     }
 
+    // Drop only these apps (late icon refresh after an install).
+    func invalidate(paths: [String]) {
+        let set = Set(paths)
+        for path in set { cache[path] = nil }
+        contentsCache = contentsCache.filter { key, _ in
+            guard let at = key.lastIndex(of: "@") else { return true }
+            return !set.contains(String(key[..<at]))
+        }
+    }
+
     func invalidate() {
         warmTask?.cancel()
         warmTask = nil

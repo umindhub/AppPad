@@ -42,6 +42,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     // otherwise the trashed app's cell would vanish mid-animation.
     private var uninstallsInFlight = 0
     private var rescanAfterUninstall = false
+    // Late icon refresh for freshly installed apps (see refreshNewAppIcons).
+    private var iconRefreshTask: Task<Void, Never>?
+    private var iconRefreshURLs: Set<URL> = []
     // Finder password prompt up: losing key to it must not close the panel.
     private var isAuthorizing = false
     private var lastCapacity = 0
@@ -157,6 +160,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             rescanAfterUninstall = true
             return
         }
+        let fresh = newlyInstalled(old: apps, new: newApps)
         apps = newApps
         appsByKey = Dictionary(newApps.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         searchIndex = index
@@ -166,6 +170,42 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         InstallProgressMonitor.shared.sync(installing: newApps.filter(\.isInstalling).map(\.url))
         viewController.reloadAll()
         warmUpIfNeeded()
+        if !fresh.isEmpty { refreshNewAppIcons(fresh) }
+    }
+
+    // Apps that appeared since the last scan (new path, or an App Store download that finished).
+    // Empty on the first scan: nothing is "new" at launch.
+    private func newlyInstalled(old: [AppInfo], new: [AppInfo]) -> [URL] {
+        guard !old.isEmpty else { return [] }
+        let oldByPath = Dictionary(old.map { ($0.url.path, $0) }, uniquingKeysWith: { first, _ in first })
+        return new.filter { app in
+            guard !app.isInstalling else { return false }
+            guard let prev = oldByPath[app.url.path] else { return true }
+            return prev.isInstalling
+        }.map(\.url)
+    }
+
+    // A bundle moved into /Applications (brew, unzip, drag) is scanned before LaunchServices has
+    // registered it, so NSWorkspace returns the generic app icon, and no later FSEvent comes to
+    // fix it. Register the bundles ourselves, then re-resolve their icons a couple of times.
+    private func refreshNewAppIcons(_ newURLs: [URL]) {
+        // Merge with a refresh still pending, so back-to-back installs all get refreshed.
+        iconRefreshURLs.formUnion(newURLs)
+        let urls = Array(iconRefreshURLs)
+        iconRefreshTask?.cancel()
+        iconRefreshTask = Task { [weak self] in
+            await Task.detached(priority: .utility) {
+                for url in urls { _ = LSRegisterURL(url as CFURL, true) }
+            }.value
+            for delay in [1.5, 5.0] {
+                try? await Task.sleep(for: .seconds(delay))
+                guard !Task.isCancelled, let self else { return }
+                guard self.uninstallsInFlight == 0 else { continue }
+                IconCache.shared.invalidate(paths: urls.map(\.path))
+                self.viewController.reloadAll()
+            }
+            self?.iconRefreshURLs.removeAll()
+        }
     }
 
     // MARK: - Launch warm-up
