@@ -101,7 +101,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.eventObserver = { [weak self] event in
             self?.viewController.observeOptionHold(event)
         }
-        PinchGestureMonitor.shared.onTap = { [weak self] in self?.handleTrackpadTap() }
+        PinchGestureMonitor.shared.onTap = { [weak self] began in self?.handleTrackpadTap(began: began) }
         // Instant close, no fade (the desktop already changed).
         spaceGuard = PanelSpaceGuard(panel: panel) { [weak self] in
             CloseLog.note("launchpad: space changed")
@@ -513,25 +513,32 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         return true
     }
 
-    // A tap that stopped a page swipe never becomes a click (macOS eats it).
-    // Replay it as a click, only on empty space, so "tap outside closes" works mid-swipe.
-    // Also while a pinch open is running or just finished: a tap there cancels (closes) it.
-    private func handleTrackpadTap() {
+    // Every trackpad tap goes to the panel, which pairs it with its real click; when macOS
+    // ate the click, the tap is replayed at the point chosen here (nil = not worth replaying).
+    // Replayed: a tap that stopped a page swipe (only on empty space, so "tap outside closes"
+    // works mid-swipe), a tap while a pinch open runs or just finished (cancels / closes it),
+    // and any tap that toggles a folder (outside an open folder, or on a closing folder's tile).
+    // began: when the tap's touch started (uptime), so only a click of this touch can claim it.
+    private func handleTrackpadTap(began: TimeInterval) {
         guard panel.isVisible, panel.isKeyWindow, !isFadingOut, TapToClick.isEnabled else { return }
+        panel.handleTap(began: began, replayAt: tapReplayPoint())
+    }
+
+    private func tapReplayPoint() -> NSPoint? {
         // Drag / drop landing or just committed: a synthesized click could hit stale empty space.
-        guard !viewController.isDropSettling else { return }
+        guard !viewController.isDropSettling else { return nil }
         // Only the first tap after a pinch gets eaten; once a real click arrived, stop replaying.
         let pinchOpening = transition == .opening
             || (ProcessInfo.processInfo.systemUptime - lastPinchOpen < Self.pinchTapWindow
                 && panel.lastRealMouseDown < pinchOpenBegan)
-        guard pinchOpening || (transition == nil && PagerView.isScrollActive) else { return }
         let point = panel.mouseLocationOutsideOfEventStream
+        let folderTap = transition == nil && viewController.isFolderToggleTap(atWindowPoint: point)
+        guard pinchOpening || folderTap || (transition == nil && PagerView.isScrollActive) else { return nil }
         guard let content = panel.contentView,
               content.bounds.contains(content.convert(point, from: nil)),
-              viewController.isEmptySpace(atWindowPoint: point)
-        else { return }
-        CloseLog.note("launchpad: replay tap (pinch: \(pinchOpening))")
-        panel.replayClick(atWindowPoint: point)
+              folderTap || viewController.isEmptySpace(atWindowPoint: point)
+        else { return nil }
+        return point
     }
 
     // Input source + search focus, once the panel is really open.

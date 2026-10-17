@@ -115,14 +115,34 @@ final class LaunchpadPanel: NSPanel {
     override var canBecomeMain: Bool { true }
 
     // MARK: - Replayed trackpad taps
-    // A tap that stops a running swipe is eaten by macOS (no click). The controller replays it
-    // here; whichever of the replay / a real click comes second is dropped, so it acts once.
+    // macOS sometimes eats a tap (no click), e.g. one that stops a running swipe. The controller
+    // reports every trackpad tap here (with its touch start); every tap acts exactly once and
+    // no click is ever dropped for being close in time to another one.
+    // A tap and a real click are the same press when they belong to the same touch: the click's
+    // own timestamp (when the system made it, not when it got through a busy main thread) is
+    // mapped to the touch that was down then. So a click queued behind a busy frame still pairs
+    // with its own tap, even when a newer touch has begun meanwhile.
+    // Click first → delivered; its tap then just pairs with it. Tap first: its click is usually
+    // just late (queued while a morph keeps the main thread busy), so the tap waits a short grace;
+    // a queued click of the same touch extends the wait, anything else does not. Still missing →
+    // replayed. A real click that still comes after a replay is dropped.
 
-    private static let replayWindow: TimeInterval = 0.35
+    private static let pairWindow: TimeInterval = 1.0
+    private static let maxTapToClick: TimeInterval = 0.45
+    private static let replayGrace: Duration = .milliseconds(100)
+    private static let maxGraceRounds = 5
     private(set) var lastRealMouseDown: TimeInterval = -1
-    private var lastReplay: TimeInterval = -1
+    private struct PendingTap {
+        let began: TimeInterval     // touch identity
+        let time: TimeInterval
+        var replayed: Bool
+    }
+    private var pendingTaps: [PendingTap] = []                          // taps whose click has not come
+    private var unpairedReal: [(touch: TimeInterval, time: TimeInterval)] = []   // clicks whose tap has not come
     private var dropNextMouseUp = false
     private var isReplaying = false
+    // Marks replayed events (the posted mouse up comes back through sendEvent on its own).
+    private static let replayEventNumber = 0x5250_4C59
 
     override func sendEvent(_ event: NSEvent) {
         if let eventObserver {
@@ -134,13 +154,31 @@ final class LaunchpadPanel: NSPanel {
             }
         }
         if event.type == .keyDown, let keyDownHandler, keyDownHandler(event) { return }
-        if !isReplaying {
+        let isReplay = isReplaying
+            || (event.type == .leftMouseUp && event.eventNumber == Self.replayEventNumber)
+        if !isReplay {
             switch event.type {
             case .leftMouseDown:
                 let now = ProcessInfo.processInfo.systemUptime
-                if now - lastReplay < Self.replayWindow {
-                    dropNextMouseUp = true
-                    return
+                prunePairs(now)
+                // Owning touch: a tap lasts at most 0.3 s and its click comes by its lift, so an
+                // older touch start is not this click's (e.g. a mouse click after a tap).
+                if let touch = PinchGestureMonitor.shared.touchStart(at: event.timestamp),
+                   event.timestamp - touch <= Self.maxTapToClick {
+                    if let index = pendingTaps.firstIndex(where: { $0.began == touch }) {
+                        let tap = pendingTaps.remove(at: index)
+                        if tap.replayed {
+                            // This press already acted through its replay.
+                            dropNextMouseUp = true
+                            CloseLog.note("launchpad: real click dropped (twin of a replayed tap)")
+                            return
+                        }
+                    } else {
+                        unpairedReal.append((touch, now))      // its tap (if any) comes later
+                        logUnpaired(event, touch: touch, now: now)
+                    }
+                } else if let touch = PinchGestureMonitor.shared.touchStart(at: event.timestamp) {
+                    logUnpaired(event, touch: touch, now: now)
                 }
                 lastRealMouseDown = now
             case .leftMouseUp where dropNextMouseUp:
@@ -153,22 +191,75 @@ final class LaunchpadPanel: NSPanel {
         super.sendEvent(event)
     }
 
-    // Synthesized single click (down + up) at a window point.
-    func replayClick(atWindowPoint point: NSPoint) {
+    // One trackpad tap whose touch began at `began` (uptime).
+    // replayPoint: where to replay it if macOS ate its click (nil = never replay).
+    func handleTap(began: TimeInterval, replayAt replayPoint: NSPoint?) {
         let now = ProcessInfo.processInfo.systemUptime
-        guard now - lastRealMouseDown >= Self.replayWindow else { return }   // real click already came
-        lastReplay = now
+        prunePairs(now)
+        if let index = unpairedReal.firstIndex(where: { $0.touch == began }) {
+            unpairedReal.remove(at: index)            // its real click already came
+            return
+        }
+        pendingTaps.append(PendingTap(began: began, time: now, replayed: false))
+        guard let replayPoint else { return }
+        scheduleReplay(began: began, at: replayPoint, round: 1)
+    }
+
+    private func scheduleReplay(began: TimeInterval, at point: NSPoint, round: Int) {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.replayGrace)
+            self?.replayIfStillMissing(began: began, at: point, round: round)
+        }
+    }
+
+    private func replayIfStillMissing(began: TimeInterval, at point: NSPoint, round: Int) {
+        // Claimed by its real click meanwhile (or pruned): nothing to do.
+        guard let index = pendingTaps.firstIndex(where: { $0.began == began && !$0.replayed }) else { return }
+        if round < Self.maxGraceRounds, hasQueuedClick(ofTouch: began) {
+            scheduleReplay(began: began, at: point, round: round + 1)     // on its way: wait for it
+            return
+        }
+        pendingTaps[index].replayed = true
+        CloseLog.note("launchpad: tap replayed (no real click, round \(round))")
+        replayClick(atWindowPoint: point, time: ProcessInfo.processInfo.systemUptime)
+    }
+
+    // A mouse down of this very touch already waiting in the event queue (peek, not dequeued).
+    private func hasQueuedClick(ofTouch began: TimeInterval) -> Bool {
+        guard let event = NSApp.nextEvent(matching: .leftMouseDown, until: .distantPast,
+                                          inMode: .default, dequeue: false) else { return false }
+        return PinchGestureMonitor.shared.touchStart(at: event.timestamp) == began
+    }
+
+    // Diagnostics: a click while a replayed tap still waits for its twin (possible double action).
+    private func logUnpaired(_ event: NSEvent, touch: TimeInterval, now: TimeInterval) {
+        guard pendingTaps.contains(where: { $0.replayed }) else { return }
+        CloseLog.note(String(format: "launchpad: real click unpaired (touch +%.0f ms, lag %.0f ms)",
+                             (event.timestamp - touch) * 1000, (now - event.timestamp) * 1000))
+    }
+
+    private func prunePairs(_ now: TimeInterval) {
+        let limit = now - Self.pairWindow
+        pendingTaps.removeAll { $0.time < limit }
+        unpairedReal.removeAll { $0.time < limit }
+    }
+
+    // Synthesized single click (down + up) at a window point.
+    // The up is queued (at the head) before the down is sent: a view that tracks the mouse inside
+    // its mouseDown (text field, control) pulls events from the queue and would otherwise wait
+    // there for the next real event — swallowing the real click of this tap and the next one.
+    // Without such a loop the queued up is simply dispatched right after the down.
+    private func replayClick(atWindowPoint point: NSPoint, time: TimeInterval) {
+        func make(_ type: NSEvent.EventType) -> NSEvent? {
+            NSEvent.mouseEvent(with: type, location: point, modifierFlags: [], timestamp: time,
+                               windowNumber: windowNumber, context: nil, eventNumber: Self.replayEventNumber,
+                               clickCount: 1, pressure: type == .leftMouseDown ? 1 : 0)
+        }
+        guard isVisible, let down = make(.leftMouseDown), let up = make(.leftMouseUp) else { return }
+        postEvent(up, atStart: true)
         isReplaying = true
         defer { isReplaying = false }
-        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
-            guard isVisible,
-                  let event = NSEvent.mouseEvent(with: type, location: point, modifierFlags: [],
-                                                 timestamp: now, windowNumber: windowNumber, context: nil,
-                                                 eventNumber: 0, clickCount: 1,
-                                                 pressure: type == .leftMouseDown ? 1 : 0)
-            else { return }
-            sendEvent(event)
-        }
+        sendEvent(down)
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {

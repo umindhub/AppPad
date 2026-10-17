@@ -375,7 +375,8 @@ final class GridCellView: FlippedView {
         longPressTask?.cancel()
         longPressTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(500))
-            guard !Task.isCancelled, let self, self.isPressed, !self.isDragging else { return }
+            // A concealed tile (its folder is open on top) never starts edit mode.
+            guard !Task.isCancelled, let self, self.isPressed, !self.isDragging, !self.isConcealed else { return }
             // Button must really still be down (a system gesture can swallow the mouseUp).
             guard NSEvent.pressedMouseButtons & 1 != 0 else {
                 self.isPressed = false
@@ -396,7 +397,7 @@ final class GridCellView: FlippedView {
         }
         let dx = event.locationInWindow.x - mouseDownPoint.x
         let dy = event.locationInWindow.y - mouseDownPoint.y
-        guard dx * dx + dy * dy > 25 else { return }
+        guard dx * dx + dy * dy > 25, !isConcealed else { return }
         longPressTask?.cancel()
         isPressed = false
         isDragging = true

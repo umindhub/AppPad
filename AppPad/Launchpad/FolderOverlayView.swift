@@ -12,8 +12,12 @@ import QuartzCore
 //   their real positions (one continuous motion); the tile itself is hidden while open.
 // - Close: the reverse, ending exactly on the tile's mini icons. Closing while the open morph
 //   still runs plays the open morph backwards from where it is (no second set of proxies).
+// - Every click counts, no single / double click distinction (a double click is two clicks):
+//   open → click → close → click on the tile → open again. A click on the tile while the close
+//   morph runs turns it around (reopen from where it is).
 final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     var onClose: (() -> Void)?
+    private(set) var isClosing = false
     var onRename: ((String) -> Void)?
     var onEndEditingTitle: (() -> Void)?
 
@@ -51,6 +55,15 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private var titleSnapshot: (text: String, image: CGImage)?
     // Leftover after a drag out of the folder ended: invisible, must not take clicks.
     var passesClicks = false
+    // Click on the tile while the close morph runs: the launcher decides whether to reopen.
+    var onReopen: (() -> Void)?
+    // iOS style: the name is renamed by clicking it only in edit mode (or via "Rename…");
+    // otherwise a click on it is a click outside the sheet and closes the folder.
+    var allowsTitleClicks = false
+    // Close morph in flight, as a pose by openness (1 = open, 0 = in the tile), so it can turn around.
+    private var closePose: ((CGFloat) -> Void)?
+    private var closeFlights: [Flight] = []
+    private var closeOpenness: CGFloat = 0
 
     var currentPage: Int { pager.currentPage }
 
@@ -114,8 +127,26 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // Reversible close morph: the tile's whole click area belongs to the overlay (reopen in place,
+    // never a second folder from the tile underneath), the rest goes to the pages.
     override func hitTest(_ point: NSPoint) -> NSView? {
-        passesClicks ? nil : super.hitTest(point)
+        if passesClicks { return nil }
+        if closePose != nil {
+            guard let tile = sourceTile else { return nil }
+            let area = convert(tile.iconRect, from: tile)
+            return area.contains(convert(point, from: superview)) ? self : nil
+        }
+        // Morph running: name / indicator are invisible (alpha 0) but would still take clicks
+        // (an invisible rename instead of a close). The overlay itself takes every click then.
+        if isAnimating {
+            return frame.contains(point) ? self : nil
+        }
+        let hit = super.hitTest(point)
+        if let hit, !allowsTitleClicks, titleField.currentEditor() == nil,
+           hit === titleField || hit.isDescendant(of: titleField) {
+            return self
+        }
+        return hit
     }
 
     func boxContains(windowPoint: NSPoint) -> Bool {
@@ -256,10 +287,12 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         pager.scrollTo(page: pager.currentPage + direction, animated: true)
     }
 
-    // The 2nd click of a double click on the folder tile lands here (same spot, clickCount ≥ 2):
-    // it belongs to the opening, so it must not close the folder again.
+    // Acts on every mouse down, never looks at clickCount: open → close, closing → reopen.
     override func mouseDown(with event: NSEvent) {
-        guard event.clickCount < 2 else { return }
+        if closePose != nil {
+            onReopen?()
+            return
+        }
         if !boxContains(windowPoint: event.locationInWindow) { onClose?() }
     }
 
@@ -277,6 +310,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     func animateOpen() {
         guard let tile = sourceTile else { return }
         layoutSubtreeIfNeeded()
+        flushDeferredCleanup()
+        stage.removeAllProxies()
         let plate = convert(tile.visualIconRect, from: tile)
         let box = boxFrame
         let flights = iconFlights(tile: tile, excluding: nil, opening: true)
@@ -333,22 +368,35 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             content.isHidden = false
         }
         flushDeferredCleanup()
+        stage.removeAllProxies()     // no morph is running here: anything left is a stray proxy
         let plate = convert(tile.visualIconRect, from: tile)
         let box = backdrop.frame
         let flights = iconFlights(tile: tile, excluding: excluded, opening: false)
         let endRadius = plate.width * 0.24
 
         isAnimating = true
+        isClosing = true
         setChromeAlpha(0)
-        run(duration: 0.32, curve: Self.easeInOut, step: { [weak self] p in
+        let step: (CGFloat) -> Void = { [weak self, weak tile] p in
             guard let self else { return }
             self.backdrop.frame = Self.lerp(box, plate, p)
             self.backdrop.setCornerRadius(Self.cornerRadius + (endRadius - Self.cornerRadius) * p)
             self.outsideBlur.alphaValue = max(0, 1 - p)
-            tile.concealedLabelAlpha = Self.smoothstep(0.55, 1, p)       // page name fades back in
+            tile?.concealedLabelAlpha = Self.smoothstep(0.55, 1, p)      // page name fades back in
             for flight in flights { flight.apply(p, opening: false) }
+        }
+        // Drag-out close (excluded app) is never reopened: the overlay stays for the drag.
+        if excluded == nil {
+            closePose = { o in step(1 - o) }
+            closeFlights = flights
+            closeOpenness = 1
+        }
+        run(duration: 0.32, curve: Self.easeInOut, step: { [weak self] p in
+            self?.closeOpenness = 1 - p
+            step(p)
         }, completion: { [weak self] in
             guard let self else { return }
+            self.endClosing()
             // Hand over to the tile: it reappears exactly where the morph ended.
             self.sourceTile?.isConcealed = false
             self.sourceTile?.concealedLabelAlpha = 0
@@ -364,11 +412,18 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private func reverseOpen(step: @escaping (CGFloat) -> Void, flights: [Flight], completion: @escaping () -> Void) {
         let from = openProgress
         isAnimating = true
+        isClosing = true
         setChromeAlpha(0)
-        run(duration: max(0.16, 0.32 * Double(min(1, from))), curve: Self.easeInOut, step: { q in
-            step(from * (1 - q))
+        closePose = step                 // open step is already a pose by openness
+        closeFlights = flights
+        closeOpenness = from
+        run(duration: max(0.16, 0.32 * Double(min(1, from))), curve: Self.easeInOut, step: { [weak self] q in
+            let o = from * (1 - q)
+            self?.closeOpenness = o
+            step(o)
         }, completion: { [weak self] in
             guard let self else { return }
+            self.endClosing()
             self.sourceTile?.isConcealed = false
             self.sourceTile?.concealedLabelAlpha = 0
             self.backdrop.alphaValue = 0
@@ -377,6 +432,51 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
             self.hideStageIfEmpty()
             completion()
         })
+    }
+
+    // Click on the tile mid-close: run the close pose back to fully open from where it is.
+    // Returns false when this close cannot turn around (drag out / already finished).
+    @discardableResult
+    func reopen() -> Bool {
+        guard let pose = closePose else { return false }
+        let from = closeOpenness
+        let flights = closeFlights
+        endClosing()
+        let box = boxFrame
+        isAnimating = true
+        // Registered as an open in flight: a close during the reopen reuses these proxies
+        // (reverseOpen) instead of building a second set on top of them.
+        let step: (CGFloat) -> Void = { [weak self] o in
+            self?.openProgress = o
+            pose(o)
+        }
+        openStep = step
+        openFlights = flights
+        openProgress = from
+        run(duration: max(0.2, 0.46 * Double(1 - from)), curve: Self.springOut, step: { o in
+            step(from + (1 - from) * o)
+        }, completion: { [weak self] in
+            guard let self else { return }
+            self.openStep = nil
+            self.openFlights = nil
+            self.isAnimating = false
+            self.backdrop.frame = box
+            self.backdrop.setCornerRadius(Self.cornerRadius)
+            self.backdrop.alphaValue = 1
+            self.outsideBlur.alphaValue = 1
+            self.sourceTile?.concealedLabelAlpha = 0
+            self.content.isHidden = false
+            self.setChromeAlpha(1)
+            // Same hand-over as the open: proxies leave one frame after the real grid shows.
+            self.deferredCleanup = flights.map(\.layer)
+        })
+        return true
+    }
+
+    private func endClosing() {
+        isClosing = false
+        closePose = nil
+        closeFlights = []
     }
 
     // MARK: - Timeline
@@ -765,6 +865,10 @@ final class MorphStageView: NSView {
         layer.magnificationFilter = .linear
         layer.minificationFilter = mipmapped ? .trilinear : .linear
         return layer
+    }
+
+    func removeAllProxies() {
+        root.sublayers?.forEach { $0.removeFromSuperlayer() }
     }
 
     func add(_ layer: CALayer) {

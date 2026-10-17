@@ -15,6 +15,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     let resultsPager = PagerView()
     let dragImageView = NSImageView()
     var folderOverlay: FolderOverlayView?
+    // Folder shrinking back into its tile (still on screen, can be reopened by a click on the tile).
+    var closingFolderOverlay: FolderOverlayView?
     var confirmOverlay: ConfirmOverlayView?
     var isEditingLayout = false
     // Extra top margin when the panel reaches into a notched screen's top area (camera housing).
@@ -240,6 +242,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         // Reopening the same folder (reload after a reorder / rename) stays on its current page.
         let keepPage = folderOverlay?.folderID == folder.id ? (folderOverlay?.currentPage ?? 0) : 0
         folderOverlay?.removeFromSuperview()
+        dropClosingFolder()
         let metrics = folderMetrics()
         let overlay = FolderOverlayView(
             folder: folder, apps: apps, columns: metrics.columns,
@@ -247,6 +250,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         )
         overlay.grid.delegate = self
         overlay.grid.setEditing(isEditingLayout)
+        overlay.allowsTitleClicks = isEditingLayout
         overlay.onClose = { [weak self] in self?.closeFolder(animated: true) }
         overlay.onRename = { [weak self] name in
             self?.controller?.renameFolder(id: folder.id, name: name)
@@ -329,17 +333,38 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
     // animated: shrink back into the folder icon (Esc / click outside).
     func closeFolder(animated: Bool = false) {
+        if !animated { dropClosingFolder() }
         guard let overlay = folderOverlay else { return }
         folderOverlay = nil
         folderSelection = nil
         if animated && overlay.sourceTile != nil {
-            overlay.animateClose { overlay.removeFromSuperview() }
+            dropClosingFolder()
+            closingFolderOverlay = overlay
+            overlay.onReopen = { [weak self, weak overlay] in
+                guard let self, let overlay, self.closingFolderOverlay === overlay,
+                      self.folderOverlay == nil, overlay.reopen() else { return }
+                self.closingFolderOverlay = nil
+                self.folderOverlay = overlay
+            }
+            overlay.animateClose { [weak self, weak overlay] in
+                overlay?.removeFromSuperview()
+                if let self, self.closingFolderOverlay === overlay { self.closingFolderOverlay = nil }
+            }
         } else {
             overlay.sourceTile?.isConcealed = false
             overlay.removeFromSuperview()
         }
         setPagesReceded(false, animated: animated)
         focusSearch()
+    }
+
+    // A close morph still running: end it now (tile shows again).
+    func dropClosingFolder() {
+        guard let overlay = closingFolderOverlay else { return }
+        closingFolderOverlay = nil
+        overlay.sourceTile?.isConcealed = false
+        overlay.sourceTile?.concealedLabelAlpha = 0
+        overlay.removeFromSuperview()
     }
 
     // MARK: - Search
@@ -590,6 +615,23 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
     // Empty space for a replayed trackpad tap: page / grid gaps, the root, outside an open folder.
     // Icons and controls are excluded (a tap that stops a swipe must not launch or edit anything).
+    // Trackpad tap that toggles a folder: outside an open folder's sheet (close), on the tile of a
+    // folder that is shrinking back (reopen) or on a closed folder's tile (open).
+    // Replayed when macOS eats the tap.
+    func isFolderToggleTap(atWindowPoint point: NSPoint) -> Bool {
+        if let overlay = folderOverlay {
+            return !overlay.passesClicks && !overlay.boxContains(windowPoint: point)
+        }
+        guard let content = view.window?.contentView,
+              let hit = content.hitTest(content.superview?.convert(point, from: nil) ?? point)
+        else { return false }
+        if let closing = closingFolderOverlay, hit === closing { return true }
+        guard !isEditingLayout, let cell = hit as? GridCellView, let grid = cell.grid,
+              grid.entries.indices.contains(cell.index), case .folder = grid.entries[cell.index]
+        else { return false }
+        return true
+    }
+
     func isEmptySpace(atWindowPoint point: NSPoint) -> Bool {
         guard let content = view.window?.contentView,
               let hit = content.hitTest(content.superview?.convert(point, from: nil) ?? point)

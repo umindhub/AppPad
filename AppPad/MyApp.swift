@@ -1,4 +1,5 @@
 import AppKit
+import UserNotifications
 
 // App entry point: menu-bar-only agent app with AppKit lifecycle.
 @main
@@ -41,13 +42,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         withExtendedLifetime(delegate) { app.run() }
     }
 
+    // Notification delegate must be in place before launch finishes (click that launched AppPad).
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        WorkflowNotifier.shared.install()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Launched by a click on a workflow banner: Settings opens instead of Launchpad.
+        let launchedByNotification = handleLaunchNotification(notification)
         // Read while the launch Apple Event is still current.
         // Relaunch after an update also looks like a user open: stay silent then.
         let relaunchedByUpdate = UpdateController.consumeRelaunchMarker()
         // Started by the MCP proxy for an AI client: stay in the menu bar.
         let launchedForMCP = CommandLine.arguments.contains(MCPPaths.launchArgument)
-        let openedByUser = !relaunchedByUpdate && !launchedForMCP && LaunchOrigin.isUserOpen()
+        let openedByUser = !relaunchedByUpdate && !launchedForMCP && !launchedByNotification
+            && LaunchOrigin.isUserOpen()
         // Theme first: wallpaper prewarm picks blur params for the theme in effect.
         applyTheme()
         NSApp.mainMenu = MainMenu.build()
@@ -125,7 +134,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { [weak self] _, _ in
             Task { @MainActor [weak self] in self?.appearanceDidChange() }
         }
+        // Banner click → Settings › Workflows (a click from the launch is flushed here).
+        WorkflowNotifier.shared.onOpen = { [weak self] in self?.showWorkflowSettings() }
         if openedByUser { openLaunchpadAfterColdLaunch() }
+    }
+
+    // True if the launch came from a banner click; the click is queued for the handler.
+    private func handleLaunchNotification(_ notification: Notification) -> Bool {
+        guard let response = notification.userInfo?[NSApplication.launchUserNotificationUserInfoKey] as? UNNotificationResponse,
+              let requestID = WorkflowNotifier.clickedRequestID(response)
+        else { return false }
+        WorkflowNotifier.shared.handleClick(requestID: requestID)
+        return true
     }
 
     // Returns once no panel has been on screen (or pending) for ~1 s.
@@ -142,7 +162,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     // once apps and wallpaper are loaded (login-item launches stay silent).
     private func openLaunchpadAfterColdLaunch() {
         launchpad.showWhenReady { [weak self] in
-            guard let self, !self.launchpad.isShown, self.settings?.isVisible != true else { return }
+            guard let self, !self.launchpad.isShown, self.settings?.isVisible != true,
+                  !WorkflowNotifier.shared.clickedRecently else { return }
             self.clipboard.hide()
             self.workflows.hide()
             self.handOffActivation { [weak self] in self?.launchpad.show() }
@@ -165,14 +186,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     }
 
     // Click on AppPad pinned in the Dock (app already running) toggles Launchpad.
+    // A click on a workflow banner also sends a reopen event: that one opens Settings instead.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        toggleLaunchpadFromDock()
+        let notifier = WorkflowNotifier.shared
+        guard notifier.mayHaveBeenClicked else {
+            toggleLaunchpadFromDock()
+            return false
+        }
+        // Snapshot now: the outside-click window may pass while the banner check runs.
+        let wasOpen = launchpad.isShown || launchpad.didJustCloseFromOutsideClick
+        Task { @MainActor [weak self] in
+            let fromBanner = await notifier.reopenCameFromClick()
+            guard !fromBanner else { return }
+            self?.toggleLaunchpadFromDock(wasOpen: wasOpen)
+        }
         return false
     }
 
     // The Dock click activates AppPad. Without Settings open, focus goes back to the previous
     // app first, so the panel opens non-activating (same state as pinch / menu bar).
-    private func toggleLaunchpadFromDock() {
+    private func toggleLaunchpadFromDock(wasOpen: Bool? = nil) {
         let settingsOpen = settings?.isVisible == true
         // Second click while the cold-launch show is still loading: cancel it.
         if launchpad.cancelPendingShow() {
@@ -180,7 +213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return
         }
         // Panel may already have closed on resign key from the same click.
-        if launchpad.isShown || launchpad.didJustCloseFromOutsideClick {
+        if wasOpen ?? (launchpad.isShown || launchpad.didJustCloseFromOutsideClick) {
             launchpad.hide(animated: true)
             if !settingsOpen { handOffActivation() }
             return

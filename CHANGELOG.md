@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.2
+
+### Changed
+- Launchpad: opening and closing a folder by clicking is now more reliable.
+
 ## v1.1.1
 
 ### Changed

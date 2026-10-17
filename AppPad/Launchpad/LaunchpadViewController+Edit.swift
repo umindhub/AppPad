@@ -12,6 +12,7 @@ extension LaunchpadViewController: PageGridDelegate {
             (page as? PageGridView)?.setEditing(editing)
         }
         folderOverlay?.grid.setEditing(editing)
+        folderOverlay?.allowsTitleClicks = editing
     }
 
     // MARK: - PageGridDelegate
@@ -37,8 +38,13 @@ extension LaunchpadViewController: PageGridDelegate {
             guard !isEditingLayout else { return }
             controller?.launch(app)
         case .folder(let folder, let apps):
-            // A folder is already open / opening (2nd click of a double click): no second morph.
-            guard folderOverlay == nil else { return }
+            if let overlay = folderOverlay {
+                // The open folder's own (hidden) tile got the click instead of the overlay:
+                // it is a click outside the sheet, so it closes the folder (never swallowed).
+                CloseLog.note("folder: click on its hidden tile → close (same folder: \(overlay.folderID == folder.id))")
+                closeFolder(animated: true)
+                return
+            }
             openFolder(folder, apps: apps, fromTile: grid.cells[index], animated: true)
         }
     }

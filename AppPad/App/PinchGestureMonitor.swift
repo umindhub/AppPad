@@ -101,6 +101,7 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
         var began = false
         var spoiled = false   // second finger, travel or too long: not a tap
         var startTime: Double = 0
+        var startUptime: TimeInterval = 0   // touch start on the system uptime clock (NSEvent clock)
         var startX: Float = 0, startY: Float = 0
     }
 
@@ -108,7 +109,8 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
     private var tracking: [Int: Tracking] = [:]   // per device
     private var taps: [Int: TapTracking] = [:]    // per device
     private var handler: (@MainActor @Sendable (PinchEvent) -> Void)?
-    private var tapHandler: (@MainActor @Sendable () -> Void)?
+    private var tapHandler: (@MainActor @Sendable (TimeInterval) -> Void)?
+    private var touchBegins: [TimeInterval] = []      // recent touch starts (uptime clock), oldest first
     private var pinchOn = false   // lock-protected mirrors of the main-thread flags
     private var tapOn = false
 
@@ -132,9 +134,16 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
         set { lock.withLock { handler = newValue } }
     }
 
-    var onTap: (@MainActor @Sendable () -> Void)? {
+    // Argument: when the tap's touch began (system uptime), to pair it with its own click.
+    var onTap: (@MainActor @Sendable (TimeInterval) -> Void)? {
         get { lock.withLock { tapHandler } }
         set { lock.withLock { tapHandler = newValue } }
+    }
+
+    // Start (uptime) of the touch that was down at `time`: the latest touch start not after it.
+    // nil when no recent touch qualifies (e.g. a mouse click). Only tracked while taps are on.
+    func touchStart(at time: TimeInterval) -> TimeInterval? {
+        lock.withLock { touchBegins.last { $0 <= time + 0.01 } }
     }
 
     // Pinch recognition (user setting).
@@ -320,7 +329,9 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
 
         let key = Int(bitPattern: device)
         typealias PinchOutput = (PinchEvent, @MainActor @Sendable (PinchEvent) -> Void)
-        let (output, tap) = lock.withLock { () -> (PinchOutput?, (@MainActor @Sendable () -> Void)?) in
+        typealias TapOutput = (@MainActor @Sendable (TimeInterval) -> Void, TimeInterval)
+        let uptime = ProcessInfo.processInfo.systemUptime
+        let (output, tap) = lock.withLock { () -> (PinchOutput?, TapOutput?) in
             var output: PinchOutput?
             if pinchOn {
                 var s = tracking[key] ?? Tracking()
@@ -328,11 +339,17 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
                 tracking[key] = s
                 if let event, let handler { output = (event, handler) }
             }
-            var tap: (@MainActor @Sendable () -> Void)?
+            var tap: TapOutput?
             if tapOn {
                 var t = taps[key] ?? TapTracking()
+                let wasTouching = t.began
                 // Single finger: the centroid is that finger.
-                if Self.stepTap(&t, n: n, x: sx, y: sy, time: time) { tap = tapHandler }
+                let start = Self.stepTap(&t, n: n, x: sx, y: sy, time: time, uptime: uptime)
+                if !wasTouching, t.began {
+                    touchBegins.append(t.startUptime)
+                    if touchBegins.count > 16 { touchBegins.removeFirst() }
+                }
+                if let start, let tapHandler { tap = (tapHandler, start) }
                 taps[key] = t
             }
             return (output, tap)
@@ -346,22 +363,27 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
             }
         }
         if let tap {
+            let (handler, start) = tap
             DispatchQueue.main.async {
-                MainActor.assumeIsolated { tap() }
+                MainActor.assumeIsolated { handler(start) }
             }
         }
     }
 
-    // One frame of the tap recognizer; true when a one-finger tap just finished (finger lifted).
-    private static func stepTap(_ t: inout TapTracking, n: Int, x: Float, y: Float, time: Double) -> Bool {
+    // One frame of the tap recognizer; the touch's start (uptime) when a one-finger tap just
+    // finished (finger lifted), else nil.
+    private static func stepTap(_ t: inout TapTracking, n: Int, x: Float, y: Float, time: Double,
+                                uptime: TimeInterval) -> TimeInterval? {
         if n == 0 {
             let isTap = t.began && !t.spoiled && time - t.startTime <= tapMaxDuration
+            let start = t.startUptime
             t = TapTracking()
-            return isTap
+            return isTap ? start : nil
         }
         if !t.began {
             t.began = true
             t.startTime = time
+            t.startUptime = uptime
             t.startX = x; t.startY = y
         }
         if n > 1 {
@@ -370,7 +392,7 @@ nonisolated final class PinchGestureMonitor: @unchecked Sendable {
             let travel = ((x - t.startX) * (x - t.startX) + (y - t.startY) * (y - t.startY)).squareRoot()
             if travel > tapMaxTravel || time - t.startTime > tapMaxDuration { t.spoiled = true }
         }
-        return false
+        return nil
     }
 
     // One frame of the recognizer; returns an event to publish, if any.
