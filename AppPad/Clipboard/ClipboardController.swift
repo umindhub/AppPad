@@ -5,6 +5,8 @@ final class ClipboardController: NSObject, NSWindowDelegate {
     // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
     var onSwitchPanel: ((Int) -> Void)?
     var onOpenSettings: (() -> Void)?
+    // Runs the ⌘V once the paste target app is frontmost (AppPad may be active after an alert).
+    var prepareForPaste: ((@escaping () -> Void) -> Void)?
 
     let store: ClipboardStore?
     private(set) var monitor: ClipboardMonitor?
@@ -174,7 +176,11 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
         guard autoPaste else { return }
         if PasteService.isTrusted {
-            PasteService.sendPasteKeystroke()
+            if let prepareForPaste {
+                prepareForPaste { PasteService.sendPasteKeystroke() }
+            } else {
+                PasteService.sendPasteKeystroke()
+            }
         } else if !didPromptAccess {
             // Content is already on the pasteboard; ⌘V works manually until access is granted.
             didPromptAccess = true

@@ -58,6 +58,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         clipboard.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .clipboard, step: step) }
         workflows.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .workflows, step: step) }
         clipboard.onOpenSettings = { [weak self] in self?.showSettings() }
+        // AppPad left active (update alert, menu-bar check): give focus back before ⌘V.
+        clipboard.prepareForPaste = { [weak self] send in
+            guard let self, !self.pasteGoesToSettings else { send(); return }
+            self.handOffActivation(then: send)
+        }
         workflows.onOpenSettings = { [weak self] in self?.showSettings() }
         workflows.onEditWorkflow = { [weak self] id in self?.editWorkflow(id) }
         // Workflow Market link installed something: show it in Settings › Workflows.
@@ -87,6 +92,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             guard let self else { return true }
             return !self.launchpad.isBusy && !self.clipboard.isActive && !self.workflows.isActive
                 && self.settings?.isVisible != true
+        }
+        // "Up to date" notice closed: focus back to the app the user was in.
+        UpdateController.shared.onNoticeClosed = { [weak self] in
+            guard let self, self.settings?.isVisible != true else { return }
+            self.handOffActivation()
         }
         UpdateController.shared.start()
         // AI clients (MCP): runs count toward frecency like panel runs.
@@ -182,6 +192,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         } else {
             handOffActivation { [weak self] in self?.launchpad.show() }
         }
+    }
+
+    // Settings is where focus returns after the clipboard closes (paste into its fields).
+    private var pasteGoesToSettings: Bool {
+        settings?.isVisible == true && !UpdateController.shared.isShowingNotice
     }
 
     // Activate the previous app, run the action once AppPad resigned active (or after a timeout).

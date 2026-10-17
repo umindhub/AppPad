@@ -90,6 +90,8 @@ final class LaunchpadPanel: NSPanel {
         super.init(contentRect: contentRect, styleMask: style.union(.nonactivatingPanel), backing: backingStoreType, defer: flag)
         isFloatingPanel = true
         becomesKeyOnlyIfNeeded = false
+        // Keeps taking keys while some app-modal alert runs (e.g. a Sparkle error alert).
+        worksWhenModal = true
         level = .floating
         isOpaque = false
         backgroundColor = .clear

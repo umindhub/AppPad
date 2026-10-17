@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import Combine
 import Sparkle
 
@@ -18,9 +19,12 @@ final class UpdateController: NSObject, ObservableObject {
 
     // True while nothing is on screen; set by AppDelegate.
     var isIdle: () -> Bool = { true }
+    // "Up to date" notice closed; AppDelegate hands focus back to the previous app.
+    var onNoticeClosed: (() -> Void)?
+    var isShowingNotice: Bool { userDriver?.isShowingNotice == true }
 
-    private var controller: SPUStandardUpdaterController?
-    private var updater: SPUUpdater? { controller?.updater }
+    private var updater: SPUUpdater?
+    private var userDriver: UpdateUserDriver?
     private var enabled = false
     private var minutes = Preferences.autoUpdateMinutesDefault
     private var lastAttempt: Date?
@@ -42,13 +46,19 @@ final class UpdateController: NSObject, ObservableObject {
     private static let idlePoll: Duration = .seconds(5)
 
     func start() {
-        guard isSupported, controller == nil else { return }
-        let controller = SPUStandardUpdaterController(
-            startingUpdater: false, updaterDelegate: self, userDriverDelegate: self
-        )
-        self.controller = controller
-        controller.startUpdater()
-        let updater = controller.updater
+        guard isSupported, updater == nil else { return }
+        // Own user driver: Sparkle's standard UI except the modal "up to date" alert.
+        let driver = UpdateUserDriver(hostBundle: .main, delegate: self)
+        driver.onNoticeClosed = { [weak self] in self?.onNoticeClosed?() }
+        let updater = SPUUpdater(hostBundle: .main, applicationBundle: .main, userDriver: driver, delegate: self)
+        do {
+            try updater.start()
+        } catch {
+            NSLog("Sparkle updater failed to start: \(error)")
+            return
+        }
+        userDriver = driver
+        self.updater = updater
         updater.updateCheckInterval = Self.fallbackInterval
         lastCheckDate = updater.lastUpdateCheckDate
         canCheckObservation = updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
@@ -61,9 +71,10 @@ final class UpdateController: NSObject, ObservableObject {
 
     // Settings / menu bar: user-initiated check with Sparkle's own UI.
     func checkForUpdates() {
-        guard let controller else { return }
+        guard let updater else { return }
+        if userDriver?.bringNoticeToFront() == true { return }
         NSApp.activate()
-        controller.checkForUpdates(nil)
+        updater.checkForUpdates()
     }
 
     // Settings › "Restart to Update" while an update waits for idle.
@@ -254,5 +265,354 @@ extension UpdateController: SPUStandardUserDriverDelegate {
     func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem,
                                                               andInImmediateFocus immediateFocus: Bool) -> Bool {
         true
+    }
+}
+
+// MARK: - User driver
+
+// Forwards to SPUStandardUserDriver, except "no update found": Sparkle shows that as an
+// app-modal NSAlert (runModal), which blocks key events to the panels (⌘1 paste etc.).
+// Ours is a plain panel with an OK pill that counts down and closes itself.
+final class UpdateUserDriver: NSObject, SPUUserDriver {
+    var onNoticeClosed: (() -> Void)?
+    var isShowingNotice: Bool { notice != nil }
+
+    private let standard: SPUStandardUserDriver
+    private var notice: UpdateNoticeWindow?
+
+    init(hostBundle: Bundle, delegate: SPUStandardUserDriverDelegate) {
+        standard = SPUStandardUserDriver(hostBundle: hostBundle, delegate: delegate)
+        super.init()
+    }
+
+    @discardableResult
+    func bringNoticeToFront() -> Bool {
+        guard let notice else { return false }
+        NSApp.activate()
+        notice.makeKeyAndOrderFront(nil)
+        return true
+    }
+
+    func showUpdateNotFoundWithError(_ error: any Error, acknowledgement: @escaping () -> Void) {
+        // Closes the "Checking for updates…" window (nothing else is up at this point).
+        standard.dismissUpdateInstallation()
+        notice?.dismiss()
+        let nsError = error as NSError
+        let reasonValue = (nsError.userInfo[SPUNoUpdateFoundReasonKey] as? NSNumber)?.int32Value ?? 0
+        let reason = SPUNoUpdateFoundReason(rawValue: reasonValue)
+        // Countdown only for "you're on the latest"; other reasons (system too old…) stay until OK.
+        let isLatest = reason == .onLatestVersion || reason == .onNewerThanLatestVersion
+        let window = UpdateNoticeWindow(
+            title: nsError.localizedDescription,
+            message: nsError.localizedRecoverySuggestion ?? "",
+            countdown: isLatest ? UpdateNoticeWindow.countdownDuration : nil
+        )
+        window.onClose = { [weak self, weak window] in
+            guard let self else { return }
+            if self.notice === window { self.notice = nil }
+            acknowledgement()
+            self.onNoticeClosed?()
+        }
+        notice = window
+        window.present()
+    }
+
+    func showUpdateInFocus() {
+        if bringNoticeToFront() { return }
+        (standard as SPUUserDriver).showUpdateInFocus?()
+    }
+
+    func dismissUpdateInstallation() {
+        standard.dismissUpdateInstallation()
+    }
+
+    // MARK: Forwarded
+
+    func show(_ request: SPUUpdatePermissionRequest, reply: @escaping (SUUpdatePermissionResponse) -> Void) {
+        standard.show(request, reply: reply)
+    }
+
+    func showUserInitiatedUpdateCheck(cancellation: @escaping () -> Void) {
+        standard.showUserInitiatedUpdateCheck(cancellation: cancellation)
+    }
+
+    func showUpdateFound(with appcastItem: SUAppcastItem, state: SPUUserUpdateState,
+                         reply: @escaping (SPUUserUpdateChoice) -> Void) {
+        standard.showUpdateFound(with: appcastItem, state: state, reply: reply)
+    }
+
+    func showUpdateReleaseNotes(with downloadData: SPUDownloadData) {
+        standard.showUpdateReleaseNotes(with: downloadData)
+    }
+
+    func showUpdateReleaseNotesFailedToDownloadWithError(_ error: any Error) {
+        standard.showUpdateReleaseNotesFailedToDownloadWithError(error)
+    }
+
+    func showUpdaterError(_ error: any Error, acknowledgement: @escaping () -> Void) {
+        standard.showUpdaterError(error, acknowledgement: acknowledgement)
+    }
+
+    func showDownloadInitiated(cancellation: @escaping () -> Void) {
+        standard.showDownloadInitiated(cancellation: cancellation)
+    }
+
+    func showDownloadDidReceiveExpectedContentLength(_ expectedContentLength: UInt64) {
+        standard.showDownloadDidReceiveExpectedContentLength(expectedContentLength)
+    }
+
+    func showDownloadDidReceiveData(ofLength length: UInt64) {
+        standard.showDownloadDidReceiveData(ofLength: length)
+    }
+
+    func showDownloadDidStartExtractingUpdate() {
+        standard.showDownloadDidStartExtractingUpdate()
+    }
+
+    func showExtractionReceivedProgress(_ progress: Double) {
+        standard.showExtractionReceivedProgress(progress)
+    }
+
+    func showReady(toInstallAndRelaunch reply: @escaping (SPUUserUpdateChoice) -> Void) {
+        standard.showReady(toInstallAndRelaunch: reply)
+    }
+
+    func showInstallingUpdate(withApplicationTerminated applicationTerminated: Bool,
+                              retryTerminatingApplication: @escaping () -> Void) {
+        standard.showInstallingUpdate(withApplicationTerminated: applicationTerminated,
+                                      retryTerminatingApplication: retryTerminatingApplication)
+    }
+
+    func showUpdateInstalledAndRelaunched(_ relaunched: Bool, acknowledgement: @escaping () -> Void) {
+        standard.showUpdateInstalledAndRelaunched(relaunched, acknowledgement: acknowledgement)
+    }
+}
+
+// MARK: - "Up to date" notice
+
+// Non-modal alert-style panel: app icon, title, message and an OK pill.
+// Return / Esc / Space or a click on the pill closes it at once.
+final class UpdateNoticeWindow: NSPanel {
+    static let countdownDuration: TimeInterval = 6
+
+    var onClose: (() -> Void)?
+
+    private let pill: CountdownPillButton
+    private var didClose = false
+    private static let contentWidth: CGFloat = 260
+
+    init(title: String, message: String, countdown: TimeInterval?) {
+        pill = CountdownPillButton(title: String(localized: "OK"), duration: countdown)
+        super.init(contentRect: NSRect(x: 0, y: 0, width: Self.contentWidth + 40, height: 200),
+                   styleMask: [.titled, .fullSizeContentView],
+                   backing: .buffered, defer: false)
+        titleVisibility = .hidden
+        titlebarAppearsTransparent = true
+        for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+            standardWindowButton(button)?.isHidden = true
+        }
+        isMovableByWindowBackground = true
+        isReleasedWhenClosed = false
+        hidesOnDeactivate = false   // stays while the user clicks into another app
+        level = .floating
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        animationBehavior = .alertPanel
+        pill.onPress = { [weak self] in self?.dismiss() }
+        buildContent(title: title, message: message)
+    }
+
+    private func buildContent(title: String, message: String) {
+        let icon = NSImageView(image: NSApp.applicationIconImage ?? NSImage())
+        icon.imageScaling = .scaleProportionallyUpOrDown
+        icon.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLabel = NSTextField(wrappingLabelWithString: title)
+        titleLabel.font = .systemFont(ofSize: 13, weight: .bold)
+        titleLabel.alignment = .center
+
+        let messageLabel = NSTextField(wrappingLabelWithString: message)
+        messageLabel.font = .systemFont(ofSize: 11)
+        messageLabel.textColor = .secondaryLabelColor
+        messageLabel.alignment = .center
+        messageLabel.isHidden = message.isEmpty
+
+        pill.translatesAutoresizingMaskIntoConstraints = false
+
+        let stack = NSStackView(views: [icon, titleLabel, messageLabel, pill])
+        stack.orientation = .vertical
+        stack.alignment = .centerX
+        stack.spacing = 8
+        stack.setCustomSpacing(12, after: icon)
+        stack.setCustomSpacing(16, after: messageLabel.isHidden ? titleLabel : messageLabel)
+        stack.edgeInsets = NSEdgeInsets(top: 24, left: 20, bottom: 18, right: 20)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        let root = NSView()
+        root.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: root.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            icon.widthAnchor.constraint(equalToConstant: 64),
+            icon.heightAnchor.constraint(equalToConstant: 64),
+            titleLabel.widthAnchor.constraint(equalToConstant: Self.contentWidth),
+            messageLabel.widthAnchor.constraint(equalToConstant: Self.contentWidth),
+            pill.widthAnchor.constraint(equalToConstant: Self.contentWidth),
+            pill.heightAnchor.constraint(equalToConstant: 28),
+        ])
+        contentView = root
+        setContentSize(root.fittingSize)
+    }
+
+    override var canBecomeKey: Bool { true }
+
+    // Upper middle of the target display, like a system alert.
+    func present() {
+        if let screen = PanelScreen.target() {
+            let visible = screen.visibleFrame
+            let size = frame.size
+            setFrameOrigin(NSPoint(x: (visible.midX - size.width / 2).rounded(),
+                                   y: (visible.minY + visible.height * 0.62 - size.height / 2).rounded()))
+        } else {
+            center()
+        }
+        makeKeyAndOrderFront(nil)
+        pill.start { [weak self] in self?.dismiss() }
+    }
+
+    func dismiss() {
+        guard !didClose else { return }
+        didClose = true
+        pill.stop()
+        orderOut(nil)
+        onClose?()
+        onClose = nil
+    }
+
+    override func keyDown(with event: NSEvent) {
+        switch Int(event.keyCode) {
+        case kVK_Return, kVK_ANSI_KeypadEnter, kVK_Space, kVK_Escape:
+            dismiss()
+        default:
+            super.keyDown(with: event)
+        }
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        dismiss()
+    }
+}
+
+// Accent pill with a centered label. With a duration, the accent fill shrinks from both
+// ends toward the middle; the label is accent-colored over the track and white over the fill.
+final class CountdownPillButton: NSView {
+    var onPress: (() -> Void)?
+
+    private let title: String
+    private let duration: TimeInterval?
+    private var startTime: CFTimeInterval = 0
+    private var remaining: CGFloat = 1
+    private var isPressed = false
+    private var link: CADisplayLink?
+    private var onFinish: (() -> Void)?
+
+    init(title: String, duration: TimeInterval?) {
+        self.title = title
+        self.duration = duration
+        super.init(frame: .zero)
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(title)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func start(onFinish: @escaping () -> Void) {
+        guard duration != nil, link == nil else { return }
+        self.onFinish = onFinish
+        startTime = CACurrentMediaTime()
+        let link = displayLink(target: self, selector: #selector(tick(_:)))
+        link.add(to: .main, forMode: .common)   // keeps running during menu tracking
+        self.link = link
+    }
+
+    func stop() {
+        link?.invalidate()
+        link = nil
+        onFinish = nil
+    }
+
+    @objc private func tick(_ link: CADisplayLink) {
+        guard let duration else { return }
+        let elapsed = CACurrentMediaTime() - startTime
+        remaining = CGFloat(max(0, 1 - elapsed / duration))
+        needsDisplay = true
+        if remaining <= 0 {
+            let finish = onFinish
+            stop()
+            finish?()
+        }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let rect = bounds
+        let pill = NSBezierPath(roundedRect: rect, xRadius: rect.height / 2, yRadius: rect.height / 2)
+        let accent = NSColor.controlAccentColor
+        let fillColor = isPressed ? (accent.shadow(withLevel: 0.2) ?? accent) : accent
+
+        NSGraphicsContext.saveGraphicsState()
+        pill.addClip()
+        accent.withAlphaComponent(0.18).setFill()
+        rect.fill()
+        let fillWidth = (rect.width * remaining).rounded()
+        let fillRect = NSRect(x: rect.midX - fillWidth / 2, y: rect.minY, width: fillWidth, height: rect.height)
+        fillColor.setFill()
+        fillRect.fill()
+        NSGraphicsContext.restoreGraphicsState()
+
+        drawTitle(in: rect, color: accent, clip: nil)
+        drawTitle(in: rect, color: .white, clip: fillRect)
+    }
+
+    private func drawTitle(in rect: NSRect, color: NSColor, clip: NSRect?) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 13, weight: .semibold),
+            .foregroundColor: color,
+        ]
+        let text = NSAttributedString(string: title, attributes: attributes)
+        let size = text.size()
+        let origin = NSPoint(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2)
+        NSGraphicsContext.saveGraphicsState()
+        if let clip { NSBezierPath(rect: clip).addClip() }
+        text.draw(at: origin)
+        NSGraphicsContext.restoreGraphicsState()
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        isPressed = true
+        needsDisplay = true
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        let inside = bounds.contains(convert(event.locationInWindow, from: nil))
+        if inside != isPressed {
+            isPressed = inside
+            needsDisplay = true
+        }
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        let inside = bounds.contains(convert(event.locationInWindow, from: nil))
+        isPressed = false
+        needsDisplay = true
+        if inside { onPress?() }
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        onPress?()
+        return true
     }
 }
