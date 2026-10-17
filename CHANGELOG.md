@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.4
+
+### Fixed
+- Fixed: newly installed apps (e.g. via Homebrew) could show a blank icon until AppPad was restarted.
+
 ## v1.1.3
 
 ### Added
