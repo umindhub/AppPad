@@ -250,7 +250,6 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         )
         overlay.grid.delegate = self
         overlay.grid.setEditing(isEditingLayout)
-        overlay.allowsTitleClicks = isEditingLayout
         overlay.onClose = { [weak self] in self?.closeFolder(animated: true) }
         overlay.onRename = { [weak self] name in
             self?.controller?.renameFolder(id: folder.id, name: name)

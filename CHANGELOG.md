@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.5
+
+### Changed
+- Launchpad: click a folder's name to rename it at any time, not only in edit mode.
+
+### Fixed
+- Launchpad: a folder's name no longer shifts to the left after renaming it with ↩.
+
 ## v1.1.4
 
 ### Fixed

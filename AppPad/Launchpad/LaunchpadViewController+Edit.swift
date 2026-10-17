@@ -12,7 +12,6 @@ extension LaunchpadViewController: PageGridDelegate {
             (page as? PageGridView)?.setEditing(editing)
         }
         folderOverlay?.grid.setEditing(editing)
-        folderOverlay?.allowsTitleClicks = editing
     }
 
     // MARK: - PageGridDelegate

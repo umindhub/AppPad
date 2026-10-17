@@ -32,7 +32,7 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private let outsideDim = NSView()
     private let backdrop = FolderBackdropView()
     private let content = FolderBoxView()
-    private let titleField = CrispTextField()
+    private let titleField = FolderTitleField()
     private let pager = PagerView()
     private let indicator = PageIndicatorView()
     // Morph proxies are plain layers here: moving them costs no AppKit view work per frame.
@@ -57,9 +57,6 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     var passesClicks = false
     // Click on the tile while the close morph runs: the launcher decides whether to reopen.
     var onReopen: (() -> Void)?
-    // iOS style: the name is renamed by clicking it only in edit mode (or via "Rename…");
-    // otherwise a click on it is a click outside the sheet and closes the folder.
-    var allowsTitleClicks = false
     // Close morph in flight, as a pose by openness (1 = open, 0 = in the tile), so it can turn around.
     private var closePose: ((CGFloat) -> Void)?
     private var closeFlights: [Flight] = []
@@ -141,12 +138,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         if isAnimating {
             return frame.contains(point) ? self : nil
         }
-        let hit = super.hitTest(point)
-        if let hit, !allowsTitleClicks, titleField.currentEditor() == nil,
-           hit === titleField || hit.isDescendant(of: titleField) {
-            return self
-        }
-        return hit
+        // Click on the name (text + small margin) starts renaming; elsewhere outside the sheet closes.
+        return super.hitTest(point)
     }
 
     func boxContains(windowPoint: NSPoint) -> Bool {
@@ -247,8 +240,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     }
 
     // Name field hugs its text plus a click margin on each side (grows while typing).
-    private static let titleHitPad: CGFloat = 20
-    private static let titleMinWidth: CGFloat = 80
+    private static let titleHitPad: CGFloat = 15
+    private static let titleMinWidth: CGFloat = 30      // keeps an empty name clickable / caret visible
 
     private func titleFieldWidth() -> CGFloat {
         let text = titleField.currentEditor()?.string ?? titleField.stringValue
@@ -747,8 +740,13 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         return false
     }
 
+    func controlTextDidBeginEditing(_ obj: Notification) {
+        logTitle("begin")
+    }
+
     func controlTextDidChange(_ obj: Notification) {
         needsLayout = true      // re-fit the name field to the typed text
+        DispatchQueue.main.async { [weak self] in self?.logTitle("change") }
     }
 
     func controlTextDidEndEditing(_ obj: Notification) {
@@ -761,6 +759,41 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         }
         needsLayout = true      // name may have been reverted / trimmed
         onEndEditingTitle?()
+        DispatchQueue.main.async { [weak self] in self?.logTitle("end") }
+    }
+
+    // DEBUG: title geometry while editing vs displayed; remove once the Enter shift is fixed.
+    private func logTitle(_ tag: String) {
+        let cell = titleField.cell
+        let font = titleField.font ?? .systemFont(ofSize: 22, weight: .semibold)
+        let textWidth = (titleField.stringValue as NSString).size(withAttributes: [.font: font]).width
+        var line = "[FolderTitle] \(tag) text=\(titleField.stringValue) textW=\(textWidth)"
+        line += " field=\(convert(titleField.bounds, from: titleField))"
+        if let cell { line += " cellTitleRect=\(convert(cell.titleRect(forBounds: titleField.bounds), from: titleField))" }
+        line += " align=\(titleField.alignment.rawValue) scroll=\(cell?.isScrollable ?? false) wraps=\(cell?.wraps ?? false)"
+        if let tv = titleField.currentEditor() as? NSTextView {
+            line += " editor=\(convert(tv.bounds, from: tv)) tvAlign=\(tv.alignment.rawValue) hRes=\(tv.isHorizontallyResizable)"
+            if let clip = tv.superview { line += " clip=\(convert(clip.bounds, from: clip))" }
+            if let lm = tv.layoutManager, let tc = tv.textContainer {
+                let used = lm.usedRect(for: tc).offsetBy(dx: tv.textContainerOrigin.x, dy: tv.textContainerOrigin.y)
+                line += " used=\(convert(used, from: tv)) pad=\(tc.lineFragmentPadding)"
+            }
+        }
+        NSLog("%@", line)
+    }
+}
+
+// Folder name field: AppKit resets the cell alignment to left when editing ends via Enter,
+// so the centered alignment is restored right after.
+final class FolderTitleField: NSTextField {
+    override class var cellClass: AnyClass? {
+        get { CrispTextFieldCell.self }
+        set { super.cellClass = newValue }
+    }
+
+    override func textDidEndEditing(_ notification: Notification) {
+        super.textDidEndEditing(notification)
+        alignment = .center
     }
 }
 
