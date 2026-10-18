@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
+  <img src="../../AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
 </p>
 
 <h1 align="center">AppPad</h1>
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
+  <a href="../../README.md">English</a> ·
   <a href="README.zh-CN.md">简体中文</a> ·
   <a href="README.zh-TW.md">繁體中文</a> ·
   <a href="README.ja.md">日本語</a> ·
@@ -100,10 +100,10 @@ AppPad gebruikt een gesplitste licentie:
 
 | Onderdeel | Licentie |
 | --- | --- |
-| Broncode van de app AppPad (alles wat hieronder niet staat) | [AGPL-3.0](LICENSE) |
-| Ingebouwde workflows (`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](LICENSE-MIT) |
-| Specificatie van het workflowformaat | [MIT](LICENSE-MIT) |
-| Workflows van derden in de Workflow Market | [MIT](LICENSE-MIT), © de makers |
+| Broncode van de app AppPad (alles wat hieronder niet staat) | [AGPL-3.0](../../LICENSE) |
+| Ingebouwde workflows (`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](../../LICENSE-MIT) |
+| Specificatie van het workflowformaat | [MIT](../../LICENSE-MIT) |
+| Workflows van derden in de Workflow Market | [MIT](../../LICENSE-MIT), © de makers |
 
 - **AGPL-3.0**: je mag AppPad gebruiken, wijzigen en verspreiden, maar elk verspreid of via een netwerk aangeboden afgeleid werk moet onder AGPL-3.0 met volledige broncode worden gepubliceerd.
 - **Commerciële licentie**: voor closed-source of propriëtair gebruik neem je via de [website](https://apppad.youmindhub.com) contact op met de maker voor een commerciële licentie.
@@ -127,7 +127,7 @@ Issues en pull requests zijn welkom. Door een bijdrage in te dienen ga je ermee 
 AppPad is gratis en open source. Maakt het je Mac net wat prettiger in gebruik? Dan kun je me via WeChat op een kopje koffie trakteren — elk bedrag wordt gewaardeerd, en een ster op GitHub betekent ook veel. Bedankt!
 
 <p align="center">
-  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <img src="../images/wechat-donate.png" width="300" alt="WeChat">
   <br>
   <sub>Scan met WeChat</sub>
 </p>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
+  <img src="../../AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
 </p>
 
 <h1 align="center">AppPad</h1>
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
+  <a href="../../README.md">English</a> ·
   <a href="README.zh-CN.md">简体中文</a> ·
   繁體中文 ·
   <a href="README.ja.md">日本語</a> ·
@@ -100,10 +100,10 @@ AppPad 採用分層授權：
 
 | 部分 | 授權 |
 | --- | --- |
-| AppPad 應用程式原始碼（下方未列出的全部內容） | [AGPL-3.0](LICENSE) |
-| 內建工作流程（`AppPad/Workflow/BuiltinWorkflows.swift`、`*.shortcut`） | [MIT](LICENSE-MIT) |
-| 工作流程格式規範 | [MIT](LICENSE-MIT) |
-| 工作流程市集中的第三方工作流程 | [MIT](LICENSE-MIT)，版權歸各作者 |
+| AppPad 應用程式原始碼（下方未列出的全部內容） | [AGPL-3.0](../../LICENSE) |
+| 內建工作流程（`AppPad/Workflow/BuiltinWorkflows.swift`、`*.shortcut`） | [MIT](../../LICENSE-MIT) |
+| 工作流程格式規範 | [MIT](../../LICENSE-MIT) |
+| 工作流程市集中的第三方工作流程 | [MIT](../../LICENSE-MIT)，版權歸各作者 |
 
 - **AGPL-3.0**：可以使用、修改和再散布 AppPad，但散布或透過網路提供的衍生作品必須同樣以 AGPL-3.0 公開全部原始碼。
 - **商業授權**：如需閉源或專有用途，請透過[官網](https://apppad.youmindhub.com)聯絡作者取得商業授權。
@@ -127,7 +127,7 @@ AppPad 採用分層授權：
 AppPad 免費且開源。如果它讓你的 Mac 用起來更順手一點，歡迎用微信請我喝杯咖啡，金額隨意；幫專案點個 Star 也是很大的鼓勵。謝謝你！
 
 <p align="center">
-  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <img src="../images/wechat-donate.png" width="300" alt="WeChat">
   <br>
   <sub>使用微信掃一掃</sub>
 </p>

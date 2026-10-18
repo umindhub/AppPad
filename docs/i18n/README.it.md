@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
+  <img src="../../AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
 </p>
 
 <h1 align="center">AppPad</h1>
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
+  <a href="../../README.md">English</a> ·
   <a href="README.zh-CN.md">简体中文</a> ·
   <a href="README.zh-TW.md">繁體中文</a> ·
   <a href="README.ja.md">日本語</a> ·
@@ -100,10 +100,10 @@ AppPad usa una licenza suddivisa:
 
 | Parte | Licenza |
 | --- | --- |
-| Codice sorgente dell’app AppPad (tutto ciò che non è elencato sotto) | [AGPL-3.0](LICENSE) |
-| Flussi di lavoro integrati (`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](LICENSE-MIT) |
-| Specifica del formato dei flussi di lavoro | [MIT](LICENSE-MIT) |
-| Flussi di lavoro di terze parti nel Workflow Market | [MIT](LICENSE-MIT), © i rispettivi autori |
+| Codice sorgente dell’app AppPad (tutto ciò che non è elencato sotto) | [AGPL-3.0](../../LICENSE) |
+| Flussi di lavoro integrati (`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](../../LICENSE-MIT) |
+| Specifica del formato dei flussi di lavoro | [MIT](../../LICENSE-MIT) |
+| Flussi di lavoro di terze parti nel Workflow Market | [MIT](../../LICENSE-MIT), © i rispettivi autori |
 
 - **AGPL-3.0**: puoi usare, modificare e ridistribuire AppPad, ma qualsiasi opera derivata distribuita od offerta via rete deve essere pubblicata sotto AGPL-3.0 con il codice sorgente completo.
 - **Licenza commerciale**: per un uso closed source o proprietario, contatta l’autore tramite il [sito web](https://apppad.youmindhub.com) per ottenere una licenza commerciale.
@@ -127,7 +127,7 @@ Issue e pull request sono benvenute. Inviando un contributo accetti che venga pu
 AppPad è gratuito e open source. Se rende il tuo Mac un po’ più piacevole da usare, puoi offrirmi un caffè tramite WeChat: qualsiasi importo è apprezzato, e anche una stella su GitHub fa molto piacere. Grazie!
 
 <p align="center">
-  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <img src="../images/wechat-donate.png" width="300" alt="WeChat">
   <br>
   <sub>Scansiona con WeChat</sub>
 </p>

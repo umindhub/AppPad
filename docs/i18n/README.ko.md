@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
+  <img src="../../AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
 </p>
 
 <h1 align="center">AppPad</h1>
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
+  <a href="../../README.md">English</a> ·
   <a href="README.zh-CN.md">简体中文</a> ·
   <a href="README.zh-TW.md">繁體中文</a> ·
   <a href="README.ja.md">日本語</a> ·
@@ -100,10 +100,10 @@ AppPad는 분할 라이선스를 사용합니다:
 
 | 구성 요소 | 라이선스 |
 | --- | --- |
-| AppPad 앱 소스 코드(아래에 나열되지 않은 모든 것) | [AGPL-3.0](LICENSE) |
-| 내장 워크플로(`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](LICENSE-MIT) |
-| 워크플로 형식 사양 | [MIT](LICENSE-MIT) |
-| 워크플로 마켓의 서드파티 워크플로 | [MIT](LICENSE-MIT), 저작권은 각 작성자 |
+| AppPad 앱 소스 코드(아래에 나열되지 않은 모든 것) | [AGPL-3.0](../../LICENSE) |
+| 내장 워크플로(`AppPad/Workflow/BuiltinWorkflows.swift`, `*.shortcut`) | [MIT](../../LICENSE-MIT) |
+| 워크플로 형식 사양 | [MIT](../../LICENSE-MIT) |
+| 워크플로 마켓의 서드파티 워크플로 | [MIT](../../LICENSE-MIT), 저작권은 각 작성자 |
 
 - **AGPL-3.0**: AppPad를 사용·수정·재배포할 수 있지만, 배포하거나 네트워크로 제공하는 파생 저작물은 전체 소스 코드와 함께 AGPL-3.0으로 공개해야 합니다.
 - **상용 라이선스**: 비공개 소스 또는 독점적 용도로 사용하려면 [웹사이트](https://apppad.youmindhub.com)를 통해 작성자에게 상용 라이선스를 문의하세요.
@@ -127,7 +127,7 @@ AppPad는 분할 라이선스를 사용합니다:
 AppPad는 무료 오픈소스입니다. Mac을 조금이라도 더 편하게 쓰는 데 도움이 되었다면, WeChat으로 커피 한 잔 사 주시면 큰 힘이 됩니다. 금액은 마음 가는 대로 괜찮고, GitHub 스타도 큰 응원이 됩니다. 감사합니다!
 
 <p align="center">
-  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <img src="../images/wechat-donate.png" width="300" alt="WeChat">
   <br>
   <sub>WeChat으로 스캔</sub>
 </p>

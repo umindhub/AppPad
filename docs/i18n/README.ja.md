@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
+  <img src="../../AppPad/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width="128" alt="AppPad">
 </p>
 
 <h1 align="center">AppPad</h1>
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
+  <a href="../../README.md">English</a> ·
   <a href="README.zh-CN.md">简体中文</a> ·
   <a href="README.zh-TW.md">繁體中文</a> ·
   日本語 ·
@@ -100,10 +100,10 @@ AppPad は分割ライセンスを採用しています：
 
 | 対象 | ライセンス |
 | --- | --- |
-| AppPad アプリのソースコード（下記以外のすべて） | [AGPL-3.0](LICENSE) |
-| 内蔵ワークフロー（`AppPad/Workflow/BuiltinWorkflows.swift`、`*.shortcut`） | [MIT](LICENSE-MIT) |
-| ワークフロー形式の仕様 | [MIT](LICENSE-MIT) |
-| ワークフローマーケットのサードパーティ製ワークフロー | [MIT](LICENSE-MIT)、著作権は各作者 |
+| AppPad アプリのソースコード（下記以外のすべて） | [AGPL-3.0](../../LICENSE) |
+| 内蔵ワークフロー（`AppPad/Workflow/BuiltinWorkflows.swift`、`*.shortcut`） | [MIT](../../LICENSE-MIT) |
+| ワークフロー形式の仕様 | [MIT](../../LICENSE-MIT) |
+| ワークフローマーケットのサードパーティ製ワークフロー | [MIT](../../LICENSE-MIT)、著作権は各作者 |
 
 - **AGPL-3.0**：AppPad の使用・改変・再配布は自由ですが、配布またはネットワーク経由で提供する派生物は、全ソースコードとともに AGPL-3.0 で公開する必要があります。
 - **商用ライセンス**：クローズドソースや独占的な用途には、[Web サイト](https://apppad.youmindhub.com)から作者に連絡して商用ライセンスを取得してください。
@@ -127,7 +127,7 @@ Issue と Pull Request を歓迎します。コントリビューションを送
 AppPad は無料のオープンソースです。Mac が少しでも使いやすくなったと感じていただけたら、WeChat でコーヒーを一杯ごちそうしていただけるとうれしいです。金額はお気持ちで大丈夫です。GitHub のスターも大きな励みになります。ありがとうございます！
 
 <p align="center">
-  <img src="docs/images/wechat-donate.png" width="300" alt="WeChat">
+  <img src="../images/wechat-donate.png" width="300" alt="WeChat">
   <br>
   <sub>WeChat でスキャン</sub>
 </p>
