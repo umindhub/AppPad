@@ -280,6 +280,24 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         pager.scrollTo(page: pager.currentPage + direction, animated: true)
     }
 
+    func scrollToPage(_ page: Int) {
+        guard page != pager.currentPage else { return }
+        pager.scrollTo(page: page, animated: true)
+    }
+
+    // Folder page dot under a window point (paged folders only).
+    func indicatorPage(atWindowPoint windowPoint: NSPoint) -> Int? {
+        indicator.page(atWindowPoint: windowPoint)
+    }
+
+    // Drags stay in the folder over the sheet and over the dots band above it.
+    func dragAreaContains(windowPoint: NSPoint) -> Bool {
+        let point = convert(windowPoint, from: nil)
+        if boxFrame.contains(point) { return true }
+        guard !indicator.isHidden else { return false }
+        return indicator.frame.union(boxFrame).contains(point)
+    }
+
     // Acts on every mouse down, never looks at clickCount: open → close, closing → reopen.
     override func mouseDown(with event: NSEvent) {
         if closePose != nil {

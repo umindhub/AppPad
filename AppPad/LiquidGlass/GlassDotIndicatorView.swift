@@ -236,6 +236,12 @@ final class GlassDotIndicatorView: FlippedView {
         return trackRect.insetBy(dx: -Self.hitPadding, dy: -4)
     }
 
+    // Page under a point (view coordinates): track plus a margin, nil elsewhere.
+    func page(at point: CGPoint) -> Int? {
+        guard pageCount > 0, trackRect.insetBy(dx: -8, dy: -8).contains(point) else { return nil }
+        return index(at: point.x)
+    }
+
     // MARK: Layout
 
     override func layout() {

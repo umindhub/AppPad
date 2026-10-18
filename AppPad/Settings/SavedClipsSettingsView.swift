@@ -468,7 +468,7 @@ private struct ClipContentEditor: View {
         case .updated, .unchanged:
             dismiss()
         case .duplicate:
-            error = String(localized: "Another clipboard item already has this content.")
+            error = String(localized: "Another saved item already has this content.")
         case .failed:
             error = String(localized: "The content could not be saved.")
         }

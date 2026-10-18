@@ -63,6 +63,21 @@ final class PageIndicatorView: FlippedView {
         return self
     }
 
+    // Page under a window point (dots / numbers row plus a margin), nil elsewhere or when hidden.
+    // Used by icon drags, which never send mouse events to this view.
+    func page(atWindowPoint windowPoint: NSPoint) -> Int? {
+        guard window != nil, !isHiddenOrHasHiddenAncestor, alphaValue > 0.01, pageCount > 1 else { return nil }
+        let local = convert(windowPoint, from: nil)
+        if let glassView {
+            return glassView.page(at: glassView.convert(local, from: self))
+        }
+        let rects = itemRects()
+        guard let first = rects.first, let last = rects.last,
+              local.x >= first.minX - 10, local.x <= last.maxX + 10,
+              local.y >= bounds.minY - 6, local.y <= bounds.maxY + 6 else { return nil }
+        return nearestIndex(toX: local.x)
+    }
+
     // MARK: - Plain mode
 
     private func itemRects() -> [NSRect] {
@@ -132,10 +147,10 @@ final class PageIndicatorView: FlippedView {
         lastScrubIndex = nil
     }
 
-    // Nearest page to x (clamped), fired only when it changes.
-    private func select(atX x: CGFloat) {
+    // Nearest page to x (clamped).
+    private func nearestIndex(toX x: CGFloat) -> Int? {
         let rects = itemRects()
-        guard !rects.isEmpty else { return }
+        guard !rects.isEmpty else { return nil }
         var best = 0
         var bestDistance = CGFloat.greatestFiniteMagnitude
         for (index, rect) in rects.enumerated() {
@@ -145,7 +160,12 @@ final class PageIndicatorView: FlippedView {
                 bestDistance = distance
             }
         }
-        guard best != lastScrubIndex else { return }
+        return best
+    }
+
+    // Nearest page to x, fired only when it changes.
+    private func select(atX x: CGFloat) {
+        guard let best = nearestIndex(toX: x), best != lastScrubIndex else { return }
         lastScrubIndex = best
         onSelect?(best)
     }

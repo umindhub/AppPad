@@ -66,6 +66,7 @@ final class IconCache {
 
     // Drop only these apps (late icon refresh after an install).
     func invalidate(paths: [String]) {
+        AppThumbnailCache.shared.invalidate(paths: paths)
         let set = Set(paths)
         for path in set { cache[path] = nil }
         contentsCache = contentsCache.filter { key, _ in
@@ -75,10 +76,81 @@ final class IconCache {
     }
 
     func invalidate() {
+        AppThumbnailCache.shared.invalidate()
         warmTask?.cancel()
         warmTask = nil
         warmQueue.removeAll()
         cache.removeAll()
         contentsCache.removeAll()
+    }
+}
+
+// Small pre-rendered app icons for long lists (Settings › App Shortcuts).
+// Bitmaps at the final pixel size: rows draw them as-is instead of resolving a multi-size
+// workspace icon per row. Rendered off the main thread; thread-safe.
+nonisolated final class AppThumbnailCache: @unchecked Sendable {
+    static let shared = AppThumbnailCache()
+    static let pointSize: CGFloat = 22
+    static let scale: CGFloat = 2
+
+    private let lock = NSLock()
+    private var images: [String: CGImage] = [:]
+
+    // Cached thumbnail, rendered now on a miss.
+    func image(path: String) -> CGImage? {
+        if let hit = cached(path) { return hit }
+        guard let image = Self.render(path: path) else { return nil }
+        store(image, path)
+        return image
+    }
+
+    // Render all missing thumbnails in parallel (call off the main thread).
+    func prewarm(paths: [String]) {
+        let missing = Array(Set(paths).filter { cached($0) == nil })
+        guard !missing.isEmpty else { return }
+        DispatchQueue.concurrentPerform(iterations: missing.count) { i in
+            if let image = Self.render(path: missing[i]) { store(image, missing[i]) }
+        }
+    }
+
+    func invalidate(paths: [String]) {
+        lock.lock()
+        for path in paths { images[path] = nil }
+        lock.unlock()
+    }
+
+    func invalidate() {
+        lock.lock()
+        images.removeAll()
+        lock.unlock()
+    }
+
+    private func cached(_ path: String) -> CGImage? {
+        lock.lock()
+        defer { lock.unlock() }
+        return images[path]
+    }
+
+    private func store(_ image: CGImage, _ path: String) {
+        lock.lock()
+        images[path] = image
+        lock.unlock()
+    }
+
+    // Workspace icon (symlinks resolved, like IconCache) drawn into a pointSize × scale bitmap.
+    private static func render(path: String) -> CGImage? {
+        let resolved = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        let icon = NSWorkspace.shared.icon(forFile: resolved)
+        let side = Int(pointSize * scale)
+        var proposed = CGRect(x: 0, y: 0, width: side, height: side)
+        guard let source = icon.cgImage(forProposedRect: &proposed, context: nil, hints: nil),
+              let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: side, height: side, bitsPerComponent: 8,
+                                      bytesPerRow: 0, space: space,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        context.interpolationQuality = .high
+        context.draw(source, in: CGRect(x: 0, y: 0, width: side, height: side))
+        return context.makeImage()
     }
 }

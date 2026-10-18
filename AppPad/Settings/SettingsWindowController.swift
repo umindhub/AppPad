@@ -71,6 +71,7 @@ final class SettingsWindowController {
         if !window.isVisible {
             rememberFrontmostApp()
             window.center()
+            ShortcutAppsCache.preload()   // App Shortcuts tab opens with a ready list
         }
         // SwiftUI opens the split view with its own narrow sidebar: set the width after layout,
         // once before showing and once more after SwiftUI's deferred pass.

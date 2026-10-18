@@ -37,6 +37,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var systemDrag: DragState?          // app handed over to an NSDraggingSession
     var edgeTask: Task<Void, Never>?
     var edgeDirection = 0
+    var dotTask: Task<Void, Never>?          // drag hovering a page dot (+Drag.swift)
     var optionHoldTask: Task<Void, Never>?   // hold ⌥ → edit mode (+Edit.swift)
     // Drop landed visually but the layout is not committed yet (+Drag.swift); run(immediate).
     var pendingDrop: (token: UUID, run: (Bool) -> Void)?

@@ -10,6 +10,9 @@ import QuartzCore
 //   When the pointer stops, speed is treated as 0 after 90 ms.
 // - reorder only after the pointer stops (speed < 40 pt/s) for 280 ms, outside an icon's aim zone;
 //   left half of a cell = before that icon, right half = after it.
+// - hover a page dot (or number) → that page; the first dot needs a short dwell, then moving
+//   along the dots follows the pointer at once. Works on the pages, the search results and in
+//   paged folders. A drop on the dots keeps the current placeholder (end of the page after a switch).
 // - drags that start in a folder reorder inside it (hold at the sheet's side → folder page flips),
 //   or leave the box to go back to the pages
 // - an app dragged out of the panel becomes a system file drag (drop on the Dock to add it)
@@ -40,6 +43,8 @@ struct DragState {
     var speed: CGFloat = 0          // smoothed pointer speed, pt/s
     var folderInsert: Int?
     var resultsPage: Int?           // search: results page being hovered (merge indices are its cells)
+    var dotPage: Int?               // page dot under the pointer
+    var dotEngaged = false          // a dot already switched pages: next dots switch without dwell
 }
 
 extension LaunchpadViewController {
@@ -48,6 +53,7 @@ extension LaunchpadViewController {
     static let reorderSpeedLimit: CGFloat = 40   // pt/s; reorder only when (almost) stopped
     static let reorderDwell: Duration = .milliseconds(280)
     static let landingGlowDistance: CGFloat = 300   // pt before the landing spot where the shadow starts fading
+    static let dotDwell: Duration = .milliseconds(200)   // first dot hovered → page switch
 
     static let dragShadow: NSShadow = {
         let shadow = NSShadow()
@@ -134,7 +140,8 @@ extension LaunchpadViewController {
         }
 
         if case .folder = state.source, let overlay = folderOverlay, !state.leftFolder {
-            if overlay.boxContains(windowPoint: event.locationInWindow) {
+            // The sheet plus the folder's page dots above it count as inside.
+            if overlay.dragAreaContains(windowPoint: event.locationInWindow) {
                 drag = state
                 updateFolderHover(event)
                 return
@@ -177,6 +184,11 @@ extension LaunchpadViewController {
         if state.resultsPage != page {
             if let old = state.resultsPage, let oldGrid = resultsGrid(old) { clearResultsMerge(&state, grid: oldGrid) }
             state.resultsPage = page
+        }
+        if updateDotHover(page: indicator.page(atWindowPoint: event.locationInWindow), state: &state) {
+            if let grid = resultsGrid(page) { clearResultsMerge(&state, grid: grid) }
+            drag = state
+            return
         }
         guard case .app = state.item, let grid = resultsGrid(page) else {   // folders cannot nest
             drag = state
@@ -256,6 +268,16 @@ extension LaunchpadViewController {
     func updateFolderHover(_ event: NSEvent) {
         guard var state = drag, case .folder(_, let sourceIndex) = state.source,
               let overlay = folderOverlay else { return }
+        if updateDotHover(page: overlay.indicatorPage(atWindowPoint: event.locationInWindow), state: &state) {
+            drag = state
+            return
+        }
+        // Between the dots and the sheet: keep the placeholder where it is.
+        guard overlay.boxContains(windowPoint: event.locationInWindow) else {
+            scheduleEdgeFlip(0)
+            drag = state
+            return
+        }
         scheduleEdgeFlip(overlay.edgeDirection(atWindowPoint: event.locationInWindow))
         let folderGrid = overlay.grid
         let insert = min(overlay.gridSlot(atWindowPoint: event.locationInWindow), folderGrid.cells.count - 1)
@@ -285,6 +307,14 @@ extension LaunchpadViewController {
             state.hoverPage = page
             state.insertIndex = nil
             cancelPendingReorder(&state)
+        }
+
+        // Over the page dots: no merge / reorder here.
+        if updateDotHover(page: indicator.page(atWindowPoint: event.locationInWindow), state: &state) {
+            clearMerge(&state, grid: grid, page: page)
+            cancelPendingReorder(&state)
+            drag = state
+            return
         }
 
         let baseCount = baseItemCount(page: page, grid: grid, state: state)
@@ -766,6 +796,47 @@ extension LaunchpadViewController {
         }
     }
 
+    // Page dot under the pointer → switch to that page. The first dot waits `dotDwell`
+    // (crossing the dots on the way up does nothing); once a dot switched, the next ones
+    // switch right away. Returns true while the pointer is on the dots.
+    private func updateDotHover(page: Int?, state: inout DragState) -> Bool {
+        guard let page else {
+            if state.dotPage != nil {
+                dotTask?.cancel()
+                state.dotPage = nil
+                state.dotEngaged = false
+            }
+            return false
+        }
+        scheduleEdgeFlip(0)
+        guard page != state.dotPage else { return true }
+        state.dotPage = page
+        dotTask?.cancel()
+        let dwell: Duration? = state.dotEngaged ? nil : Self.dotDwell
+        // Runs after the caller stored its state (main actor job queue).
+        dotTask = Task { [weak self] in
+            if let dwell { try? await Task.sleep(for: dwell) }
+            guard !Task.isCancelled, let self, var current = self.drag, current.dotPage == page else { return }
+            current.dotEngaged = true
+            self.drag = current
+            self.showDotPage(page)
+        }
+        return true
+    }
+
+    private func showDotPage(_ page: Int) {
+        guard let state = drag else { return }
+        if case .folder = state.source, !state.leftFolder, let overlay = folderOverlay {
+            overlay.scrollToPage(page)
+            return
+        }
+        let target = activePager
+        guard page != target.currentPage, page >= 0, page < target.pageCount else { return }
+        target.scrollTo(page: page, animated: true)
+        guard let event = lastDragEvent else { return }
+        if isSearching { updateResultsHover(event) } else { updatePageHover(event) }
+    }
+
     private func scheduleEdgeFlip(_ direction: Int) {
         guard direction != edgeDirection else { return }
         edgeDirection = direction
@@ -827,6 +898,7 @@ extension LaunchpadViewController {
     }
 
     private func stopDragTimers() {
+        dotTask?.cancel()
         mergeTask?.cancel()
         reorderTask?.cancel()
         settleTask?.cancel()

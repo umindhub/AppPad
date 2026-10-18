@@ -8,7 +8,7 @@ extension Notification.Name {
 // Result of editing a text item's content.
 nonisolated enum ClipTextUpdate: Sendable {
     case updated, unchanged
-    case duplicate      // another item already has this content (hash is unique)
+    case duplicate      // another saved item already has this content (hash is unique)
     case failed
 }
 
@@ -301,23 +301,46 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
     }
 
     // Replaces a text item's content: new hash (same as a fresh copy), search text and size;
-    // rich text is dropped since it no longer matches. Refuses empty text and duplicates.
+    // rich text is dropped since it no longer matches. Refuses empty text.
+    // Same content elsewhere: an unsaved row is merged into this one (this row wins; newer history
+    // position, summed use count); another saved row is refused so no saved item is lost.
     func updateText(id: Int64, text: String) -> ClipTextUpdate {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return .failed }
         let hash = ClipCapture(kind: .text, text: text).contentHash
         do {
-            return try pool.write { db -> ClipTextUpdate in
-                guard let row = try Row.fetchOne(db, sql: "SELECT kind, hash FROM clip WHERE id = ?", arguments: [id]),
-                      (row["kind"] as ClipKind) == .text else { return .failed }
-                if (row["hash"] as String) == hash { return .unchanged }
-                let taken = try Bool.fetchOne(db, sql: "SELECT EXISTS(SELECT 1 FROM clip WHERE hash = ? AND id != ?)",
-                                              arguments: [hash, id]) ?? false
-                if taken { return .duplicate }
+            let (result, files) = try pool.write { db -> (ClipTextUpdate, [URL]) in
+                guard let row = try Row.fetchOne(db, sql: "SELECT kind, hash, saved FROM clip WHERE id = ?",
+                                                 arguments: [id]),
+                      (row["kind"] as ClipKind) == .text else { return (.failed, []) }
+                if (row["hash"] as String) == hash { return (.unchanged, []) }
+                let selfSaved: Bool = row["saved"]
+                var files: [URL] = []
+                if let other = try Row.fetchOne(db, sql: """
+                    SELECT id, uuid, imageExt, saved, inHistory, lastUsedAt, useCount, name
+                    FROM clip WHERE hash = ? AND id != ?
+                    """, arguments: [hash, id]) {
+                    let otherSaved: Bool = other["saved"]
+                    if otherSaved || !selfSaved { return (.duplicate, []) }
+                    // Absorb the unsaved duplicate, then free its hash.
+                    let otherID: Int64 = other["id"]
+                    try db.execute(sql: "DELETE FROM clip WHERE id = ?", arguments: [otherID])
+                    try db.execute(sql: """
+                        UPDATE clip SET inHistory = MAX(inHistory, ?), lastUsedAt = MAX(lastUsedAt, ?),
+                            useCount = useCount + ?, name = COALESCE(name, ?)
+                        WHERE id = ?
+                        """, arguments: [other["inHistory"] as Bool, other["lastUsedAt"] as Double,
+                                         other["useCount"] as Int, other["name"] as String?, id])
+                    if let ext: String = other["imageExt"] {
+                        files.append(self.imageURL(uuid: other["uuid"], ext: ext))
+                    }
+                }
                 try db.execute(sql: """
                     UPDATE clip SET text = ?, searchText = ?, rtf = NULL, byteSize = ?, hash = ? WHERE id = ?
                     """, arguments: [text, String(text.prefix(Self.searchTextLimit)), text.utf8.count, hash, id])
-                return .updated
+                return (.updated, files)
             }
+            removeFiles(files)
+            return result
         } catch {
             NSLog("Clipboard text update failed: \(error)")
             return .failed

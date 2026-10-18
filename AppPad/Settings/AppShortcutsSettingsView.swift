@@ -71,10 +71,38 @@ private struct LetterGroup: Identifiable {
     var id: String { letter }
 }
 
-// Scan result kept across tab switches (the tab view is rebuilt each time).
+// Scan result (and row icons) kept across tab switches (the tab view is rebuilt each time).
+// Preloaded when Settings opens, so the tab shows a ready list.
 @MainActor
-private enum ShortcutAppsCache {
-    static var entries: [AppShortcutEntry]?
+enum ShortcutAppsCache {
+    private(set) static var entries: [AppShortcutEntry]?
+    private static var scannedAt: TimeInterval = 0
+    private static var running: Task<[AppShortcutEntry], Never>?
+    // A newer scan only after this long (apps rarely change while Settings is open).
+    private static let freshness: TimeInterval = 30
+
+    // Scan + render row icons off the main thread; joins a scan already running.
+    static func refresh() async -> [AppShortcutEntry] {
+        let now = ProcessInfo.processInfo.systemUptime
+        if let entries, now - scannedAt < freshness { return entries }
+        if let running { return await running.value }
+        let assignedPaths = Preferences.shared.appHotKeys.map(\.path)
+        let task = Task.detached(priority: .userInitiated) {
+            let fresh = AppShortcutEntry.loadAll()
+            AppThumbnailCache.shared.prewarm(paths: fresh.map(\.app.url.path) + assignedPaths)
+            return fresh
+        }
+        running = task
+        let fresh = await task.value
+        running = nil
+        entries = fresh
+        scannedAt = ProcessInfo.processInfo.systemUptime
+        return fresh
+    }
+
+    static func preload() {
+        Task { _ = await refresh() }
+    }
 }
 
 // Settings → App Shortcuts tab: per-app global hotkeys (Raycast style).
@@ -88,6 +116,11 @@ struct AppShortcutsSettingsView: View {
     @State private var scrollAnchor = ScrollAnchor()
     // Row currently showing the live recorder ("top:<key>" / "az:<key>"); all others draw a cheap pill.
     @State private var editingID: String?
+    // First frame builds only the rows that fit on screen; the rest follows once the tab is up,
+    // so switching to this tab never waits for hundreds of rows.
+    @State private var showsAllRows = false
+    private static let initialRowLimit = 40
+    private static let fullListDelay: Duration = .milliseconds(250)
 
     // Extra scroll-content margin so the index bar fits between the cards and the scroller.
     private static let formInset: CGFloat = 24
@@ -101,8 +134,9 @@ struct AppShortcutsSettingsView: View {
 
     var body: some View {
         // Derived once per update, shared by the form and the index bar.
-        let groups = makeGroups()
-        let present = Set(groups.map(\.letter))
+        let groups = makeGroups(limit: showsAllRows || !query.isEmpty ? nil : Self.initialRowLimit)
+        // Index letters from every entry, so the bar does not change when the full list arrives.
+        let present = query.isEmpty ? Set(entries.lazy.map(\.letter)) : Set(groups.map(\.letter))
         return ScrollViewReader { proxy in
             // Search bar floats over the Form (overlay, not a safe-area bar): rows scroll behind it
             // up to the title like on every other page, and no titlebar separator is drawn.
@@ -112,19 +146,35 @@ struct AppShortcutsSettingsView: View {
                 .overlay(alignment: .trailing) {
                     LetterIndexBar(letters: AppShortcutEntry.letters, available: present) { letter in
                         guard let target = Self.scrollTarget(for: letter, present: present) else { return }
-                        proxy.scrollTo(target, anchor: .top)
+                        if showsAllRows {
+                            proxy.scrollTo(target, anchor: .top)
+                        } else {
+                            // Header not built yet: add the rest first, scroll on the next turn.
+                            showsAllRows = true
+                            DispatchQueue.main.async { proxy.scrollTo(target, anchor: .top) }
+                        }
                     }
                     .padding(.trailing, Self.scrollerWidth + 2)
                 }
                 .overlay(alignment: .top) { searchBar }
         }
         .task {
-            // Show the cached list at once, then refresh (apps may have been installed / removed).
-            let fresh = await Task.detached(priority: .userInitiated) { AppShortcutEntry.loadAll() }.value
-            ShortcutAppsCache.entries = fresh
+            // No cache yet (Settings opened straight on this tab): wait for the first scan.
+            if !loaded {
+                let fresh = await ShortcutAppsCache.refresh()
+                guard !Task.isCancelled else { return }
+                entries = fresh
+                loaded = true
+            }
+            // First rows are on screen; add the rest once the tab switch has settled.
+            try? await Task.sleep(for: Self.fullListDelay)
+            guard !Task.isCancelled else { return }
+            showsAllRows = true
+            // Refresh (apps may have been installed / removed); returns the cache when recent.
+            let fresh = await ShortcutAppsCache.refresh()
+            guard !Task.isCancelled else { return }
             // Unchanged scan → no second rebuild of every row.
             if fresh != entries { entries = fresh }
-            if !loaded { loaded = true }
         }
         .onDisappear {
             // Rows added via "Set Shortcut…" but never recorded.
@@ -248,12 +298,12 @@ struct AppShortcutsSettingsView: View {
         prefs.appHotKeys.filter { $0.combo != nil }.count
     }
 
-    // All scanned apps (assigned ones stay in place), grouped by letter.
-    private func makeGroups() -> [LetterGroup] {
+    // All scanned apps (assigned ones stay in place), grouped by letter. limit: first rows only.
+    private func makeGroups(limit: Int?) -> [LetterGroup] {
         let q = normalizedQuery.replacingOccurrences(of: " ", with: "")
         let visible = q.isEmpty ? entries : entries.filter { $0.compactKey.contains(q) }
         var result: [LetterGroup] = []
-        for entry in visible {
+        for entry in visible.prefix(limit ?? visible.count) {
             if result.last?.letter == entry.letter {
                 result[result.count - 1].items.append(entry)
             } else {
@@ -280,9 +330,7 @@ struct AppShortcutsSettingsView: View {
         let missing = !scanned && AppActivator.resolveURL(value) == nil
         let rowID = "top:" + value.key
         return HStack(spacing: 8) {
-            Image(nsImage: IconCache.shared.icon(path: value.path))
-                .resizable()
-                .frame(width: 22, height: 22)
+            AppRowIcon(path: value.path)
                 .opacity(missing ? 0.4 : 1)
             VStack(alignment: .leading, spacing: 1) {
                 Text(value.name)
@@ -405,9 +453,7 @@ private struct AppShortcutRow: View, Equatable {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(nsImage: IconCache.shared.icon(for: entry.app))
-                .resizable()
-                .frame(width: 22, height: 22)
+            AppRowIcon(path: entry.app.url.path)
             Text(entry.app.name)
                 .lineLimit(1)
             Spacer()
@@ -418,6 +464,24 @@ private struct AppShortcutRow: View, Equatable {
             }
             RecorderSlot(combo: combo, isEditing: isEditing, binding: binding, onEdit: onEdit, onEnd: onEnd)
         }
+    }
+}
+
+// Pre-rendered 22 pt bitmap (AppThumbnailCache); falls back to the full icon.
+private struct AppRowIcon: View {
+    let path: String
+
+    var body: some View {
+        Group {
+            if let image = AppThumbnailCache.shared.image(path: path) {
+                Image(decorative: image, scale: AppThumbnailCache.scale)
+                    .resizable()
+            } else {
+                Image(nsImage: IconCache.shared.icon(path: path))
+                    .resizable()
+            }
+        }
+        .frame(width: AppThumbnailCache.pointSize, height: AppThumbnailCache.pointSize)
     }
 }
 
