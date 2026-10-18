@@ -70,3 +70,49 @@ struct CodeEditorBox: View {
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color(nsColor: .separatorColor)))
     }
 }
+
+// Read-only, selectable text that wraps to the proposed width.
+// SwiftUI's .textSelection is unreliable inside grouped Forms on macOS.
+// Backed by a selectable wrapping NSTextField; size is measured via its cell
+// so the live view is never mutated during layout probing.
+struct SelectableText: NSViewRepresentable {
+    let text: String
+    var font: NSFont = .systemFont(ofSize: NSFont.systemFontSize)
+    var color: NSColor = .labelColor
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(wrappingLabelWithString: text)
+        field.isEditable = false
+        field.isSelectable = true
+        field.isBordered = false
+        field.drawsBackground = false
+        field.allowsEditingTextAttributes = false
+        field.lineBreakMode = .byWordWrapping
+        field.cell?.wraps = true
+        field.cell?.isScrollable = false
+        field.cell?.truncatesLastVisibleLine = false
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        apply(to: field)
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        guard field.stringValue != text || field.font != font || field.textColor != color else { return }
+        apply(to: field)
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSTextField, context: Context) -> CGSize? {
+        guard let cell = nsView.cell else { return nil }
+        let bounded = proposal.width.flatMap { $0.isFinite && $0 > 0 ? $0 : nil }
+        let probeWidth = bounded ?? 10_000
+        let size = cell.cellSize(forBounds: NSRect(x: 0, y: 0, width: probeWidth, height: 10_000))
+        return CGSize(width: bounded ?? ceil(size.width), height: ceil(size.height))
+    }
+
+    private func apply(to field: NSTextField) {
+        field.stringValue = text
+        field.font = font
+        field.textColor = color
+    }
+}

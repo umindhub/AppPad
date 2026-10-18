@@ -45,14 +45,13 @@ struct MCPSettingsView: View {
         }
     }
 
-    private func snippetSection(_ kind: Snippet, title: LocalizedStringKey, caption: LocalizedStringKey,
+    private func snippetSection(_ kind: Snippet, title: String.LocalizationValue, caption: String.LocalizationValue,
                                 text: String) -> some View {
         Section {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top) {
-                    Text(verbatim: text)
-                        .font(.system(size: 11, design: .monospaced))
-                        .textSelection(.enabled)
+                    // AppKit text view: free drag-select across lines, Cmd+C and context-menu Copy
+                    SelectableText(text: text, font: .monospacedSystemFont(ofSize: 11, weight: .regular))
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Button(copied == kind ? LocalizedStringKey("Copied") : LocalizedStringKey("Copy")) {
                         copy(text, kind)
@@ -60,13 +59,15 @@ struct MCPSettingsView: View {
                 }
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.05)))
-                Text(caption)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                SelectableText(text: String(localized: caption),
+                               font: .preferredFont(forTextStyle: .caption1),
+                               color: .secondaryLabelColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 2)
         } header: {
-            Text(title)
+            SelectableText(text: String(localized: title),
+                           font: .boldSystemFont(ofSize: NSFont.systemFontSize))
         }
     }
 

@@ -18,6 +18,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.0
+
+### Changed
+- Launchpad: facendo clic su un’app, Launchpad ora si chiude con la stessa animazione di zoom e dissolvenza del clic su uno spazio vuoto, invece di sparire all’istante.
+
 ## v1.1.9
 
 ### Aggiunto

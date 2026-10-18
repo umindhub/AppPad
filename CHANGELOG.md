@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.0
+
+### Changed
+- Launchpad: Clicking an app now closes Launchpad with the same zoom-and-fade animation as clicking empty space, instead of disappearing instantly.
+
 ## v1.1.9
 
 ### Added

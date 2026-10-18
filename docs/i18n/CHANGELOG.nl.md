@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.0
+
+### Changed
+- Launchpad: als je op een app klikt, sluit Launchpad nu met dezelfde zoom- en vervaganimatie als bij een klik op een lege plek, in plaats van meteen te verdwijnen.
+
 ## v1.1.9
 
 ### Toegevoegd

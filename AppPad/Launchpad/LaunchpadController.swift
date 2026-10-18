@@ -827,7 +827,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         let key = app.key
         CloseLog.note("launchpad: launch \(key)")
         stats.record(app.key, manual: true)
-        hide()
+        // Same zoom-out fade as a click on empty space.
+        hide(animated: true, duration: Self.backgroundClickHideDuration)
         AppActivator.open(app.url)
     }
 
