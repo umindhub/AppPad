@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.8
+
+### Changed
+- Appearance: refined button shapes and toggle switch colors.
+- Shortcuts: improved the performance of the shortcut list.
+- Saved Clips: changed how duplicate clipboard items are handled.
+
+### Fixed
+- Fixed an issue with setting the left-side width.
+
 ## v1.1.7
 
 ### Changed
