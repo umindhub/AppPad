@@ -120,6 +120,8 @@ struct SettingsView: View {
                 .navigationTitle(tab.title)
         }
         .frame(minWidth: 800, minHeight: 560)
+        .toggleStyle(.appSwitch)
+        .pillButtons()
     }
 
     @ViewBuilder
@@ -211,5 +213,61 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+// App-wide switch style: native switch tinted green (only toggles, not buttons/pickers).
+struct AppSwitchToggleStyle: ToggleStyle {
+    static let onColor = Color.green
+
+    func makeBody(configuration: Configuration) -> some View {
+        Toggle(configuration)
+            .toggleStyle(.switch)
+            .tint(Self.onColor)
+    }
+}
+
+extension ToggleStyle where Self == AppSwitchToggleStyle {
+    static var appSwitch: AppSwitchToggleStyle { AppSwitchToggleStyle() }
+}
+
+// Pill (capsule) buttons for Settings windows and sheets.
+// macOS 26 + glass controls: Liquid Glass; otherwise bordered capsule (macOS 15 too).
+// Root .pillButtons() styles every unstyled Button (and .menuStyle(.button) menus);
+// explicit .borderless / .plain / .link buttons keep their own style.
+// Sheets don't inherit it: apply on the sheet content as well.
+private struct PillButtonModifier: ViewModifier {
+    @ObservedObject private var prefs = Preferences.shared
+    let prominent: Bool
+
+    func body(content: Content) -> some View {
+        styled(content).buttonBorderShape(.capsule)
+    }
+
+    @ViewBuilder
+    private func styled(_ content: Content) -> some View {
+        if #available(macOS 26.0, *), prefs.glassControls {
+            if prominent {
+                content.buttonStyle(.glassProminent)
+            } else {
+                content.buttonStyle(.glass)
+            }
+        } else if prominent {
+            content.buttonStyle(.borderedProminent)
+        } else {
+            content.buttonStyle(.bordered)
+        }
+    }
+}
+
+extension View {
+    // Secondary pill for all buttons below this view.
+    func pillButtons() -> some View {
+        modifier(PillButtonModifier(prominent: false))
+    }
+
+    // Accent pill for the primary (default action) button.
+    func pillProminentButton() -> some View {
+        modifier(PillButtonModifier(prominent: true))
     }
 }

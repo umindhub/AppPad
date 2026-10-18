@@ -176,17 +176,16 @@ extension LaunchpadViewController: PageGridDelegate {
         let title = app.isAppStore
             ? String(localized: "Delete “\(app.name)”?")
             : String(localized: "Uninstall “\(app.name)”?")
-        let leftovers = scan.leftovers.map { ConfirmOverlayView.CheckItem(url: $0.url, checked: $0.matchedByBundleID) }
-        // App bundle first, always on (it is what gets deleted).
-        let items = [ConfirmOverlayView.CheckItem(url: app.url, checked: true, locked: true)] + leftovers
+        // No checklist: leftovers matched by bundle ID are removed silently (same as the old default).
+        let appPath = app.url.standardizedFileURL.path
+        let extra = scan.leftovers
+            .filter { $0.matchedByBundleID && $0.url.standardizedFileURL.path != appPath }
+            .map(\.url)
         let message = String(localized: "The app will be moved to the Trash.")
         showConfirm(
-            icon: IconCache.shared.icon(for: app), title: title, message: message, items: items,
+            icon: IconCache.shared.icon(for: app), title: title, message: message, items: [],
             confirmTitle: String(localized: "Move to Trash"), destructive: true
-        ) { [weak self] urls in
-            // The app row is only shown; the bundle is trashed by uninstall() itself.
-            let appPath = app.url.standardizedFileURL.path
-            let extra = urls.filter { $0.standardizedFileURL.path != appPath }
+        ) { [weak self] _ in
             self?.performUninstall(app, bundleIDs: scan.bundleIDs, extra: extra)
         }
     }

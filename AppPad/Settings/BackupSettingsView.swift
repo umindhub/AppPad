@@ -66,6 +66,7 @@ struct BackupSettingsView: View {
                 service.discard(backup)
                 opened = nil
             }
+            .pillButtons()
         }
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK") {}
@@ -230,6 +231,7 @@ private struct BackupImportSheet: View {
                     .disabled(isWorking)
                 Button("Restore Backup") { onRestore(selection, mode) }
                     .keyboardShortcut(.defaultAction)
+                    .pillProminentButton()
                     .disabled(selection.isEmpty || isWorking)
             }
         }

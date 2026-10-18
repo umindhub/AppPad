@@ -60,6 +60,7 @@ struct SavedClipsSettingsView: View {
         .onReceive(NotificationCenter.default.publisher(for: .clipboardStoreDidChange)) { _ in reload() }
         .sheet(item: $editingContent) { draft in
             ClipContentEditor(draft: draft) { saveContent(draft.id, text: $0) }
+                .pillButtons()
         }
         .alert("Remove from Saved?", isPresented: Binding(
             get: { pendingRemove != nil },
@@ -422,7 +423,7 @@ private struct ClipContentEditor: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save", action: save)
                     .keyboardShortcut(.return, modifiers: .command)
-                    .buttonStyle(.borderedProminent)
+                    .pillProminentButton()
                     .disabled(!canSave)
                     .help(Text(verbatim: "⌘S  ⌘↩"))
             }

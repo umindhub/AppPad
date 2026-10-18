@@ -55,15 +55,18 @@ struct WorkflowSettingsView: View {
                 onSave: { store.save($0); editing = nil },
                 onCancel: { editing = nil }
             )
+            .pillButtons()
         }
         .sheet(item: $shownResult) { result in
             WorkflowResultView(result: result) { shownResult = nil }
+                .pillButtons()
         }
         .sheet(item: $editingSecret) { draft in
             SecretEditorView(draft: draft) { saved in
                 editingSecret = nil
                 if saved { secretNames = KeychainSecrets.names() }
             }
+            .pillButtons()
         }
         .confirmationDialog(
             Text("Delete “\(pendingDelete?.displayName ?? "")”?"),
@@ -205,6 +208,7 @@ struct WorkflowSettingsView: View {
                         Button(template.title) { edit(template.make(), isNew: true) }
                     }
                 }
+                .menuStyle(.button)   // pill like the buttons next to it
                 .fixedSize()
             }
             .padding(.top, 4)
@@ -472,6 +476,7 @@ private struct SecretEditorView: View {
                     onDone(KeychainSecrets.set(name, value: value))
                 }
                 .keyboardShortcut(.defaultAction)
+                .pillProminentButton()
                 .disabled(!nameIsValid || value.isEmpty)
             }
         }

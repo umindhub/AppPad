@@ -66,6 +66,7 @@ struct WorkflowResultView: View {
                     .disabled(result.finalOutput.isEmpty)
                 Button("Done", action: onClose)
                     .keyboardShortcut(.defaultAction)
+                    .pillProminentButton()
             }
         }
         .padding(16)

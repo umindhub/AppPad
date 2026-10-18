@@ -135,7 +135,7 @@ nonisolated enum AppScanner {
             category: plist["LSApplicationCategoryType"] as? String,
             isSystem: isSystem,
             isUtility: url.deletingLastPathComponent().lastPathComponent == "Utilities",
-            isAppStore: fm.fileExists(atPath: receipt)
+            isAppStore: fm.fileExists(atPath: receipt) || isWrappedStoreApp(resolved)
         )
     }
 
@@ -155,6 +155,12 @@ nonisolated enum AppScanner {
             return nil
         }
         return plist
+    }
+
+    // Installed iPhone / iPad app: no Contents/_MASReceipt, the store metadata sits in Wrapper/.
+    private static func isWrappedStoreApp(_ url: URL) -> Bool {
+        let metadata = url.appendingPathComponent("Wrapper/iTunesMetadata.plist").path
+        return FileManager.default.fileExists(atPath: metadata) && wrappedApp(in: url) != nil
     }
 
     // Wrapper/<Name>.app, via the WrappedBundle link when present.

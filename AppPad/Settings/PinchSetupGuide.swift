@@ -139,8 +139,10 @@ private struct PinchGuideContent: View {
                     .keyboardShortcut(.cancelAction)
                 Button(String(localized: "Open Trackpad Settings"), action: onOpen)
                     .keyboardShortcut(.defaultAction)
+                    .pillProminentButton()
             }
         }
+        .pillButtons()
         .padding(.horizontal, 22)
         .padding(.top, 30)   // clear of the close box (full-size content view)
         .padding(.bottom, 18)

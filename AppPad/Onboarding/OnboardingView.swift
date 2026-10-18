@@ -268,7 +268,7 @@ private struct PinchPage: View {
                 Toggle(isOn: $prefs.pinchToOpen) {
                     Text("Four-finger pinch opens AppPad").fontWeight(.medium)
                 }
-                .toggleStyle(.switch)
+                .toggleStyle(.appSwitch)
                 Divider()
                 if prefs.pinchToOpen {
                     PinchSetupStepsView(showsButton: false)
@@ -395,7 +395,7 @@ private struct ClipboardPage: View {
                 Toggle(isOn: $prefs.clipboardEnabled) {
                     Text("Enable clipboard history").fontWeight(.medium)
                 }
-                .toggleStyle(.switch)
+                .toggleStyle(.appSwitch)
                 if prefs.clipboardEnabled {
                     Divider()
                     shortcutRow(String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString)
@@ -586,7 +586,7 @@ private struct AIPage: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                .toggleStyle(.switch)
+                .toggleStyle(.appSwitch)
                 if host.enabled {
                     Divider()
                     Picker(selection: $client) {
@@ -723,7 +723,7 @@ private struct PermissionsPage: View {
                               title: String(localized: "Launch at login"),
                               detail: String(localized: "Keeps AppPad, the clipboard history and your shortcuts ready after you log in.")) {
                     Toggle(isOn: $launchAtLogin) { EmptyView() }
-                        .toggleStyle(.switch)
+                        .toggleStyle(.appSwitch)
                         .labelsHidden()
                 }
             }
@@ -961,10 +961,18 @@ private struct KeyChip: View {
     }
 }
 
-// Liquid Glass buttons on macOS 26 with glass controls on, standard styles otherwise.
+// Pill buttons: Liquid Glass on macOS 26 with glass controls on, bordered capsule otherwise.
 private extension View {
-    @ViewBuilder
     func onboardingProminent(glass: Bool, size: SwiftUI.ControlSize = .large) -> some View {
+        prominentStyle(glass: glass, size: size).buttonBorderShape(.capsule)
+    }
+
+    func onboardingSecondary(glass: Bool, size: SwiftUI.ControlSize = .large) -> some View {
+        secondaryStyle(glass: glass, size: size).buttonBorderShape(.capsule)
+    }
+
+    @ViewBuilder
+    private func prominentStyle(glass: Bool, size: SwiftUI.ControlSize) -> some View {
         if glass {
             if #available(macOS 26.0, *) {
                 self.buttonStyle(.glassProminent).controlSize(size)
@@ -977,7 +985,7 @@ private extension View {
     }
 
     @ViewBuilder
-    func onboardingSecondary(glass: Bool, size: SwiftUI.ControlSize = .large) -> some View {
+    private func secondaryStyle(glass: Bool, size: SwiftUI.ControlSize) -> some View {
         if glass {
             if #available(macOS 26.0, *) {
                 self.buttonStyle(.glass).controlSize(size)

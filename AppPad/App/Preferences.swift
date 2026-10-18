@@ -105,6 +105,8 @@ nonisolated enum BackgroundPalette {
         case .wallpaper:
             // Same dark veil in both themes; light just a little brighter than dark.
             return BackgroundTuning(blur: 0.6, opacity: variant == .light ? 0.2 : 0.25)
+        case .white where variant == .dark:
+            return BackgroundTuning(blur: 0.6, opacity: 0.8)   // 20% transparency: dark white stays calm
         case .white, .lightGray, .darkGray, .custom:
             return BackgroundTuning(blur: 0.6, opacity: 0.5)   // 50% transparency over the windows behind
         }

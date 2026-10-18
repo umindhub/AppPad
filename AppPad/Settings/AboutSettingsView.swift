@@ -46,6 +46,7 @@ struct AboutSettingsView: View {
                 LabeledContent("Website") {
                     Link(AppEnvironment.websiteURL.host() ?? AppEnvironment.websiteURL.absoluteString,
                          destination: AppEnvironment.websiteURL)
+                        .buttonStyle(.link)
                 }
                 LabeledContent("Welcome Guide") {
                     Button("Show Welcome Guide…") { OnboardingGuide.show() }

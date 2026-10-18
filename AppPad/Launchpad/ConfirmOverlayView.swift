@@ -26,8 +26,8 @@ final class ConfirmOverlayView: FlippedView {
     private var checkboxes: [(NSButton, URL)] = []
     // Locked rows: the disabled checkbox has no title (it would be gray); this label keeps label color.
     private var lockedLabels: [Int: NSTextField] = [:]
-    private let confirmButton: NSButton
-    private let cancelButton: NSButton
+    private let confirmButton: PillButton
+    private let cancelButton: PillButton
     private let showsCancel: Bool
     private var pressedOutside = false
     private(set) var progress: CGFloat = 0     // 0 = hidden, 1 = fully shown
@@ -49,8 +49,8 @@ final class ConfirmOverlayView: FlippedView {
          confirmTitle: String, destructive: Bool, showsCancel: Bool = true, cornerRadius: CGFloat) {
         titleLabel = NSTextField(labelWithString: title)
         messageLabel = NSTextField(wrappingLabelWithString: message)
-        confirmButton = NSButton(title: confirmTitle, target: nil, action: nil)
-        cancelButton = NSButton(title: String(localized: "Cancel"), target: nil, action: nil)
+        confirmButton = PillButton(title: confirmTitle, style: destructive ? .destructive : .primary)
+        cancelButton = PillButton(title: String(localized: "Cancel"), style: .secondary)
         self.showsCancel = showsCancel
         super.init(frame: .zero)
 
@@ -76,12 +76,9 @@ final class ConfirmOverlayView: FlippedView {
 
         confirmButton.target = self
         confirmButton.action = #selector(confirm)
-        confirmButton.bezelStyle = .rounded
-        confirmButton.hasDestructiveAction = destructive
         confirmButton.keyEquivalent = "\r"
         cancelButton.target = self
         cancelButton.action = #selector(cancel)
-        cancelButton.bezelStyle = .rounded
         cancelButton.isHidden = !showsCancel
 
         addSubview(box)
@@ -321,6 +318,62 @@ final class ConfirmOverlayView: FlippedView {
     @objc func cancel() {
         guard !isClosing else { return }
         onCancel?()
+    }
+}
+
+// Capsule button with its own fill (same shape on every macOS version).
+final class PillButton: NSButton {
+    enum Style { case primary, destructive, secondary }
+
+    private let style: Style
+
+    init(title: String, style: Style) {
+        self.style = style
+        super.init(frame: .zero)
+        isBordered = false
+        focusRingType = .none
+        wantsLayer = true
+        layer?.masksToBounds = true
+        (cell as? NSButtonCell)?.highlightsBy = []   // pressed state is drawn by updateFill()
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        attributedTitle = NSAttributedString(string: title, attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .medium),
+            .foregroundColor: style == .secondary ? NSColor.labelColor : NSColor.white,
+            .paragraphStyle: paragraph,
+        ])
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var isHighlighted: Bool {
+        didSet { updateFill() }
+    }
+
+    override func layout() {
+        super.layout()
+        layer?.cornerRadius = bounds.height / 2
+        updateFill()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateFill()
+    }
+
+    private func updateFill() {
+        let base: NSColor = switch style {
+        case .primary: .controlAccentColor
+        case .destructive: .systemRed
+        case .secondary: .labelColor.withAlphaComponent(0.12)
+        }
+        let color = isHighlighted ? base.withSystemEffect(.pressed) : base
+        // Resolve dynamic colors for this view's appearance.
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = color.cgColor
+        }
     }
 }
 

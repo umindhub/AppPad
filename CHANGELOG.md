@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.7
+
+### Changed
+- Appearance: all toggles are now green, and all buttons share the same pill shape.
+- Uninstall: refined the delete confirmation page.
+
 ## v1.1.6
 
 ### Added

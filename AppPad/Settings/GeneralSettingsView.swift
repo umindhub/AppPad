@@ -19,15 +19,25 @@ struct GeneralSettingsView: View {
 
             // Shared by AppPad, Clipboard, Workflows and the Settings sidebar.
             Section("Appearance") {
-                Picker(selection: $prefs.appTheme) {
-                    Text("Auto").tag(AppTheme.auto)
-                    Text("Light").tag(AppTheme.light)
-                    Text("Dark").tag(AppTheme.dark)
+                // Tabs like the sidebar: glass lens on macOS 26, pill otherwise.
+                LabeledContent {
+                    GlassSegmentedControl(
+                        segments: AppTheme.allCases.map {
+                            GlassSegment(value: $0, title: $0.tabTitle, icon: $0.tabIcon,
+                                         selectedIcon: $0.tabSelectedIcon)
+                        },
+                        selection:          prefs.appTheme,
+                        metrics:            .themeTabs,
+                        selectedLabelColor: .accentColor,
+                        glass:              prefs.glassControls,
+                        onSelect:           { prefs.appTheme = $0 }
+                    )
+                    .fixedSize()
+                    .padding(.vertical, 6)   // room for the lifted lens
                 } label: {
                     Text("Theme")
                     Text("Auto follows the macOS appearance. AppPad, Clipboard and Workflows backgrounds follow the theme.")
                 }
-                .pickerStyle(.segmented)
                 // Liquid Glass needs macOS 26; hidden on older systems.
                 if GlassAvailability.isSupported {
                     Toggle(isOn: $prefs.glassControls) {
@@ -59,6 +69,42 @@ struct GeneralSettingsView: View {
     }
 }
 
+// Theme tab labels and symbols.
+private extension AppTheme {
+    var tabTitle: String {
+        switch self {
+        case .auto: return String(localized: "Auto")
+        case .light: return String(localized: "Light")
+        case .dark: return String(localized: "Dark")
+        }
+    }
+
+    var tabIcon: String {
+        switch self {
+        case .auto: return "circle.lefthalf.filled"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        }
+    }
+
+    var tabSelectedIcon: String {
+        switch self {
+        case .auto: return "circle.lefthalf.filled"
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        }
+    }
+}
+
+extension GlassSegmentMetrics {
+    // Theme tabs in General: a bit larger than .regular to suit a form row.
+    static var themeTabs: GlassSegmentMetrics {
+        GlassSegmentMetrics(font: .system(size: 13, weight: .medium),
+                            nsFont: .systemFont(ofSize: 13, weight: .medium),
+                            segmentHeight: 28, labelHPadding: 14, inset: 2)
+    }
+}
+
 // Background rows shared by the AppPad, Clipboard and Workflows settings.
 // Every style keeps its own blur / transparency (and custom color) per light / dark theme.
 // Stored as opacity; color styles show it as transparency (1 − opacity).
@@ -67,6 +113,8 @@ struct BackgroundSection: View {
     var allowsFollow: Bool
     // Theme whose values the sliders edit; starts at the theme in effect.
     @State private var variant: ThemeVariant = PanelBackgroundSpec.currentVariant
+    // Glass flag for the theme tabs.
+    @ObservedObject private var prefs = Preferences.shared
 
     private var isOwn: Bool { !allowsFollow || !settings.follow }
 
@@ -86,11 +134,24 @@ struct BackgroundSection: View {
                     Text("Wallpaper").tag(BackgroundStyle.wallpaper)
                     Text("Custom color").tag(BackgroundStyle.custom)
                 }
-                Picker("Adjust for", selection: $variant) {
-                    Text("Light").tag(ThemeVariant.light)
-                    Text("Dark").tag(ThemeVariant.dark)
+                // Same tabs as the General theme switch.
+                LabeledContent("Adjust for") {
+                    GlassSegmentedControl(
+                        segments: [
+                            GlassSegment(value: ThemeVariant.light, title: AppTheme.light.tabTitle,
+                                         icon: AppTheme.light.tabIcon, selectedIcon: AppTheme.light.tabSelectedIcon),
+                            GlassSegment(value: ThemeVariant.dark, title: AppTheme.dark.tabTitle,
+                                         icon: AppTheme.dark.tabIcon, selectedIcon: AppTheme.dark.tabSelectedIcon),
+                        ],
+                        selection:          variant,
+                        metrics:            .themeTabs,
+                        selectedLabelColor: .accentColor,
+                        glass:              prefs.glassControls,
+                        onSelect:           { variant = $0 }
+                    )
+                    .fixedSize()
+                    .padding(.vertical, 6)   // room for the lifted lens
                 }
-                .pickerStyle(.segmented)
                 if settings.style == .custom {
                     ColorPicker("Color", selection: customColor, supportsOpacity: false)
                 }

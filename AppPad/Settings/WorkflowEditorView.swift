@@ -63,6 +63,7 @@ struct WorkflowEditorView: View {
                 }
             }
             .formStyle(.grouped)
+            .toggleStyle(.appSwitch)   // sheet: set explicitly
 
             Divider()
             HStack {
@@ -71,6 +72,7 @@ struct WorkflowEditorView: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Save") { onSave(normalized(draft)) }
                     .keyboardShortcut(.defaultAction)
+                    .pillProminentButton()
                     .disabled(!canSave)
             }
             .padding(12)
@@ -332,6 +334,7 @@ struct WorkflowEditorView: View {
                     }
                 }
             }
+            .menuStyle(.button)   // pill like the other buttons
             .fixedSize()
         } header: {
             Text("Steps")
