@@ -43,6 +43,8 @@ final class SettingsWindowController {
 
     private var window: NSWindow?
     private var closeObserver: NSObjectProtocol?
+    // Keeps the sidebar at its window-width ratio while the window resizes.
+    private var resizeObserver: NSObjectProtocol?
     // App that was frontmost before Settings opened; gets focus back on close.
     private var previousApp: NSRunningApplication?
     // Bumped on every show / close; cancels pending activation retries.
@@ -61,6 +63,7 @@ final class SettingsWindowController {
 
     deinit {
         if let closeObserver { NotificationCenter.default.removeObserver(closeObserver) }
+        if let resizeObserver { NotificationCenter.default.removeObserver(resizeObserver) }
     }
 
     func show() {
@@ -69,8 +72,13 @@ final class SettingsWindowController {
             rememberFrontmostApp()
             window.center()
         }
+        // SwiftUI opens the split view with its own narrow sidebar: set the width after layout,
+        // once before showing and once more after SwiftUI's deferred pass.
+        window.layoutIfNeeded()
+        Self.applySidebarWidth(in: window)
         activationToken &+= 1
         bringToFront(window, attempt: 0, token: activationToken)
+        DispatchQueue.main.async { Self.applySidebarWidth(in: window) }
     }
 
     // NSApp.activate() is cooperative (macOS 14+): it can be refused, e.g. right after the
@@ -121,6 +129,12 @@ final class SettingsWindowController {
             // Run after the window is ordered out.
             DispatchQueue.main.async { self?.restoreFocus() }
         }
+        resizeObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didResizeNotification, object: newWindow, queue: .main
+        ) { note in
+            guard let resized = note.object as? NSWindow else { return }
+            MainActor.assumeIsolated { Self.applySidebarWidth(in: resized) }
+        }
         window = newWindow
         return newWindow
     }
@@ -144,5 +158,31 @@ final class SettingsWindowController {
     // Always running; fallback when the previous app is gone.
     private static var finder: NSRunningApplication? {
         NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first
+    }
+}
+
+// MARK: - Sidebar width
+
+@MainActor
+extension SettingsWindowController {
+    // Forces the split view divider to the sidebar width computed from the window width
+    // (SwiftUI ignores navigationSplitViewColumnWidth here and opens a narrow sidebar).
+    static func applySidebarWidth(in window: NSWindow) {
+        guard let content = window.contentView,
+              let split = firstSplitView(in: content),
+              let sidebar = split.arrangedSubviews.first else { return }
+        let target = SettingsView.sidebarWidth(for: content.bounds.width)
+        guard abs(sidebar.frame.width - target) >= 0.5 else { return }
+        split.setPosition(target, ofDividerAt: 0)
+        split.layoutSubtreeIfNeeded()
+    }
+
+    // Depth-first; the SwiftUI split view sits inside the hosting view.
+    private static func firstSplitView(in view: NSView) -> NSSplitView? {
+        if let split = view as? NSSplitView { return split }
+        for sub in view.subviews {
+            if let found = firstSplitView(in: sub) { return found }
+        }
+        return nil
     }
 }

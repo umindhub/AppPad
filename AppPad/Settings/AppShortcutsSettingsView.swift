@@ -93,6 +93,8 @@ struct AppShortcutsSettingsView: View {
     private static let formInset: CGFloat = 24
     // Grouped Form caps its cards at this width and centers them (measured: 704 pt).
     private static let formCardMaxWidth: CGFloat = 704
+    // Grouped Form pads its cards by this much on each side inside the scroll margin (measured).
+    private static let cardSideInset: CGFloat = 20
     // Index bar sits left of the vertical scroller.
     private static let scrollerWidth: CGFloat =
         NSScroller.scrollerWidth(for: .regular, scrollerStyle: NSScroller.preferredScrollerStyle)
@@ -102,18 +104,19 @@ struct AppShortcutsSettingsView: View {
         let groups = makeGroups()
         let present = Set(groups.map(\.letter))
         return ScrollViewReader { proxy in
-            VStack(spacing: 0) {
-                searchBar
-                form(groups: groups, assigned: makeAssigned())
-                    .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
-                    .overlay(alignment: .trailing) {
-                        LetterIndexBar(letters: AppShortcutEntry.letters, available: present) { letter in
-                            guard let target = Self.scrollTarget(for: letter, present: present) else { return }
-                            proxy.scrollTo(target, anchor: .top)
-                        }
-                        .padding(.trailing, Self.scrollerWidth + 2)
+            // Search bar floats over the Form (overlay, not a safe-area bar): rows scroll behind it
+            // up to the title like on every other page, and no titlebar separator is drawn.
+            form(groups: groups, assigned: makeAssigned())
+                .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
+                .contentMargins(.top, Self.searchBarHeight, for: .scrollContent)
+                .overlay(alignment: .trailing) {
+                    LetterIndexBar(letters: AppShortcutEntry.letters, available: present) { letter in
+                        guard let target = Self.scrollTarget(for: letter, present: present) else { return }
+                        proxy.scrollTo(target, anchor: .top)
                     }
-            }
+                    .padding(.trailing, Self.scrollerWidth + 2)
+                }
+                .overlay(alignment: .top) { searchBar }
         }
         .task {
             // Show the cached list at once, then refresh (apps may have been installed / removed).
@@ -138,10 +141,18 @@ struct AppShortcutsSettingsView: View {
                          isGlass: prefs.glassControls)
             .frame(maxWidth: Self.formCardMaxWidth)
             .frame(height: GlassSearchFieldView.height)
-            .padding(.horizontal, Self.formInset)
+            // Same width as the cards: scroll margin + the grouped Form's own side padding.
+            .padding(.horizontal, Self.formInset + Self.cardSideInset)
             .frame(maxWidth: .infinity)
-            .padding(.top, 12)
-            .padding(.bottom, 2)
+            .padding(.top, Self.searchTopPadding)
+            .padding(.bottom, Self.searchBottomPadding)
+    }
+
+    // Floating search bar height; reserved as top scroll margin so the first card starts below it.
+    private static let searchTopPadding: CGFloat = 12
+    private static let searchBottomPadding: CGFloat = 2
+    private static var searchBarHeight: CGFloat {
+        searchTopPadding + GlassSearchFieldView.height + searchBottomPadding
     }
 
     nonisolated private static func headerID(_ letter: String) -> String { "letter-header-" + letter }

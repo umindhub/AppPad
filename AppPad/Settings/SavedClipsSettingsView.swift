@@ -40,21 +40,22 @@ struct SavedClipsSettingsView: View {
     // Same insets as App Shortcuts: search bar lines up with the grouped cards.
     private static let formInset: CGFloat = 24
     private static let formCardMaxWidth: CGFloat = 704
+    private static let cardSideInset: CGFloat = 20
 
     var body: some View {
         ScrollViewReader { proxy in
-            VStack(spacing: 0) {
-                searchBar
-                form
-                    .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
-            }
-            .onAppear {
-                reload()
-                consumeReveal(proxy)
-            }
-            .onReceive(NotificationCenter.default.publisher(for: SavedClipsNavigator.didRequest)) { _ in
-                consumeReveal(proxy)
-            }
+            // Search bar floats over the Form (overlay): rows scroll behind it up to the title.
+            form
+                .contentMargins(.horizontal, Self.formInset, for: .scrollContent)
+                .contentMargins(.top, Self.searchBarHeight, for: .scrollContent)
+                .overlay(alignment: .top) { searchBar }
+                .onAppear {
+                    reload()
+                    consumeReveal(proxy)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: SavedClipsNavigator.didRequest)) { _ in
+                    consumeReveal(proxy)
+                }
         }
         .onChange(of: query) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .clipboardStoreDidChange)) { _ in reload() }
@@ -79,10 +80,18 @@ struct SavedClipsSettingsView: View {
                          isGlass: prefs.glassControls)
             .frame(maxWidth: Self.formCardMaxWidth)
             .frame(height: GlassSearchFieldView.height)
-            .padding(.horizontal, Self.formInset)
+            // Same width as the cards: scroll margin + the grouped Form's own side padding.
+            .padding(.horizontal, Self.formInset + Self.cardSideInset)
             .frame(maxWidth: .infinity)
-            .padding(.top, 12)
-            .padding(.bottom, 2)
+            .padding(.top, Self.searchTopPadding)
+            .padding(.bottom, Self.searchBottomPadding)
+    }
+
+    // Floating search bar height; reserved as top scroll margin so the first card starts below it.
+    private static let searchTopPadding: CGFloat = 12
+    private static let searchBottomPadding: CGFloat = 2
+    private static var searchBarHeight: CGFloat {
+        searchTopPadding + GlassSearchFieldView.height + searchBottomPadding
     }
 
     private var form: some View {

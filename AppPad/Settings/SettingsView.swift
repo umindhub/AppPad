@@ -85,43 +85,52 @@ struct SettingsView: View {
     // Outer padding left / right of the glass tab list.
     private static let sidebarHPadding: CGFloat = 10
 
-    // Fixed sidebar column width (no runtime measuring).
-    private static let sidebarWidth: CGFloat = 300
+    // Sidebar takes a fixed share of the window width.
+    private static let sidebarRatio: CGFloat = 0.20
+    // Window minimum; also the floor before the first real layout pass (width 0).
+    private static let minWindowWidth: CGFloat = 800
 
     // Split view: Liquid Glass vertical tabs in the sidebar, selected page on the right.
     // Same control as YouMindHub's Settings sidebar (GlassSegmentedControl, axis .vertical);
     // pill layout when "Liquid Glass controls" is off.
     var body: some View {
-        NavigationSplitView {
-            VStack(spacing: 0) {
-                GlassSegmentedControl(
-                    segments: SettingsTab.allCases.map {
-                        GlassSegment(value: $0, title: $0.title, icon: $0.icon,
-                                     selectedIcon: $0.selectedIcon, iconImage: $0.iconImage)
-                    },
-                    selection:          tab,
-                    metrics:            .settingsSidebar,
-                    fillsWidth:         true,
-                    selectedLabelColor: .accentColor,
-                    axis:               .vertical,
-                    glass:              prefs.glassControls,
-                    onSelect:           { tabRaw = $0.rawValue }
-                )
-                // Room for the lifted lens (grows along the list, slightly across).
-                .padding(.horizontal, Self.sidebarHPadding)
-                .padding(.top, 10)
-                Spacer(minLength: 0)
+        GeometryReader { geo in
+            NavigationSplitView {
+                VStack(spacing: 0) {
+                    GlassSegmentedControl(
+                        segments: SettingsTab.allCases.map {
+                            GlassSegment(value: $0, title: $0.title, icon: $0.icon,
+                                         selectedIcon: $0.selectedIcon, iconImage: $0.iconImage)
+                        },
+                        selection:          tab,
+                        metrics:            .settingsSidebar,
+                        fillsWidth:         true,
+                        selectedLabelColor: .accentColor,
+                        axis:               .vertical,
+                        glass:              prefs.glassControls,
+                        onSelect:           { tabRaw = $0.rawValue }
+                    )
+                    // Room for the lifted lens (grows along the list, slightly across).
+                    .padding(.horizontal, Self.sidebarHPadding)
+                    .padding(.top, 10)
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity)
+                .navigationSplitViewColumnWidth(Self.sidebarWidth(for: geo.size.width))
+                .toolbar(removing: .sidebarToggle)
+            } detail: {
+                detail
+                    .navigationTitle(tab.title)
             }
-            .frame(maxWidth: .infinity)
-            .navigationSplitViewColumnWidth(Self.sidebarWidth)
-            .toolbar(removing: .sidebarToggle)
-        } detail: {
-            detail
-                .navigationTitle(tab.title)
         }
-        .frame(minWidth: 800, minHeight: 560)
+        .frame(minWidth: Self.minWindowWidth, minHeight: 560)
         .toggleStyle(.appSwitch)
         .pillButtons()
+    }
+
+    // Internal: SettingsWindowController applies this width to the split view.
+    static func sidebarWidth(for windowWidth: CGFloat) -> CGFloat {
+        (max(windowWidth, minWindowWidth) * sidebarRatio).rounded()
     }
 
     @ViewBuilder
