@@ -18,6 +18,14 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.1
+
+### Changed
+- Launchpad: Slepen en neerzetten tussen apps en mappen is verbeterd.
+
+### Fixed
+- Instellingen: Een probleem opgelost waarbij het instellingenvenster andere vensters overlapte bij het openen.
+
 ## v1.2.0
 
 ### Changed

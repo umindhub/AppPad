@@ -26,6 +26,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     weak var sourceTile: GridCellView?   // page cell of this folder (hidden while open)
 
     private let apps: [AppInfo]
+    // Apps plus reserved empty slots (spring-loaded open: room for the icon being dragged in).
+    private let slotCount: Int
     private let outsideBlur = NSVisualEffectView()
     // Dims the blurred pages outside the sheet (child of outsideBlur, so it fades with it):
     // keeps the sheet's edge readable when panel and sheet would otherwise blur to the same tone.
@@ -71,18 +73,21 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
     private static let edgeZone: CGFloat = 30     // drag-to-flip zone at the sheet's sides
     static let cornerRadius: CGFloat = 30
 
-    init(folder: FolderItem, apps: [AppInfo], columns: Int, iconSize: CGFloat, cellWidth: CGFloat, rowHeight: CGFloat) {
+    init(folder: FolderItem, apps: [AppInfo], columns: Int, iconSize: CGFloat, cellWidth: CGFloat, rowHeight: CGFloat,
+         reservedSlots: Int = 0) {
         folderID = folder.id
         self.apps = apps
+        slotCount = apps.count + max(0, reservedSlots)
         self.columns = max(1, columns)
         self.cellWidth = cellWidth
         self.rowHeight = rowHeight
         originalTitle = folder.displayName
-        let rows = max(1, Int(ceil(Double(apps.count) / Double(max(1, columns)))))
+        let rows = max(1, Int(ceil(Double(slotCount) / Double(max(1, columns)))))
         let gridView = PageGridView(columns: columns, rows: rows, context: .folder(folder.id))
         gridView.fixedCellHeight = rowHeight
         gridView.fixedCellWidth = cellWidth
         gridView.fixedIconSize = iconSize
+        gridView.reservedSlots = max(0, reservedSlots)
         grid = gridView
         super.init(frame: .zero)
 
@@ -194,12 +199,12 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         func rowsFitting(gap: CGFloat) -> Int {
             max(1, Int(floor((maxGroupHeight - Self.titleHeight - gap - 2 * sheetPad) / rowHeight)))
         }
-        let totalRows = max(1, (apps.count + columns - 1) / columns)
+        let totalRows = max(1, (slotCount + columns - 1) / columns)
         let isPaged = totalRows > rowsFitting(gap: Self.titleGap)
         let gap = isPaged ? pagedGap : Self.titleGap
         let pageRows = isPaged ? rowsFitting(gap: gap) : totalRows
         let perPage = pageRows * columns
-        let pageCount = max(1, (apps.count + perPage - 1) / perPage)
+        let pageCount = max(1, (slotCount + perPage - 1) / perPage)
 
         let gridWidth = CGFloat(columns) * cellWidth
         let pageHeight = CGFloat(pageRows) * rowHeight
@@ -262,9 +267,13 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
 
     // Grid slot under a window point, on the page being shown (or scrolled to).
     func gridSlot(atWindowPoint windowPoint: NSPoint) -> Int {
+        grid.slot(at: gridPoint(atWindowPoint: windowPoint))
+    }
+
+    // Window point in grid coordinates, on the page being shown (or scrolled to).
+    func gridPoint(atWindowPoint windowPoint: NSPoint) -> NSPoint {
         let local = pager.convert(windowPoint, from: nil)
-        let x = local.x + CGFloat(pager.currentPage) * pager.bounds.width
-        return grid.slot(at: NSPoint(x: x, y: local.y))
+        return NSPoint(x: local.x + CGFloat(pager.currentPage) * pager.bounds.width, y: local.y)
     }
 
     // -1 / 1 when the point is in the left / right flip zone and that page exists, else 0.

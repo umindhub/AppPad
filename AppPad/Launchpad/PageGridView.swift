@@ -32,6 +32,11 @@ final class PageGridView: FlippedView {
     var pageRows: Int? {
         didSet { if oldValue != pageRows { needsLayout = true } }
     }
+    // Empty slots after the cells that still count for paging (spring-loaded folder: room
+    // for the icon being dragged in).
+    var reservedSlots = 0 {
+        didSet { if oldValue != reservedSlots { needsLayout = true } }
+    }
     weak var delegate: PageGridDelegate?
 
     private(set) var cells: [GridCellView] = []
@@ -101,7 +106,7 @@ final class PageGridView: FlippedView {
     var pageCount: Int {
         guard let pageRows else { return 1 }
         let perPage = columns * max(1, pageRows)
-        return max(1, (cells.count + perPage - 1) / perPage)
+        return max(1, (cells.count + reservedSlots + perPage - 1) / perPage)
     }
 
     private var pageWidth: CGFloat { bounds.width / CGFloat(pageCount) }

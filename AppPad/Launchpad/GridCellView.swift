@@ -90,6 +90,7 @@ final class GridCellView: FlippedView {
         iconContainer.wantsLayer = true
         imageView.wantsLayer = true      // own layer right away: the emerge animation needs it on a fresh cell
         imageView.imageScaling = .scaleProportionallyUpOrDown
+        folderIcon.wantsLayer = true     // own layer: the merge shrink animates it
         label.alignment = .center
         label.lineBreakMode = .byTruncatingTail
         label.maximumNumberOfLines = 1
@@ -104,8 +105,8 @@ final class GridCellView: FlippedView {
             guard let self else { return }
             self.grid?.cellDidRequestDelete(self)
         }
+        iconContainer.addSubview(folderIcon)   // below the app icon (merge shrink)
         iconContainer.addSubview(imageView)
-        iconContainer.addSubview(folderIcon)
         iconContainer.addSubview(appBadge)   // inside the container: wiggles and moves with the icon
         iconContainer.addSubview(badge)
         addSubview(iconContainer)
@@ -213,6 +214,7 @@ final class GridCellView: FlippedView {
     }
 
     func configure(_ entry: GridEntry) {
+        resetMergeShrink()
         switch entry {
         case .app(let app):
             imageView.image = IconCache.shared.icon(for: app)
@@ -319,14 +321,17 @@ final class GridCellView: FlippedView {
 
     // Folder dissolve: slow enough to follow the icon growing (a strong ease-out looked instant).
     static let emergeDuration: CFTimeInterval = 0.8
+    // Gentle ease-in-out shared by the emerge, the merge shrink and the merge landing.
+    static var emergeTiming: CAMediaTimingFunction { CAMediaTimingFunction(controlPoints: 0.45, 0.05, 0.25, 1) }
 
     // Folder with one app left dissolved into this app cell: the icon grows out of the folder's
     // first mini slot while the leftover plate widens and fades, and the app name fades in.
-    func animateEmergeFromFolder(duration: CFTimeInterval = GridCellView.emergeDuration) {
+    // fadesLabel: false when the name is already showing (spring-loaded preview closed again).
+    func animateEmergeFromFolder(duration: CFTimeInterval = GridCellView.emergeDuration, fadesLabel: Bool = true) {
         layoutSubtreeIfNeeded()
         guard !imageView.isHidden, let iconLayer = imageView.layer else { return }
         // Gentle ease-in-out: the growth stays visible over the whole duration.
-        let timing = CAMediaTimingFunction(controlPoints: 0.45, 0.05, 0.25, 1)
+        let timing = Self.emergeTiming
         let mini = iconContainer.convert(folderMiniRect(index: 0), from: self)
 
         let plate = FolderIconView(frame: folderIcon.frame)
@@ -363,19 +368,86 @@ final class GridCellView: FlippedView {
         }
         CATransaction.commit()
 
-        label.alphaValue = 0
-        // The app badge fades in with the name instead of popping at full size.
-        if appBadgeShown { appBadge.alphaValue = 0 }
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = duration
-            context.timingFunction = timing
-            label.animator().alphaValue = 1
-            if appBadgeShown { appBadge.animator().alphaValue = 1 }
+        if fadesLabel {
+            label.alphaValue = 0
+            // The app badge fades in with the name instead of popping at full size.
+            if appBadgeShown { appBadge.alphaValue = 0 }
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = duration
+                context.timingFunction = timing
+                label.animator().alphaValue = 1
+                if appBadgeShown { appBadge.animator().alphaValue = 1 }
+            }
         }
         Task { [weak plate] in
             try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 50))
             plate?.removeFromSuperview()
         }
+    }
+
+    // Merge drop onto this app: the reverse of animateEmergeFromFolder. The icon shrinks into
+    // the first mini slot while the folder plate grows in from the icon's size and fades in.
+    // Call after showFolderPreview; the slot stays empty in the plate until the icon is there.
+    func animateShrinkIntoFolder(duration: CFTimeInterval) {
+        layoutSubtreeIfNeeded()
+        guard imageView.image != nil, !folderIcon.isHidden,
+              let iconLayer = imageView.layer, let plateLayer = folderIcon.layer else { return }
+        resetMergeShrink()
+        let timing = Self.emergeTiming
+        let mini = iconContainer.convert(folderMiniRect(index: 0), from: self)
+        imageView.isHidden = false
+        folderIcon.shrinkingIndex = 0
+        let token = mergeShrinkToken
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        let iconEnd = Self.transform(for: imageView, showingAt: mini)
+        let plateStart = Self.transform(for: folderIcon, showingAt: imageView.frame)
+
+        let shrink = CABasicAnimation(keyPath: "transform")
+        shrink.fromValue = NSValue(caTransform3D: CATransform3DIdentity)
+        shrink.toValue = NSValue(caTransform3D: iconEnd)
+        shrink.duration = duration
+        shrink.timingFunction = timing
+        shrink.fillMode = .forwards
+        shrink.isRemovedOnCompletion = false
+        iconLayer.add(shrink, forKey: Self.mergeShrinkKey)
+
+        let narrow = CABasicAnimation(keyPath: "transform")
+        narrow.fromValue = NSValue(caTransform3D: plateStart)
+        narrow.toValue = NSValue(caTransform3D: CATransform3DIdentity)
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 0
+        fade.toValue = 1
+        let group = CAAnimationGroup()
+        group.animations = [narrow, fade]
+        group.duration = duration
+        group.timingFunction = timing
+        group.fillMode = .both
+        plateLayer.add(group, forKey: Self.mergeShrinkKey)
+        CATransaction.commit()
+
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(Int(duration * 1000)))
+            guard let self, token == self.mergeShrinkToken else { return }
+            // Icon sits exactly on its mini slot: hand over to the plate in one frame
+            // (implicit transaction, so it lands together with the plate's redraw).
+            CATransaction.setDisableActions(true)
+            self.resetMergeShrink()
+            self.imageView.isHidden = !self.folderIcon.isHidden
+        }
+    }
+
+    private static let mergeShrinkKey = "mergeShrink"
+    private var mergeShrinkToken = 0
+
+    // Ends a running merge shrink (finished, or the cell gets new content).
+    private func resetMergeShrink() {
+        mergeShrinkToken += 1
+        guard folderIcon.shrinkingIndex != nil else { return }
+        imageView.layer?.removeAnimation(forKey: Self.mergeShrinkKey)
+        folderIcon.layer?.removeAnimation(forKey: Self.mergeShrinkKey)
+        folderIcon.shrinkingIndex = nil
     }
 
     // Layer transform that makes `view` (at its current frame) appear at `rect` (same superview).
@@ -454,7 +526,9 @@ final class GridCellView: FlippedView {
     override func draw(_ dirtyRect: NSRect) {
         let icon = iconRect
         if isDropTarget {
-            let plate = icon.insetBy(dx: -iconSize * 0.12, dy: -iconSize * 0.12)
+            // Small margin around the icon; never reaches into the name below.
+            let pad = min(iconSize * Self.dropPlateRatio, Self.gap - 2)
+            let plate = icon.insetBy(dx: -pad, dy: -pad)
             NSColor.labelColor.withAlphaComponent(0.22).setFill()
             NSBezierPath(roundedRect: plate, xRadius: plate.width * 0.24, yRadius: plate.width * 0.24).fill()
         }
@@ -465,6 +539,9 @@ final class GridCellView: FlippedView {
         context.setFillColor(NSColor.labelColor.withAlphaComponent(0.12).cgColor)
         context.fillPath()
     }
+
+    // Drop target plate margin as a share of the icon size (capped by the icon → name gap).
+    private static let dropPlateRatio: CGFloat = 0.06
 
     // Corner as a share of the plate side: 22.5% (icon shape) looks too round, the icon's own radius too square.
     private static let plateCornerRatio: CGFloat = 0.16
@@ -647,6 +724,10 @@ final class FolderIconView: FlippedView {
     var hiddenIndex: Int? {
         didSet { needsDisplay = true }
     }
+    // Slot left empty while the tile's own app shrinks into it (merge drop).
+    var shrinkingIndex: Int? {
+        didSet { if oldValue != shrinkingIndex { needsDisplay = true } }
+    }
 
     // Mini icon rect for slot 0…8 of the 3×3 preview (flipped coordinates of `bounds`).
     static func miniRect(index: Int, in bounds: NSRect) -> NSRect {
@@ -661,16 +742,20 @@ final class FolderIconView: FlippedView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        Self.drawTile(in: bounds, icons: icons, hiddenIndex: hiddenIndex)
+        Self.drawTile(in: bounds, icons: icons, hidden: Set([hiddenIndex, shrinkingIndex].compactMap { $0 }))
     }
 
     // Plate + mini icons; shared with the drag image so both render identically.
     static func drawTile(in b: NSRect, icons: [NSImage], hiddenIndex: Int?) {
+        drawTile(in: b, icons: icons, hidden: hiddenIndex.map { [$0] } ?? [])
+    }
+
+    static func drawTile(in b: NSRect, icons: [NSImage], hidden: Set<Int>) {
         let radius = b.width * 0.24
         NSColor.labelColor.withAlphaComponent(0.16).setFill()
         NSBezierPath(roundedRect: b, xRadius: radius, yRadius: radius).fill()
 
-        for (index, image) in icons.prefix(9).enumerated() where index != hiddenIndex {
+        for (index, image) in icons.prefix(9).enumerated() where !hidden.contains(index) {
             image.draw(in: miniRect(index: index, in: b), from: .zero, operation: .sourceOver,
                        fraction: 1, respectFlipped: true, hints: nil)
         }

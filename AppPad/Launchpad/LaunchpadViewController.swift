@@ -38,6 +38,9 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     var edgeTask: Task<Void, Never>?
     var edgeDirection = 0
     var dotTask: Task<Void, Never>?          // drag hovering a page dot (+Drag.swift)
+    // Folder sprung open by holding a dragged app on a tile (+Drag.swift).
+    var springFolder: SpringFolder?
+    var springCloseTask: Task<Void, Never>?
     var optionHoldTask: Task<Void, Never>?   // hold ⌥ → edit mode (+Edit.swift)
     // Drop landed visually but the layout is not committed yet (+Drag.swift); run(immediate).
     var pendingDrop: (token: UUID, run: (Bool) -> Void)?
@@ -139,6 +142,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
         emptyLabel.frame = NSRect(x: pad, y: top + 40, width: b.width - 2 * pad, height: 22)
         folderOverlay?.frame = b
+        springFolder?.overlay.frame = b
         confirmOverlay?.frame = b
     }
 
@@ -239,24 +243,39 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     // MARK: - Folder
 
     // tile: the folder's page cell (hidden while open, morph origin). animated: grow out of it.
-    func openFolder(_ folder: FolderItem, apps: [AppInfo], fromTile tile: GridCellView? = nil, animated: Bool = false) {
+    // page: folder page to show (default: the current one when reopening the same folder).
+    func openFolder(_ folder: FolderItem, apps: [AppInfo], fromTile tile: GridCellView? = nil, animated: Bool = false,
+                    page: Int? = nil) {
         // Reopening the same folder (reload after a reorder / rename) stays on its current page.
-        let keepPage = folderOverlay?.folderID == folder.id ? (folderOverlay?.currentPage ?? 0) : 0
+        let keepPage = page ?? (folderOverlay?.folderID == folder.id ? (folderOverlay?.currentPage ?? 0) : 0)
         folderOverlay?.removeFromSuperview()
         dropClosingFolder()
-        let metrics = folderMetrics()
-        let overlay = FolderOverlayView(
-            folder: folder, apps: apps, columns: metrics.columns,
-            iconSize: metrics.icon, cellWidth: metrics.cellWidth, rowHeight: metrics.rowHeight
-        )
-        overlay.grid.delegate = self
-        overlay.grid.setEditing(isEditingLayout)
+        let overlay = makeFolderOverlay(folder, apps: apps)
         overlay.onClose = { [weak self] in self?.closeFolder(animated: true) }
         overlay.onRename = { [weak self] name in
             self?.controller?.renameFolder(id: folder.id, name: name)
         }
         overlay.onEndEditingTitle = { [weak self] in self?.focusSearch() }
         overlay.initialPage = keepPage
+        folderOverlay = overlay
+        overlay.sourceTile = tile
+        tile?.isConcealed = true      // the folder "moved" into the overlay
+        if isSearching { highlightSearchMatch(in: overlay, apps: apps) } else { folderSelection = nil }
+        if animated && tile != nil { overlay.animateOpen() }
+        // Pages stay at full opacity: the overlay's own blur softens them instead.
+    }
+
+    // Folder sheet added on top of the pages (below a confirm dialog). reservedSlots: empty
+    // slots for an icon being dragged in (spring-loaded open).
+    func makeFolderOverlay(_ folder: FolderItem, apps: [AppInfo], reservedSlots: Int = 0) -> FolderOverlayView {
+        let metrics = folderMetrics()
+        let overlay = FolderOverlayView(
+            folder: folder, apps: apps, columns: metrics.columns,
+            iconSize: metrics.icon, cellWidth: metrics.cellWidth, rowHeight: metrics.rowHeight,
+            reservedSlots: reservedSlots
+        )
+        overlay.grid.delegate = self
+        overlay.grid.setEditing(isEditingLayout)
         overlay.headerGap = folderHeaderGap()
         overlay.frame = view.bounds
         if let confirmOverlay {
@@ -264,12 +283,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         } else {
             view.addSubview(overlay)
         }
-        folderOverlay = overlay
-        overlay.sourceTile = tile
-        tile?.isConcealed = true      // the folder "moved" into the overlay
-        if isSearching { highlightSearchMatch(in: overlay, apps: apps) } else { folderSelection = nil }
-        if animated && tile != nil { overlay.animateOpen() }
-        // Pages stay at full opacity: the overlay's own blur softens them instead.
+        return overlay
     }
 
     // Highlight the app that made this folder show up in the results (none for a name match).

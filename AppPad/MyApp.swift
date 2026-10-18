@@ -22,6 +22,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private var handoffAction: (() -> Void)?
     private var handoffObserver: NSObjectProtocol?
     private var handoffToken = 0
+    // Latest Settings request; an older one still waiting for the Launchpad fade is dropped.
+    private var settingsToken = 0
 
     override init() {
         launchpad = LaunchpadController()
@@ -310,11 +312,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         return true
     }
 
+    // Every Settings entry (panel ⌘, / menus / status bar / guides) lands here:
+    // close all panels first (Launchpad: same fade as a click on empty space), then open Settings.
     private func showSettings() {
-        // Same slow fade as a click on empty space (a plain hide() would cut a running fade short).
-        launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
+        settingsToken &+= 1
+        let token = settingsToken
         clipboard.hide()
         workflows.hide()
+        launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration) { [weak self] in
+            // Next run loop: the order-out reaches the screen before Settings comes up.
+            DispatchQueue.main.async { [weak self] in
+                guard let self, token == self.settingsToken else { return }
+                self.presentSettings()
+            }
+        }
+    }
+
+    private func presentSettings() {
         if settings == nil {
             settings = SettingsWindowController(
                 onResetLayout: { [weak self] in self?.launchpad.confirmResetLayout() },

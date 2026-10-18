@@ -142,6 +142,23 @@ final class LayoutStore {
                 pages[page][index] = .folder(folder)
             }
 
+        case .intoFolder(let page, let index, let position, let folderID):
+            guard pages.indices.contains(page), pages[page].indices.contains(index),
+                  case .app(let draggedKey) = item else {
+                while pages.count <= page { pages.append([]) }
+                pages[page].insert(item, at: min(max(0, index), pages[page].count))
+                break
+            }
+            switch pages[page][index] {
+            case .app(let targetKey):
+                var apps = [targetKey]
+                apps.insert(draggedKey, at: min(max(0, position), apps.count))
+                pages[page][index] = .folder(FolderItem(id: folderID, name: folderName(targetKey, draggedKey), apps: apps))
+            case .folder(var folder):
+                folder.apps.insert(draggedKey, at: min(max(0, position), folder.apps.count))
+                pages[page][index] = .folder(folder)
+            }
+
         case .reorderInFolder:
             return   // only valid for folder sources (handled above)
         }

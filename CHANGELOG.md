@@ -20,6 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.1
+
+### Changed
+- Launchpad: Improved drag-and-drop between apps and folders.
+
+### Fixed
+- Settings: Fixed an issue where the Settings window overlapped other windows when opened.
+
 ## v1.2.0
 
 ### Changed

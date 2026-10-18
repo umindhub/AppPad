@@ -32,6 +32,9 @@ nonisolated enum DropTarget: Equatable, Sendable {
     case insert(page: Int, index: Int)
     case merge(page: Int, index: Int)     // drop onto an app (new folder) or a folder (add)
     case reorderInFolder(index: Int)      // same folder the drag started in
+    // Spring-loaded folder: into the app / folder at index, at position among its apps.
+    // folderID names the folder when an app turns into one (the open sheet stays that folder).
+    case intoFolder(page: Int, index: Int, position: Int, folderID: String)
 }
 
 // Resolved item for display.

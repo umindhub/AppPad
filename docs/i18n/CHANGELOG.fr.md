@@ -18,6 +18,14 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.1
+
+### Changed
+- Launchpad: Amélioration du glisser-déposer entre les apps et les dossiers.
+
+### Fixed
+- Réglages: Correction d'un problème où la fenêtre Réglages chevauchait d'autres fenêtres à son ouverture.
+
 ## v1.2.0
 
 ### Changed

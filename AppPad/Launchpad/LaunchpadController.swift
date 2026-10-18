@@ -58,6 +58,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private var pendingReadyShow: (() -> Void)?
     // Animated hide in flight (Dock toggle / click outside).
     private var isFadingOut = false
+    // Run once the panel is really ordered out (Settings opens only after the fade).
+    private var hideCompletions: [() -> Void] = []
     // Closes on a Space switch (macOS 15 Launchpad behavior).
     private var spaceGuard: PanelSpaceGuard?
 
@@ -513,8 +515,13 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     }
 
     // animated: fade out + icons grow, then order out. A show() meanwhile cancels it.
-    func hide(animated: Bool = false, duration: TimeInterval? = nil) {
-        guard panel.isVisible, !isHiding else { return }
+    // completion: runs once the panel is gone (right away if already closed; dropped if a show cuts the hide).
+    func hide(animated: Bool = false, duration: TimeInterval? = nil, completion: (() -> Void)? = nil) {
+        if let completion { hideCompletions.append(completion) }
+        guard panel.isVisible, !isHiding else {
+            if !isHiding { runHideCompletions() }   // already closed
+            return
+        }
         guard animated else {
             hideNow()
             return
@@ -538,7 +545,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     }
 
     private func hideNow() {
-        guard panel.isVisible, !isHiding else { return }
+        guard panel.isVisible, !isHiding else {
+            if !isHiding { runHideCompletions() }   // ordered out meanwhile (e.g. warm-up end)
+            return
+        }
         isHiding = true
         cancelTransition()
         isFadingOut = false
@@ -550,6 +560,14 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         AppBadgeMonitor.shared.setActive(false)
         InputSourceSwitcher.restore()   // no-op unless we switched on show
         isHiding = false
+        runHideCompletions()
+    }
+
+    private func runHideCompletions() {
+        guard !hideCompletions.isEmpty else { return }
+        let pending = hideCompletions
+        hideCompletions = []
+        pending.forEach { $0() }
     }
 
     // Frame + content ready, ordered in at alpha 0 (opaque: panel switch hand-over, opaque or morphing).
@@ -560,8 +578,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         guard NSApp.modalWindow == nil else { return false }
         guard let screen = PanelScreen.target() else { return false }
         endWarmUp(orderOut: false)
-        // Interrupts an animated hide.
+        // Interrupts an animated hide; its waiters are dropped (the panel stays open).
         isFadingOut = false
+        hideCompletions.removeAll()
         panel.ignoresMouseEvents = false
         applyAppearance()
         applyFrame(targetFrame(on: screen), on: screen, display: false)
@@ -811,8 +830,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             hide()
             return true
         case ",":
-            // Same slow fade as a click on empty space; Settings opens underneath meanwhile.
-            hide(animated: true, duration: Self.backgroundClickHideDuration)
+            // Settings fades the panel out first (like a click on empty space), then opens.
             onOpenSettings?()
             return true
         default:
@@ -832,8 +850,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         AppActivator.open(app.url)
     }
 
+    // Settings closes the panel first (background-click fade), then opens.
     func requestShortcut(for app: AppInfo) {
-        hide()
         onRequestShortcut?(app)
     }
 

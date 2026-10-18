@@ -18,6 +18,14 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.1
+
+### Changed
+- Launchpad: Drag-and-drop zwischen Apps und Ordnern wurde optimiert.
+
+### Fixed
+- Einstellungen: Es wurde ein Problem behoben, bei dem sich das Einstellungsfenster beim Öffnen mit anderen Fenstern überlappte.
+
 ## v1.2.0
 
 ### Changed

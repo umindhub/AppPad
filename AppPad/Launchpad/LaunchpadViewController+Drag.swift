@@ -14,7 +14,8 @@ import QuartzCore
 //   along the dots follows the pointer at once. Works on the pages, the search results and in
 //   paged folders. A drop on the dots keeps the current placeholder (end of the page after a switch).
 // - drags that start in a folder reorder inside it (hold at the sheet's side → folder page flips),
-//   or leave the box to go back to the pages
+//   or leave the box to go back to the pages. Reordering inside folders (also spring-loaded ones)
+//   follows the page rules: half-cell insert position, only after the pointer stopped (folderReorderDwell)
 // - an app dragged out of the panel becomes a system file drag (drop on the Dock to add it)
 // - landing: the drag shadow fades out over the last `landingGlowDistance` pt; the floating icon
 //   is rendered exactly like the real cell, so it is swapped for it in the same frame as the
@@ -27,6 +28,12 @@ import QuartzCore
 //   results can be merged the same way. Hold at the side → next / previous results page.
 // - an app dragged out of a two-app folder dissolves it: the app left behind grows out of its
 //   mini slot into a full icon when the layout is committed
+// - merge drop onto an app: both icons shrink into their mini slots (the target app is the
+//   reverse of the folder-dissolve emerge)
+// - spring-loaded folders (pages): keep an app on a folder / app tile for `springDwell` → the
+//   folder opens (an app tile opens as a new folder holding that app) and the drag continues
+//   inside it with a placeholder. Drop on the sheet → the app goes there and the folder stays
+//   open. Outside the sheet for a moment → it closes again and the drag goes on on the pages.
 struct DragState {
     let source: DragSource
     let sourceCell: GridCellView
@@ -45,6 +52,18 @@ struct DragState {
     var resultsPage: Int?           // search: results page being hovered (merge indices are its cells)
     var dotPage: Int?               // page dot under the pointer
     var dotEngaged = false          // a dot already switched pages: next dots switch without dwell
+    var springInsert: Int?          // placeholder in the spring-loaded folder
+}
+
+// Folder opened by holding a dragged app on a tile.
+struct SpringFolder {
+    let overlay: FolderOverlayView
+    let page: Int
+    let index: Int                  // target on the page (items without the dragged one)
+    let folderID: String            // existing folder, or the id the new folder gets
+    let tile: GridCellView
+    let targetApp: AppInfo?         // app tile shown as a folder preview while open
+    var entered = false             // pointer has been over the sheet
 }
 
 extension LaunchpadViewController {
@@ -52,8 +71,18 @@ extension LaunchpadViewController {
     static let mergeDwell: Duration = .milliseconds(250)
     static let reorderSpeedLimit: CGFloat = 40   // pt/s; reorder only when (almost) stopped
     static let reorderDwell: Duration = .milliseconds(280)
+    static let folderReorderDwell: Duration = .milliseconds(160)   // same rule inside folder sheets, shorter wait
     static let landingGlowDistance: CGFloat = 300   // pt before the landing spot where the shadow starts fading
     static let dotDwell: Duration = .milliseconds(200)   // first dot hovered → page switch
+    static let springDwell: Duration = .milliseconds(1200)          // hold on a tile → folder opens
+    static let springCloseDelay: Duration = .milliseconds(600)      // outside the sheet → closes
+    static let springFirstCloseDelay: Duration = .milliseconds(1200) // same, before the first visit
+    static let springCloseMilliseconds = 340                        // close morph (0.32 s) + margin
+    static let springEmergeDuration: CFTimeInterval = 0.4           // app tile back from the preview (drop)
+    // Merge drops (into a new or an existing folder): the dragged icon lands, and a target app
+    // shrinks, with this duration and the emerge curve, so both stay in step.
+    static let mergeShrinkSeconds: CFTimeInterval = 0.7
+    static var mergeShrinkMilliseconds: Int { Int(mergeShrinkSeconds * 1000) }
 
     static let dragShadow: NSShadow = {
         let shadow = NSShadow()
@@ -151,6 +180,7 @@ extension LaunchpadViewController {
             // (invisible) because the source cell inside it still receives the drag events.
             state.leftFolder = true
             state.folderInsert = nil
+            cancelPendingReorder(&state)          // a pending folder reorder must not reach the pages
             if case .folder(_, let index) = state.source {
                 overlay.animateClose(excludingAppAt: index) {}   // overlay stays (source cell lives in it)
             }
@@ -160,6 +190,10 @@ extension LaunchpadViewController {
             }
         }
         drag = state
+        if springFolder != nil {
+            updateSpringHover(event)
+            return
+        }
         if isSearching {
             updateResultsHover(event)
         } else {
@@ -269,25 +303,66 @@ extension LaunchpadViewController {
         guard var state = drag, case .folder(_, let sourceIndex) = state.source,
               let overlay = folderOverlay else { return }
         if updateDotHover(page: overlay.indicatorPage(atWindowPoint: event.locationInWindow), state: &state) {
+            cancelPendingReorder(&state)
             drag = state
             return
         }
         // Between the dots and the sheet: keep the placeholder where it is.
         guard overlay.boxContains(windowPoint: event.locationInWindow) else {
             scheduleEdgeFlip(0)
+            cancelPendingReorder(&state)
             drag = state
             return
         }
         scheduleEdgeFlip(overlay.edgeDirection(atWindowPoint: event.locationInWindow))
         let folderGrid = overlay.grid
-        let insert = min(overlay.gridSlot(atWindowPoint: event.locationInWindow), folderGrid.cells.count - 1)
-        if insert != state.folderInsert {
-            state.folderInsert = insert
-            folderGrid.applyArrangement(
-                Self.arrangement(cellCount: folderGrid.cells.count, sourceIndex: sourceIndex, placeholder: insert),
-                animated: true)
-        }
+        updateFolderReorder(overlay: overlay, windowPoint: event.locationInWindow,
+                            baseCount: folderGrid.cells.count - 1,
+                            placeholder: state.folderInsert ?? sourceIndex, spring: false, state: &state)
         drag = state
+    }
+
+    // Folder sheets reorder like the pages: half-cell rule, and only once the pointer has
+    // (almost) stopped for folderReorderDwell. placeholder: base index of the current gap (nil = none).
+    private func updateFolderReorder(overlay: FolderOverlayView, windowPoint: NSPoint, baseCount: Int,
+                                     placeholder: Int?, spring: Bool, state: inout DragState) {
+        guard state.speed < Self.reorderSpeedLimit else {
+            cancelPendingReorder(&state)
+            return
+        }
+        let insert = insertIndex(at: overlay.gridPoint(atWindowPoint: windowPoint), grid: overlay.grid,
+                                 baseCount: baseCount, placeholder: placeholder)
+        if insert == placeholder {
+            cancelPendingReorder(&state)
+        } else if insert != state.pendingInsert {
+            state.pendingInsert = insert
+            scheduleFolderReorder(insert, spring: spring)
+        }
+    }
+
+    private func scheduleFolderReorder(_ insert: Int, spring: Bool) {
+        reorderTask?.cancel()
+        reorderTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.folderReorderDwell)
+            guard !Task.isCancelled, let self, var state = self.drag,
+                  state.pendingInsert == insert, state.speed < Self.reorderSpeedLimit else { return }
+            if spring {
+                guard let grid = self.springFolder?.overlay.grid else { return }
+                state.springInsert = insert
+                state.pendingInsert = nil
+                self.drag = state
+                grid.applyArrangement(Self.arrangement(cellCount: grid.cells.count, sourceIndex: nil, placeholder: insert),
+                                      animated: true)
+            } else {
+                guard case .folder(_, let sourceIndex) = state.source, !state.leftFolder,
+                      let grid = self.folderOverlay?.grid else { return }
+                state.folderInsert = insert
+                state.pendingInsert = nil
+                self.drag = state
+                grid.applyArrangement(Self.arrangement(cellCount: grid.cells.count, sourceIndex: sourceIndex,
+                                                       placeholder: insert), animated: true)
+            }
+        }
     }
 
     func updatePageHover(_ event: NSEvent) {
@@ -423,8 +498,36 @@ extension LaunchpadViewController {
         var target: DropTarget?
         var mergeTileBefore: NSRect?   // merge tile frame (root) before the gap starts closing
         var resultsTile: GridCellView?   // search: result cell the app merges into
-        if case .folder(_, let sourceIndex) = state.source, !state.leftFolder {
-            target = .reorderInFolder(index: state.folderInsert ?? sourceIndex)   // folder reopens on reload
+        var springDrop: (overlay: FolderOverlayView, folderID: String, page: Int)?
+        var springLanding: NSRect?
+        var springClosing = false
+        var returnsHome = false          // dropped back onto the folder it was dragged out of
+        if let spring = springFolder {
+            if spring.overlay.dragAreaContains(windowPoint: event.locationInWindow) {
+                let grid = spring.overlay.grid
+                let count = grid.cells.count
+                let position = min(state.pendingInsert ?? state.springInsert ?? count, count)
+                target = .intoFolder(page: spring.page, index: spring.index, position: position, folderID: spring.folderID)
+                if state.springInsert != position {
+                    grid.applyArrangement(Self.arrangement(cellCount: count, sourceIndex: nil, placeholder: position),
+                                          animated: true)
+                }
+                springLanding = root.convert(grid.iconRect(forSlot: position), from: grid)
+                springDrop = (spring.overlay, spring.folderID, spring.overlay.currentPage)
+                springFolder = nil           // the sheet stays until the real folder replaces it
+            } else {
+                closeSpringFolder(animated: true, emergeDuration: Self.springEmergeDuration)   // cancelled
+                springClosing = true
+            }
+        } else if case .folder(_, let sourceIndex) = state.source, !state.leftFolder {
+            let shown = state.folderInsert ?? sourceIndex
+            let index = state.pendingInsert ?? shown
+            target = .reorderInFolder(index: index)   // folder reopens on reload
+            // Make room now if the last reorder was still pending.
+            if index != shown, let grid = folderOverlay?.grid {
+                grid.applyArrangement(Self.arrangement(cellCount: grid.cells.count, sourceIndex: sourceIndex,
+                                                       placeholder: index), animated: true)
+            }
         } else if isSearching {
             if let page = state.resultsPage, let index = state.mergeTarget, let grid = resultsGrid(page),
                let merge = resultsMergeTarget(state: state, grid: grid, index: index) {
@@ -442,11 +545,16 @@ extension LaunchpadViewController {
             let pagerPoint = pager.convert(event.locationInWindow, from: nil)
             if pagerPoint.y > -60, pagerPoint.y < pager.bounds.height + 60 {
                 if let merge = state.mergeTarget {
-                    target = .merge(page: page, index: merge)
                     let tileIndex = cellIndex(forBase: merge, page: page, state: state)
                     if grid.cells.indices.contains(tileIndex) {
                         let tile = grid.cells[tileIndex]
                         mergeTileBefore = root.convert(tile.bounds, from: tile)
+                    }
+                    // Own folder: nothing changes, the app goes back to its old slot (no append).
+                    if isSourceFolderTile(grid: grid, index: tileIndex, state: state) {
+                        returnsHome = true
+                    } else {
+                        target = .merge(page: page, index: merge)
                     }
                     // The dragged icon's spot closes slowly while it flies into the target.
                     grid.applyArrangement(arrangement(forPage: page, grid: grid, placeholder: nil, state: state),
@@ -466,19 +574,28 @@ extension LaunchpadViewController {
         let finalTarget = target
         var isMerge = false
         if case .merge? = finalTarget { isMerge = true }
-        let duration = isMerge ? Self.mergeLandingMilliseconds : Self.landingMilliseconds
+        if returnsHome { isMerge = true }   // same landing as a merge, layout stays as it was
 
         // Where the icon lands; into a folder it shrinks to its exact mini slot (first 9)
         // or to a mini-sized spot at the tile center (fading) when it will not be visible.
         var landing: (rect: NSRect?, fade: Bool) = (landingRect(for: finalTarget, state: state), false)
-        if let resultsTile {
-            landing = landInFolderTile(resultsTile, state: state, tileBefore: mergeTileBefore)
+        if let springLanding {
+            landing = (springLanding, false)
+        } else if let resultsTile {
+            let merge = landInFolderTile(resultsTile, state: state, tileBefore: mergeTileBefore)
+            landing = (merge.rect, merge.fade)
         } else if case .merge(let page, let index)? = finalTarget {
-            landing = prepareMergeLanding(page: page, index: index, state: state, tileBefore: mergeTileBefore)
+            let merge = prepareMergeLanding(page: page, index: index, state: state, tileBefore: mergeTileBefore)
+            landing = (merge.rect, merge.fade)
         } else if finalTarget == nil, case .folder(let id, let appIndex) = state.source, state.leftFolder {
-            landing = prepareFolderReturn(folderID: id, appIndex: appIndex)   // cancelled: back into its tile
+            // Cancelled or dropped back on its folder: into its old mini slot.
+            landing = prepareFolderReturn(folderID: id, appIndex: appIndex,
+                                          tileBefore: returnsHome ? mergeTileBefore : nil)
         }
-        animateLanding(to: landing.rect, fade: landing.fade, milliseconds: duration)
+        // Merges (new or existing folder): same duration and curve as the target app shrinking.
+        let duration = isMerge ? Self.mergeShrinkMilliseconds : Self.landingMilliseconds
+        animateLanding(to: landing.rect, fade: landing.fade, milliseconds: duration,
+                       curve: isMerge ? GridCellView.emergeTiming : Self.landingTiming)
 
         // The folder left behind is invisible now; clicks go to the pages under it.
         if case .folder = state.source, state.leftFolder {
@@ -500,15 +617,23 @@ extension LaunchpadViewController {
             if let finalTarget, let controller = self.controller {
                 self.searchDroppedKey = droppedKey       // results keep their order (VC)
                 controller.moveItem(from: state.source, to: finalTarget)   // reloads pages (+ open folder)
+                if let springDrop {
+                    self.finishSpringDrop(overlay: springDrop.overlay, folderID: springDrop.folderID, page: springDrop.page)
+                }
                 if let emergingKey { self.animateEmergence(appKey: emergingKey) }
             } else {
+                springDrop?.overlay.removeFromSuperview()
                 self.reloadAll()                                       // cancelled: restore
             }
             self.finishDragImage()
             self.dropQuietUntil = ProcessInfo.processInfo.systemUptime + Self.dropQuietInterval
         })
-        // Merges wait for the gentle gap-closing spring so the reload does not cut it short.
-        let commitDelay = isMerge ? Self.mergeCommitMilliseconds : duration + 10
+        // Merges wait for the gentle gap-closing spring so the reload does not cut it short;
+        // a closing spring folder waits for its morph and the tile turning back into the app.
+        var commitDelay = isMerge ? max(Self.mergeCommitMilliseconds, duration + 50) : duration + 10
+        if springClosing {
+            commitDelay = max(commitDelay, Self.springCloseMilliseconds + Int(Self.springEmergeDuration * 1000) + 20)
+        }
         Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(commitDelay))
             self?.flushPendingDrop(token: token)
@@ -556,8 +681,9 @@ extension LaunchpadViewController {
     }
 
     static let landingMilliseconds = 240
-    static let mergeLandingMilliseconds = 400
     static let mergeCommitMilliseconds = 650
+    // Strong ease-out: the released icon settles quickly.
+    static var landingTiming: CAMediaTimingFunction { CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1) }
 
     // Final icon rect in root coordinates (nil → just fade out).
     private func landingRect(for target: DropTarget?, state: DragState) -> NSRect? {
@@ -578,6 +704,8 @@ extension LaunchpadViewController {
         case .reorderInFolder(let index):
             guard let folderGrid = folderOverlay?.grid else { return nil }
             return root.convert(folderGrid.iconRect(forSlot: index), from: folderGrid)
+        case .intoFolder:
+            return nil   // spring-loaded folder: computed by endDrag while the sheet is known
         case nil:
             // Cancelled after leaving a folder: back into the folder tile.
             if case .folder(let id, _) = state.source, state.leftFolder {
@@ -595,7 +723,8 @@ extension LaunchpadViewController {
     // Ease the floating icon from where it was released into place, shrinking if needed.
     // Pure layer transform (model frame stays at the release spot): no view-frame animation,
     // so the image keeps its full-resolution contents and cannot drift while it scales.
-    private func animateLanding(to rect: NSRect?, fade: Bool, milliseconds: Int) {
+    private func animateLanding(to rect: NSRect?, fade: Bool, milliseconds: Int,
+                                curve: CAMediaTimingFunction = LaunchpadViewController.landingTiming) {
         guard let layer = dragImageView.layer else {
             dragImageView.alphaValue = 0
             return
@@ -622,7 +751,7 @@ extension LaunchpadViewController {
 
             // Shadow fades out once the icon is within landingGlowDistance of its spot.
             let distance = hypot(end.midX - start.midX, end.midY - start.midY)
-            let begin = Self.landingTime(remaining: Self.landingGlowDistance / max(distance, 1))
+            let begin = Self.landingTime(remaining: Self.landingGlowDistance / max(distance, 1), curve: curve)
             let shadow = CABasicAnimation(keyPath: "shadowOpacity")
             shadow.fromValue = layer.shadowOpacity
             shadow.toValue = 0
@@ -641,25 +770,29 @@ extension LaunchpadViewController {
         }
         for animation in animations {
             animation.duration = duration
-            animation.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1)
+            animation.timingFunction = curve
             animation.fillMode = .forwards
             animation.isRemovedOnCompletion = false
             layer.add(animation, forKey: animation.keyPath)
         }
     }
 
-    // Landing curve (cubic Bézier 0.2, 0.8, 0.2, 1): time fraction where the remaining
-    // distance first drops to `remaining` (fraction of the whole flight); 0 if already within.
-    static func landingTime(remaining: CGFloat) -> Double {
+    // Landing curve (cubic Bézier): time fraction where the remaining distance first drops to
+    // `remaining` (fraction of the whole flight); 0 if already within.
+    static func landingTime(remaining: CGFloat, curve: CAMediaTimingFunction) -> Double {
         let target = 1 - Double(remaining)
         guard target > 0 else { return 0 }
-        func bezier(_ s: Double, _ p1: Double, _ p2: Double) -> Double {
-            3 * (1 - s) * (1 - s) * s * p1 + 3 * (1 - s) * s * s * p2 + s * s * s
+        var p1: [Float] = [0, 0]
+        var p2: [Float] = [0, 0]
+        curve.getControlPoint(at: 1, values: &p1)
+        curve.getControlPoint(at: 2, values: &p2)
+        func bezier(_ s: Double, _ a: Float, _ b: Float) -> Double {
+            3 * (1 - s) * (1 - s) * s * Double(a) + 3 * (1 - s) * s * s * Double(b) + s * s * s
         }
         let steps = 100
         for i in 0...steps {
             let s = Double(i) / Double(steps)
-            if bezier(s, 0.8, 1) >= target { return bezier(s, 0.2, 0.2) }
+            if bezier(s, p1[1], p2[1]) >= target { return bezier(s, p1[0], p2[0]) }
         }
         return 1
     }
@@ -667,32 +800,38 @@ extension LaunchpadViewController {
     // Merge drop: turn the target tile into its final look with the landing slot empty,
     // and return that slot in the coordinates of dragImageView's (possibly new) superview.
     private func prepareMergeLanding(page: Int, index: Int, state: DragState,
-                                     tileBefore: NSRect?) -> (rect: NSRect?, fade: Bool) {
-        guard let grid = pageGrid(page) else { return (nil, true) }
+                                     tileBefore: NSRect?) -> (rect: NSRect?, fade: Bool, newFolder: Bool) {
+        guard let grid = pageGrid(page) else { return (nil, true, false) }
         let tileIndex = cellIndex(forBase: index, page: page, state: state)
-        guard grid.cells.indices.contains(tileIndex) else { return (nil, true) }
+        guard grid.cells.indices.contains(tileIndex) else { return (nil, true, false) }
         return landInFolderTile(grid.cells[tileIndex], state: state, tileBefore: tileBefore,
                                 finalFrame: grid.slotRect(Self.slot(forBase: index, placeholder: nil)))
     }
 
     // Shared merge landing (pages and search results). finalFrame: the tile's final frame in its
     // grid, used when the icon cannot ride along inside the tile (default: its model frame).
+    // newFolder: app onto app (the target app shrinks into its mini slot as well).
     private func landInFolderTile(_ tile: GridCellView, state: DragState, tileBefore: NSRect?,
-                                  finalFrame: NSRect? = nil) -> (rect: NSRect?, fade: Bool) {
+                                  finalFrame: NSRect? = nil) -> (rect: NSRect?, fade: Bool, newFolder: Bool) {
         guard let grid = tile.grid, grid.entries.indices.contains(tile.index),
               case .app(let draggedKey) = state.item,
-              let dragged = controller?.app(forKey: draggedKey) else { return (nil, true) }
+              let dragged = controller?.app(forKey: draggedKey) else { return (nil, true, false) }
         tile.isDropTarget = false
 
         let apps: [AppInfo]
+        var becomesFolder = false
         switch grid.entries[tile.index] {
-        case .app(let targetApp): apps = [targetApp, dragged]           // app + app → new folder
+        case .app(let targetApp):                                        // app + app → new folder
+            apps = [targetApp, dragged]
+            becomesFolder = true
         case .folder(_, let folderApps): apps = folderApps + [dragged]   // appended at the end
         }
         let slot = apps.count - 1
         let visible = slot < 9
         tile.showFolderPreview(icons: apps.prefix(9).map { IconCache.shared.icon(for: $0) },
                                hiddenIndex: visible ? slot : nil)
+        // The target app shrinks into its mini slot while the dragged one flies into the next.
+        if becomesFolder { tile.animateShrinkIntoFolder(duration: Self.mergeShrinkSeconds) }
         let mini = tile.folderMiniRect(index: visible ? slot : nil)
 
         // Ride along: host the icon inside the tile, so it shrinks into its slot while the
@@ -704,29 +843,48 @@ extension LaunchpadViewController {
                                                      dy: tileNow.minY - tileBefore.minY)
             let host = tile.hostLandingView(dragImageView, cellFrame: tile.convert(start, from: root))
             tile.layer?.zPosition = 1   // above neighbours while the icon still overlaps them
-            return (host.convert(mini, from: tile), !visible)
+            return (host.convert(mini, from: tile), !visible, becomesFolder)
         }
 
         // Fallback: fly in root coordinates to the tile's final frame.
         let finalTile = finalFrame ?? tile.frame
-        return (root.convert(mini.offsetBy(dx: finalTile.minX, dy: finalTile.minY), from: grid), !visible)
+        return (root.convert(mini.offsetBy(dx: finalTile.minX, dy: finalTile.minY), from: grid), !visible, becomesFolder)
     }
 
     // Cancelled drag out of a folder: show the tile complete again except the returning slot.
-    private func prepareFolderReturn(folderID: String, appIndex: Int) -> (rect: NSRect?, fade: Bool) {
+    // tileBefore: tile frame (root) before the page gap started closing → ride along inside it.
+    private func prepareFolderReturn(folderID: String, appIndex: Int,
+                                     tileBefore: NSRect? = nil) -> (rect: NSRect?, fade: Bool) {
         guard let tile = folderTileCell(id: folderID), let grid = tile.grid,
               grid.entries.indices.contains(tile.index),
               case .folder(_, let apps) = grid.entries[tile.index] else { return (nil, true) }
+        tile.isDropTarget = false
         let visible = appIndex < 9
         tile.showFolderPreview(icons: apps.prefix(9).map { IconCache.shared.icon(for: $0) },
                                hiddenIndex: visible ? appIndex : nil)
         let mini = tile.folderMiniRect(index: visible ? appIndex : nil)
+        if let tileBefore, tile.layer != nil {
+            let tileNow = root.convert(tile.bounds, from: tile)
+            let start = dragImageView.frame.offsetBy(dx: tileNow.minX - tileBefore.minX,
+                                                     dy: tileNow.minY - tileBefore.minY)
+            let host = tile.hostLandingView(dragImageView, cellFrame: tile.convert(start, from: root))
+            tile.layer?.zPosition = 1
+            return (host.convert(mini, from: tile), !visible)
+        }
         return (root.convert(mini, from: tile), !visible)
+    }
+
+    // The page tile of the folder the dragged app was taken out of.
+    private func isSourceFolderTile(grid: PageGridView, index: Int, state: DragState) -> Bool {
+        guard case .folder(let sourceID, _) = state.source, state.leftFolder,
+              grid.entries.indices.contains(index), case .folder(let folder, _) = grid.entries[index] else { return false }
+        return folder.id == sourceID
     }
 
     func cancelDrag() {
         guard let state = drag else { return }
         stopDragTimers()
+        closeSpringFolder(animated: false)
         dragImageView.removeFromSuperview()
         state.sourceCell.isDragSource = false
         drag = nil
@@ -781,19 +939,27 @@ extension LaunchpadViewController {
         state.mergeTarget = nil
     }
 
+    // Slow touch → highlight after mergeDwell; still holding at springDwell → the folder opens.
+    // Any clearMerge (moved off, too fast, page change) cancels both steps.
     private func startMergeTimer(candidate: Int, page: Int) {
         mergeTask?.cancel()
         mergeTask = Task { [weak self] in
             try? await Task.sleep(for: Self.mergeDwell)
-            guard !Task.isCancelled, let self, var state = self.drag,
-                  state.mergeCandidate == candidate, state.hoverPage == page,
-                  state.speed <= Self.mergeSpeedLimit,
-                  let grid = self.pageGrid(page) else { return }
-            state.mergeTarget = candidate
-            self.drag = state
-            let cell = self.cellIndex(forBase: candidate, page: page, state: state)
-            if grid.cells.indices.contains(cell) { grid.cells[cell].isDropTarget = true }
+            guard !Task.isCancelled, self?.highlightMerge(candidate: candidate, page: page) == true else { return }
+            try? await Task.sleep(for: Self.springDwell - Self.mergeDwell)
+            guard !Task.isCancelled else { return }
+            self?.openSpringFolder(candidate: candidate, page: page)
         }
+    }
+
+    private func highlightMerge(candidate: Int, page: Int) -> Bool {
+        guard var state = drag, state.mergeCandidate == candidate, state.hoverPage == page,
+              state.speed <= Self.mergeSpeedLimit, let grid = pageGrid(page) else { return false }
+        state.mergeTarget = candidate
+        drag = state
+        let cell = cellIndex(forBase: candidate, page: page, state: state)
+        if grid.cells.indices.contains(cell) { grid.cells[cell].isDropTarget = true }
+        return true
     }
 
     // Page dot under the pointer → switch to that page. The first dot waits `dotDwell`
@@ -826,6 +992,10 @@ extension LaunchpadViewController {
 
     private func showDotPage(_ page: Int) {
         guard let state = drag else { return }
+        if let spring = springFolder {
+            spring.overlay.scrollToPage(page)
+            return
+        }
         if case .folder = state.source, !state.leftFolder, let overlay = folderOverlay {
             overlay.scrollToPage(page)
             return
@@ -853,6 +1023,11 @@ extension LaunchpadViewController {
 
     private func flipPage(_ direction: Int) {
         guard let state = drag else { return }
+        if let spring = springFolder {
+            spring.overlay.flipPage(direction)
+            if let event = lastDragEvent { updateSpringHover(event) }
+            return
+        }
         // Inside an open folder: flip the folder's pages instead.
         if case .folder = state.source, !state.leftFolder, let overlay = folderOverlay {
             overlay.flipPage(direction)
@@ -888,7 +1063,16 @@ extension LaunchpadViewController {
             guard !Task.isCancelled, let self, var state = self.drag, let event = self.lastDragEvent else { return }
             state.speed = 0
             self.drag = state
-            if case .folder = state.source, !state.leftFolder { return }
+            if case .folder = state.source, !state.leftFolder {
+                if let overlay = self.folderOverlay, overlay.dragAreaContains(windowPoint: event.locationInWindow) {
+                    self.updateFolderHover(event)       // stopped: the folder reorder may start
+                }
+                return
+            }
+            if self.springFolder != nil {
+                self.updateSpringHover(event)
+                return
+            }
             if self.isSearching {
                 self.updateResultsHover(event)
             } else {
@@ -898,6 +1082,7 @@ extension LaunchpadViewController {
     }
 
     private func stopDragTimers() {
+        cancelSpringClose()
         dotTask?.cancel()
         mergeTask?.cancel()
         reorderTask?.cancel()
@@ -907,12 +1092,148 @@ extension LaunchpadViewController {
     }
 }
 
+// MARK: - Spring-loaded folders
+
+extension LaunchpadViewController {
+    // Held long enough on a page tile: open it as a folder sheet the drag continues in.
+    // An app tile turns into a folder preview first and opens as the folder it would become.
+    fileprivate func openSpringFolder(candidate: Int, page: Int) {
+        guard springFolder == nil, !isSearching, var state = drag,
+              state.mergeTarget == candidate, state.hoverPage == page,
+              case .app(let draggedKey) = state.item, let controller,
+              let dragged = controller.app(forKey: draggedKey), let grid = pageGrid(page) else { return }
+        let tileIndex = cellIndex(forBase: candidate, page: page, state: state)
+        guard grid.cells.indices.contains(tileIndex), grid.entries.indices.contains(tileIndex) else { return }
+        let tile = grid.cells[tileIndex]
+
+        let folder: FolderItem
+        let apps: [AppInfo]
+        var targetApp: AppInfo?
+        switch grid.entries[tileIndex] {
+        case .folder(let item, let folderApps):
+            folder = item
+            apps = folderApps.filter { $0.key != draggedKey }   // dragged out of this very folder
+        case .app(let app):
+            folder = FolderItem(id: UUID().uuidString, name: DefaultLayout.folderName(for: [app, dragged]),
+                                apps: [app.key])
+            apps = [app]
+            targetApp = app
+            tile.showFolderPreview(icons: [IconCache.shared.icon(for: app)], hiddenIndex: nil)
+        }
+
+        tile.isDropTarget = false
+        state.mergeCandidate = nil
+        state.mergeTarget = nil
+        state.springInsert = nil
+        cancelPendingReorder(&state)
+        drag = state
+        scheduleEdgeFlip(0)
+
+        let overlay = makeFolderOverlay(folder, apps: apps, reservedSlots: 1)
+        root.addSubview(dragImageView, positioned: .above, relativeTo: overlay)   // floating icon stays on top
+        overlay.sourceTile = tile
+        tile.isConcealed = true
+        springFolder = SpringFolder(overlay: overlay, page: page, index: candidate, folderID: folder.id,
+                                    tile: tile, targetApp: targetApp)
+        overlay.animateOpen()
+        if let event = lastDragEvent { updateSpringHover(event) }
+    }
+
+    // Over the sheet: placeholder follows the pointer (dots / sides flip the folder pages).
+    // Outside: no placeholder, and the folder closes after a pause.
+    func updateSpringHover(_ event: NSEvent) {
+        guard var state = drag, let spring = springFolder else { return }
+        let overlay = spring.overlay
+        let point = event.locationInWindow
+        guard overlay.dragAreaContains(windowPoint: point) else {
+            scheduleEdgeFlip(0)
+            _ = updateDotHover(page: nil, state: &state)
+            cancelPendingReorder(&state)
+            if state.springInsert != nil {
+                state.springInsert = nil
+                overlay.grid.applyArrangement(nil, animated: true)
+            }
+            drag = state
+            scheduleSpringClose(spring.entered ? Self.springCloseDelay : Self.springFirstCloseDelay)
+            return
+        }
+        cancelSpringClose()
+        springFolder?.entered = true
+        if updateDotHover(page: overlay.indicatorPage(atWindowPoint: point), state: &state) {
+            cancelPendingReorder(&state)
+            drag = state
+            return
+        }
+        guard overlay.boxContains(windowPoint: point) else {   // between the dots and the sheet
+            scheduleEdgeFlip(0)
+            cancelPendingReorder(&state)
+            drag = state
+            return
+        }
+        scheduleEdgeFlip(overlay.edgeDirection(atWindowPoint: point))
+        updateFolderReorder(overlay: overlay, windowPoint: point, baseCount: overlay.grid.cells.count,
+                            placeholder: state.springInsert, spring: true, state: &state)
+        drag = state
+    }
+
+    // Back into the tile; an app tile then grows back from its mini slot (folder-dissolve look).
+    func closeSpringFolder(animated: Bool, emergeDuration: CFTimeInterval = GridCellView.emergeDuration) {
+        cancelSpringClose()
+        guard let spring = springFolder else { return }
+        springFolder = nil
+        if var state = drag {
+            state.springInsert = nil
+            cancelPendingReorder(&state)
+            drag = state
+        }
+        let overlay = spring.overlay
+        let tile = spring.tile
+        let restore = { [weak tile] in
+            overlay.removeFromSuperview()
+            guard let tile, let app = spring.targetApp, tile.window != nil else { return }
+            tile.configure(.app(app))
+            if animated { tile.animateEmergeFromFolder(duration: emergeDuration, fadesLabel: false) }
+        }
+        if animated {
+            overlay.animateClose(completion: restore)
+        } else {
+            tile.isConcealed = false
+            restore()
+        }
+    }
+
+    // Dropped on the sheet: the reload built the real folder; show it open in place of the sheet.
+    fileprivate func finishSpringDrop(overlay: FolderOverlayView, folderID: String, page: Int) {
+        defer { overlay.removeFromSuperview() }
+        guard let controller, let folder = controller.folder(id: folderID) else { return }
+        openFolder(folder, apps: controller.folderApps(folder), fromTile: folderTileCell(id: folderID), page: page)
+    }
+
+    private func scheduleSpringClose(_ delay: Duration) {
+        guard springCloseTask == nil else { return }
+        springCloseTask = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self else { return }
+            self.springCloseTask = nil
+            guard self.drag != nil, self.springFolder != nil else { return }
+            self.closeSpringFolder(animated: true)
+            if let event = self.lastDragEvent { self.updatePageHover(event) }
+        }
+    }
+
+    func cancelSpringClose() {
+        springCloseTask?.cancel()
+        springCloseTask = nil
+    }
+}
+
 // MARK: - System drag (outside the panel)
 
 extension LaunchpadViewController: NSDraggingSource {
 
     func beginSystemDrag(app: AppInfo, state: DragState, event: NSEvent) {
         stopDragTimers()
+        closeSpringFolder(animated: false)
         drag = nil
         lastDragEvent = nil
 
