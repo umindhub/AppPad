@@ -1,10 +1,24 @@
 # Changelog
 
+<p align="center">
+  English ·
+  <a href="docs/i18n/CHANGELOG.zh-CN.md">简体中文</a> ·
+  <a href="docs/i18n/CHANGELOG.zh-TW.md">繁體中文</a> ·
+  <a href="docs/i18n/CHANGELOG.ja.md">日本語</a> ·
+  <a href="docs/i18n/CHANGELOG.ko.md">한국어</a> ·
+  <a href="docs/i18n/CHANGELOG.de.md">Deutsch</a> ·
+  <a href="docs/i18n/CHANGELOG.es.md">Español</a> ·
+  <a href="docs/i18n/CHANGELOG.fr.md">Français</a> ·
+  <a href="docs/i18n/CHANGELOG.it.md">Italiano</a> ·
+  <a href="docs/i18n/CHANGELOG.nl.md">Nederlands</a>
+</p>
+
 All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
+
 
 ## v1.1.9
 

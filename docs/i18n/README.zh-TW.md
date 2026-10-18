@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">官網</a><br>
+  <a href="https://apppad.youmindhub.com">官網</a> · <a href="CHANGELOG.zh-TW.md">更新日誌</a><br>
   <a href="#wechat-donate">☕ 微信讚賞</a>
 </p>
 

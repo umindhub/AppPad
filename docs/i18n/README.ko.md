@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">웹사이트</a><br>
+  <a href="https://apppad.youmindhub.com">웹사이트</a> · <a href="CHANGELOG.ko.md">변경 내역</a><br>
   <a href="#wechat-donate">☕ WeChat으로 후원</a>
 </p>
 

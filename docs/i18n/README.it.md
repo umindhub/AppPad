@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apppad.youmindhub.com">Sito web</a><br>
+  <a href="https://apppad.youmindhub.com">Sito web</a> · <a href="CHANGELOG.it.md">Registro delle modifiche</a><br>
   <a href="#wechat-donate">☕ Sostieni con WeChat</a>
 </p>
 
