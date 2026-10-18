@@ -12,6 +12,16 @@ on:
 permissions:
   contents: read
 
+# Serialize bumps from this repo
+concurrency:
+  group: homebrew-bump
+  cancel-in-progress: false
+
+env:
+  APP_NAME: AppPad
+  CASK: apppad
+  TAP_REPO: umindhub/homebrew-tap
+
 jobs:
   bump:
     # Skip prereleases (Beta builds)
@@ -21,19 +31,21 @@ jobs:
       TAG: ${{ github.event.release.tag_name || inputs.tag }}
     steps:
       - name: Resolve version
-        run: echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+        run: |
+          if [ -z "$TAG" ]; then echo "No tag"; exit 1; fi
+          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
 
       - name: Download DMG and compute sha256
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "AppPad-${VERSION}.dmg"
-          echo "SHA256=$(sha256sum "AppPad-${VERSION}.dmg" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "${APP_NAME}-${VERSION}.dmg"
+          echo "SHA256=$(sha256sum "${APP_NAME}-${VERSION}.dmg" | cut -d' ' -f1)" >> "$GITHUB_ENV"
 
       - name: Checkout tap
         uses: actions/checkout@v4
         with:
-          repository: umindhub/homebrew-tap
+          repository: ${{ env.TAP_REPO }}
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: tap
 
@@ -43,7 +55,10 @@ jobs:
           sed -i -E \
             -e "s/^  version \".*\"/  version \"${VERSION}\"/" \
             -e "s/^  sha256 \".*\"/  sha256 \"${SHA256}\"/" \
-            Casks/apppad.rb
+            "Casks/${CASK}.rb"
+          # Fail loudly if the stanzas were not matched
+          grep -q "^  version \"${VERSION}\"" "Casks/${CASK}.rb"
+          grep -q "^  sha256 \"${SHA256}\"" "Casks/${CASK}.rb"
           git diff --stat
 
       - name: Commit and push
@@ -52,5 +67,11 @@ jobs:
           if git diff --quiet; then echo "No changes"; exit 0; fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "apppad ${VERSION}"
-          git push
+          git commit -am "${CASK} ${VERSION}"
+          # Other app repos push to the same tap: rebase and retry on race
+          for i in 1 2 3; do
+            git push && exit 0
+            sleep 3
+            git pull --rebase
+          done
+          exit 1
