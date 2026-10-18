@@ -1,10 +1,13 @@
 import SwiftUI
 import AppKit
+import ApplicationServices
 
 // App-wide settings shared by every feature (not tied to one panel).
 struct GeneralSettingsView: View {
     @ObservedObject var prefs: Preferences
     @State private var launchAtLogin = LoginItem.isEnabled
+    // Badges are read from the Dock via Accessibility.
+    @State private var axTrusted = AXIsProcessTrusted()
 
     var body: some View {
         Form {
@@ -45,6 +48,20 @@ struct GeneralSettingsView: View {
                         Text("Applies to search fields and controls in AppPad, Clipboard and Workflows.")
                     }
                 }
+                Toggle(isOn: $prefs.showAppBadges) {
+                    Text("Show app badges")
+                    Text("Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside.")
+                }
+                // No prompt here; only a hint with a shortcut to the pane.
+                if prefs.showAppBadges && !axTrusted {
+                    LabeledContent {
+                        Button("Open System Settings") { Self.openAccessibilitySettings() }
+                    } label: {
+                        Label("Badges are read from the Dock and need Accessibility permission.",
+                              systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
 
             Section("Keyboard") {
@@ -63,8 +80,20 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         // Login item may be toggled from the menu bar while Settings stays open.
+        // Accessibility may be granted in System Settings meanwhile.
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
             launchAtLogin = LoginItem.isEnabled
+            axTrusted = AXIsProcessTrusted()
+        }
+    }
+
+    private static func openAccessibilitySettings() {
+        let urls = [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+        ]
+        for string in urls {
+            if let url = URL(string: string), NSWorkspace.shared.open(url) { return }
         }
     }
 }

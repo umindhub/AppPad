@@ -121,6 +121,8 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         applyAppearance()
         viewController.reloadAll()
         rescan()
+        // First read now, so the first open already has badges.
+        AppBadgeMonitor.shared.refresh()
 
         let paths = AppScanner.roots.map(\.path).filter { FileManager.default.fileExists(atPath: $0) }
         watcher = AppDirectoryWatcher(paths: paths) { [weak self] in
@@ -545,6 +547,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         PinchGestureMonitor.shared.setTapEnabled(false)
         setContentScale(1, duration: nil)
         viewController.didHide()
+        AppBadgeMonitor.shared.setActive(false)
         InputSourceSwitcher.restore()   // no-op unless we switched on show
         isHiding = false
     }
@@ -569,6 +572,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         panel.invalidateShadow()
         spaceGuard?.panelDidShow()
         PinchGestureMonitor.shared.setTapEnabled(true)
+        AppBadgeMonitor.shared.setActive(true)
         return true
     }
 

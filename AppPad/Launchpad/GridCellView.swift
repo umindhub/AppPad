@@ -1,4 +1,6 @@
 import AppKit
+import ApplicationServices
+import Combine
 import QuartzCore
 import SwiftUI   // RoundedRectangle(.continuous) for the app-icon squircle
 
@@ -43,6 +45,11 @@ final class GridCellView: FlippedView {
     private let imageView = NSImageView()
     private let folderIcon = FolderIconView()
     private let badge = DeleteBadgeView()
+    // Red Dock badge at the top-right; folders show the total of their apps.
+    private let appBadge = AppBadgeView()
+    private var appBadgeKeys: [String] = []
+    private var appBadgeShown = false
+    private var appBadgeFadeToken = 0
     private let label = CrispTextField(labelWithString: "")
     private let uninstallPill = UninstallPillView()
 
@@ -68,6 +75,10 @@ final class GridCellView: FlippedView {
     static let gap: CGFloat = 6
     private static let badgeSize: CGFloat = 20
     private static let containerInset: CGFloat = 8
+    // App badge height as a share of the icon size, and the transparent margin around
+    // a standard macOS app icon (the visible squircle starts ~10% in).
+    private static let appBadgeRatio: CGFloat = 0.28
+    private static let iconShapeInset: CGFloat = 0.098
 
     // Top of the icon inside a cell of the given height.
     static func iconTop(cellHeight: CGFloat, iconSize: CGFloat) -> CGFloat {
@@ -87,17 +98,22 @@ final class GridCellView: FlippedView {
         folderIcon.isHidden = true
         badge.isHidden = true
         uninstallPill.isHidden = true
+        appBadge.isHidden = true
+        appBadge.alphaValue = 0
         badge.onTap = { [weak self] in
             guard let self else { return }
             self.grid?.cellDidRequestDelete(self)
         }
         iconContainer.addSubview(imageView)
         iconContainer.addSubview(folderIcon)
+        iconContainer.addSubview(appBadge)   // inside the container: wiggles and moves with the icon
         iconContainer.addSubview(badge)
         addSubview(iconContainer)
         addSubview(label)
         addSubview(uninstallPill)
         updateLabelShadow()
+        NotificationCenter.default.addObserver(self, selector: #selector(appBadgesDidChange),
+                                               name: .appBadgesDidChange, object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -205,6 +221,7 @@ final class GridCellView: FlippedView {
             label.stringValue = app.name
             appKey = app.key
             installingURL = app.isInstalling ? app.url : nil
+            appBadgeKeys = app.isInstalling ? [] : [app.key]
         case .folder(let folder, let apps):
             folderIcon.icons = apps.prefix(9).map { IconCache.shared.icon(for: $0) }
             imageView.isHidden = true
@@ -212,8 +229,56 @@ final class GridCellView: FlippedView {
             label.stringValue = folder.displayName
             appKey = nil
             installingURL = nil
+            appBadgeKeys = apps.filter { !$0.isInstalling }.map(\.key)
         }
         refreshUninstallState()
+        updateAppBadge(animated: false)
+    }
+
+    // MARK: - App badge
+
+    @objc private func appBadgesDidChange() {
+        updateAppBadge(animated: true)
+    }
+
+    private func updateAppBadge(animated: Bool) {
+        let content = AppBadgeMonitor.shared.content(for: appBadgeKeys)
+        if let content {
+            appBadge.content = content
+            layoutAppBadge()
+        }
+        let show = content != nil
+        guard show != appBadgeShown else { return }
+        appBadgeShown = show
+        appBadgeFadeToken += 1
+        let token = appBadgeFadeToken
+        if show { appBadge.isHidden = false }
+        guard animated, window != nil else {
+            appBadge.alphaValue = show ? 1 : 0
+            appBadge.isHidden = !show
+            return
+        }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            appBadge.animator().alphaValue = show ? 1 : 0
+        } completionHandler: { [weak self] in
+            guard let self, token == self.appBadgeFadeToken, !show else { return }
+            self.appBadge.isHidden = true
+        }
+    }
+
+    // Top-right corner of what is drawn (app squircle or folder plate), poking out a little;
+    // wider badges grow to the left.
+    private func layoutAppBadge() {
+        let height = max(14, (iconSize * Self.appBadgeRatio).rounded())
+        let shape = folderIcon.isHidden
+            ? imageView.frame.insetBy(dx: iconSize * Self.iconShapeInset, dy: iconSize * Self.iconShapeInset)
+            : folderIcon.frame
+        let size = appBadge.fittingSize(height: height)
+        let overhang = (height * 0.22).rounded()
+        appBadge.frame = NSRect(x: (shape.maxX + overhang - size.width).rounded(),
+                                y: shape.minY - overhang,
+                                width: size.width, height: size.height)
     }
 
     // Folder tile preview (e.g. without the app currently dragged out of it).
@@ -229,6 +294,7 @@ final class GridCellView: FlippedView {
         folderIcon.isHidden = false
         folderIcon.icons = icons
         folderIcon.hiddenIndex = hiddenIndex
+        layoutAppBadge()
     }
 
     // Mini slot rect (cell coordinates); nil index = a mini-sized rect at the tile center.
@@ -298,10 +364,13 @@ final class GridCellView: FlippedView {
         CATransaction.commit()
 
         label.alphaValue = 0
+        // The app badge fades in with the name instead of popping at full size.
+        if appBadgeShown { appBadge.alphaValue = 0 }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = duration
             context.timingFunction = timing
             label.animator().alphaValue = 1
+            if appBadgeShown { appBadge.animator().alphaValue = 1 }
         }
         Task { [weak plate] in
             try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 50))
@@ -371,6 +440,7 @@ final class GridCellView: FlippedView {
         imageView.frame = inner
         folderIcon.frame = inner.insetBy(dx: iconSize * Self.folderInset, dy: iconSize * Self.folderInset)
         badge.frame = NSRect(x: inset - 6, y: inset - 6, width: Self.badgeSize, height: Self.badgeSize)
+        layoutAppBadge()
         label.frame = NSRect(x: 4, y: icon.maxY + Self.gap, width: bounds.width - 8, height: Self.labelHeight)
         // Pill sits where the name is (the name fades out while it shows).
         let pillWidth = min(bounds.width - 8, (iconSize * 0.86).rounded())
@@ -727,6 +797,200 @@ final class UninstallProgress {
 
     private static func easeOut(_ x: Double) -> Double { 1 - (1 - x) * (1 - x) }
     private static func easeInOut(_ x: Double) -> Double { x * x * (3 - 2 * x) }
+}
+
+// MARK: - App badges
+
+nonisolated enum AppBadgeContent: Equatable, Sendable {
+    case text(String)   // count or short label
+    case dot            // non-numeric label, or a folder with only non-numeric badges
+}
+
+// Red capsule badge (like the Dock's), white text centered on the cap height.
+final class AppBadgeView: NSView {
+    var content: AppBadgeContent = .dot {
+        didSet { if oldValue != content { needsDisplay = true } }
+    }
+
+    override var isFlipped: Bool { true }
+
+    func fittingSize(height: CGFloat) -> NSSize {
+        switch content {
+        case .dot:
+            let side = (height * 0.62).rounded()
+            return NSSize(width: side, height: side)
+        case .text(let text):
+            let width = (text as NSString).size(withAttributes: Self.attributes(height: height)).width
+            return NSSize(width: max(height, (width + height * 0.55).rounded()), height: height)
+        }
+    }
+
+    private static func font(height: CGFloat) -> NSFont {
+        .systemFont(ofSize: (height * 0.6).rounded(), weight: .semibold)
+    }
+
+    private static func attributes(height: CGFloat) -> [NSAttributedString.Key: Any] {
+        [.font: font(height: height), .foregroundColor: NSColor.white]
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let rect = bounds
+        let radius = rect.height / 2
+        NSColor.systemRed.setFill()
+        NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+        guard case .text(let text) = content else { return }
+        let font = Self.font(height: rect.height)
+        let string = text as NSString
+        let width = string.size(withAttributes: Self.attributes(height: rect.height)).width
+        // Flipped: the line box starts at the ascender; put the cap center on the middle.
+        let y = rect.midY + font.capHeight / 2 - font.ascender
+        string.draw(at: NSPoint(x: rect.midX - width / 2, y: y),
+                    withAttributes: Self.attributes(height: rect.height))
+    }
+
+    // Never takes clicks (the cell decides).
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
+
+extension Notification.Name {
+    static let appBadgesDidChange = Notification.Name("AppPad.appBadgesDidChange")
+}
+
+// Dock badges of all apps, keyed by AppInfo key. Read from the Dock's accessibility tree:
+// every app showing a badge is in the Dock (running apps always are), so no private API.
+// Polls only while AppPad is visible; the last result stays cached between opens.
+// Needs Accessibility permission; without it there are simply no badges (no prompt).
+@MainActor
+final class AppBadgeMonitor {
+    static let shared = AppBadgeMonitor()
+
+    private(set) var labels: [String: String] = [:]   // AppInfo key → raw label
+    private var timer: Timer?
+    private var isFetching = false
+    private var prefsToken: AnyCancellable?
+    private static let pollInterval: TimeInterval = 1.5
+
+    private init() {
+        // @Published emits before the stored value changes: the new value is passed along.
+        prefsToken = Preferences.shared.$showAppBadges.dropFirst().removeDuplicates().sink { [weak self] on in
+            if on { self?.refresh(enabled: true) } else { self?.apply([:]) }
+        }
+    }
+
+    // AppPad shown / hidden.
+    func setActive(_ active: Bool) {
+        timer?.invalidate()
+        timer = nil
+        guard active else { return }
+        refresh()
+        let timer = Timer(timeInterval: Self.pollInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refresh() }
+        }
+        timer.tolerance = 0.3
+        RunLoop.main.add(timer, forMode: .common)   // keeps firing during drags
+        self.timer = timer
+    }
+
+    // Reads the Dock off the main thread; cells update via .appBadgesDidChange.
+    func refresh(enabled: Bool? = nil) {
+        guard enabled ?? Preferences.shared.showAppBadges, AXIsProcessTrusted(),
+              let dock = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first else {
+            apply([:])
+            return
+        }
+        guard !isFetching else { return }
+        isFetching = true
+        let pid = dock.processIdentifier
+        Task {
+            let result = await Task.detached(priority: .utility) { DockBadgeReader.read(dockPID: pid) }.value
+            isFetching = false
+            guard Preferences.shared.showAppBadges else {   // turned off meanwhile
+                apply([:])
+                return
+            }
+            if let result { apply(result) }   // read failed: keep the last labels
+        }
+    }
+
+    private func apply(_ new: [String: String]) {
+        guard new != labels else { return }
+        labels = new
+        NotificationCenter.default.post(name: .appBadgesDidChange, object: nil)
+    }
+
+    // One key: the app's own badge. Several (folder): sum of the counts, a dot when only
+    // non-numeric badges are inside. nil = no badge.
+    func content(for keys: [String]) -> AppBadgeContent? {
+        guard !labels.isEmpty, !keys.isEmpty else { return nil }
+        var total = 0
+        var hasOther = false
+        for key in keys {
+            guard let raw = labels[key]?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else { continue }
+            if let count = Self.count(raw) {
+                total += count
+            } else if keys.count == 1 {
+                return raw.count <= 3 ? .text(raw) : .dot
+            } else {
+                hasOther = true
+            }
+        }
+        if total > 0 { return .text(total > 99 ? "99+" : String(total)) }
+        return hasOther ? .dot : nil
+    }
+
+    // "12", "1,234", "1 234" → number; anything else is a text label.
+    private static func count(_ raw: String) -> Int? {
+        let digits = raw.filter { !$0.isWhitespace && $0 != "," && $0 != "." && $0 != "'" }
+        guard !digits.isEmpty, digits.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+        return Int(digits)
+    }
+}
+
+// Dock → AXList → AXDockItem (subrole AXApplicationDockItem): AXStatusLabel is the badge,
+// AXURL the app bundle.
+nonisolated enum DockBadgeReader {
+    private static let timeout: Float = 0.5   // a busy Dock must not stall the read
+
+    // AppInfo key → label; nil when the Dock could not be read.
+    static func read(dockPID: pid_t) -> [String: String]? {
+        let dock = AXUIElementCreateApplication(dockPID)
+        AXUIElementSetMessagingTimeout(dock, timeout)
+        guard let lists = elements(dock, kAXChildrenAttribute) else { return nil }
+        var result: [String: String] = [:]
+        for list in lists where string(list, kAXRoleAttribute) == kAXListRole {
+            AXUIElementSetMessagingTimeout(list, timeout)
+            for item in elements(list, kAXChildrenAttribute) ?? [] {
+                guard string(item, kAXSubroleAttribute) == "AXApplicationDockItem",
+                      let label = string(item, "AXStatusLabel"), !label.isEmpty,
+                      let url = url(item) else { continue }
+                result[key(for: url)] = label
+            }
+        }
+        return result
+    }
+
+    private static func value(_ element: AXUIElement, _ attribute: String) -> CFTypeRef? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &value) == .success else { return nil }
+        return value
+    }
+
+    private static func string(_ element: AXUIElement, _ attribute: String) -> String? {
+        value(element, attribute) as? String
+    }
+
+    private static func elements(_ element: AXUIElement, _ attribute: String) -> [AXUIElement]? {
+        value(element, attribute) as? [AXUIElement]
+    }
+
+    private static func url(_ element: AXUIElement) -> URL? {
+        (value(element, kAXURLAttribute) as? NSURL).map { $0 as URL }
+    }
+
+    // Same identity as AppInfo.key: bundle id, else the path.
+    private static func key(for url: URL) -> String {
+        Bundle(url: url)?.bundleIdentifier ?? url.path
+    }
 }
 
 // Thin rounded progress bar under an app icon while it is being uninstalled.

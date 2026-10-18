@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
+## v1.1.9
+
+### Added
+- Launchpad: app icons now show the same red badges as the Dock (unread counts, updates). Folders show the total of the apps inside, or a red dot when the apps inside only have text badges.
+- Settings › General: new "Show app badges" switch, on by default. Badges are read from the Dock and need Accessibility permission; without it, the switch shows a hint with a button to open System Settings.
+
 ## v1.1.8
 
 ### Changed

@@ -178,6 +178,180 @@
         }
       }
     },
+    "Badges are read from the Dock and need Accessibility permission." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennzeichen werden aus dem Dock gelesen und benötigen die Berechtigung „Bedienungshilfen“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los globos se leen del Dock y necesitan el permiso de Accesibilidad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pastilles sont lues depuis le Dock et nécessitent l’autorisation Accessibilité."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I badge vengono letti dal Dock e richiedono il permesso Accessibilità."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バッジは Dock から読み取るため、「アクセシビリティ」の許可が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배지는 Dock에서 읽어오므로 손쉬운 사용 권한이 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges worden uit het Dock gelezen en hebben toegang voor toegankelijkheid nodig."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角标从 Dock 读取，需要“辅助功能”权限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角標從 Dock 讀取，需要「輔助使用」權限。"
+          }
+        }
+      }
+    },
+    "Show app badges" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Kennzeichen anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar globos de las apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les pastilles des apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra badge delle app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App のバッジを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 배지 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon app-badges"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 App 角标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示 App 角標"
+          }
+        }
+      }
+    },
+    "Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt die roten Kennzeichen aus dem Dock (ungelesene Objekte, Updates) auf den Symbolen in AppPad. Ordner zeigen die Summe der enthaltenen Apps."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra en los iconos de AppPad los globos rojos del Dock (no leídos, actualizaciones). Las carpetas muestran el total de las apps que contienen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche sur les icônes d’AppPad les pastilles rouges du Dock (non lus, mises à jour). Les dossiers affichent le total des apps qu’ils contiennent."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra sulle icone di AppPad i badge rossi del Dock (non letti, aggiornamenti). Le cartelle mostrano il totale delle app contenute."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock と同じ赤いバッジ（未読数、アップデートなど）を AppPad のアイコンに表示します。フォルダには中の App の合計が表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock과 같은 빨간 배지(읽지 않음, 업데이트 등)를 AppPad 아이콘에 표시합니다. 폴더에는 포함된 앱의 합계가 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont de rode badges uit het Dock (ongelezen, updates) op de symbolen in AppPad. Mappen tonen het totaal van de apps erin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 AppPad 的图标上显示与 Dock 相同的红色角标（未读数、更新等），文件夹显示其中 App 的角标总数。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 AppPad 的圖像上顯示與 Dock 相同的紅色角標（未讀數、更新等），檔案夾顯示其中 App 的角標總數。"
+          }
+        }
+      }
+    },
     "“%@” failed" : {
       "localizations" : {
         "de" : {
