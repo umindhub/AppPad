@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.2.6
+
+### Fixed
+- Launchpad: Cambiar el número de filas o columnas de la cuadrícula ya no reorganiza todas las páginas. Al ampliar la cuadrícula, solo las páginas que estaban llenas toman iconos del principio de la página siguiente y las que no lo estaban se quedan como están; al reducirla, los iconos que ya no caben pasan al principio de la página siguiente.
+
 ## v1.2.5
 
 ### Changed

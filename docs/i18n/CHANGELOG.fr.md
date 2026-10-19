@@ -18,6 +18,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.6
+
+### Fixed
+- Launchpad : Modifier le nombre de lignes ou de colonnes de la grille ne réorganise plus toutes les pages. Quand la grille s’agrandit, seules les pages qui étaient pleines prennent des icônes au début de la page suivante, les autres restent inchangées ; quand elle se réduit, les icônes qui ne tiennent plus passent au début de la page suivante.
+
 ## v1.2.5
 
 ### Changed

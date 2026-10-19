@@ -43,14 +43,15 @@ final class LayoutStore {
             }
         }
 
+        // Refit before appending new apps so they don't count toward "was full".
+        if layout.capacity != capacity {
+            pages = Self.refit(pages, from: layout.capacity, to: capacity)
+        }
+
         let newApps = apps.filter { !placed.contains($0.key) }.sorted(by: DefaultLayout.byName)
         if !newApps.isEmpty {
             if pages.isEmpty { pages = [[]] }
             pages[pages.count - 1] += newApps.map { .app($0.key) }
-        }
-
-        if layout.capacity != capacity {
-            pages = DefaultLayout.chunk(pages.flatMap { $0 }, capacity: capacity)
         }
         let updated = Layout(capacity: capacity, pages: Self.splitOverflow(pages, capacity: capacity))
         if updated != layout {
@@ -59,9 +60,9 @@ final class LayoutStore {
         }
     }
 
-    // Grid size changed: refill pages in order.
+    // Grid size changed: keep the arrangement, only move what the new size forces.
     func reflow(capacity: Int) {
-        layout.pages = DefaultLayout.chunk(layout.pages.flatMap { $0 }, capacity: capacity)
+        layout.pages = Self.refit(layout.pages, from: layout.capacity, to: capacity)
         layout.capacity = capacity
         save()
     }
@@ -223,6 +224,25 @@ final class LayoutStore {
         case 1: return .app(folder.apps[0])
         default: return .folder(folder)
         }
+    }
+
+    // Grow: only pages that were full pull items from the head of the following pages.
+    // Shrink: a page's overflow moves to the head of the next page (cascading).
+    private static func refit(_ pages: [[LayoutItem]], from oldCapacity: Int?, to newCapacity: Int) -> [[LayoutItem]] {
+        let cap = max(1, newCapacity)
+        guard let oldCapacity, cap > oldCapacity else { return splitOverflow(pages, capacity: cap) }
+        var pages = pages
+        let wasFull = pages.map { $0.count >= oldCapacity }
+        for i in pages.indices where wasFull[i] {
+            var j = i + 1
+            while pages[i].count < cap, j < pages.count {
+                let take = min(cap - pages[i].count, pages[j].count)
+                pages[i] += pages[j].prefix(take)
+                pages[j].removeFirst(take)
+                j += 1   // only reached once page j is empty
+            }
+        }
+        return splitOverflow(pages, capacity: cap)
     }
 
     // Carry overflow to the next page; drop empty pages.

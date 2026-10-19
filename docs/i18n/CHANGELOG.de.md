@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.6
+
+### Fixed
+- Launchpad: Das Ändern der Zeilen- oder Spaltenanzahl ordnet nicht mehr alle Seiten neu an. Wird das Raster größer, holen sich nur zuvor volle Seiten Symbole vom Anfang der nächsten Seite, nicht volle Seiten bleiben unverändert; wird es kleiner, rücken Symbole, die nicht mehr passen, an den Anfang der nächsten Seite.
+
 ## v1.2.5
 
 ### Changed

@@ -18,6 +18,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.6
+
+### Fixed
+- Launchpad: Modificare il numero di righe o colonne della griglia non riordina più tutte le pagine. Quando la griglia si ingrandisce, solo le pagine che erano piene prendono icone dall’inizio della pagina successiva e quelle non piene restano invariate; quando si riduce, le icone che non entrano più passano all’inizio della pagina successiva.
+
 ## v1.2.5
 
 ### Changed

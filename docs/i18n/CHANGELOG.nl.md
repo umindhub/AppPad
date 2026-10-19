@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.6
+
+### Fixed
+- Launchpad: Het aantal rijen of kolommen van het raster wijzigen herschikt niet langer alle pagina’s. Wordt het raster groter, dan halen alleen pagina’s die vol waren symbolen van het begin van de volgende pagina, en pagina’s die niet vol waren blijven ongewijzigd; wordt het kleiner, dan schuiven symbolen die niet meer passen naar het begin van de volgende pagina.
+
 ## v1.2.5
 
 ### Changed

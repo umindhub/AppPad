@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.6
+
+### Fixed
+- Launchpad: Changing the number of grid rows or columns no longer rearranges all pages. When the grid gets larger, only pages that were full take icons from the start of the next page, and pages that weren't full stay as they are; when it gets smaller, icons that no longer fit move to the start of the next page.
+
 ## v1.2.5
 
 ### Changed
