@@ -18,6 +18,12 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.2
+
+### Changed
+- Panneau des workflows : « Dernière exécution » dans l’aperçu affiche désormais une icône d’état dans le même style que la vérification de l’argument, en un ton plus clair : ✓ vert en cas de réussite, ✕ rouge en cas d’échec, – gris en cas d’annulation, avec une couleur de texte assortie, pour voir le dernier résultat d’un coup d’œil.
+- Panneau des workflows : Une exécution annulée n’est plus affichée en rouge comme un échec.
+
 ## v1.2.1
 
 ### Changed

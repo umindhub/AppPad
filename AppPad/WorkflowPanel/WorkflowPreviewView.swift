@@ -145,14 +145,18 @@ final class WorkflowPreviewView: FlippedView {
         } else if let result = lastResult {
             let when = Self.relativeFormatter.localizedString(for: result.finishedAt, relativeTo: Date())
             let status: String
+            let state: ResultState
             if result.cancelled {
                 status = String(localized: "Cancelled")
+                state = .cancelled
             } else if result.success {
                 status = String(localized: "Succeeded")
+                state = .valid
             } else {
                 status = String(localized: "Failed")
+                state = .invalid
             }
-            line(status + " · " + when, in: text, color: result.success ? .secondaryLabelColor : .systemRed)
+            lastRun(status + " · " + when, in: text, state: state)
             var output = result.success ? result.finalOutput : result.failureSummary
             if output.count > Self.outputLimit { output = String(output.prefix(Self.outputLimit)) + "\n…" }
             if !output.isEmpty { line(output, in: text, monospaced: true) }
@@ -262,63 +266,93 @@ final class WorkflowPreviewView: FlippedView {
     }
 
     private enum ResultState {
-        case neutral, valid, invalid
+        case neutral, valid, invalid, cancelled
     }
 
     private static let resultFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
     private static let resultIconSize: CGFloat = 15
     private static let resultIconGap: CGFloat = 6
 
+    // Last Run line: same badges as the argument result, one shade lighter; body text size (13).
+    private static let lastRunFont = NSFont.systemFont(ofSize: 13)
+    private static let lastRunIconSize: CGFloat = 14
+    private static let lastRunAlpha: CGFloat = 0.7
+
     // Same size as the usage line (14); icon at the left edge (pill edge), text after it.
     // Valid: green ✓ + normal text; invalid: red ✕ + red text; neutral: blank slot, so text never shifts.
     private func result(_ string: String, in text: NSMutableAttributedString, state: ResultState) {
-        let line = NSMutableAttributedString(attachment: Self.resultIcon(state, centeredOn: string))
-        line.append(NSAttributedString(string: "\u{00A0}", attributes: [
-            .font: Self.resultFont, .kern: Self.resultIconGap,
-        ]))
-        let color: NSColor
+        let textColor: NSColor
         switch state {
-        case .neutral: color = .secondaryLabelColor
-        case .valid: color = .labelColor
-        case .invalid: color = .systemRed
+        case .neutral, .cancelled: textColor = .secondaryLabelColor
+        case .valid: textColor = .labelColor
+        case .invalid: textColor = .systemRed
         }
-        line.append(NSAttributedString(string: string + "\n", attributes: [
-            .font: Self.resultFont, .foregroundColor: color,
+        badgeLine(string, in: text, state: state, iconAlpha: 1, textColor: textColor,
+                  font: Self.resultFont, iconSize: Self.resultIconSize, style: Self.resultStyle)
+    }
+
+    // Succeeded: lighter green ✓ + secondary text; failed: lighter red ✕ + lighter red text;
+    // cancelled: lighter gray – + tertiary text.
+    private func lastRun(_ string: String, in text: NSMutableAttributedString, state: ResultState) {
+        let textColor: NSColor
+        switch state {
+        case .neutral: textColor = .secondaryLabelColor
+        case .valid: textColor = .secondaryLabelColor
+        case .invalid: textColor = NSColor.systemRed.withAlphaComponent(Self.lastRunAlpha)
+        case .cancelled: textColor = .tertiaryLabelColor
+        }
+        badgeLine(string, in: text, state: state, iconAlpha: Self.lastRunAlpha, textColor: textColor,
+                  font: Self.lastRunFont, iconSize: Self.lastRunIconSize, style: Self.lastRunStyle)
+    }
+
+    private func badgeLine(_ string: String, in text: NSMutableAttributedString, state: ResultState,
+                           iconAlpha: CGFloat, textColor: NSColor, font: NSFont, iconSize: CGFloat,
+                           style: NSParagraphStyle) {
+        let icon = Self.resultIcon(state, alpha: iconAlpha, size: iconSize, font: font, centeredOn: string)
+        let line = NSMutableAttributedString(attachment: icon)
+        line.append(NSAttributedString(string: "\u{00A0}", attributes: [
+            .font: font, .kern: Self.resultIconGap,
         ]))
-        line.addAttribute(.paragraphStyle, value: Self.resultStyle, range: NSRange(location: 0, length: line.length))
+        line.append(NSAttributedString(string: string + "\n", attributes: [
+            .font: font, .foregroundColor: textColor,
+        ]))
+        line.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: line.length))
         text.append(line)
     }
 
-    // White mark on a green / red circle, or a clear image of the same size for the neutral state.
-    private static func resultIcon(_ state: ResultState, centeredOn string: String) -> NSTextAttachment {
-        let size = NSSize(width: resultIconSize, height: resultIconSize)
+    // White mark on a green / red / gray circle, or a clear image of the same size for the neutral state.
+    private static func resultIcon(_ state: ResultState, alpha: CGFloat, size side: CGFloat, font: NSFont,
+                                   centeredOn string: String) -> NSTextAttachment {
+        let size = NSSize(width: side, height: side)
         let attachment = NSTextAttachment()
         switch state {
         case .neutral: attachment.image = NSImage(size: size, flipped: false) { _ in true }
-        case .valid: attachment.image = badge(mark: "checkmark", color: .systemGreen, size: size)
-        case .invalid: attachment.image = badge(mark: "xmark", color: .systemRed, size: size)
+        case .valid: attachment.image = badge(mark: "checkmark", color: .systemGreen, alpha: alpha, size: size)
+        case .invalid: attachment.image = badge(mark: "xmark", color: .systemRed, alpha: alpha, size: size)
+        case .cancelled: attachment.image = badge(mark: "minus", color: .systemGray, alpha: alpha, size: size)
         }
         // Vertically centered on the text's visual middle; half-point steps (Retina) instead of whole points.
-        let y = textMiddle(string) - size.height / 2
+        let y = textMiddle(string, font: font) - size.height / 2
         attachment.bounds = NSRect(x: 0, y: (y * 2).rounded() / 2, width: size.width, height: size.height)
         return attachment
     }
 
     // Middle of the glyph body above the baseline. Latin: half the cap height. CJK / kana / Hangul
     // (fallback font, taller body than capHeight): ink bounds of a full-width reference glyph.
-    private static func textMiddle(_ string: String) -> CGFloat {
+    private static func textMiddle(_ string: String, font: NSFont) -> CGFloat {
         let wide = string.unicodeScalars.contains { $0.value >= 0x2E80 && $0.value <= 0xD7FF }
-        guard wide else { return resultFont.capHeight / 2 }
+        guard wide else { return font.capHeight / 2 }
         let ink = ("中" as NSString).boundingRect(with: .zero, options: [.usesDeviceMetrics],
-                                                  attributes: [.font: resultFont])
-        return ink.height > 0 ? ink.midY : resultFont.capHeight / 2
+                                                  attributes: [.font: font])
+        return ink.height > 0 ? ink.midY : font.capHeight / 2
     }
 
     // Like checkmark.circle.fill / xmark.circle.fill, but drawn by hand: a symbol image is a template
     // and comes out as one solid color. Drawn lazily, so the dynamic color follows the appearance.
-    private static func badge(mark: String, color: NSColor, size: NSSize) -> NSImage {
+    // alpha < 1 lightens only the circle; the mark stays solid white.
+    private static func badge(mark: String, color: NSColor, alpha: CGFloat = 1, size: NSSize) -> NSImage {
         NSImage(size: size, flipped: false) { rect in
-            color.setFill()
+            color.withAlphaComponent(alpha).setFill()
             NSBezierPath(ovalIn: rect).fill()
             let config = NSImage.SymbolConfiguration(pointSize: rect.height * 0.5, weight: .heavy)
             guard let symbol = NSImage(systemSymbolName: mark, accessibilityDescription: nil)?
@@ -367,6 +401,14 @@ final class WorkflowPreviewView: FlippedView {
         p.paragraphSpacingBefore = 10
         let space = ("\u{00A0}" as NSString).size(withAttributes: [.font: resultFont]).width
         p.headIndent = resultIconSize + space + resultIconGap
+        return p
+    }()
+
+    // Last Run line sits right under its section title: no extra spacing, wrapped text under the text.
+    private static let lastRunStyle: NSParagraphStyle = {
+        let p = NSMutableParagraphStyle()
+        let space = ("\u{00A0}" as NSString).size(withAttributes: [.font: lastRunFont]).width
+        p.headIndent = lastRunIconSize + space + resultIconGap
         return p
     }()
 

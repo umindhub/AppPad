@@ -18,6 +18,12 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.2
+
+### Changed
+- Workflow-Panel: „Letzte Ausführung“ in der Vorschau zeigt jetzt ein Statussymbol im Stil der Argumentprüfung, nur eine Stufe heller: grünes ✓ für erfolgreich, rotes ✕ für fehlgeschlagen, graues – für abgebrochen, mit passender Textfarbe – so erkennst du das letzte Ergebnis auf einen Blick.
+- Workflow-Panel: Eine abgebrochene Ausführung wird nicht mehr wie ein Fehler rot angezeigt.
+
 ## v1.2.1
 
 ### Changed

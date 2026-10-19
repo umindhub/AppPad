@@ -18,6 +18,12 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.2
+
+### Changed
+- Pannello dei workflow: «Ultima esecuzione» nell’anteprima ora mostra un’icona di stato nello stesso stile del controllo dell’argomento, di una tonalità più chiara: ✓ verde se riuscita, ✕ rossa se non riuscita, – grigio se annullata, con il colore del testo abbinato, così l’ultimo risultato si capisce a colpo d’occhio.
+- Pannello dei workflow: Un’esecuzione annullata non viene più mostrata in rosso come un errore.
+
 ## v1.2.1
 
 ### Changed

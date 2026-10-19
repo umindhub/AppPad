@@ -18,6 +18,12 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.2
+
+### Changed
+- Workflow-paneel: 'Laatste uitvoering' in het voorbeeld toont nu een statuspictogram in dezelfde stijl als de argumentcontrole, een tint lichter: groen ✓ bij geslaagd, rood ✕ bij mislukt, grijs – bij geannuleerd, met bijpassende tekstkleur, zodat je het laatste resultaat in één oogopslag ziet.
+- Workflow-paneel: Een geannuleerde uitvoering wordt niet meer rood weergegeven alsof die mislukt is.
+
 ## v1.2.1
 
 ### Changed

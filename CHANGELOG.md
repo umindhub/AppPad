@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.2
+
+### Changed
+- Workflow panel: "Last Run" in the preview now shows a status icon in the same style as the argument check, one shade lighter: green ✓ for succeeded, red ✕ for failed, gray – for cancelled, with matching text color, so the last result is clear at a glance.
+- Workflow panel: A cancelled run is no longer shown in red like a failure.
+
 ## v1.2.1
 
 ### Changed

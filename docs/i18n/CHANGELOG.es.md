@@ -18,6 +18,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.2.2
+
+### Changed
+- Panel de flujos de trabajo: «Última ejecución» en la vista previa ahora muestra un icono de estado con el mismo estilo que la comprobación del argumento, un tono más claro: ✓ verde si se completó, ✕ rojo si falló y – gris si se canceló, con el color de texto a juego, para ver el último resultado de un vistazo.
+- Panel de flujos de trabajo: Una ejecución cancelada ya no se muestra en rojo como un error.
+
 ## v1.2.1
 
 ### Changed
