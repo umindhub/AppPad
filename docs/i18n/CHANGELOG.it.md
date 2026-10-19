@@ -18,6 +18,15 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.5
+
+### Changed
+- Launchpad: le app ancora in download dall’App Store mostrano ora la loro icona con opacità al 70%, così sono più facili da riconoscere.
+
+### Fixed
+- Launchpad: al termine di un download dall’App Store compariva per un attimo un riquadro vuoto tratteggiato prima dell’icona dell’app. Ora l’icona cambia direttamente.
+- Launchpad: le app appena installate con Homebrew o trascinate in Applicazioni non mostrano più prima l’icona generica.
+
 ## v1.2.4
 
 ### Added

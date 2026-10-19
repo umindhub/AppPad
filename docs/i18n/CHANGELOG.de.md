@@ -18,6 +18,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.5
+
+### Changed
+- Launchpad: Apps, die noch aus dem App Store geladen werden, zeigen ihr Symbol jetzt mit 70 % Deckkraft und sind dadurch besser zu erkennen.
+
+### Fixed
+- Launchpad: Nach Abschluss eines App-Store-Downloads erschien kurz eine leere, gestrichelte Kachel vor dem App-Symbol. Das Symbol wechselt jetzt direkt.
+- Launchpad: Frisch per Homebrew installierte oder in „Programme“ gezogene Apps zeigen nicht mehr zuerst das allgemeine App-Symbol.
+
 ## v1.2.4
 
 ### Added

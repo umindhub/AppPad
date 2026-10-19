@@ -1152,7 +1152,7 @@ final class InstallProgressMonitor {
         let progress = tracks[Self.pathKey(url)].map { max(0.03, $0.shown) }
             ?? Self.firstPhaseShare * (1 - exp(-(now - seen) / 45))
         return UninstallProgress.Frame(progress: progress, failed: false, pillAlpha: 1,
-                                       labelAlpha: 0, vanish: 0, iconAlpha: 0.45)
+                                       labelAlpha: 0, vanish: 0, iconAlpha: 0.7)
     }
 
     // raw: fraction of the published progress (nil = indeterminate, keeps what is shown).

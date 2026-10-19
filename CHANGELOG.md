@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.5
+
+### Changed
+- Launchpad: Apps still downloading from the App Store now show their icon at 70% opacity, so they are easier to recognize.
+
+### Fixed
+- Launchpad: When an App Store download finished, a blank dashed tile briefly appeared before the app's icon. The icon now switches over directly.
+- Launchpad: Apps just installed with Homebrew or dragged into Applications no longer show the generic app icon first.
+
 ## v1.2.4
 
 ### Added

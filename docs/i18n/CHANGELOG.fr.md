@@ -18,6 +18,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.5
+
+### Changed
+- Launchpad : les apps en cours de téléchargement depuis l’App Store affichent désormais leur icône à 70 % d’opacité, pour être plus faciles à reconnaître.
+
+### Fixed
+- Launchpad : à la fin d’un téléchargement depuis l’App Store, une case vide en pointillés apparaissait brièvement avant l’icône de l’app. L’icône s’affiche désormais directement.
+- Launchpad : les apps tout juste installées avec Homebrew ou glissées dans Applications n’affichent plus d’abord l’icône d’app générique.
+
 ## v1.2.4
 
 ### Added

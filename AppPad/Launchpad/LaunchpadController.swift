@@ -170,6 +170,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         searchIndex = index
         stats.seedIfNeeded(newApps)
         IconCache.shared.invalidate()
+        if !fresh.isEmpty { IconCache.shared.beginInstallGrace(paths: fresh.map(\.path)) }
         layoutStore.reconcile(apps: newApps, capacity: capacity)
         InstallProgressMonitor.shared.sync(installing: newApps.filter(\.isInstalling).map(\.url))
         viewController.reloadAll()
@@ -201,9 +202,12 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             await Task.detached(priority: .utility) {
                 for url in urls { _ = LSRegisterURL(url as CFURL, true) }
             }.value
-            for delay in [1.5, 5.0] {
+            let delays = [1.5, 5.0]
+            for (step, delay) in delays.enumerated() {
                 try? await Task.sleep(for: .seconds(delay))
                 guard !Task.isCancelled, let self else { return }
+                // Last pass: LaunchServices has registered them, use the real workspace icons.
+                if step == delays.count - 1 { IconCache.shared.endInstallGrace(paths: urls.map(\.path)) }
                 guard self.uninstallsInFlight == 0 else { continue }
                 IconCache.shared.invalidate(paths: urls.map(\.path))
                 self.viewController.reloadAll()

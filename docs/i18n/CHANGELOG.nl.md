@@ -18,6 +18,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.5
+
+### Changed
+- Launchpad: Apps die nog uit de App Store worden gedownload, tonen hun symbool nu met 70% dekking, zodat ze beter herkenbaar zijn.
+
+### Fixed
+- Launchpad: Na afloop van een App Store-download verscheen kort een leeg, gestippeld vak vóór het app-symbool. Het symbool wisselt nu direct.
+- Launchpad: Apps die net met Homebrew zijn geïnstalleerd of naar Apps zijn gesleept, tonen niet meer eerst het algemene app-symbool.
+
 ## v1.2.4
 
 ### Added
