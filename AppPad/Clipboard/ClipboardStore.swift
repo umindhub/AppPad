@@ -254,11 +254,12 @@ nonisolated final class ClipboardStore: @unchecked Sendable {
                 arguments.append(like)
             }
         }
+        // Both scopes: most recently used first (paste / copy bumps lastUsedAt).
         // While searching / filtering history, saved-library items rank first.
         let searching = !query.terms.isEmpty || query.bundleID != nil
         let order: String
         switch query.scope {
-        case .saved: order = "savedAt DESC"
+        case .saved: order = "lastUsedAt DESC, savedAt DESC"
         case .history: order = searching ? "saved DESC, lastUsedAt DESC" : "lastUsedAt DESC"
         }
         let sql = "SELECT \(ClipSummary.columns) FROM clip WHERE \(conditions.joined(separator: " AND ")) "
