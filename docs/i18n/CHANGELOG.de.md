@@ -18,6 +18,17 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.7
+
+### Added
+
+#### Menüleiste
+- „Nach Updates suchen …“ hat jetzt den Kurzbefehl ⌘U.
+
+### Fixed
+- Menüleiste: Globale Kurzbefehle (Workflows, Zwischenablage, App- und Fensterkurzbefehle) schließen bei geöffnetem Menü dieses jetzt sofort und werden direkt ausgeführt, statt erst nach dem Schließen des Menüs.
+- Menüleiste: Das Öffnen der Einstellungen mit ⌘, aus dem Menü, während Workflows oder die Zwischenablage geöffnet sind, macht den Panel-Hintergrund nicht mehr kurz transparent.
+
 ## v1.2.6
 
 ### Fixed

@@ -18,6 +18,17 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.7
+
+### Added
+
+#### Barre des menus
+- « Rechercher des mises à jour… » dispose désormais du raccourci ⌘U.
+
+### Fixed
+- Barre des menus : Les raccourcis globaux (Workflows, Presse-papiers, raccourcis d’apps et de fenêtres) pressés menu ouvert ferment désormais le menu et s’exécutent aussitôt, au lieu d’attendre sa fermeture.
+- Barre des menus : Ouvrir les Réglages avec ⌘, depuis le menu alors que Workflows ou le Presse-papiers est ouvert ne rend plus brièvement transparent le fond du panneau.
+
 ## v1.2.6
 
 ### Fixed

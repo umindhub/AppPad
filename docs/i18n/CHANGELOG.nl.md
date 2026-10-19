@@ -18,6 +18,17 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.7
+
+### Added
+
+#### Menubalk
+- 'Zoek naar updates…' heeft nu de toetscombinatie ⌘U.
+
+### Fixed
+- Menubalk: Globale toetscombinaties (Workflows, Klembord, app- en venstercombinaties) die je indrukt terwijl het menu open is, sluiten het menu nu direct en worden meteen uitgevoerd, in plaats van te wachten tot het menu dicht is.
+- Menubalk: Instellingen openen met ⌘, vanuit het menu terwijl Workflows of Klembord open is, maakt de achtergrond van het paneel niet langer even transparant.
+
 ## v1.2.6
 
 ### Fixed

@@ -5,6 +5,10 @@ import Carbon.HIToolbox
 // Shortcuts and the login state are drawn in the title with one shared right-aligned
 // tab stop, so their right edges line up exactly (AppKit's own key column does not).
 // Real key equivalents live on hidden twin items, so ⌘Q / ⌘, still work while the menu is open.
+// Global hotkeys (Carbon) are swallowed during menu tracking and only dispatched after it ends,
+// so while the menu is open a timer peeks for a pending hotkey and closes the menu right away.
+// Actions fired by key equivalents during tracking are deferred until the menu has closed and the
+// run loop is back in default mode (GCD main-queue blocks still run inside tracking).
 final class StatusBarController: NSObject, NSMenuDelegate {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
@@ -28,6 +32,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     // Title + right-hand text for each visible row.
     private var rows: [(item: NSMenuItem, title: String, trailing: String)] = []
     private weak var highlighted: NSMenuItem?
+    private var hotKeyWatch: Timer?
+    private var isMenuOpen = false
+    private var pendingAction: (() -> Void)?
 
     init(onOpen: @escaping () -> Void, onClipboard: @escaping () -> Void, onSettings: @escaping () -> Void,
          onWorkflows: @escaping () -> Void, onCheckForUpdates: @escaping () -> Void) {
@@ -71,11 +78,16 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let quitKey = NSMenuItem(title: "", action: #selector(quit), keyEquivalent: "q")
         quitKey.keyEquivalentModifierMask = .command
         quitKey.target = self
-        for twin in [workflowsKeyItem, clipboardKeyItem, settingsKey, quitKey] {
+        let updatesKey = NSMenuItem(title: "", action: #selector(checkForUpdates), keyEquivalent: "u")
+        updatesKey.keyEquivalentModifierMask = .command
+        updatesKey.target = self
+        for twin in [workflowsKeyItem, clipboardKeyItem, settingsKey, quitKey, updatesKey] {
             twin.isHidden = true
             twin.allowsKeyEquivalentWhenHidden = true
             menu.addItem(twin)
         }
+        // Dev builds never update: no ⌘U either.
+        updatesKey.allowsKeyEquivalentWhenHidden = UpdateController.shared.isSupported
 
         // No system-provided symbols (macOS 27 keeps one on Settings by default).
         if #available(macOS 27.0, *) {
@@ -136,7 +148,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             (workflowsItem, workflowsTitle, prefs.workflowPanelHotKey?.displayString ?? ""),
             (settingsItem, String(localized: "Settings"), "⌘,"),
             (loginItem, String(localized: "Launch at Login"), LoginItem.isEnabled ? "✓" : "✕"),
-            (updatesItem, String(localized: "Check for Updates…"), ""),
+            (updatesItem, String(localized: "Check for Updates…"), "⌘U"),
             (quitItem, String(localized: "Quit AppPad"), "⌘Q"),
         ]
         renderTitles()
@@ -191,20 +203,72 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     func menuDidClose(_ menu: NSMenu) {
+        stopHotKeyWatch()
+        isMenuOpen = false
         highlighted = nil
         renderTitles()
+        // Default mode only: runs once tracking has fully unwound.
+        if pendingAction != nil {
+            perform(#selector(runPendingAction), with: nil, afterDelay: 0, inModes: [.default])
+        }
     }
 
     func menuWillOpen(_ menu: NSMenu) {
+        isMenuOpen = true
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(runPendingAction), object: nil)
+        pendingAction = nil
         refresh()
+        startHotKeyWatch()
     }
 
-    @objc private func openLaunchpad() { onOpen() }
-    @objc private func openClipboard() { onClipboard() }
-    @objc private func openSettings() { onSettings() }
-    @objc private func openWorkflows() { onWorkflows() }
+    @objc private func runPendingAction() {
+        let action = pendingAction
+        pendingAction = nil
+        action?()
+    }
+
+    // Key equivalent while tracking → wait for menuDidClose; click (menu already closed) → run now.
+    private func perform(_ action: @escaping () -> Void) {
+        if isMenuOpen {
+            pendingAction = action
+        } else {
+            action()
+        }
+    }
+
+    // MARK: - Global hotkeys while the menu is open
+
+    // .common includes the event-tracking mode the menu runs in.
+    private func startHotKeyWatch() {
+        hotKeyWatch?.invalidate()
+        let timer = Timer(timeInterval: 0.03, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.closeIfHotKeyPending() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        hotKeyWatch = timer
+    }
+
+    private func stopHotKeyWatch() {
+        hotKeyWatch?.invalidate()
+        hotKeyWatch = nil
+    }
+
+    // Peek only (no pull): once tracking ends the queued hotkey is dispatched as usual,
+    // so every global hotkey (panels, windows, apps) runs its normal handler.
+    private func closeIfHotKeyPending() {
+        var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+        var event: EventRef?
+        guard ReceiveNextEvent(1, &spec, kEventDurationNoWait, false, &event) == OSStatus(noErr) else { return }
+        stopHotKeyWatch()
+        menu.cancelTracking()
+    }
+
+    @objc private func openLaunchpad() { perform(onOpen) }
+    @objc private func openClipboard() { perform(onClipboard) }
+    @objc private func openSettings() { perform(onSettings) }
+    @objc private func openWorkflows() { perform(onWorkflows) }
     @objc private func quit() { NSApp.terminate(nil) }
-    @objc private func checkForUpdates() { onCheckForUpdates() }
+    @objc private func checkForUpdates() { perform(onCheckForUpdates) }
 
     @objc private func toggleLogin() {
         LoginItem.setEnabled(!LoginItem.isEnabled)

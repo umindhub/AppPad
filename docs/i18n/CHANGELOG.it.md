@@ -18,6 +18,17 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.7
+
+### Added
+
+#### Barra dei menu
+- «Controlla aggiornamenti…» ora ha la scorciatoia ⌘U.
+
+### Fixed
+- Barra dei menu: Le scorciatoie globali (Workflow, Appunti, scorciatoie di app e finestre) premute con il menu aperto ora lo chiudono ed eseguono subito l’azione, invece di attendere la chiusura del menu.
+- Barra dei menu: Aprire Impostazioni con ⌘, dal menu mentre Workflow o Appunti sono aperti non rende più trasparente per un istante lo sfondo del pannello.
+
 ## v1.2.6
 
 ### Fixed

@@ -18,6 +18,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.2.7
+
+### Added
+
+#### Barra de menús
+- «Buscar actualizaciones…» ahora tiene el atajo ⌘U.
+
+### Fixed
+- Barra de menús: Los atajos globales (Flujos de trabajo, Portapapeles, atajos de apps y de ventanas) pulsados con el menú abierto ahora lo cierran y se ejecutan al instante, en lugar de esperar a que se cierre el menú.
+- Barra de menús: Abrir Ajustes con ⌘, desde el menú con Flujos de trabajo o Portapapeles abiertos ya no vuelve transparente el fondo del panel por un momento.
+
 ## v1.2.6
 
 ### Fixed

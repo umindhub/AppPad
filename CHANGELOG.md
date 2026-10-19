@@ -20,6 +20,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.7
+
+### Added
+
+#### Menu Bar
+- "Check for Updates…" now has the ⌘U shortcut.
+
+### Fixed
+- Menu Bar: Global shortcuts (Workflows, Clipboard, app and window shortcuts) pressed while the menu is open now close it and run right away, instead of waiting until the menu is dismissed.
+- Menu Bar: Opening Settings with ⌘, from the menu while Workflows or Clipboard is open no longer briefly turns the panel background transparent.
+
 ## v1.2.6
 
 ### Fixed
