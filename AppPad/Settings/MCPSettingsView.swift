@@ -4,7 +4,14 @@ import AppKit
 // Settings › AI Assistants (MCP): on / off, status and copyable client setup.
 struct MCPSettingsView: View {
     @ObservedObject private var host = MCPHost.shared
+    @ObservedObject private var claude = ClaudeDesktopMCP.shared
     @State private var copied: Snippet?
+    @State private var claudeMessage: ClaudeMessage?
+
+    private struct ClaudeMessage: Equatable {
+        var text: String
+        var failed: Bool
+    }
 
     private enum Snippet { case json, claudeCode }
 
@@ -24,6 +31,7 @@ struct MCPSettingsView: View {
                     .foregroundStyle(.secondary)
             }
             if host.enabled {
+                claudeDesktopSection
                 snippetSection(.json, title: "Claude Desktop, Cursor and other clients",
                                caption: "Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client.",
                                text: MCPClientConfig.json)
@@ -32,6 +40,51 @@ struct MCPSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear { claude.refresh() }
+        // The config may have been edited by hand or by Claude Desktop meanwhile.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            claude.refresh()
+        }
+    }
+
+    // One-click setup: writes only AppPad's entry into claude_desktop_config.json.
+    private var claudeDesktopSection: some View {
+        Section {
+            LabeledContent("Status") { ClaudeDesktopStatusText(status: claude.status) }
+            HStack(spacing: 8) {
+                Button("Add to Claude Desktop") { show(claude.add()) }
+                    .pillProminentButton()
+                    .disabled(!claude.status.canAdd)
+                Button("Remove from Claude Desktop") { show(claude.remove()) }
+                    .disabled(!claude.status.canRemove)
+                Spacer(minLength: 0)
+            }
+            if let claudeMessage {
+                Text(verbatim: claudeMessage.text)
+                    .font(.caption)
+                    .foregroundStyle(claudeMessage.failed ? Color.red : Color.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } header: {
+            SelectableText(text: "Claude Desktop", font: .boldSystemFont(ofSize: NSFont.systemFontSize))
+        } footer: {
+            Text("Only AppPad's own entry in claude_desktop_config.json is changed; your other MCP servers stay as they are. A backup of the previous file is kept next to it.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func show(_ outcome: Result<String, ClaudeDesktopError>) {
+        let message: ClaudeMessage
+        switch outcome {
+        case .success(let text): message = ClaudeMessage(text: text, failed: false)
+        case .failure(let error): message = ClaudeMessage(text: error.message, failed: true)
+        }
+        claudeMessage = message
+        Task {
+            try? await Task.sleep(for: .seconds(8))
+            if claudeMessage == message { claudeMessage = nil }
+        }
     }
 
     @ViewBuilder

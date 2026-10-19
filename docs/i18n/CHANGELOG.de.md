@@ -18,6 +18,25 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.4
+
+### Added
+
+#### KI-Assistenten (MCP)
+- Claude Desktop mit einem Klick einrichten: Die Tasten „Zu Claude Desktop hinzufügen“ und „Aus Claude Desktop entfernen“ zeigen den aktuellen Status (Hinzugefügt / Nicht hinzugefügt / Nicht installiert). Geändert wird nur der eigene Eintrag von AppPad in claude_desktop_config.json; deine anderen MCP-Server bleiben unverändert.
+- Wurde AppPad nach dem Hinzufügen verschoben, zeigt der Status das an und „Zu Claude Desktop hinzufügen“ aktualisiert den Pfad.
+
+#### Workflows
+- Neue integrierte Workflows „AppPad zu Claude Desktop hinzufügen“ und „AppPad aus Claude Desktop entfernen“. Gib im Workflow-Fenster „claude“ oder „mcp“ ein, um sie zu finden.
+
+#### Willkommensanleitung
+- Die KI-Seite hat jetzt dieselben Tasten zum Hinzufügen und Entfernen für Claude Desktop.
+
+### Note
+- Starte Claude Desktop nach dem Hinzufügen oder Entfernen neu, damit die Änderung wirkt.
+- Ist Claude Desktop nicht installiert, wird nichts hinzugefügt und AppPad weist dich darauf hin.
+- Vor jeder Änderung wird die vorherige Datei daneben als claude_desktop_config.json.apppad-backup gesichert.
+
 ## v1.2.3
 
 ### Fixed

@@ -18,6 +18,25 @@ AppPad의 주요 변경 사항은 모두 이 파일에 기록됩니다.
 
 > 이 문서는 [CHANGELOG.md](../../CHANGELOG.md)의 번역본입니다. 내용이 다를 경우 영어판을 기준으로 합니다.
 
+## v1.2.4
+
+### Added
+
+#### AI 어시스턴트(MCP)
+- 클릭 한 번으로 Claude Desktop 설정: 「Claude Desktop에 추가」와 「Claude Desktop에서 제거」 버튼, 그리고 현재 상태(추가됨 / 추가되지 않음 / 설치되지 않음)를 표시합니다. claude_desktop_config.json에서 AppPad 항목만 변경하며, 다른 MCP 서버는 그대로 유지됩니다.
+- 추가한 뒤 AppPad를 옮긴 경우 상태에 표시되며, 「Claude Desktop에 추가」로 경로를 업데이트할 수 있습니다.
+
+#### 워크플로
+- 새 기본 워크플로 「Claude Desktop에 AppPad 추가」와 「Claude Desktop에서 AppPad 제거」. 워크플로 패널에서 「claude」 또는 「mcp」를 입력하면 찾을 수 있습니다.
+
+#### 시작 가이드
+- AI 페이지에도 Claude Desktop 추가 / 제거 버튼이 생겼습니다.
+
+### Note
+- AppPad를 추가하거나 제거한 후 Claude Desktop을 다시 시작해야 적용됩니다.
+- Claude Desktop이 설치되어 있지 않으면 아무것도 추가하지 않고 이를 알려 줍니다.
+- 변경할 때마다 이전 파일의 백업을 같은 위치에 claude_desktop_config.json.apppad-backup으로 저장합니다.
+
 ## v1.2.3
 
 ### Fixed

@@ -395,6 +395,19 @@ final class WorkflowRunner: ObservableObject {
             return makeResult(step, index, from: out)
         case .createReminder:
             return await createReminder(step, index, input: input)
+        case .addToClaudeDesktop:
+            return claudeDesktop(step, index, ClaudeDesktopMCP.shared.add())
+        case .removeFromClaudeDesktop:
+            return claudeDesktop(step, index, ClaudeDesktopMCP.shared.remove())
+        }
+    }
+
+    // Same service as the Settings / onboarding buttons.
+    private func claudeDesktop(_ step: WorkflowStep, _ index: Int,
+                               _ outcome: Result<String, ClaudeDesktopError>) -> StepResult {
+        switch outcome {
+        case .success(let text): return success(step, index, text)
+        case .failure(let error): return failure(step, index, error.message)
         }
     }
 

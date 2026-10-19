@@ -182,6 +182,8 @@ extension BuiltinAction {
         case .restart: return String(localized: "Restart…")
         case .createReminder: return String(localized: "Add Reminder")
         case .quitAllApps: return String(localized: "Quit All Apps")
+        case .addToClaudeDesktop: return String(localized: "Add to Claude Desktop")
+        case .removeFromClaudeDesktop: return String(localized: "Remove from Claude Desktop")
         }
     }
 
@@ -204,6 +206,8 @@ extension BuiltinAction {
         case .restart: return String(localized: "Show the Restart dialog")
         case .createReminder: return String(localized: "Add reminders to the Reminders app")
         case .quitAllApps: return String(localized: "Quit all running apps")
+        case .addToClaudeDesktop: return String(localized: "Add AppPad to Claude Desktop's MCP servers")
+        case .removeFromClaudeDesktop: return String(localized: "Remove AppPad from Claude Desktop's MCP servers")
         }
     }
 
@@ -226,6 +230,8 @@ extension BuiltinAction {
         case .restart: return "restart"
         case .createReminder: return "checklist"
         case .quitAllApps: return "xmark.app"
+        case .addToClaudeDesktop: return "plus.circle"
+        case .removeFromClaudeDesktop: return "minus.circle"
         }
     }
 

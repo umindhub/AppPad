@@ -18,6 +18,25 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.4
+
+### Added
+
+#### Assistenti IA (MCP)
+- Configurazione di Claude Desktop con un clic: i pulsanti «Aggiungi a Claude Desktop» e «Rimuovi da Claude Desktop» mostrano lo stato attuale (Aggiunto / Non aggiunto / Non installato). Viene modificata solo la voce di AppPad in claude_desktop_config.json; gli altri server MCP restano invariati.
+- Se AppPad è stato spostato dopo l’aggiunta, lo stato lo segnala e «Aggiungi a Claude Desktop» aggiorna il percorso.
+
+#### Flussi di lavoro
+- Nuovi flussi di lavoro integrati «Aggiungi AppPad a Claude Desktop» e «Rimuovi AppPad da Claude Desktop». Digita «claude» o «mcp» nel pannello dei flussi di lavoro per trovarli.
+
+#### Guida di benvenuto
+- La pagina IA ora ha gli stessi pulsanti Aggiungi / Rimuovi per Claude Desktop.
+
+### Note
+- Riavvia Claude Desktop dopo aver aggiunto o rimosso AppPad per applicare la modifica.
+- Se Claude Desktop non è installato, non viene aggiunto nulla e AppPad te lo segnala.
+- Prima di ogni modifica, accanto al file viene salvato un backup della versione precedente come claude_desktop_config.json.apppad-backup.
+
 ## v1.2.3
 
 ### Fixed

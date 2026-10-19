@@ -15,6 +15,7 @@ nonisolated enum BuiltinAction: String, Codable, CaseIterable, Sendable {
     case emptyTrash, sleepDisplays, sleepMac, keepAwake, toggleDarkMode, setVolume, toggleMute
     case ejectDisks, toggleHiddenFiles, quitApp, quitAllApps, openURL, copyIPAddress, generateUUID
     case shutDown, restart, createReminder
+    case addToClaudeDesktop, removeFromClaudeDesktop
 }
 
 // Whether a workflow takes the text after the first space in the panel search.

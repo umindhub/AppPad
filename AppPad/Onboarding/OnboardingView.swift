@@ -555,9 +555,16 @@ private struct AppShortcutsPage: View {
 
 private struct AIPage: View {
     @ObservedObject private var host = MCPHost.shared
+    @ObservedObject private var claude = ClaudeDesktopMCP.shared
     var glass: Bool
     @State private var client: Client = .other
     @State private var copied: String?
+    @State private var claudeMessage: ClaudeMessage?
+
+    private struct ClaudeMessage: Equatable {
+        var text: String
+        var failed: Bool
+    }
 
     private enum Client { case claudeCode, other }
 
@@ -589,6 +596,7 @@ private struct AIPage: View {
                 .toggleStyle(.appSwitch)
                 if host.enabled {
                     Divider()
+                    claudeDesktopRow
                     Picker(selection: $client) {
                         Text("Claude Desktop, Cursor and other clients").tag(Client.other)
                         Text(verbatim: "Claude Code").tag(Client.claudeCode)
@@ -635,6 +643,52 @@ private struct AIPage: View {
         }
     }
 
+    // One-click Claude Desktop setup (same service as Settings and the built-in workflows).
+    private var claudeDesktopRow: some View {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "Claude Desktop").fontWeight(.medium)
+                // Always two caption lines tall: status ⇄ message never changes the row height.
+                ZStack(alignment: .topLeading) {
+                    Text(verbatim: "A\nA").hidden()
+                    Group {
+                        if let claudeMessage {
+                            Text(verbatim: claudeMessage.text)
+                                .foregroundStyle(claudeMessage.failed ? Color.red : Color.secondary)
+                        } else {
+                            ClaudeDesktopStatusText(status: claude.status)
+                        }
+                    }
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Button("Add to Claude Desktop") { show(claude.add()) }
+                .onboardingProminent(glass: glass, size: .small)
+                .disabled(!claude.status.canAdd)
+            Button("Remove from Claude Desktop") { show(claude.remove()) }
+                .onboardingSecondary(glass: glass, size: .small)
+                .disabled(!claude.status.canRemove)
+        }
+        .onAppear { claude.refresh() }
+    }
+
+    private func show(_ outcome: Result<String, ClaudeDesktopError>) {
+        let message: ClaudeMessage
+        switch outcome {
+        case .success(let text): message = ClaudeMessage(text: text, failed: false)
+        case .failure(let error): message = ClaudeMessage(text: error.message, failed: true)
+        }
+        claudeMessage = message
+        Task {
+            try? await Task.sleep(for: .seconds(8))
+            if claudeMessage == message { claudeMessage = nil }
+        }
+    }
+
     @ViewBuilder
     private var statusText: some View {
         if !host.isListening {
@@ -655,7 +709,7 @@ private struct AIPage: View {
         return HStack(alignment: .top, spacing: 8) {
             if text.split(separator: "\n").count > 5 {
                 ScrollView(.vertical) { code }
-                    .frame(height: 86)
+                    .frame(height: 70)
             } else {
                 code
             }

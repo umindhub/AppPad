@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.4
+
+### Added
+
+#### AI Assistants (MCP)
+- One-click Claude Desktop setup: “Add to Claude Desktop” and “Remove from Claude Desktop” buttons with a live status (Added / Not added / Not installed). Only AppPad’s own entry in claude_desktop_config.json changes; your other MCP servers stay as they are.
+- If AppPad has moved since it was added, the status says so and “Add to Claude Desktop” updates the path.
+
+#### Workflows
+- New built-in workflows “Add AppPad to Claude Desktop” and “Remove AppPad from Claude Desktop”. Type “claude” or “mcp” in the Workflow panel to find them.
+
+#### Welcome Guide
+- The AI page now has the same Add / Remove buttons for Claude Desktop.
+
+### Note
+- Restart Claude Desktop after adding or removing AppPad for the change to take effect.
+- If Claude Desktop is not installed, nothing is added and AppPad tells you so.
+- Before every change, a backup of the previous file is saved next to it as claude_desktop_config.json.apppad-backup.
+
 ## v1.2.3
 
 ### Fixed

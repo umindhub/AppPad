@@ -79,6 +79,15 @@ enum BuiltinWorkflows {
             make("com.youmindhub.uuid", "Generate UUID", "Copy a new UUID to the clipboard.",
                  version: "1.2", keywords: ["uuid", "guid"], symbol: "number", notice: .output, copy: true,
                  steps: [WorkflowStep(builtin: .generateUUID, timeout: 5)]),
+            // Only AppPad's own entry in claude_desktop_config.json changes; other servers are kept.
+            make("com.youmindhub.claudedesktop.add", "Add AppPad to Claude Desktop",
+                 "Add AppPad's MCP server to Claude Desktop so Claude can run your workflows.",
+                 version: "1.0", keywords: ["claude", "mcp", "addmcp"], symbol: "plus.circle", notice: .output,
+                 steps: [WorkflowStep(builtin: .addToClaudeDesktop, timeout: 10)]),
+            make("com.youmindhub.claudedesktop.remove", "Remove AppPad from Claude Desktop",
+                 "Remove AppPad's MCP server from Claude Desktop. Other MCP servers are kept.",
+                 version: "1.0", keywords: ["claude", "mcp", "removemcp"], symbol: "minus.circle", notice: .output,
+                 steps: [WorkflowStep(builtin: .removeFromClaudeDesktop, timeout: 10)]),
         ]
     }
 

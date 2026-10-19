@@ -19,6 +19,25 @@ AppPad 的所有重要变更都记录在此文件中。
 > 本文为 [CHANGELOG.md](../../CHANGELOG.md) 的译文，如有出入，以英文版为准。
 
 
+## v1.2.4
+
+### Added
+
+#### AI 助手（MCP）
+- 一键配置 Claude Desktop：新增「添加到 Claude Desktop」和「从 Claude Desktop 移除」按钮，并显示当前状态（已添加 / 未添加 / 未安装）。只修改 claude_desktop_config.json 中 AppPad 自己的条目，其他 MCP 服务保持不变。
+- 添加后如果 AppPad 移动过位置，状态会提示，点击「添加到 Claude Desktop」即可更新路径。
+
+#### 工作流
+- 新增内置工作流「将 AppPad 添加到 Claude Desktop」和「从 Claude Desktop 移除 AppPad」，在工作流面板输入 “claude” 或 “mcp” 即可找到。
+
+#### 欢迎指南
+- AI 页面也加入了 Claude Desktop 的添加 / 移除按钮。
+
+### Note
+- 添加或移除 AppPad 后，需要重新启动 Claude Desktop 才会生效。
+- 未安装 Claude Desktop 时不会添加任何内容，并会提示未安装。
+- 每次修改前，都会在同一位置把原文件备份为 claude_desktop_config.json.apppad-backup。
+
 ## v1.2.3
 
 ### Fixed
