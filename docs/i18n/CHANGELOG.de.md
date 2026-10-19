@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.3
+
+### Fixed
+- Zwischenablage: Gespeicherte Einträge werden jetzt wie der Verlauf nach der letzten Verwendung sortiert. Ein Eintrag rückt nach dem Einsetzen oder Kopieren nach oben, statt in der Reihenfolge des Speicherns zu bleiben.
+
 ## v1.2.2
 
 ### Changed

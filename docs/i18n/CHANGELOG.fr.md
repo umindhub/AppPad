@@ -18,6 +18,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.3
+
+### Fixed
+- Presse-papiers: Les éléments enregistrés sont désormais triés par utilisation la plus récente, comme l’historique. Un élément remonte en tête après avoir été collé ou copié, au lieu de rester dans l’ordre d’enregistrement.
+
 ## v1.2.2
 
 ### Changed

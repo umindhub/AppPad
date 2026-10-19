@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.3
+
+### Fixed
+- Klembord: Bewaarde items worden nu net als de geschiedenis gesorteerd op meest recent gebruik. Een item komt bovenaan na plakken of kopiëren, in plaats van in de volgorde van bewaren te blijven.
+
 ## v1.2.2
 
 ### Changed

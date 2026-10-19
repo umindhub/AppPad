@@ -18,6 +18,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.3
+
+### Fixed
+- Appunti: Gli elementi salvati ora sono ordinati per uso più recente, come la cronologia. Un elemento sale in cima dopo averlo incollato o copiato, invece di restare nell’ordine di salvataggio.
+
 ## v1.2.2
 
 ### Changed

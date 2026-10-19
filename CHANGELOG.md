@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.3
+
+### Fixed
+- Clipboard: Saved items are now sorted by most recent use, just like the history. An item moves to the top after you paste or copy it, instead of staying in the order it was saved.
+
 ## v1.2.2
 
 ### Changed

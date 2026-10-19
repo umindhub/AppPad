@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.2.3
+
+### Fixed
+- Portapapeles: Los elementos guardados ahora se ordenan por uso más reciente, igual que el historial. Un elemento sube al principio al pegarlo o copiarlo, en lugar de quedarse en el orden en que se guardó.
+
 ## v1.2.2
 
 ### Changed
