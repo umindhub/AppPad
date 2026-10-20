@@ -18,6 +18,18 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.3
+
+### Added
+
+#### Angoli attivi
+- Nuovi angoli attivi in Impostazioni › AppPad: ogni angolo dello schermo può aprire AppPad, Flussi di lavoro o Appunti, oppure eseguire un’azione di macOS (Mission Control, Finestre applicazioni, Scrivania, Centro Notifiche, Nota Rapida, salvaschermo, stop del monitor, Blocca schermo).
+- Tieni premuti ⌘, ⌥, ⌃ o ⇧ (anche insieme) mentre scegli un’azione per far funzionare quell’angolo solo con quei tasti premuti, come in macOS.
+
+### Note
+- Centro Notifiche e Nota Rapida richiedono il permesso di accessibilità.
+- Se un angolo è impostato anche negli angoli attivi di macOS, vengono eseguiti entrambi; AppPad mostra un avviso con un collegamento a Impostazioni di Sistema.
+
 ## v1.3.2
 
 ### Added

@@ -18,6 +18,18 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.3
+
+### Added
+
+#### Coins actifs
+- Nouveaux coins actifs dans Réglages › AppPad : chaque coin de l’écran peut ouvrir AppPad, les Flux de travail ou le Presse-papiers, ou lancer une action macOS (Mission Control, Fenêtres d’application, Bureau, Centre de notifications, Note rapide, économiseur d’écran, suspension du moniteur, Verrouiller l’écran).
+- Maintenez ⌘, ⌥, ⌃ ou ⇧ (ou plusieurs) en choisissant une action pour que ce coin ne fonctionne qu’avec ces touches enfoncées, comme dans macOS.
+
+### Note
+- Le Centre de notifications et Note rapide nécessitent l’autorisation d’accessibilité.
+- Si un coin est aussi défini dans les coins actifs de macOS, les deux s’exécutent ; AppPad affiche un avertissement avec un raccourci vers les Réglages Système.
+
 ## v1.3.2
 
 ### Added

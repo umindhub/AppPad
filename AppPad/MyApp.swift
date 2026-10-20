@@ -116,6 +116,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         registerHotKeys()
         PinchGestureMonitor.shared.onPinch = { [weak self] event in self?.handlePinch(event) }
         PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
+        HotCornerMonitor.shared.onTrigger = { [weak self] action in self?.runHotCorner(action) }
+        HotCornerMonitor.shared.onLeave = { action in SystemCornerActions.end(action) }
+        HotCornerMonitor.shared.apply(Preferences.shared.hotCorners)
         // Welcome guide (features, pinch gestures, Spotlight's ⌘Space, permissions).
         // Replaces the old one-time pinch / Spotlight hints; new installs only.
         OnboardingGuide.onClose = { [weak self] openAppPad in self?.onboardingDidClose(openAppPad: openAppPad) }
@@ -418,6 +421,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         }
     }
 
+    // Hot corner reached: panels toggle (switching like ⌘⇧J/K when another one is open),
+    // macOS actions (Mission Control, Desktop, Lock Screen …) close the panels first.
+    private func runHotCorner(_ action: HotCornerAction) {
+        switch action {
+        case .none:
+            break
+        case .launchpad:
+            if launchpad.isShown {
+                launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
+            } else {
+                handOffIfNeeded(to: .launchpad)
+                launchpad.show()
+            }
+        case .workflows:
+            handOffIfNeeded(to: .workflows)
+            workflows.toggle()
+        case .clipboard:
+            guard Preferences.shared.clipboardEnabled else { return }
+            handOffIfNeeded(to: .clipboard)
+            clipboard.toggle(.history)
+        default:
+            guard action.isSystem else { return }
+            // Disable Screen Saver only holds an assertion; panels stay.
+            if action != .disableScreenSaver {
+                clipboard.hide()
+                workflows.hide()
+                launchpad.hide()
+            }
+            SystemCornerActions.perform(action)
+        }
+    }
+
     // "Set Shortcut…" from the launcher: add an empty row, then open the App Shortcuts tab.
     private func addAppShortcut(for app: AppInfo) {
         let prefs = Preferences.shared
@@ -436,6 +471,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             guard !Task.isCancelled, let self else { return }
             self.registerHotKeys()
             PinchGestureMonitor.shared.setEnabled(Preferences.shared.pinchToOpen)
+            HotCornerMonitor.shared.apply(Preferences.shared.hotCorners)
             self.applyTheme()
             self.applyBackgrounds()
         }

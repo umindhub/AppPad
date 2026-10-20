@@ -180,6 +180,8 @@ struct SettingsView: View {
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
             }
 
+            HotCornerSection(prefs: prefs)
+
             // Always follows the screen size.
             Section("Window") {
                 LabeledContent("Screen percentage") {

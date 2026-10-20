@@ -18,6 +18,18 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.3
+
+### Added
+
+#### Actieve hoeken
+- Nieuwe actieve hoeken in Instellingen › AppPad: elke schermhoek kan AppPad, Workflows of het Klembord openen, of een macOS-actie uitvoeren (Mission Control, Programmavensters, Bureaublad, Berichtencentrum, Snelle notitie, schermbeveiliging, beeldscherm in sluimerstand, Vergrendel scherm).
+- Houd ⌘, ⌥, ⌃ of ⇧ (of meerdere) ingedrukt terwijl je een actie kiest, zodat die hoek alleen werkt terwijl die toetsen zijn ingedrukt, net als in macOS.
+
+### Note
+- Berichtencentrum en Snelle notitie hebben toestemming voor toegankelijkheid nodig.
+- Is een hoek ook ingesteld bij de actieve hoeken van macOS, dan worden beide uitgevoerd; AppPad toont dan een waarschuwing met een snelkoppeling naar Systeeminstellingen.
+
 ## v1.3.2
 
 ### Added

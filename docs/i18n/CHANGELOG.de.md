@@ -18,6 +18,18 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.3
+
+### Added
+
+#### Aktive Ecken
+- Neue aktive Ecken unter Einstellungen › AppPad: Jede Bildschirmecke kann AppPad, Workflows oder die Zwischenablage öffnen oder eine macOS-Aktion ausführen (Mission Control, Programmfenster, Schreibtisch, Mitteilungszentrale, Schnellnotiz, Bildschirmschoner, Bildschirm-Ruhezustand, Bildschirm sperren).
+- Halte beim Auswählen einer Aktion ⌘, ⌥, ⌃ oder ⇧ (auch kombiniert) gedrückt, damit die Ecke nur bei gedrückten Tasten reagiert – wie bei macOS.
+
+### Note
+- Mitteilungszentrale und Schnellnotiz benötigen die Berechtigung für Bedienungshilfen.
+- Ist eine Ecke auch in den aktiven Ecken von macOS belegt, wird beides ausgeführt; AppPad zeigt dann einen Hinweis mit Link zu den Systemeinstellungen.
+
 ## v1.3.2
 
 ### Added

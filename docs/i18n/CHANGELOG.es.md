@@ -18,6 +18,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.3
+
+### Added
+
+#### Esquinas activas
+- Nuevas esquinas activas en Ajustes › AppPad: cada esquina de la pantalla puede abrir AppPad, Flujos de trabajo o el Portapapeles, o ejecutar una acción de macOS (Mission Control, Ventanas de aplicaciones, Escritorio, Centro de notificaciones, Nota rápida, salvapantallas, reposo de la pantalla, Bloquear pantalla).
+- Mantén pulsadas ⌘, ⌥, ⌃ o ⇧ (o varias) al elegir una acción para que esa esquina solo funcione con esas teclas pulsadas, igual que en macOS.
+
+### Note
+- El centro de notificaciones y la nota rápida necesitan permiso de accesibilidad.
+- Si una esquina también está configurada en las esquinas activas de macOS, se ejecutan ambas; AppPad muestra un aviso con acceso directo a Ajustes del Sistema.
+
 ## v1.3.2
 
 ### Added

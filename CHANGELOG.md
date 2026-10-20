@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.3
+
+### Added
+
+#### Hot Corners
+- New hot corners in Settings › AppPad: each screen corner can open AppPad, Workflows or Clipboard, or run a macOS action (Mission Control, Application Windows, Desktop, Notification Center, Quick Note, screen saver, display sleep, Lock Screen).
+- Hold ⌘, ⌥, ⌃ or ⇧ (or a combination) while choosing an action to make that corner work only while those keys are held, just like macOS.
+
+### Note
+- Notification Center and Quick Note need Accessibility permission.
+- If a corner is also set in the macOS hot corners, both run; AppPad shows a warning with a shortcut to System Settings.
+
 ## v1.3.2
 
 ### Added

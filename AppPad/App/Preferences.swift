@@ -156,6 +156,7 @@ final class Preferences: ObservableObject {
         static let appHotKeys = "appHotKeys"
         static let glassControls = "glassControls"
         static let pinchToOpen = "pinchToOpen"
+        static let hotCorners = "hotCorners"
         static let followMouseScreen = "panelsFollowMouseScreen"
         static let escClearsFirst = "escClearsSearchFirst"
         static let appBadges = "showAppBadges"
@@ -203,6 +204,10 @@ final class Preferences: ObservableObject {
     @Published var glassControls: Bool { didSet { save(glassControls, Key.glassControls) } }
     // Four-finger pinch in opens Launchpad, spread closes it.
     @Published var pinchToOpen: Bool { didSet { save(pinchToOpen, Key.pinchToOpen) } }
+    // Screen corners → AppPad / Workflows / Clipboard / Desktop / Mission Control; all off by default.
+    @Published var hotCorners: HotCornerConfig {
+        didSet { save((try? JSONEncoder().encode(hotCorners)) ?? Data(), Key.hotCorners) }
+    }
     // Launchpad / Clipboard / Workflow panel open on the display under the mouse; off = main display.
     @Published var panelsFollowMouseScreen: Bool { didSet { save(panelsFollowMouseScreen, Key.followMouseScreen) } }
     // Esc in AppPad / Clipboard / Workflow panel: on = clear the search first, close on the next press;
@@ -291,6 +296,8 @@ final class Preferences: ObservableObject {
         // Pre-26 systems have no Liquid Glass: forced off (stored value kept for later upgrades).
         glassControls = GlassAvailability.isSupported && (d.object(forKey: Key.glassControls) as? Bool ?? true)
         pinchToOpen = d.object(forKey: Key.pinchToOpen) as? Bool ?? true
+        hotCorners = d.data(forKey: Key.hotCorners)
+            .flatMap { try? JSONDecoder().decode(HotCornerConfig.self, from: $0) } ?? HotCornerConfig()
         panelsFollowMouseScreen = d.object(forKey: Key.followMouseScreen) as? Bool ?? true
         escClearsSearchFirst = d.object(forKey: Key.escClearsFirst) as? Bool ?? false
         showAppBadges = d.object(forKey: Key.appBadges) as? Bool ?? true
