@@ -18,6 +18,26 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.2.9
+
+### Added
+
+#### Flux de travail
+- Chaque flux de travail indique sa provenance : Intégré (vert), Le mien (bleu, écrit par vous ou enregistré par un assistant IA) ou Tiers (orange, avec le site d’origine ou « Fichier importé »).
+- Le panneau des flux de travail signale les lignes tierces par une icône orange ; l’aperçu affiche le lien complet et la date d’import.
+- Les demandes d’autorisation indiquent la provenance du flux de travail ; les confirmations d’exécution l’indiquent pour les flux tiers.
+
+### Changed
+- Flux de travail : Modifier les étapes ou autorisations d’un flux intégré ou tiers le marque « Modifié » ; un flux tiers reste tiers après modification.
+- Flux de travail : Lorsqu’un flux de travail est remplacé par un autre d’une provenance différente, AppPad redemande ses autorisations.
+
+### Fixed
+- Flux de travail : Les flux importés pouvaient remplacer les flux intégrés en reprenant leur identifiant ; ils sont désormais ignorés.
+- Sauvegarde : La restauration n’écrase plus les flux intégrés ; seuls leur état activé/désactivé et leur raccourci du panneau sont restaurés.
+
+### Note
+- Les flux de travail non intégrés ajoutés avant cette version apparaissent comme « Le mien », car leur provenance n’était pas enregistrée.
+
 ## v1.2.8
 
 ### Added

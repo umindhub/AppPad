@@ -18,6 +18,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.2.9
+
+### Added
+
+#### Flujos de trabajo
+- Cada flujo de trabajo muestra su origen: Integrado (verde), Mío (azul, escrito por ti o guardado por un asistente de IA) o De terceros (naranja, con el sitio web de procedencia o «Archivo importado»).
+- El panel de flujos de trabajo marca las filas de terceros con un icono naranja; la vista previa muestra el enlace completo y cuándo se importó.
+- Las solicitudes de permiso muestran el origen del flujo de trabajo; las confirmaciones de ejecución lo muestran en los de terceros.
+
+### Changed
+- Flujos de trabajo: Cambiar los pasos o permisos de un flujo integrado o de terceros lo marca como «Editado»; uno de terceros sigue siendo de terceros tras editarlo.
+- Flujos de trabajo: Si un flujo de trabajo se reemplaza por otro de un origen distinto, AppPad vuelve a pedir sus permisos.
+
+### Fixed
+- Flujos de trabajo: Los flujos importados podían reemplazar a los integrados reutilizando su ID; ahora se omiten.
+- Copia de seguridad: Al restaurar ya no se sobrescriben los flujos integrados; solo se restauran su estado activado/desactivado y su atajo del panel.
+
+### Note
+- Los flujos de trabajo no integrados añadidos antes de esta versión aparecen como «Mío», porque no se registró su origen.
+
 ## v1.2.8
 
 ### Added

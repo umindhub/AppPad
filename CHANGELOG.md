@@ -20,6 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.9
+
+### Added
+
+#### Workflows
+- Every workflow shows where it came from: Built-in (green), Mine (blue, written by you or saved by an AI assistant) or third-party (orange, with the website it came from or "Imported File").
+- The Workflow panel marks third-party rows with an orange icon; the preview shows the full link and when it was imported.
+- Permission prompts show the workflow's source; run confirmations show it for third-party workflows.
+
+### Changed
+- Workflows: Changing the steps or permissions of a built-in or third-party workflow marks it "Edited"; a third-party workflow stays third-party after editing.
+- Workflows: When a workflow is replaced by one from a different source, AppPad asks for its permissions again.
+
+### Fixed
+- Workflows: Imported workflows could replace built-in ones by reusing their ID; they are now skipped.
+- Backup: Restoring no longer overwrites built-in workflows; only their on/off state and panel shortcut are restored.
+
+### Note
+- Non-built-in workflows added before this version show as "Mine", because their source was not recorded.
+
 ## v1.2.8
 
 ### Added

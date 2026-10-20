@@ -70,7 +70,9 @@ final class BackupService {
 
         if sections.contains(.workflows) {
             let workflows = WorkflowStore.shared.workflows
-            let entries = workflows.map { WorkflowBackupEntry(workflow: $0, enabled: $0.enabled, panelKey: $0.panelKey) }
+            let entries = workflows.map {
+                WorkflowBackupEntry(workflow: $0, enabled: $0.enabled, panelKey: $0.panelKey, source: $0.source)
+            }
             try Self.write(entries, to: root.appendingPathComponent(File.workflows))
             // Downloaded URL icons, so a restore works offline.
             let icons = root.appendingPathComponent(File.workflowIcons, isDirectory: true)
@@ -281,18 +283,25 @@ final class BackupService {
         for entry in valid {
             let incoming = entry.workflow
             let existing = store.workflow(identifier: incoming.identifier)
-            let shouldInstall: Bool
-            if let existing, mode == .merge {
-                shouldInstall = WorkflowIdentity.compareVersions(incoming.version, existing.version) == .orderedDescending
+            if BuiltinWorkflows.identifiers.contains(incoming.identifier) {
+                // Built-ins come from the app itself; only their on/off state and panel key are restored.
+                BuiltinWorkflows.reinstall(incoming.identifier, into: store)
+                if existing == nil { report.workflowsAdded += 1 } else { report.workflowsSkipped += 1 }
             } else {
-                shouldInstall = true
-            }
-            if shouldInstall {
-                copyIcon(for: incoming, from: icons, fm: fm)
-                store.install(incoming)   // keeps local uid (grants), panel key and on/off of an existing copy
-                if existing == nil { report.workflowsAdded += 1 } else { report.workflowsUpdated += 1 }
-            } else {
-                report.workflowsSkipped += 1
+                let shouldInstall: Bool
+                if let existing, mode == .merge {
+                    shouldInstall = WorkflowIdentity.compareVersions(incoming.version, existing.version) == .orderedDescending
+                } else {
+                    shouldInstall = true
+                }
+                if shouldInstall {
+                    copyIcon(for: incoming, from: icons, fm: fm)
+                    // keeps local uid, panel key and on/off of an existing copy
+                    store.install(incoming, source: Self.restoredSource(entry.source))
+                    if existing == nil { report.workflowsAdded += 1 } else { report.workflowsUpdated += 1 }
+                } else {
+                    report.workflowsSkipped += 1
+                }
             }
             guard var installed = store.workflow(identifier: incoming.identifier) else { continue }
             switch mode {
@@ -319,6 +328,13 @@ final class BackupService {
             workflow.panelKey = pending.combo
             store.save(workflow)
         }
+    }
+
+    // Old backups (no source) count as the user's own. A backup can't make a workflow
+    // built-in: that claim on a non-built-in id is treated as an imported file.
+    private static func restoredSource(_ stored: WorkflowSource?) -> WorkflowSource {
+        guard let stored else { return WorkflowSource(kind: .local, date: nil) }
+        return stored.kind == .builtin ? .file("") : stored
     }
 
     private func copyIcon(for workflow: Workflow, from icons: URL, fm: FileManager) {

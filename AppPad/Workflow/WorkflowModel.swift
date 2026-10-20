@@ -245,9 +245,10 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     var steps: [WorkflowStep] = []
     var permissions = WorkflowPermissions()
     var formatVersion = WorkflowFormat.current
+    var source = WorkflowSource.local()   // set by AppPad on install, local store only
 
     private enum CodingKeys: String, CodingKey {
-        case uid, id, version, name, localizations, enabled, panelKey, icon, iconURL
+        case uid, id, version, name, localizations, enabled, panelKey, icon, iconURL, source
         case group, keywords, keyword, argument, argumentType, argumentHint, symbol
         case summary = "description"
         case successNotice, successMessage, failureNotice, failureMessage, copyOutput
@@ -309,6 +310,10 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
         steps = c.value(.steps, [])
         permissions = c.value(.permissions, WorkflowPermissions())
         formatVersion = WorkflowFormat.version(in: c, key: .formatVersion) ?? WorkflowFormat.current
+        // Only the local store carries a source; an imported file can never claim one.
+        if decoder.userInfo[WorkflowFormat.includeLocalKey] as? Bool == true {
+            source = c.value(.source, WorkflowSource.local())
+        }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -318,6 +323,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
             try c.encode(id, forKey: .uid)
             try c.encodeIfPresent(panelKey, forKey: .panelKey)
             try c.encode(enabled, forKey: .enabled)
+            try c.encode(source, forKey: .source)
         }
         try c.encode(identifier, forKey: .id)
         try c.encode(version, forKey: .version)
@@ -395,6 +401,147 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
 
     // Frecency key shared with apps (LaunchStats).
     var statsKey: String { "workflow:" + identifier }
+
+    // Same behavior: steps (ignoring their local ids), permissions and argument handling.
+    // Renames, icons and translations don't count as a change of what it does.
+    func sameBehavior(as other: Workflow) -> Bool {
+        func strip(_ steps: [WorkflowStep]) -> [WorkflowStep] {
+            steps.map { var step = $0; step.id = Self.zeroID; return step }
+        }
+        return strip(steps) == strip(other.steps) && permissions == other.permissions
+            && argument == other.argument && argumentType == other.argumentType
+    }
+
+    private static let zeroID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+}
+
+// MARK: - Source
+
+// Where an installed workflow came from. AppPad sets it when it installs or saves a workflow;
+// it is never taken from an imported file, so a file can't pass itself off as built-in.
+nonisolated struct WorkflowSource: Codable, Equatable, Sendable {
+    nonisolated enum Kind: String, Codable, Sendable {
+        case builtin   // shipped with AppPad
+        case local     // written in Settings or saved by an AI assistant (MCP)
+        case link      // Workflow Market link (apppad://import-workflow?url=…)
+        case file      // imported .json file (or a backup entry of unknown origin)
+    }
+
+    // What the user sees: built-in, mine (self or AI written), third-party.
+    nonisolated enum Category: Sendable {
+        case builtin, mine, thirdParty
+    }
+
+    var kind: Kind
+    var url = ""           // link: the downloaded file
+    var fileName = ""      // file: name of the imported file
+    var client = ""        // local: AI assistant that saved it; empty = written in Settings
+    var date: Date?        // when it was added or last replaced from a new source
+    var modified = false   // behavior changed in AppPad after it was added (built-in / third-party)
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, url, fileName, client, date, modified
+    }
+
+    init(kind: Kind, url: String = "", fileName: String = "", client: String = "", date: Date? = Date()) {
+        self.kind = kind
+        self.url = url
+        self.fileName = fileName
+        self.client = client
+        self.date = date
+    }
+
+    static var builtin: WorkflowSource { WorkflowSource(kind: .builtin) }
+
+    static func local(client: String = "") -> WorkflowSource {
+        WorkflowSource(kind: .local, client: client)
+    }
+
+    static func link(_ url: URL) -> WorkflowSource {
+        WorkflowSource(kind: .link, url: url.absoluteString)
+    }
+
+    static func file(_ name: String) -> WorkflowSource {
+        WorkflowSource(kind: .file, fileName: name)
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        kind = c.value(.kind, .file)   // unreadable kind: treat as third-party, never as trusted
+        url = c.value(.url, "")
+        fileName = c.value(.fileName, "")
+        client = c.value(.client, "")
+        date = try? c.decodeIfPresent(Date.self, forKey: .date)
+        modified = c.value(.modified, false)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(kind, forKey: .kind)
+        if !url.isEmpty { try c.encode(url, forKey: .url) }
+        if !fileName.isEmpty { try c.encode(fileName, forKey: .fileName) }
+        if !client.isEmpty { try c.encode(client, forKey: .client) }
+        try c.encodeIfPresent(date, forKey: .date)
+        if modified { try c.encode(true, forKey: .modified) }
+    }
+
+    var category: Category {
+        switch kind {
+        case .builtin: return .builtin
+        case .local: return .mine
+        case .link, .file: return .thirdParty
+        }
+    }
+
+    var isThirdParty: Bool { category == .thirdParty }
+
+    // Host of a link source ("example.com"); empty otherwise.
+    var host: String {
+        guard kind == .link, let host = URL(string: url)?.host() else { return "" }
+        return host.lowercased()
+    }
+
+    // Same origin: permission answers given to one may carry over to the other.
+    // Self-written and AI-written are one origin; links match by host.
+    func sameOrigin(as other: WorkflowSource) -> Bool {
+        guard category == other.category else { return false }
+        switch (kind, other.kind) {
+        case (.link, .link): return host == other.host
+        case (.link, _), (_, .link): return false
+        default: return true
+        }
+    }
+}
+
+// MARK: - Source text
+
+extension WorkflowSource {
+    // Pill text: "Built-in", "Mine", "example.com", "Imported File"; "· Edited" once changed.
+    nonisolated var label: String {
+        let base: String
+        switch kind {
+        case .builtin: base = String(localized: "Built-in")
+        case .local: base = String(localized: "Mine")
+        case .link: base = host.isEmpty ? String(localized: "Third-party") : host
+        case .file: base = String(localized: "Imported File")
+        }
+        return modified ? base + " · " + String(localized: "Edited") : base
+    }
+
+    // Dialog text, says "Third-party" in words: "Third-party · example.com".
+    nonisolated var longLabel: String {
+        guard isThirdParty, !(kind == .link && host.isEmpty) else { return label }
+        return String(localized: "Third-party") + " · " + label
+    }
+
+    nonisolated var symbol: String {
+        switch kind {
+        case .builtin: return "checkmark.seal.fill"
+        case .local: return "person.fill"
+        case .link: return "globe"
+        case .file: return "doc.fill"
+        }
+    }
 }
 
 // MARK: - File format

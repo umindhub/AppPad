@@ -89,8 +89,10 @@ final class WorkflowLinkImporter {
 
     private func confirm(_ items: [WorkflowImportItem], from source: URL) {
         let installable = items.filter {
-            if case .older = $0.action { return false }
-            return true
+            switch $0.action {
+            case .older, .reserved: return false
+            default: return true
+            }
         }
         NSApp.activate()
         let alert = NSAlert()
@@ -99,7 +101,7 @@ final class WorkflowLinkImporter {
         guard !installable.isEmpty else {
             // Only older versions: nothing to do.
             alert.messageText = String(localized: "A newer version is already installed")
-            alert.informativeText = items.map(describe).joined(separator: "\n\n")
+            alert.informativeText = items.map { describe($0, from: source) }.joined(separator: "\n\n")
             alert.addButton(withTitle: String(localized: "OK"))
             alert.runModal()
             return
@@ -110,7 +112,7 @@ final class WorkflowLinkImporter {
         } else {
             alert.messageText = String(localized: "Add \(installable.count) workflows?")
         }
-        var lines = items.map(describe)
+        var lines = items.map { describe($0, from: source) }
         lines.append(String(localized: "From \(Self.hostName(source))"))
         if !Self.isTrusted(source) {
             alert.alertStyle = .warning
@@ -122,12 +124,12 @@ final class WorkflowLinkImporter {
         alert.addButton(withTitle: String(localized: "Cancel"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        installable.forEach { WorkflowStore.shared.install($0.workflow) }
+        installable.forEach { WorkflowStore.shared.install($0.workflow, source: .link(source)) }
         onInstalled?()
     }
 
     // "Name  identifier 1.2", what happens, steps, permissions.
-    private func describe(_ item: WorkflowImportItem) -> String {
+    private func describe(_ item: WorkflowImportItem, from source: URL) -> String {
         let workflow = item.workflow
         var lines = ["\(workflow.displayName)  (\(workflow.identifier) \(workflow.version))"]
         switch item.action {
@@ -139,6 +141,17 @@ final class WorkflowLinkImporter {
             lines.append(String(localized: "Replaces the installed copy of the same version"))
         case .older(let installed):
             lines.append(String(localized: "Skipped: the installed version \(installed.version) is newer"))
+        case .reserved:
+            lines.append(String(localized: "Skipped: built-in workflows can’t be replaced"))
+        }
+        // Replacing a copy from somewhere else: say where it was from, answers are asked again.
+        switch item.action {
+        case .upgrade(let installed), .sameVersion(let installed):
+            if !WorkflowSource.link(source).sameOrigin(as: installed.source) {
+                lines.append(String(localized: "Replaces a workflow marked “\(installed.source.longLabel)”. AppPad will ask for its permissions again."))
+            }
+        default:
+            break
         }
         let steps = workflow.steps.map { Self.stepName($0) }
         if !steps.isEmpty {

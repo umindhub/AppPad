@@ -763,7 +763,11 @@ enum RunConfirmPrompt {
     static func ask(workflow: Workflow) -> Bool {
         let alert = NSAlert()
         alert.messageText = String(localized: "Run “\(workflow.displayName)”?")
-        alert.informativeText = workflow.confirmationMessage
+        var message = workflow.confirmationMessage
+        if workflow.source.isThirdParty {
+            message += "\n\n" + String(localized: "Source: \(workflow.source.longLabel)")
+        }
+        alert.informativeText = message
         alert.icon = WorkflowIcon.image(for: workflow)
         let run = alert.addButton(withTitle: String(localized: "Run"))
         run.hasDestructiveAction = true

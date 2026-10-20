@@ -318,12 +318,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         settingsToken &+= 1
         let token = settingsToken
         clipboard.hide()
-        workflows.hide()
-        // Commit the order-out now. From a keyDown AppKit commits right after the event, but from the
-        // status menu (timer / tracking) the async block below ran before the commit: the panel stayed
-        // on screen while Settings was built, and its blur (set directly on the window server) was
-        // already gone → transparent panel.
-        CATransaction.flush()
+        workflows.hide()   // LaunchpadPanel commits the order-out itself (see order(_:relativeTo:))
         launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration) { [weak self] in
             // Next run loop: the order-out reaches the screen before Settings comes up.
             DispatchQueue.main.async { [weak self] in

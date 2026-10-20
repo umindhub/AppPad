@@ -88,6 +88,22 @@ struct WorkflowEditorView: View {
 
     private var generalSection: some View {
         Section {
+            if !isNew {
+                // Read-only: set by AppPad when the workflow was added.
+                LabeledContent("Source") {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        WorkflowSourcePill(source: draft.source)
+                        if let sourceDetail {
+                            Text(verbatim: sourceDetail)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
+            }
             VStack(alignment: .leading, spacing: 2) {
                 TextField("ID", text: $draft.identifier, prompt: Text(verbatim: "com.example.my-workflow"))
                     .font(.system(.body, design: .monospaced))
@@ -532,6 +548,17 @@ struct WorkflowEditorView: View {
         detectNote = suggestion.added.isEmpty
             ? String(localized: "Nothing new found.")
             : String(localized: "Added: \(suggestion.added.joined(separator: ", "))")
+    }
+
+    // Link, file name or AI assistant under the source pill.
+    private var sourceDetail: String? {
+        let source = draft.source
+        switch source.kind {
+        case .builtin: return nil
+        case .local: return source.client.isEmpty ? nil : String(localized: "Saved by \(source.client)")
+        case .link: return source.url
+        case .file: return source.fileName.isEmpty ? nil : source.fileName
+        }
     }
 
     private func normalized(_ workflow: Workflow) -> Workflow {

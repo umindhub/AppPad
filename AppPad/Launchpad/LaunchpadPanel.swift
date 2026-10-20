@@ -72,6 +72,10 @@ final class LaunchpadPanel: NSPanel {
     override func order(_ place: NSWindow.OrderingMode, relativeTo otherWin: Int) {
         super.order(place, relativeTo: otherWin)
         if place == .out {
+            // Commit the order-out before the helpers go. The blur radius is set on the window server
+            // directly (applies at once), the order-out only at the next commit: any work after hide()
+            // (Settings, ⌘↩ edit, status menu…) showed the panel without its blur until then.
+            CATransaction.flush()
             PanelBackdrop.shared.panelDidHide(self)
             PanelShadow.shared.panelDidHide(self)
         } else {

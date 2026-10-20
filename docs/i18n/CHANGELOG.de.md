@@ -18,6 +18,26 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.9
+
+### Added
+
+#### Workflows
+- Jeder Workflow zeigt seine Herkunft: Integriert (grün), Eigene (blau, von dir geschrieben oder von einem KI-Assistenten gespeichert) oder Drittanbieter (orange, mit der Website, von der er stammt, oder „Importierte Datei“).
+- Das Workflow-Fenster markiert Drittanbieter-Zeilen mit einem orangefarbenen Symbol; die Vorschau zeigt den vollständigen Link und den Importzeitpunkt.
+- Berechtigungsabfragen zeigen die Herkunft des Workflows, Ausführungsbestätigungen bei Drittanbieter-Workflows.
+
+### Changed
+- Workflows: Werden Schritte oder Berechtigungen eines integrierten oder Drittanbieter-Workflows geändert, wird er als „Bearbeitet“ markiert; ein Drittanbieter-Workflow bleibt auch nach dem Bearbeiten Drittanbieter.
+- Workflows: Wird ein Workflow durch einen aus einer anderen Quelle ersetzt, fragt AppPad erneut nach seinen Berechtigungen.
+
+### Fixed
+- Workflows: Importierte Workflows konnten integrierte über deren ID ersetzen; sie werden jetzt übersprungen.
+- Backup: Beim Wiederherstellen werden integrierte Workflows nicht mehr überschrieben; nur Ein/Aus-Status und Fensterkurzbefehl werden übernommen.
+
+### Note
+- Nicht integrierte Workflows, die vor dieser Version hinzugefügt wurden, erscheinen als „Eigene“, da ihre Herkunft nicht gespeichert war.
+
 ## v1.2.8
 
 ### Added

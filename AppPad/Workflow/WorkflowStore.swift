@@ -11,6 +11,7 @@ enum WorkflowImportAction {
     case upgrade(Workflow)          // incoming version is higher → replace
     case sameVersion(Workflow)      // same version → ask before replacing
     case older(Workflow)            // incoming version is lower → skip
+    case reserved                   // built-in identifier: only AppPad itself installs these
 }
 
 struct WorkflowImportItem: Identifiable {
@@ -63,6 +64,7 @@ final class WorkflowStore: ObservableObject {
     func load() {
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
         let decoder = JSONDecoder()
+        decoder.userInfo[WorkflowFormat.includeLocalKey] = true   // uid, panel key, enabled, source
         var loaded: [Workflow] = []
         var needsRewrite: [(workflow: Workflow, source: URL)] = []
         for url in files where url.pathExtension == "json" {
@@ -73,6 +75,9 @@ final class WorkflowStore: ObservableObject {
                     NSLog("Workflow file skipped, unsupported format \(workflow.formatVersion): \(url.lastPathComponent)")
                     continue
                 }
+                // Migrate: files from before sources were recorded.
+                let hasSource = Self.hasSource(data)
+                if !hasSource { workflow.source = BuiltinWorkflows.legacySource(for: workflow) }
                 // Migrate: files without an identifier (or a duplicate) get a generated one.
                 let taken = Set(loaded.map(\.identifier))
                 workflow.identifier = WorkflowIdentity.normalizeIdentifier(workflow.identifier)
@@ -81,6 +86,8 @@ final class WorkflowStore: ObservableObject {
                     needsRewrite.append((workflow, url))
                 } else if url.deletingPathExtension().lastPathComponent != workflow.id.uuidString {
                     needsRewrite.append((workflow, url))   // file copied in by hand: store under its uid
+                } else if !hasSource {
+                    needsRewrite.append((workflow, url))
                 }
                 loaded.append(workflow)
             } catch {
@@ -102,7 +109,23 @@ final class WorkflowStore: ObservableObject {
         }
     }
 
+    // Edits from Settings (and local state changes). The source can't be changed here:
+    // an existing workflow keeps its own, built-in / third-party ones get "modified" when
+    // their behavior changes, and a new workflow is the user's own.
     func save(_ workflow: Workflow) {
+        var workflow = workflow
+        if let previous = self.workflow(id: workflow.id) {
+            workflow.source = previous.source
+            if workflow.source.category != .mine, !workflow.sameBehavior(as: previous) {
+                workflow.source.modified = true
+            }
+        } else if workflow.source.category != .mine {
+            workflow.source = .local()
+        }
+        commit(workflow)
+    }
+
+    private func commit(_ workflow: Workflow) {
         var workflow = workflow
         workflow.identifier = WorkflowIdentity.normalizeIdentifier(workflow.identifier)
         workflow.iconURL = workflow.iconURL.trimmingCharacters(in: .whitespaces)
@@ -142,7 +165,13 @@ final class WorkflowStore: ObservableObject {
         copy.name = String(localized: "\(workflow.displayName) Copy")
         copy.localizations = [:]
         copy.panelKey = nil
-        save(copy)   // a URL icon is fetched again for the new identifier
+        // A copy of a built-in is the user's own; a copy of a third-party one stays third-party.
+        if workflow.source.isThirdParty {
+            copy.source.date = Date()
+        } else {
+            copy.source = .local()
+        }
+        commit(copy)   // a URL icon is fetched again for the new identifier
     }
 
     // MARK: - Import
@@ -166,8 +195,12 @@ final class WorkflowStore: ObservableObject {
                 incoming.identifier = WorkflowIdentity.suggestedIdentifier(for: incoming.name, taken: taken)
             }
             batchIdentifiers.insert(incoming.identifier)
+            // "system" is AppPad's own group; an import can't put itself there.
+            if incoming.group.lowercased() == BuiltinWorkflows.group { incoming.group = "" }
             let action: WorkflowImportAction
-            if let existing = workflow(identifier: incoming.identifier) {
+            if BuiltinWorkflows.identifiers.contains(incoming.identifier) {
+                action = .reserved
+            } else if let existing = workflow(identifier: incoming.identifier) {
                 switch WorkflowIdentity.compareVersions(incoming.version, existing.version) {
                 case .orderedDescending: action = .upgrade(existing)
                 case .orderedSame: action = .sameVersion(existing)
@@ -181,21 +214,33 @@ final class WorkflowStore: ObservableObject {
         return items
     }
 
-    // Adds a new workflow or replaces the installed one with the same identifier.
-    // A replacement keeps the local uid (so grants stay), panel shortcut and enabled state.
-    func install(_ incoming: Workflow) {
+    // Adds a new workflow or replaces the installed one with the same identifier; the caller
+    // says where it comes from. A replacement keeps the local uid, panel shortcut and enabled
+    // state; its permission answers only carry over when the origin stays the same.
+    func install(_ incoming: Workflow, source: WorkflowSource) {
         var item = incoming
+        var source = source
         item.steps = item.steps.map { var step = $0; step.id = UUID(); return step }
         if let existing = workflow(identifier: item.identifier) {
             item.id = existing.id
             item.panelKey = existing.panelKey
             item.enabled = existing.enabled
+            if source.category == .mine, existing.source.isThirdParty {
+                // Saving over an imported workflow (Settings, AI) doesn't make it the user's own.
+                var kept = existing.source
+                if !item.sameBehavior(as: existing) { kept.modified = true }
+                source = kept
+            }
+            if !source.sameOrigin(as: existing.source) {
+                PermissionStore.shared.removeAll(for: existing.id)   // new origin: ask again
+            }
         } else {
             item.id = UUID()
             item.panelKey = nil
             item.enabled = true
         }
-        save(item)
+        item.source = source
+        commit(item)
     }
 
     func export(_ workflow: Workflow, to url: URL) throws {
@@ -237,6 +282,11 @@ final class WorkflowStore: ObservableObject {
             n += 1
         }
         return candidate
+    }
+
+    // Store files written before sources existed have no "source" key.
+    private static func hasSource(_ data: Data) -> Bool {
+        ((try? JSONSerialization.jsonObject(with: data)) as? [String: Any])?["source"] != nil
     }
 
     private func write(_ workflow: Workflow, to url: URL, local: Bool) throws {

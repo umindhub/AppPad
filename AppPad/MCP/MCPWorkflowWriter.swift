@@ -98,6 +98,8 @@ enum MCPWorkflowWriter {
                 accepted.append((item, existing.version))
             case .sameVersion(let existing), .older(let existing):
                 reject("version \(item.workflow.version) is not higher than the installed \(existing.version). Raise version to replace it.")
+            case .reserved:
+                reject("\(rawID) is a built-in workflow and cannot be changed. Use your own id.")
             }
         }
 
@@ -113,7 +115,8 @@ enum MCPWorkflowWriter {
             payload["message"] = "The user cancelled the save in AppPad. Do not retry unless asked."
             return payload
         }
-        for entry in accepted { store.install(entry.item.workflow) }
+        // AI-written counts as the user's own ("Mine"); saving over an imported one keeps it third-party.
+        for entry in accepted { store.install(entry.item.workflow, source: .local(client: client)) }
         payload["saved"] = accepted.map { entry -> [String: Any] in
             let workflow = entry.item.workflow
             var saved: [String: Any] = ["id": workflow.identifier, "name": workflow.name,

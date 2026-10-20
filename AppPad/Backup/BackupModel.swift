@@ -78,10 +78,12 @@ nonisolated struct LayoutBackup: Codable, Sendable {
 }
 
 // workflows.json: portable workflow (no local uid) + local state.
+// source: missing in backups made before sources existed.
 nonisolated struct WorkflowBackupEntry: Codable, Sendable {
     var workflow: Workflow
     var enabled: Bool
     var panelKey: KeyCombo?
+    var source: WorkflowSource?
 }
 
 nonisolated enum BackupError: LocalizedError {

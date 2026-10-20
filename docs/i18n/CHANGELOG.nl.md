@@ -18,6 +18,26 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.9
+
+### Added
+
+#### Workflows
+- Elke workflow toont zijn herkomst: Ingebouwd (groen), Eigen (blauw, door jou geschreven of door een AI-assistent bewaard) of Derde partij (oranje, met de website waar hij vandaan komt of 'Geïmporteerd bestand').
+- Het workflowpaneel markeert rijen van derden met een oranje symbool; de voorvertoning toont de volledige link en wanneer hij is geïmporteerd.
+- Toestemmingsvragen tonen de herkomst van de workflow; uitvoerbevestigingen tonen die bij workflows van derden.
+
+### Changed
+- Workflows: Als je de stappen of toestemmingen van een ingebouwde workflow of een workflow van derden wijzigt, wordt hij gemarkeerd als 'Bewerkt'; een workflow van derden blijft na bewerken van derden.
+- Workflows: Wordt een workflow vervangen door een uit een andere bron, dan vraagt AppPad opnieuw om toestemming.
+
+### Fixed
+- Workflows: Geïmporteerde workflows konden ingebouwde vervangen door hun ID te hergebruiken; ze worden nu overgeslagen.
+- Reservekopie: Bij herstellen worden ingebouwde workflows niet meer overschreven; alleen de aan/uit-status en de paneelsneltoets worden hersteld.
+
+### Note
+- Niet-ingebouwde workflows die vóór deze versie zijn toegevoegd, verschijnen als 'Eigen', omdat hun herkomst niet was vastgelegd.
+
 ## v1.2.8
 
 ### Added

@@ -16,7 +16,7 @@ struct WorkflowSettingsView: View {
     @State private var editingSecret: SecretDraft?
     @State private var errorMessage: String?
     @State private var spotlightConflict = false
-    @State private var pendingReplace: [WorkflowImportItem] = []   // same version: ask first
+    @State private var pendingReplace: [(item: WorkflowImportItem, source: WorkflowSource)] = []   // same version: ask first
     @State private var importNotes: [String] = []                  // shown after the import
     @State private var importReport: String?
 
@@ -85,7 +85,7 @@ struct WorkflowSettingsView: View {
             Button("Replace") { finishReplace(true) }
             Button("Skip", role: .cancel) { finishReplace(false) }
         } message: {
-            Text(verbatim: pendingReplace.map { "\($0.workflow.displayName)  (\($0.workflow.identifier) \($0.workflow.version))" }
+            Text(verbatim: pendingReplace.map { "\($0.item.workflow.displayName)  (\($0.item.workflow.identifier) \($0.item.workflow.version))" }
                 .joined(separator: "\n"))
         }
         .alert(Text("Some workflows were not imported"),
@@ -225,8 +225,11 @@ struct WorkflowSettingsView: View {
                 .interpolation(.high)
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 1) {
-                Text(verbatim: workflow.displayName)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(verbatim: workflow.displayName)
+                        .lineLimit(1)
+                    WorkflowSourcePill(source: workflow.source)
+                }
                 if !workflow.enabled {
                     Text("Disabled").font(.caption).foregroundStyle(.secondary)
                 } else if let conflict {
@@ -338,17 +341,20 @@ struct WorkflowSettingsView: View {
         panel.allowsMultipleSelection = true
         guard panel.runModal() == .OK else { return }
         var notes: [String] = []
-        var replace: [WorkflowImportItem] = []
+        var replace: [(item: WorkflowImportItem, source: WorkflowSource)] = []
         for url in panel.urls {
+            let source = WorkflowSource.file(url.lastPathComponent)
             do {
                 for item in try store.prepareImport(url) {
                     switch item.action {
                     case .add, .upgrade:
-                        store.install(item.workflow)
+                        store.install(item.workflow, source: source)
                     case .sameVersion:
-                        replace.append(item)
+                        replace.append((item, source))
                     case .older(let installed):
                         notes.append(String(localized: "“\(item.workflow.displayName)” \(item.workflow.version) is older than the installed \(installed.version) and was skipped."))
+                    case .reserved:
+                        notes.append(String(localized: "“\(item.workflow.displayName)” uses the id of a built-in workflow and was skipped."))
                     }
                 }
             } catch let error as WorkflowImportError {
@@ -367,7 +373,7 @@ struct WorkflowSettingsView: View {
 
     private func finishReplace(_ replace: Bool) {
         guard !pendingReplace.isEmpty else { return }
-        if replace { pendingReplace.forEach { store.install($0.workflow) } }
+        if replace { pendingReplace.forEach { store.install($0.item.workflow, source: $0.source) } }
         pendingReplace = []
         showImportNotes()
     }
@@ -429,6 +435,31 @@ struct WorkflowSettingsView: View {
             }
             .padding(.top, 4)
         }
+    }
+}
+
+// MARK: - Source pill
+
+// Built-in (green) / Mine (blue) / third-party host or file (orange); "· Edited" once changed.
+struct WorkflowSourcePill: View {
+    let source: WorkflowSource
+
+    var body: some View {
+        let tint = Color(nsColor: source.tint)
+        HStack(spacing: 3) {
+            Image(systemName: source.symbol)
+                .font(.system(size: 9, weight: .semibold))
+            Text(verbatim: source.label)
+                .font(.system(size: 10.5, weight: .medium))
+                .lineLimit(1)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 1.5)
+        .background(Capsule().fill(tint.opacity(0.14)))
+        .overlay(Capsule().strokeBorder(tint.opacity(0.4), lineWidth: 1))
+        .fixedSize()
+        .help(Text(verbatim: source.longLabel))
     }
 }
 

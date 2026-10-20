@@ -114,12 +114,40 @@ enum BuiltinWorkflows {
     static func install(into store: WorkflowStore) {
         let removed = removedIdentifiers
         for builtin in all where !removed.contains(builtin.identifier) {
-            if let existing = store.workflow(identifier: builtin.identifier) {
+            // A copy that isn't AppPad's own is always replaced by the shipped one.
+            if let existing = store.workflow(identifier: builtin.identifier), existing.source.kind == .builtin {
                 guard WorkflowIdentity.compareVersions(builtin.version, existing.version) == .orderedDescending else { continue }
             }
-            store.install(builtin)
+            store.install(builtin, source: .builtin)
             grantUndecided(builtin.identifier, in: store)
         }
+    }
+
+    // Backup restore: built-ins always come from the app, never from the backup file.
+    // Re-adds a deleted one (clearing its "deleted" mark); false for other identifiers.
+    @discardableResult
+    static func reinstall(_ identifier: String, into store: WorkflowStore) -> Bool {
+        guard let builtin = all.first(where: { $0.identifier == identifier }) else { return false }
+        var removed = removedIdentifiers
+        if removed.remove(identifier) != nil {
+            UserDefaults.standard.set(removed.sorted(), forKey: removedKey)
+        }
+        if let existing = store.workflow(identifier: identifier), existing.source.kind == .builtin { return true }
+        store.install(builtin, source: .builtin)
+        grantUndecided(identifier, in: store)
+        return true
+    }
+
+    // Store files from before sources were recorded: built-in ids are AppPad's own
+    // (edited when they differ from the shipped behavior), everything else is the user's.
+    static func legacySource(for workflow: Workflow) -> WorkflowSource {
+        let id = WorkflowIdentity.normalizeIdentifier(workflow.identifier)
+        guard let shipped = all.first(where: { $0.identifier == id }) else {
+            return WorkflowSource(kind: .local, date: nil)
+        }
+        var source = WorkflowSource(kind: .builtin, date: nil)
+        source.modified = !workflow.sameBehavior(as: shipped)
+        return source
     }
 
     // AppPad's own workflows are trusted: allow what they declare once. Upgrades may add a new

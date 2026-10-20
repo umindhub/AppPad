@@ -47,7 +47,70 @@ enum WorkflowPanelItem {
     }()
 }
 
-// Icon, title + subtitle, in-panel shortcut, ⌘n badge (same metrics as the clipboard rows).
+// MARK: - Source badge
+
+extension WorkflowSource {
+    // Built-in green, mine blue, third-party orange (unreviewed, not necessarily harmful).
+    var tint: NSColor {
+        switch category {
+        case .builtin: return .systemGreen
+        case .mine: return .systemBlue
+        case .thirdParty: return .systemOrange
+        }
+    }
+}
+
+enum WorkflowSourceBadge {
+    // Capsule with symbol + label in the source's tint (preview header).
+    // Drawn lazily, so dynamic colors follow the appearance.
+    static func pill(_ source: WorkflowSource, fontSize: CGFloat = 11) -> NSImage {
+        let font = NSFont.systemFont(ofSize: fontSize, weight: .medium)
+        let label = source.label
+        let text = NSAttributedString(string: label, attributes: [.font: font])
+        let textSize = text.size()
+        let symbolConfig = NSImage.SymbolConfiguration(pointSize: fontSize * 0.9, weight: .semibold)
+        let symbol = NSImage(systemSymbolName: source.symbol, accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
+        let symbolSize = symbol?.size ?? .zero
+        let padX: CGFloat = 7, padY: CGFloat = 2, gap: CGFloat = 4
+        let height = ceil(textSize.height) + 2 * padY
+        let width = ceil(padX + symbolSize.width + gap + textSize.width + padX)
+        let tint = source.tint
+        return NSImage(size: NSSize(width: width, height: height), flipped: false) { rect in
+            let pill = rect.insetBy(dx: 0.5, dy: 0.5)
+            let path = NSBezierPath(roundedRect: pill, xRadius: pill.height / 2, yRadius: pill.height / 2)
+            tint.withAlphaComponent(0.14).setFill()
+            path.fill()
+            tint.withAlphaComponent(0.4).setStroke()
+            path.lineWidth = 1
+            path.stroke()
+            if let symbol {
+                // Template symbol → one color: draw the shape, then paint the tint over its pixels only.
+                let colored = NSImage(size: symbolSize, flipped: false) { r in
+                    symbol.draw(in: r)
+                    tint.setFill()
+                    r.fill(using: .sourceAtop)
+                    return true
+                }
+                colored.draw(in: NSRect(x: padX, y: ((rect.height - symbolSize.height) / 2).rounded(),
+                                        width: symbolSize.width, height: symbolSize.height))
+            }
+            NSAttributedString(string: label, attributes: [.font: font, .foregroundColor: tint])
+                .draw(at: NSPoint(x: padX + symbolSize.width + gap, y: ((rect.height - textSize.height) / 2).rounded()))
+            return true
+        }
+    }
+
+    // Symbol only, for the panel rows (third-party marker).
+    static func mark(_ source: WorkflowSource, pointSize: CGFloat) -> NSImage? {
+        let config = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .semibold)
+            .applying(.init(paletteColors: [source.tint]))
+        return NSImage(systemSymbolName: source.symbol, accessibilityDescription: source.label)?
+            .withSymbolConfiguration(config)
+    }
+}
+
+// Icon, title + subtitle, in-panel shortcut, source mark, ⌘n badge (same metrics as the clipboard rows).
 final class WorkflowRowView: NSView {
     static let identifier = NSUserInterfaceItemIdentifier("WorkflowRow")
 
@@ -56,6 +119,7 @@ final class WorkflowRowView: NSView {
     private let subtitleLabel = NSTextField(labelWithString: "")
     private let keyLabel = NSTextField(labelWithString: "")
     private let badgeLabel = NSTextField(labelWithString: "")
+    private let sourceView = NSImageView()   // third-party workflows only, left of the ⌘n badge
 
     override var isFlipped: Bool { true }
 
@@ -73,7 +137,8 @@ final class WorkflowRowView: NSView {
         keyLabel.alignment = .right
         badgeLabel.textColor = .tertiaryLabelColor
         badgeLabel.alignment = .right
-        [iconView, titleLabel, subtitleLabel, keyLabel, badgeLabel].forEach { addSubview($0) }
+        sourceView.imageScaling = .scaleNone
+        [iconView, titleLabel, subtitleLabel, keyLabel, badgeLabel, sourceView].forEach { addSubview($0) }
     }
 
     required init?(coder: NSCoder) {
@@ -89,11 +154,17 @@ final class WorkflowRowView: NSView {
         keyLabel.font = small
         badgeLabel.font = .monospacedDigitSystemFont(ofSize: max(11, font.pointSize * 0.75), weight: .regular)
         badgeLabel.stringValue = index < 10 ? "⌘\((index + 1) % 10)" : ""
+        sourceView.image = nil
+        sourceView.toolTip = nil
 
         switch item {
         case .workflow(let workflow):
             subtitleLabel.stringValue = isRunning ? String(localized: "Running…") : Self.summary(workflow)
             keyLabel.stringValue = workflow.panelKey?.displayString ?? ""
+            if workflow.source.isThirdParty {
+                sourceView.image = WorkflowSourceBadge.mark(workflow.source, pointSize: max(11, font.pointSize * 0.8))
+                sourceView.toolTip = workflow.source.longLabel
+            }
         case .app:
             subtitleLabel.stringValue = String(localized: "Application")
             keyLabel.stringValue = ""
@@ -135,6 +206,15 @@ final class WorkflowRowView: NSView {
         badgeLabel.frame = NSRect(x: b.width - badgeWidth - 12, y: ((b.height - badgeHeight) / 2).rounded(),
                                   width: badgeWidth, height: badgeHeight)
         var right = badgeLabel.frame.minX - 10
+        if let mark = sourceView.image {
+            let size = mark.size
+            // Close to the badge, like the clipboard's text / image symbol.
+            sourceView.frame = NSRect(x: badgeLabel.frame.minX - 6 - size.width, y: ((b.height - size.height) / 2).rounded(),
+                                      width: size.width, height: size.height)
+            right = sourceView.frame.minX - 10
+        } else {
+            sourceView.frame = .zero
+        }
         if !keyLabel.stringValue.isEmpty {
             let width = ceil(keyLabel.cell?.cellSize.width ?? 40) + 4
             let height = ceil(keyLabel.cell?.cellSize.height ?? 16)

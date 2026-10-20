@@ -7,6 +7,7 @@ final class WorkflowPreviewView: FlippedView {
 
     private let iconView = NSImageView()
     private let titleLabel = NSTextField(labelWithString: "")
+    private let sourcePill = NSImageView()   // workflows: built-in / mine / third-party, right of the title
     private let subtitleLabel = NSTextField(labelWithString: "")
     private let textScroll = NSScrollView()
     private let textView = PreviewTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 300))
@@ -49,7 +50,8 @@ final class WorkflowPreviewView: FlippedView {
         textView.onEscape = { [weak self] in self?.onEscape?() }
         textScroll.documentView = textView
 
-        [iconView, titleLabel, subtitleLabel, textScroll, hintLabel].forEach { addSubview($0) }
+        sourcePill.imageScaling = .scaleNone
+        [iconView, titleLabel, sourcePill, subtitleLabel, textScroll, hintLabel].forEach { addSubview($0) }
         show(nil)
     }
 
@@ -61,8 +63,10 @@ final class WorkflowPreviewView: FlippedView {
     func show(_ item: WorkflowPanelItem?, isRunning: Bool = false, lastResult: WorkflowRunResult? = nil,
               argument: String = "", missingShortcut: String? = nil) {
         let views: [NSView] = [iconView, titleLabel, subtitleLabel, textScroll, hintLabel]
+        sourcePill.image = nil
         guard let item else {
             views.forEach { $0.isHidden = true }
+            needsLayout = true
             return
         }
         views.forEach { $0.isHidden = false }
@@ -77,6 +81,8 @@ final class WorkflowPreviewView: FlippedView {
                 ? String(localized: "Workflow")
                 : String(localized: "Workflow (disabled)")
             subtitleLabel.stringValue = "\(kind) · \(workflow.identifier) · \(workflow.version)"
+            sourcePill.image = WorkflowSourceBadge.pill(workflow.source)
+            sourcePill.toolTip = workflow.source.longLabel
             textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult,
                                                               argument: argument, missingShortcut: missingShortcut))
             var hint = String(localized: "↩ Run   ⌘↩ Edit in Settings")
@@ -124,6 +130,8 @@ final class WorkflowPreviewView: FlippedView {
             line("\(index + 1). " + Self.stepDetail(step), in: text)
         }
 
+        sourceDetails(workflow.source, in: text)
+
         let items = workflow.requiredPermissions
         if !items.isEmpty {
             section(String(localized: "Permissions"), in: text)
@@ -164,6 +172,34 @@ final class WorkflowPreviewView: FlippedView {
             line(String(localized: "Not run yet"), in: text, color: .secondaryLabelColor)
         }
         return text
+    }
+
+    // Where it came from: full link / file name and when, plus "edited" once its behavior changed.
+    private func sourceDetails(_ source: WorkflowSource, in text: NSMutableAttributedString) {
+        section(String(localized: "Source"), in: text)
+        let when = source.date.map { Self.relativeFormatter.localizedString(for: $0, relativeTo: Date()) }
+        switch source.kind {
+        case .builtin:
+            line(String(localized: "Included with AppPad"), in: text)
+        case .local:
+            line(source.client.isEmpty ? String(localized: "Created by you")
+                                       : String(localized: "Saved by \(source.client)"), in: text)
+        case .link:
+            line(String(localized: "Third-party"), in: text, color: .systemOrange)
+            line(source.url, in: text, color: .secondaryLabelColor, monospaced: true)
+        case .file:
+            line(String(localized: "Third-party"), in: text, color: .systemOrange)
+            line(source.fileName.isEmpty ? String(localized: "Imported from a file")
+                                         : String(localized: "Imported from the file “\(source.fileName)”"),
+                 in: text, color: .secondaryLabelColor)
+        }
+        if source.isThirdParty, let when {
+            line(String(localized: "Imported \(when)"), in: text, color: .secondaryLabelColor)
+        }
+        if source.modified {
+            line(String(localized: "Steps or permissions were changed after it was added."), in: text,
+                 color: source.isThirdParty ? .systemOrange : .secondaryLabelColor)
+        }
     }
 
     // Briefly replaces the title with "Copied" (calculator row).
@@ -483,7 +519,18 @@ final class WorkflowPreviewView: FlippedView {
         let titleHeight = ceil(titleLabel.cell?.cellSize.height ?? 22)
         let subHeight = ceil(subtitleLabel.cell?.cellSize.height ?? 16)
         let top = ((icon - titleHeight - subHeight) / 2).rounded()
-        titleLabel.frame = NSRect(x: textX, y: top, width: max(0, b.width - textX), height: titleHeight)
+        let available = max(0, b.width - textX)
+        if let pill = sourcePill.image {
+            // Title shrinks (truncates) before the pill does; the pill sits right after the title text.
+            let gap: CGFloat = 8
+            let titleWidth = min(ceil(titleLabel.cell?.cellSize.width ?? 0) + 2, max(0, available - pill.size.width - gap))
+            titleLabel.frame = NSRect(x: textX, y: top, width: titleWidth, height: titleHeight)
+            sourcePill.frame = NSRect(x: textX + titleWidth + gap, y: top + ((titleHeight - pill.size.height) / 2).rounded(),
+                                      width: pill.size.width, height: pill.size.height)
+        } else {
+            titleLabel.frame = NSRect(x: textX, y: top, width: available, height: titleHeight)
+            sourcePill.frame = .zero
+        }
         subtitleLabel.frame = NSRect(x: textX, y: top + titleHeight, width: max(0, b.width - textX), height: subHeight)
 
         hintLabel.frame = NSRect(x: 0, y: b.height - 16, width: b.width, height: 16)

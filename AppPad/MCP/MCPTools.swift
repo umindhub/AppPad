@@ -16,6 +16,9 @@ enum MCPTools {
         You can also WRITE workflows for the user: call workflow_guide first (it is the only \
         reference for the JSON format), then save_workflows. To change one, export_workflows, \
         edit it, raise its version and save it again. The user approves every save in AppPad.
+        Every workflow has a source: "builtin" (ships with AppPad), "mine" (written by the user or \
+        saved by an AI assistant) or "thirdParty" (imported; "from" says where). Before running a \
+        thirdParty workflow, tell the user where it came from.
         AppPad is also the user's Launchpad (app grid with pages and folders). To tidy it up, call \
         get_launchpad_layout (it includes usage scores and guidelines), then apply_launchpad_layout \
         with the complete new arrangement; undo_launchpad_layout restores the previous one.
@@ -37,7 +40,7 @@ enum MCPTools {
     static var definitions: [[String: Any]] {
         [
             tool("list_workflows",
-                 "List the user's enabled AppPad workflows with id, name, description, keywords and argument usage.",
+                 "List the user's enabled AppPad workflows with id, name, description, keywords, source and argument usage.",
                  ["query": string("Optional filter: matched against id, names, keywords and description.")]),
             tool("get_workflows",
                  "Details for one or more workflows: steps, declared permissions and whether each is already allowed, denied or will be asked.",
@@ -216,6 +219,7 @@ enum MCPTools {
         let summary = workflow.displaySummary
         if !summary.isEmpty { item["description"] = summary }
         if !workflow.group.isEmpty { item["group"] = BuiltinWorkflows.groupTitle(workflow.group) }
+        item.merge(sourceInfo(workflow.source)) { _, new in new }
         if !workflow.matchKeywords.isEmpty { item["keywords"] = workflow.matchKeywords }
         if workflow.argument != .off {
             var argument: [String: Any] = [
@@ -232,6 +236,24 @@ enum MCPTools {
         if workflow.requiresConfirmation { item["asksBeforeRunning"] = true }
         if WorkflowRunner.shared.running.contains(workflow.id) { item["running"] = true }
         return item
+    }
+
+    // "source": builtin / mine / thirdParty, "from": host, URL or file name, "edited" once changed.
+    private static func sourceInfo(_ source: WorkflowSource) -> [String: Any] {
+        var info: [String: Any] = [:]
+        switch source.category {
+        case .builtin: info["source"] = "builtin"
+        case .mine: info["source"] = "mine"
+        case .thirdParty: info["source"] = "thirdParty"
+        }
+        switch source.kind {
+        case .link: info["from"] = source.url
+        case .file: info["from"] = source.fileName.isEmpty ? "file" : "file " + source.fileName
+        case .local where !source.client.isEmpty: info["savedBy"] = source.client
+        default: break
+        }
+        if source.modified { info["edited"] = true }
+        return info
     }
 
     private static func detail(_ workflow: Workflow) -> [String: Any] {
