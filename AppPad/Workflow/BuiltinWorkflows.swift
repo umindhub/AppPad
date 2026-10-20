@@ -1,7 +1,7 @@
 import AppKit
 
 // Workflows shipped with AppPad (group "system"). Bump a version to push changes to installed copies. Installed on launch; a higher version here
-// replaces the installed one; workflows the user deleted are never re-added.
+// replaces the installed one. They can't be edited or deleted, only disabled.
 // Names / descriptions / hints are English keys; translations come from Localizable.
 enum BuiltinWorkflows {
     static let group = "system"
@@ -9,7 +9,8 @@ enum BuiltinWorkflows {
     // Shipped signed in the app bundle; imported once, then run in the background via `shortcuts run`.
     static let clockShortcut = "AppPad Clock"
 
-    private static let removedKey = "AppPad.removedBuiltinWorkflows"
+    // Built-ins deleted before they became undeletable: added back once, disabled.
+    private static let legacyRemovedKey = "AppPad.removedBuiltinWorkflows"
 
     static var identifiers: Set<String> { Set(all.map(\.identifier)) }
 
@@ -112,26 +113,30 @@ enum BuiltinWorkflows {
 
     // Called once after the store loaded its files.
     static func install(into store: WorkflowStore) {
-        let removed = removedIdentifiers
-        for builtin in all where !removed.contains(builtin.identifier) {
+        let legacyRemoved = Set(UserDefaults.standard.stringArray(forKey: legacyRemovedKey) ?? [])
+        for builtin in all {
+            let existing = store.workflow(identifier: builtin.identifier)
             // A copy that isn't AppPad's own is always replaced by the shipped one.
-            if let existing = store.workflow(identifier: builtin.identifier), existing.source.kind == .builtin {
+            if let existing, existing.source.kind == .builtin {
                 guard WorkflowIdentity.compareVersions(builtin.version, existing.version) == .orderedDescending else { continue }
             }
             store.install(builtin, source: .builtin)
             grantUndecided(builtin.identifier, in: store)
+            // Deleted by the user in an earlier version: keep it off.
+            if existing == nil, legacyRemoved.contains(builtin.identifier),
+               var added = store.workflow(identifier: builtin.identifier) {
+                added.enabled = false
+                store.save(added)
+            }
         }
+        if !legacyRemoved.isEmpty { UserDefaults.standard.removeObject(forKey: legacyRemovedKey) }
     }
 
     // Backup restore: built-ins always come from the app, never from the backup file.
-    // Re-adds a deleted one (clearing its "deleted" mark); false for other identifiers.
+    // Adds the shipped one if it's missing; false for other identifiers.
     @discardableResult
     static func reinstall(_ identifier: String, into store: WorkflowStore) -> Bool {
         guard let builtin = all.first(where: { $0.identifier == identifier }) else { return false }
-        var removed = removedIdentifiers
-        if removed.remove(identifier) != nil {
-            UserDefaults.standard.set(removed.sorted(), forKey: removedKey)
-        }
         if let existing = store.workflow(identifier: identifier), existing.source.kind == .builtin { return true }
         store.install(builtin, source: .builtin)
         grantUndecided(identifier, in: store)
@@ -159,25 +164,6 @@ enum BuiltinWorkflows {
         }
         guard !undecided.isEmpty else { return }
         PermissionStore.shared.set(.allow, for: undecided, workflow: installed.id)
-    }
-
-    static func noteDeleted(_ identifier: String) {
-        guard identifiers.contains(identifier) else { return }
-        var removed = removedIdentifiers
-        removed.insert(identifier)
-        UserDefaults.standard.set(removed.sorted(), forKey: removedKey)
-    }
-
-    // "Restore Built-in Workflows" in Settings.
-    static func restoreDeleted(into store: WorkflowStore) {
-        UserDefaults.standard.removeObject(forKey: removedKey)
-        install(into: store)
-    }
-
-    static var hasDeleted: Bool { !removedIdentifiers.isEmpty }
-
-    private static var removedIdentifiers: Set<String> {
-        Set(UserDefaults.standard.stringArray(forKey: removedKey) ?? [])
     }
 
     // MARK: - Groups

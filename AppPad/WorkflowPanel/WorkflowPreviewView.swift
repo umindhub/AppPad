@@ -85,11 +85,18 @@ final class WorkflowPreviewView: FlippedView {
             sourcePill.toolTip = workflow.source.longLabel
             textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult,
                                                               argument: argument, missingShortcut: missingShortcut))
-            var hint = String(localized: "↩ Run   ⌘↩ Edit in Settings")
+            // Built-ins aren't editable: ⌘↩ only shows them in Settings.
+            let builtin = workflow.isBuiltin
+            var hint = builtin ? String(localized: "↩ Run   ⌘↩ Show in Settings")
+                               : String(localized: "↩ Run   ⌘↩ Edit in Settings")
             if let missingShortcut {
-                hint = BuiltinWorkflows.bundledShortcut(missingShortcut) != nil
-                    ? String(localized: "↩ Install Shortcut   ⌘↩ Edit in Settings")
-                    : String(localized: "↩ Open Shortcuts   ⌘↩ Edit in Settings")
+                let bundled = BuiltinWorkflows.bundledShortcut(missingShortcut) != nil
+                switch (bundled, builtin) {
+                case (true, true): hint = String(localized: "↩ Install Shortcut   ⌘↩ Show in Settings")
+                case (true, false): hint = String(localized: "↩ Install Shortcut   ⌘↩ Edit in Settings")
+                case (false, true): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Show in Settings")
+                case (false, false): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Edit in Settings")
+                }
             }
             if let key = workflow.panelKey?.displayString { hint += "   " + key }
             hintLabel.stringValue = hint

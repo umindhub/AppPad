@@ -273,7 +273,7 @@ final class BackupService {
         }
 
         if mode == .replace {
-            for local in store.workflows where !seen.contains(local.identifier) {
+            for local in store.workflows where !seen.contains(local.identifier) && !local.isBuiltin {
                 store.delete(id: local.id)
                 report.workflowsRemoved += 1
             }

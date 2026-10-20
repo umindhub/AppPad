@@ -19,28 +19,37 @@ struct WorkflowSettingsView: View {
     @State private var pendingReplace: [(item: WorkflowImportItem, source: WorkflowSource)] = []   // same version: ask first
     @State private var importNotes: [String] = []                  // shown after the import
     @State private var importReport: String?
+    @State private var highlightedID: UUID?                        // built-in revealed from the panel
 
     var body: some View {
-        Form {
-            panelSection
-            windowSection
-            BackgroundSection(settings: $prefs.workflowBackground, allowsFollow: true)
-            workflowsSection
-            ForEach(groupKeys, id: \.self) { group in
-                groupSection(group)
+        ScrollViewReader { proxy in
+            Form {
+                panelSection
+                windowSection
+                BackgroundSection(settings: $prefs.workflowBackground, allowsFollow: true)
+                workflowsSection
+                ForEach(groupKeys, id: \.self) { group in
+                    groupSection(group)
+                }
+                secretsSection
             }
-            secretsSection
+            .formStyle(.grouped)
+            // ⌘↩ in the Workflow panel (also fires on first appear): open the editor,
+            // or for a built-in (not editable) scroll to its row and highlight it.
+            .onReceive(store.$pendingEditID) { id in
+                guard let id else { return }
+                store.pendingEditID = nil
+                guard let workflow = store.workflow(id: id) else { return }
+                if workflow.isBuiltin {
+                    reveal(id, with: proxy)
+                } else {
+                    edit(workflow, isNew: false)
+                }
+            }
         }
-        .formStyle(.grouped)
         .onAppear {
             secretNames = KeychainSecrets.names()
             spotlightConflict = SpotlightShortcut.conflicts(with: prefs.workflowPanelHotKey)
-        }
-        // ⌘↩ in the Workflow panel → open that workflow's editor (also fires on first appear).
-        .onReceive(store.$pendingEditID) { id in
-            guard let id else { return }
-            store.pendingEditID = nil
-            if let workflow = store.workflow(id: id) { edit(workflow, isNew: false) }
         }
         // The user may free ⌘Space in System Settings while this window stays open.
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
@@ -168,16 +177,10 @@ struct WorkflowSettingsView: View {
             Text(verbatim: BuiltinWorkflows.groupTitle(group))
         } footer: {
             if group == BuiltinWorkflows.group {
-                HStack {
-                    Text("Built-in workflows are updated with AppPad. Deleted ones stay deleted.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 12)
-                    if BuiltinWorkflows.hasDeleted {
-                        Button("Restore Deleted") { BuiltinWorkflows.restoreDeleted(into: store) }
-                    }
-                }
-                .padding(.top, 4)
+                Text("Built-in workflows are updated with AppPad and can’t be edited or deleted. Duplicate one to make your own version.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
             }
         }
     }
@@ -268,14 +271,7 @@ struct WorkflowSettingsView: View {
             .buttonStyle(.borderless)
             .help(isRunning ? Text("Stop") : Text("Run"))
             Menu {
-                Button("Edit…") { edit(workflow, isNew: false) }
-                Button("Duplicate") { store.duplicate(workflow) }
-                Button("Export…") { export(workflow) }
-                if let last {
-                    Button("Show Last Result") { shownResult = last }
-                }
-                Divider()
-                Button("Delete…", role: .destructive) { pendingDelete = workflow }
+                rowActions(workflow, last: last)
             } label: {
                 Image(systemName: "ellipsis.circle")
             }
@@ -284,7 +280,54 @@ struct WorkflowSettingsView: View {
             .fixedSize()
         }
         .contentShape(Rectangle())
-        .onTapGesture(count: 2) { edit(workflow, isNew: false) }
+        .onTapGesture(count: 2) {
+            if !workflow.isBuiltin { edit(workflow, isNew: false) }
+        }
+        .contextMenu { rowActions(workflow, last: last) }
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color.accentColor.opacity(highlightedID == workflow.id ? 0.18 : 0))
+                .padding(-4)
+        )
+        .id(workflow.id)
+    }
+
+    // "…" button and right click. Built-ins can't be edited or deleted: Disable / Enable instead.
+    @ViewBuilder
+    private func rowActions(_ workflow: Workflow, last: WorkflowRunResult?) -> some View {
+        if !workflow.isBuiltin {
+            Button("Edit…") { edit(workflow, isNew: false) }
+        }
+        Button("Duplicate") { store.duplicate(workflow) }
+        Button("Export…") { export(workflow) }
+        if let last {
+            Button("Show Last Result") { shownResult = last }
+        }
+        Divider()
+        if workflow.isBuiltin {
+            Button(workflow.enabled ? LocalizedStringKey("Disable") : LocalizedStringKey("Enable")) { setEnabled(!workflow.enabled, for: workflow.id) }
+        } else {
+            Button("Delete…", role: .destructive) { pendingDelete = workflow }
+        }
+    }
+
+    private func setEnabled(_ enabled: Bool, for id: UUID) {
+        guard var workflow = store.workflow(id: id) else { return }
+        workflow.enabled = enabled
+        store.save(workflow)
+    }
+
+    // Scroll to a row and flash it for a moment (after the window has laid out).
+    private func reveal(_ id: UUID, with proxy: ScrollViewProxy) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation { proxy.scrollTo(id, anchor: .center) }
+            highlightedID = id
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                withAnimation(.easeOut(duration: 0.4)) {
+                    if highlightedID == id { highlightedID = nil }
+                }
+            }
+        }
     }
 
     private func panelKeyBinding(_ id: UUID) -> Binding<KeyCombo?> {

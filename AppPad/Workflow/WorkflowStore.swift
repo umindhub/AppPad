@@ -149,8 +149,8 @@ final class WorkflowStore: ObservableObject {
 
     func delete(id: UUID) {
         if let workflow = workflow(id: id) {
+            guard !workflow.isBuiltin else { return }   // built-ins can only be disabled
             WorkflowIcon.removeFile(for: workflow.identifier)
-            BuiltinWorkflows.noteDeleted(workflow.identifier)   // don't reinstall it on next launch
         }
         try? FileManager.default.removeItem(at: fileURL(id))
         workflows.removeAll { $0.id == id }

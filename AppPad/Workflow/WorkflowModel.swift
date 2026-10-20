@@ -402,6 +402,9 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
     // Frecency key shared with apps (LaunchStats).
     var statsKey: String { "workflow:" + identifier }
 
+    // AppPad's own: not editable or deletable, only enabled / disabled.
+    var isBuiltin: Bool { source.kind == .builtin }
+
     // Same behavior: steps (ignoring their local ids), permissions and argument handling.
     // Renames, icons and translations don't count as a change of what it does.
     func sameBehavior(as other: Workflow) -> Bool {
