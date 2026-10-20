@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.1
+
+### Added
+
+#### Workflows
+- New built-in workflow “App Store Search”: type `mas` or `appstore` followed by keywords to open the results directly in the App Store.
+
+### Fixed
+- Workflow Panel: ⌘1–⌘0 on a workflow that takes an argument now selects it and fills in its name, ready for the argument, instead of doing nothing.
+
 ## v1.3.0
 
 ### Fixed

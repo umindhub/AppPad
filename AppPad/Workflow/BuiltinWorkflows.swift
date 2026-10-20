@@ -74,6 +74,12 @@ enum BuiltinWorkflows {
                  version: "1.2", keywords: ["g", "google", "search"], symbol: "magnifyingglass",
                  argument: .required, type: .text, hint: "keywords",
                  steps: [openURLStep("https://www.google.com/search?q={{input}}")]),
+            // Same URL Finder uses for "Search App Store…"; opens results right in the App Store app.
+            // No argument case: the App Store app itself is in the panel.
+            make("com.youmindhub.appstoresearch", "App Store Search", "Search the Mac App Store.",
+                 version: "1.0", keywords: ["mas", "appstore", "appstoresearch"], symbol: "bag",
+                 argument: .required, type: .text, hint: "keywords",
+                 steps: [openURLStep("macappstores://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?q={{input}}")]),
             make("com.youmindhub.ipaddress", "Copy IP Address", "Copy the local IP address and show the public one.",
                  version: "1.2", keywords: ["ip", "ipaddress", "myip"], symbol: "network", notice: .output,
                  steps: [WorkflowStep(builtin: .copyIPAddress, timeout: 10)]),

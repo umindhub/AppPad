@@ -18,6 +18,16 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.1
+
+### Added
+
+#### Flussi di lavoro
+- Nuovo flusso di lavoro integrato “Cerca su App Store”: digita `mas` o `appstore` seguito dalle parole chiave per aprire i risultati direttamente nell’App Store.
+
+### Fixed
+- Pannello Flussi di lavoro: ⌘1–⌘0 su un flusso che accetta un argomento ora lo seleziona e ne inserisce il nome, pronto per l’argomento, invece di non fare nulla.
+
 ## v1.3.0
 
 ### Fixed

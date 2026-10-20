@@ -10,7 +10,8 @@ import Combine
 // ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
 // Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
 // While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
-// Keys: ↩ run / open / copy, Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings, ⌘1–⌘0 row N, ⌘J/K or arrows move,
+// Keys: ↩ run / open / copy, Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings,
+// ⌘1–⌘0 row N (a workflow that takes an argument with none typed yet is only picked, like the mouse), ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc closes (or clears first, see General settings).
 // "Ask before running" workflows: an in-panel dialog first (↩ run, Esc cancel, every other key ignored).
 final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate,
@@ -384,6 +385,22 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         }
     }
 
+    // ⌘N: a workflow that takes an argument and has none typed yet is picked (field filled, ready
+    // for the argument) instead of run; everything else runs / opens like ↩ on that row.
+    private func activateNumbered(row: Int) {
+        guard items.indices.contains(row) else {
+            NSSound.beep()
+            return
+        }
+        if case .workflow(let workflow) = items[row], workflow.argument != .off,
+           argument.trimmingCharacters(in: .whitespaces).isEmpty {
+            select(row: row)
+            fillSearchField(explicit: false)
+            return
+        }
+        activate(row: row)
+    }
+
     // Plain, machine-readable result to the pasteboard; the panel stays open.
     private func copy(_ result: Calculator.Result) {
         NSPasteboard.general.clearContents()
@@ -603,7 +620,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         }
         guard flags == .command else { return false }
         if let index = Self.digitKeys[event.keyCode] {
-            activate(row: index)
+            activateNumbered(row: index)
             return true
         }
         if event.keyCode == UInt16(kVK_Return) || event.keyCode == UInt16(kVK_ANSI_KeypadEnter) {

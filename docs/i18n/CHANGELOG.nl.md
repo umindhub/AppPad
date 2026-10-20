@@ -18,6 +18,16 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.1
+
+### Added
+
+#### Workflows
+- Nieuwe ingebouwde workflow ‘Zoeken in App Store’: typ `mas` of `appstore` gevolgd door zoektermen om de resultaten direct in de App Store te openen.
+
+### Fixed
+- Workflowpaneel: ⌘1–⌘0 op een workflow met een argument selecteert die nu en vult de naam in, klaar voor het argument, in plaats van niets te doen.
+
 ## v1.3.0
 
 ### Fixed

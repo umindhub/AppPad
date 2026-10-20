@@ -18,6 +18,16 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.1
+
+### Added
+
+#### Workflows
+- Neuer integrierter Workflow „App Store durchsuchen“: `mas` oder `appstore` gefolgt von Suchbegriffen öffnet die Ergebnisse direkt im App Store.
+
+### Fixed
+- Workflow-Panel: ⌘1–⌘0 auf einem Workflow mit Argument wählt ihn jetzt aus und trägt seinen Namen ein, bereit für das Argument, statt nichts zu tun.
+
 ## v1.3.0
 
 ### Fixed
