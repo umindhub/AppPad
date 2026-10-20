@@ -1,7 +1,9 @@
 import Foundation
 
 // First-launch arrangement in the classic Launchpad order.
-// Entries match by bundle id, or by bundle file name with a "file:" prefix (for apps whose id varies).
+// Entries match by bundle id, or by bundle file name with a "file:" prefix (for apps whose id varies);
+// selfEntry is AppPad (this build first, then any other installed AppPad: a Dev build runs from
+// DerivedData and is not scanned, so it places the installed Release / Beta copy instead).
 // Missing entries are skipped, so new macOS releases need no code change:
 // 1. primaryOrder apps (page 1)
 // 2. other system apps not listed (e.g. new apps in macOS 27), by name
@@ -9,6 +11,9 @@ import Foundation
 // 4. remaining Apple apps (Xcode, Pages…) by name, then third-party apps by name
 nonisolated enum DefaultLayout {
     static let otherFolderID = "builtin.other"
+    static let selfEntry = "self:AppPad"
+    // Beta + Release share one id; Dev has its own.
+    static let appPadBundleIDs = ["com.youmindhub.apppad", "com.youmindhub.devapppad"]
 
     static let primaryOrder: [String] = [
         "com.apple.AppStore",
@@ -42,6 +47,7 @@ nonisolated enum DefaultLayout {
         "com.apple.ScreenContinuity",
         "com.apple.shortcuts",
         "com.apple.Siri",
+        selfEntry,                    // AppPad, left of Mission Control
         "com.apple.exposelauncher",
         "com.apple.backup.launcher",
         "com.apple.systempreferences",
@@ -76,7 +82,10 @@ nonisolated enum DefaultLayout {
         // 1. Primary order
         for entry in primaryOrder {
             let match: AppInfo?
-            if entry.hasPrefix("file:") {
+            if entry == selfEntry {
+                let ids = [Bundle.main.bundleIdentifier].compactMap { $0 } + appPadBundleIDs
+                match = ids.lazy.compactMap { remaining[$0] }.first
+            } else if entry.hasPrefix("file:") {
                 let name = String(entry.dropFirst(5))
                 match = remaining.values.first { $0.isSystem && fileName($0) == name }
             } else {

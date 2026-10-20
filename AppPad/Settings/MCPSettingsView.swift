@@ -1,12 +1,13 @@
 import SwiftUI
 import AppKit
 
-// Settings › AI Assistants (MCP): on / off, status and copyable client setup.
+// Settings › AI Assistants (MCP): on / off, status, app installs (Homebrew) and copyable client setup.
 struct MCPSettingsView: View {
     @ObservedObject private var host = MCPHost.shared
     @ObservedObject private var claude = ClaudeDesktopMCP.shared
     @State private var copied: Snippet?
     @State private var claudeMessage: ClaudeMessage?
+    @State private var homebrewInstalled = Homebrew.isInstalled
 
     private struct ClaudeMessage: Equatable {
         var text: String
@@ -31,6 +32,7 @@ struct MCPSettingsView: View {
                     .foregroundStyle(.secondary)
             }
             if host.enabled {
+                appsSection
                 claudeDesktopSection
                 snippetSection(.json, title: "Claude Desktop, Cursor and other clients",
                                caption: "Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client.",
@@ -40,11 +42,82 @@ struct MCPSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .onAppear { claude.refresh() }
-        // The config may have been edited by hand or by Claude Desktop meanwhile.
+        .onAppear {
+            claude.refresh()
+            homebrewInstalled = Homebrew.isInstalled
+        }
+        // The config may have been edited by hand or by Claude Desktop meanwhile (Homebrew installed in Terminal).
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             claude.refresh()
+            homebrewInstalled = Homebrew.isInstalled
         }
+    }
+
+    // AI installs / uninstalls of apps through Homebrew casks.
+    private var appsSection: some View {
+        Section {
+            Toggle(isOn: $host.confirmAppChanges) {
+                Text("Confirm before AI installs or uninstalls apps")
+                Text("Shows the app, its developer and where it comes from before anything changes.")
+            }
+            if !host.confirmAppChanges {
+                autoInstallWarning
+            }
+            LabeledContent("Homebrew") {
+                if homebrewInstalled {
+                    Text("Installed").foregroundStyle(.green)
+                } else {
+                    HStack(spacing: 8) {
+                        Text("Not installed").foregroundStyle(.secondary)
+                        Button("Install…") { try? HomebrewInstaller.openInTerminal() }
+                    }
+                }
+            }
+        } header: {
+            SelectableText(text: String(localized: "Apps"), font: .boldSystemFont(ofSize: NSFont.systemFontSize))
+        } footer: {
+            Text("AI assistants can install apps from Homebrew’s official catalog that are notarized by Apple and contain only the app, including command-line tools that live inside it. Formulae, installers and third-party taps are not supported.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // Shown while confirmation is off: the risk must be visible, not buried in a footer.
+    private static let autoInstallRisks: [LocalizedStringKey] = [
+        "The AI can be misled by something it reads, such as a web page, a document or an email, and install an app you never wanted.",
+        "Notarized does not mean harmless: remote-control tools and similar software pass every check.",
+        "The AI can uninstall apps you use.",
+        "Uninstalling an app with Homebrew deletes it right away instead of moving it to the Trash, so work may be lost (it cannot be restored).",
+    ]
+
+    private var autoInstallWarning: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title3)
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("AI can install and uninstall apps without asking")
+                    .fontWeight(.semibold)
+                ForEach(Array(Self.autoInstallRisks.enumerated()), id: \.offset) { index, risk in
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Image(systemName: "\(index + 1).circle.fill")
+                        Text(risk)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .font(.callout)
+                }
+                Text("Turn confirmation back on unless you watch every AI request yourself.")
+                    .font(.callout)
+                    .fontWeight(.medium)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+            }
+            .foregroundStyle(.red)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color.red.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.orange.opacity(0.6), lineWidth: 1))
     }
 
     // One-click setup: writes only AppPad's entry into claude_desktop_config.json.

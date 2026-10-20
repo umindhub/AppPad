@@ -55,7 +55,6 @@ nonisolated enum PermissionAnswer: Sendable {
 // iPhone-style prompt: Allow Once / Always Allow / Don't Allow for all undecided items at once.
 enum PermissionPrompt {
     static func ask(workflow: Workflow, items: [PermissionItem]) -> PermissionAnswer {
-        NSApp.activate()
         let alert = NSAlert()
         alert.messageText = String(localized: "“\(workflow.displayName)” wants to:")
         alert.informativeText = items.map { "• " + $0.title }.joined(separator: "\n")
@@ -64,7 +63,7 @@ enum PermissionPrompt {
         alert.addButton(withTitle: String(localized: "Always Allow"))
         let deny = alert.addButton(withTitle: String(localized: "Don't Allow"))
         deny.keyEquivalent = "\u{1b}"
-        switch alert.runModal() {
+        switch FloatingAlert.runModal(alert) {
         case .alertFirstButtonReturn: return .allowOnce
         case .alertSecondButtonReturn: return .alwaysAllow
         default: return .deny

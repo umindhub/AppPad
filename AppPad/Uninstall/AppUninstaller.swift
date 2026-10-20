@@ -421,6 +421,7 @@ nonisolated enum AppUninstaller {
 
 // After the app is in the Trash: if it came from `brew install --cask`, `brew uninstall --cask` removes
 // the cask record (Caskroom, linked binaries, its uninstall steps). No brew / no matching cask → skipped.
+// brew is located and run by Homebrew (official prefixes only, explicit environment).
 nonisolated enum HomebrewCask {
     nonisolated enum Outcome: Sendable {
         case skipped
@@ -431,14 +432,14 @@ nonisolated enum HomebrewCask {
     private static let infoBatch = 20   // casks per `brew info` call (JSON size stays well below the cap)
 
     static func remove(appFileName: String) async -> Outcome {
-        guard let brew = await brewPath() else { return .skipped }
+        guard let brew = Homebrew.executable else { return .skipped }
         // Another copy still in an Applications folder: that one may be the cask's, leave it alone.
         let fm = FileManager.default
         let appDirs = ["/Applications", fm.homeDirectoryForCurrentUser.appendingPathComponent("Applications").path]
         guard !appDirs.contains(where: { fm.fileExists(atPath: ($0 as NSString).appendingPathComponent(appFileName)) })
         else { return .skipped }
 
-        let env = await environment(brew: brew)
+        let env = await Homebrew.environment(brew: brew)
         guard let token = await caskToken(appFileName: appFileName, brew: brew, env: env) else { return .skipped }
         let output = await ProcessRunner.run(brew, ["uninstall", "--cask", token], environment: env, timeout: 180)
         if output.succeeded { return .removed(token) }
@@ -446,39 +447,15 @@ nonisolated enum HomebrewCask {
         return .failed(token)
     }
 
+    // Cask that installed this app (still on disk), nil without brew or match.
+    static func installedToken(appFileName: String) async -> String? {
+        guard let brew = Homebrew.executable else { return nil }
+        let env = await Homebrew.environment(brew: brew)
+        return await caskToken(appFileName: appFileName, brew: brew, env: env)
+    }
+
     static func command(for token: String) -> String {
         "brew uninstall --cask \(token)"
-    }
-
-    // Default prefixes first (Apple silicon / Intel), then the login shell's PATH.
-    private static func brewPath() async -> String? {
-        let fm = FileManager.default
-        if let hit = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].first(where: fm.isExecutableFile(atPath:)) {
-            return hit
-        }
-        let path = await ShellEnvironment.loginPath()
-        for dir in path.split(separator: ":") {
-            let candidate = (String(dir) as NSString).appendingPathComponent("brew")
-            if fm.isExecutableFile(atPath: candidate) { return candidate }
-        }
-        return nil
-    }
-
-    // Non-interactive: no auto-update, no hints; stdin is closed, so a sudo prompt fails instead of hanging.
-    private static func environment(brew: String) async -> [String: String] {
-        let binDir = (brew as NSString).deletingLastPathComponent
-        let path = await ShellEnvironment.loginPath()
-        return [
-            "HOME": NSHomeDirectory(),
-            "USER": NSUserName(),
-            "LOGNAME": NSUserName(),
-            "PATH": binDir + ":" + path,
-            "LANG": ProcessInfo.processInfo.environment["LANG"] ?? "en_US.UTF-8",
-            "HOMEBREW_NO_AUTO_UPDATE": "1",
-            "HOMEBREW_NO_ENV_HINTS": "1",
-            "HOMEBREW_NO_ANALYTICS": "1",
-            "NONINTERACTIVE": "1",
-        ]
     }
 
     // `brew list --cask`, then `brew info` in batches (likely tokens first) until a cask installs this app.

@@ -19,6 +19,25 @@ AppPad 的所有重要变更都记录在此文件中。
 > 本文为 [CHANGELOG.md](../../CHANGELOG.md) 的译文，如有出入，以英文版为准。
 
 
+## v1.2.8
+
+### Added
+
+#### AI 助手
+- AI 助手可以通过 Homebrew 搜索、安装和卸载 App。只安装 Homebrew 官方目录中经过 Apple 公证的 App（命令行工具只允许来自 App 内部），安装后还会再次校验。
+- 每次安装和卸载前都会先请你确认。可在 设置 › AI 助手 中关闭，关闭后会显示列出风险的警告。
+- 未安装 Homebrew 时，AppPad 会提示用官方安装命令打开终端。
+
+#### 工作流
+- 新增内置工作流“安装 Homebrew”。
+
+### Changed
+- AI 助手: AI 触发的确认弹窗（安装、卸载、保存工作流、运行、权限）现在显示在最前，且不会把 AppPad 的其他窗口带到前面。
+
+### Note
+- 通过 Homebrew 卸载的 App 会直接删除，不会移到废纸篓。
+- 不支持 formula 和第三方 tap。只识别安装在 /opt/homebrew 和 /usr/local 的 Homebrew。
+
 ## v1.2.7
 
 ### Added

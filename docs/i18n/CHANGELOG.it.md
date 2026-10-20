@@ -18,6 +18,25 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.2.8
+
+### Added
+
+#### Assistenti IA
+- Gli assistenti IA possono cercare, installare e disinstallare app con Homebrew. Vengono installate solo app del catalogo ufficiale di Homebrew autenticate da Apple (strumenti da riga di comando solo dall’interno dell’app), e ogni app viene ricontrollata dopo l’installazione.
+- Ogni installazione e disinstallazione chiede prima la tua conferma. Puoi disattivarla in Impostazioni › Assistenti IA; un avviso elenca allora i rischi.
+- Se Homebrew manca, AppPad propone di aprire Terminale con il comando di installazione ufficiale.
+
+#### Flussi di lavoro
+- Nuovo flusso di lavoro integrato “Installa Homebrew”.
+
+### Changed
+- Assistenti IA: le conferme avviate dall’IA (installazione, disinstallazione, salvataggio dei flussi, esecuzione, permessi) ora appaiono in primo piano senza portare avanti le altre finestre di AppPad.
+
+### Note
+- Le app disinstallate con Homebrew vengono eliminate subito, non spostate nel Cestino.
+- Formule e tap di terze parti non sono supportati. Homebrew viene rilevato solo in /opt/homebrew e /usr/local.
+
 ## v1.2.7
 
 ### Added

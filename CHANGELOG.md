@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.2.8
+
+### Added
+
+#### AI Assistants
+- AI assistants can search, install and uninstall apps with Homebrew. Only apps from Homebrew’s official catalog that are notarized by Apple are installed (command-line tools only from inside the app), and each app is checked again after installing.
+- Every install and uninstall asks for your confirmation first. You can turn this off in Settings › AI Assistants; a warning then lists the risks.
+- If Homebrew is missing, AppPad offers to open Terminal with Homebrew’s official install command.
+
+#### Workflows
+- New built-in workflow “Install Homebrew”.
+
+### Changed
+- AI Assistants: Confirmations triggered by AI (installing, uninstalling, saving workflows, running, permissions) now appear in front without bringing AppPad’s other windows forward.
+
+### Note
+- Apps uninstalled with Homebrew are deleted right away, not moved to the Trash.
+- Formulae and third-party taps are not supported. Homebrew is only detected in /opt/homebrew and /usr/local.
+
 ## v1.2.7
 
 ### Added

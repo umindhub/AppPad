@@ -87,6 +87,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         // Blur wallpapers now, not on the first show.
         WallpaperBlurCache.shared.start()
         viewController.controller = self
+        MCPLayoutTools.launchpad = self
 
         // Rounded container: background (wallpaper / color) + content.
         container.wantsLayer = true
@@ -913,6 +914,17 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
             applyFrame(targetFrame(on: screen), on: screen, display: true)
             panel.invalidateShadow()
         }
+    }
+
+    // MARK: - MCP (layout tools)
+
+    var catalogApps: [AppInfo] { apps }
+
+    // A drop would act on indices of the replaced layout.
+    var isDraggingItem: Bool { viewController.drag != nil }
+
+    func usageScore(for key: String) -> Double {
+        stats.score(for: key)
     }
 
     // MARK: - Backup

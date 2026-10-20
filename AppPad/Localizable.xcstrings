@@ -178,180 +178,6 @@
         }
       }
     },
-    "Badges are read from the Dock and need Accessibility permission." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kennzeichen werden aus dem Dock gelesen und benötigen die Berechtigung „Bedienungshilfen“."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los globos se leen del Dock y necesitan el permiso de Accesibilidad."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les pastilles sont lues depuis le Dock et nécessitent l’autorisation Accessibilité."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I badge vengono letti dal Dock e richiedono il permesso Accessibilità."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "バッジは Dock から読み取るため、「アクセシビリティ」の許可が必要です。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "배지는 Dock에서 읽어오므로 손쉬운 사용 권한이 필요합니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Badges worden uit het Dock gelezen en hebben toegang voor toegankelijkheid nodig."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "角标从 Dock 读取，需要“辅助功能”权限。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "角標從 Dock 讀取，需要「輔助使用」權限。"
-          }
-        }
-      }
-    },
-    "Show app badges" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-Kennzeichen anzeigen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar globos de las apps"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher les pastilles des apps"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra badge delle app"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App のバッジを表示"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱 배지 표시"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toon app-badges"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示 App 角标"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顯示 App 角標"
-          }
-        }
-      }
-    },
-    "Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeigt die roten Kennzeichen aus dem Dock (ungelesene Objekte, Updates) auf den Symbolen in AppPad. Ordner zeigen die Summe der enthaltenen Apps."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra en los iconos de AppPad los globos rojos del Dock (no leídos, actualizaciones). Las carpetas muestran el total de las apps que contienen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Affiche sur les icônes d’AppPad les pastilles rouges du Dock (non lus, mises à jour). Les dossiers affichent le total des apps qu’ils contiennent."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra sulle icone di AppPad i badge rossi del Dock (non letti, aggiornamenti). Le cartelle mostrano il totale delle app contenute."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dock と同じ赤いバッジ（未読数、アップデートなど）を AppPad のアイコンに表示します。フォルダには中の App の合計が表示されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dock과 같은 빨간 배지(읽지 않음, 업데이트 등)를 AppPad 아이콘에 표시합니다. 폴더에는 포함된 앱의 합계가 표시됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toont de rode badges uit het Dock (ongelezen, updates) op de symbolen in AppPad. Mappen tonen het totaal van de apps erin."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 AppPad 的图标上显示与 Dock 相同的红色角标（未读数、更新等），文件夹显示其中 App 的角标总数。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 AppPad 的圖像上顯示與 Dock 相同的紅色角標（未讀數、更新等），檔案夾顯示其中 App 的角標總數。"
-          }
-        }
-      }
-    },
     "“%@” failed" : {
       "localizations" : {
         "de" : {
@@ -522,6 +348,180 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「%@」想要新增或修改工作流程"
+          }
+        }
+      }
+    },
+    "“%@” wants to install “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ möchte „%2$@“ installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” quiere instalar “%2$@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » veut installer « %2$@ »"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” vuole installare “%2$@”"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”が“%2$@”のインストールを求めています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”이(가) “%2$@”을(를) 설치하려고 합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’ wil ‘%2$@’ installeren"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”想要安装“%2$@”"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%1$@」想要安裝「%2$@」"
+          }
+        }
+      }
+    },
+    "“%@” wants to install Homebrew" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ möchte Homebrew installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” quiere instalar Homebrew"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » veut installer Homebrew"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” vuole installare Homebrew"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”がHomebrewのインストールを求めています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”이(가) Homebrew를 설치하려고 합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ wil Homebrew installeren"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”想要安装 Homebrew"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」想要安裝 Homebrew"
+          }
+        }
+      }
+    },
+    "“%@” wants to uninstall “%@”" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ möchte „%2$@“ deinstallieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” quiere desinstalar “%2$@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » veut désinstaller « %2$@ »"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” vuole disinstallare “%2$@”"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”が“%2$@”のアンインストールを求めています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”이(가) “%2$@”을(를) 제거하려고 합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’ wil ‘%2$@’ verwijderen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@”想要卸载“%2$@”"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%1$@」想要解除安裝「%2$@」"
           }
         }
       }
@@ -3255,6 +3255,182 @@
         }
       }
     },
+    "Add AppPad to Claude Desktop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad zu Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir AppPad a Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter AppPad à Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi AppPad a Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop に追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에 AppPad 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad toevoegen aan Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 AppPad 添加到 Claude Desktop"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 AppPad 加入 Claude Desktop"
+          }
+        }
+      }
+    },
+    "Add AppPad to Claude Desktop's MCP servers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad zu den MCP-Servern von Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir AppPad a los servidores MCP de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter AppPad aux serveurs MCP de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungere AppPad ai server MCP di Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop の MCP サーバに追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop의 MCP 서버에 AppPad 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad toevoegen aan de MCP-servers van Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 AppPad 添加到 Claude Desktop 的 MCP 服务"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 AppPad 加入 Claude Desktop 的 MCP 服務"
+          }
+        }
+      }
+    },
+    "Add AppPad's MCP server to Claude Desktop so Claude can run your workflows." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügt den MCP-Server von AppPad zu Claude Desktop hinzu, damit Claude deine Workflows ausführen kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade el servidor MCP de AppPad a Claude Desktop para que Claude pueda ejecutar tus flujos de trabajo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoute le serveur MCP d’AppPad à Claude Desktop pour que Claude puisse exécuter vos flux de travail."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiunge il server MCP di AppPad a Claude Desktop, così Claude può eseguire i tuoi flussi di lavoro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad の MCP サーバを Claude Desktop に追加し、Claude からワークフローを実行できるようにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude가 워크플로를 실행할 수 있도록 AppPad의 MCP 서버를 Claude Desktop에 추가합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voegt de MCP-server van AppPad toe aan Claude Desktop, zodat Claude je workflows kan uitvoeren."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 AppPad 的 MCP 服务添加到 Claude Desktop，让 Claude 可以运行你的工作流。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 AppPad 的 MCP 服務加入 Claude Desktop，讓 Claude 可以執行你的工作流程。"
+          }
+        }
+      }
+    },
     "Add at least one step." : {
       "localizations" : {
         "de" : {
@@ -3893,6 +4069,297 @@
         }
       }
     },
+    "Add to Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir a Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter à Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi a Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop に追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toevoegen aan Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加到 Claude Desktop"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入 Claude Desktop"
+          }
+        }
+      }
+    },
+    "Add YouMindHub to Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub zu Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir YouMindHub a Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter YouMindHub à Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi YouMindHub a Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop に追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에 YouMindHub 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub toevoegen aan Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 YouMindHub 添加到 Claude Desktop"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 YouMindHub 加入 Claude Desktop"
+          }
+        }
+      }
+    },
+    "Add YouMindHub to Claude Desktop's MCP servers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub zu den MCP-Servern von Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir YouMindHub a los servidores MCP de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter YouMindHub aux serveurs MCP de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungere YouMindHub ai server MCP di Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop の MCP サーバに追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop의 MCP 서버에 YouMindHub 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub toevoegen aan de MCP-servers van Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 YouMindHub 添加到 Claude Desktop 的 MCP 服务"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 YouMindHub 加入 Claude Desktop 的 MCP 服務"
+          }
+        }
+      }
+    },
+    "Add YouMindHub's MCP server to Claude Desktop so Claude can use YouMindHub." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügt den MCP-Server von YouMindHub zu Claude Desktop hinzu, damit Claude YouMindHub nutzen kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade el servidor MCP de YouMindHub a Claude Desktop para que Claude pueda usar YouMindHub."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoute le serveur MCP de YouMindHub à Claude Desktop pour que Claude puisse utiliser YouMindHub."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiunge il server MCP di YouMindHub a Claude Desktop, così Claude può usare YouMindHub."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub の MCP サーバを Claude Desktop に追加し、Claude から YouMindHub を使えるようにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub의 MCP 서버를 Claude Desktop에 추가해 Claude가 YouMindHub를 사용할 수 있게 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voegt de MCP-server van YouMindHub toe aan Claude Desktop, zodat Claude YouMindHub kan gebruiken."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 YouMindHub 的 MCP 服务添加到 Claude Desktop，让 Claude 可以使用 YouMindHub。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 YouMindHub 的 MCP 服務加入 Claude Desktop，讓 Claude 可以使用 YouMindHub。"
+          }
+        }
+      }
+    },
+    "Added" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzugefügt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouté"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiunto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toegevoegd"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已添加"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加入"
+          }
+        }
+      }
+    },
     "Added: %@" : {
       "localizations" : {
         "de" : {
@@ -4121,6 +4588,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 助理（MCP）"
+          }
+        }
+      }
+    },
+    "AI assistants can install apps from Homebrew’s official catalog that are notarized by Apple and contain only the app, including command-line tools that live inside it. Formulae, installers and third-party taps are not supported." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KI-Assistenten können Apps aus dem offiziellen Homebrew-Katalog installieren, die von Apple notarisiert sind und nur aus der App bestehen, einschließlich Befehlszeilenwerkzeugen innerhalb der App. Formeln, Installationsprogramme und Taps von Drittanbietern werden nicht unterstützt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los asistentes de IA pueden instalar apps del catálogo oficial de Homebrew que estén notarizadas por Apple y solo contengan la app, incluidas las herramientas de línea de comandos que hay dentro de ella. No se admiten fórmulas, instaladores ni taps de terceros."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les assistants IA peuvent installer des apps du catalogue officiel de Homebrew notarisées par Apple et ne contenant que l’app, y compris les outils en ligne de commande qu’elle contient. Les formules, les programmes d’installation et les taps tiers ne sont pas pris en charge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli assistenti IA possono installare app del catalogo ufficiale di Homebrew autenticate da Apple e che contengono solo l’app, compresi gli strumenti da riga di comando al suo interno. Formule, programmi di installazione e tap di terze parti non sono supportati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIアシスタントは、Homebrew公式カタログのうち、Appleの公証を受け、アプリ本体（アプリ内のコマンドラインツールを含む）だけで構成されるアプリをインストールできます。Formula、インストーラ、サードパーティのtapには対応していません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 어시스턴트는 Homebrew 공식 카탈로그에서 Apple의 공증을 받았고 앱(앱 내부의 명령줄 도구 포함)만 포함된 앱을 설치할 수 있습니다. Formula, 설치 프로그램, 타사 tap은 지원하지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI-assistenten kunnen apps uit de officiële Homebrew-catalogus installeren die door Apple zijn genotariseerd en alleen de app bevatten, inclusief opdrachtregeltools in de app. Formules, installatieprogramma’s en taps van derden worden niet ondersteund."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 助手可以安装 Homebrew 官方目录中经过 Apple 公证、且只包含 App 本身的软件（包括 App 内自带的命令行工具）。不支持 formula、安装器和第三方 tap。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 助理可以安裝 Homebrew 官方目錄中經過 Apple 公證、且只包含 App 本身的軟體（包括 App 內附的命令列工具）。不支援 formula、安裝程式和第三方 tap。"
+          }
+        }
+      }
+    },
+    "AI can install and uninstall apps without asking" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KI kann Apps ohne Rückfrage installieren und deinstallieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La IA puede instalar y desinstalar apps sin preguntar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA peut installer et désinstaller des apps sans demander"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA può installare e disinstallare app senza chiedere"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIが確認なしでアプリをインストール/アンインストールできます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI가 묻지 않고 앱을 설치하고 제거할 수 있습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI kan apps installeren en verwijderen zonder te vragen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可以不经确认直接安装和卸载 App"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可以不經確認直接安裝和解除安裝 App"
           }
         }
       }
@@ -5523,6 +6106,122 @@
         }
       }
     },
+    "AppPad is already in Claude Desktop." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad ist bereits in Claude Desktop eingerichtet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad ya está en Claude Desktop."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad est déjà dans Claude Desktop."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad è già presente in Claude Desktop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad はすでに Claude Desktop に追加されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad가 이미 Claude Desktop에 추가되어 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad staat al in Claude Desktop."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 已在 Claude Desktop 中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 已在 Claude Desktop 中。"
+          }
+        }
+      }
+    },
+    "AppPad is not in Claude Desktop." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad ist nicht in Claude Desktop eingerichtet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad no está en Claude Desktop."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad n’est pas dans Claude Desktop."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad non è presente in Claude Desktop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad は Claude Desktop に追加されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad가 Claude Desktop에 추가되어 있지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad staat niet in Claude Desktop."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 不在 Claude Desktop 中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 不在 Claude Desktop 中。"
+          }
+        }
+      }
+    },
     "AppPad keeps the text, images and files you copy. Items you save stay until you remove them." : {
       "localizations" : {
         "de" : {
@@ -5697,6 +6396,64 @@
         }
       }
     },
+    "AppPad opens Terminal and runs Homebrew’s official install command. Terminal asks for your Mac password; AppPad never sees it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad öffnet das Terminal und führt den offiziellen Installationsbefehl von Homebrew aus. Das Terminal fragt nach deinem Mac-Passwort; AppPad sieht es nie."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad abre Terminal y ejecuta el comando de instalación oficial de Homebrew. Terminal te pide la contraseña del Mac; AppPad nunca la ve."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad ouvre Terminal et exécute la commande d’installation officielle de Homebrew. Terminal demande le mot de passe de votre Mac ; AppPad ne le voit jamais."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad apre Terminale ed esegue il comando di installazione ufficiale di Homebrew. Terminale chiede la password del Mac; AppPad non la vede mai."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPadがターミナルを開き、Homebrew公式のインストールコマンドを実行します。Macのパスワードはターミナルが尋ねます。AppPadがパスワードを見ることはありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad가 터미널을 열고 Homebrew 공식 설치 명령을 실행합니다. Mac 암호는 터미널이 묻고, AppPad는 절대 볼 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad opent Terminal en voert de officiële installatieopdracht van Homebrew uit. Terminal vraagt om je Mac-wachtwoord; AppPad ziet het nooit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 会打开终端并运行 Homebrew 官方安装命令。Mac 密码由终端询问，AppPad 不会看到。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 會打開終端機並執行 Homebrew 官方安裝指令。Mac 密碼由終端機詢問，AppPad 不會看到。"
+          }
+        }
+      }
+    },
     "AppPad Settings" : {
       "localizations" : {
         "de" : {
@@ -5751,6 +6508,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPad 設定"
+          }
+        }
+      }
+    },
+    "AppPad was added to Claude Desktop. Restart Claude Desktop to use it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad wurde zu Claude Desktop hinzugefügt. Starte Claude Desktop neu, um es zu verwenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad se ha añadido a Claude Desktop. Reinicia Claude Desktop para usarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad a été ajouté à Claude Desktop. Redémarrez Claude Desktop pour l’utiliser."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad è stato aggiunto a Claude Desktop. Riavvia Claude Desktop per usarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop に追加しました。使用するには Claude Desktop を再起動してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad를 Claude Desktop에 추가했습니다. 사용하려면 Claude Desktop을 다시 시작하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad is toegevoegd aan Claude Desktop. Start Claude Desktop opnieuw om het te gebruiken."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已将 AppPad 添加到 Claude Desktop，重新启动 Claude Desktop 后即可使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已將 AppPad 加入 Claude Desktop，重新啟動 Claude Desktop 後即可使用。"
+          }
+        }
+      }
+    },
+    "AppPad was removed from Claude Desktop. Restart Claude Desktop to apply." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad wurde aus Claude Desktop entfernt. Starte Claude Desktop neu, damit die Änderung wirkt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad se ha quitado de Claude Desktop. Reinicia Claude Desktop para aplicar el cambio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad a été retiré de Claude Desktop. Redémarrez Claude Desktop pour appliquer le changement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad è stato rimosso da Claude Desktop. Riavvia Claude Desktop per applicare la modifica."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop から削除しました。反映するには Claude Desktop を再起動してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 AppPad를 제거했습니다. 적용하려면 Claude Desktop을 다시 시작하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad is verwijderd uit Claude Desktop. Start Claude Desktop opnieuw om dit toe te passen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已从 Claude Desktop 移除 AppPad，重新启动 Claude Desktop 后生效。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已從 Claude Desktop 移除 AppPad，重新啟動 Claude Desktop 後生效。"
           }
         }
       }
@@ -6800,6 +7673,64 @@
         }
       }
     },
+    "Badges are read from the Dock and need Accessibility permission." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennzeichen werden aus dem Dock gelesen und benötigen die Berechtigung „Bedienungshilfen“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los globos se leen del Dock y necesitan el permiso de Accesibilidad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pastilles sont lues depuis le Dock et nécessitent l’autorisation Accessibilité."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I badge vengono letti dal Dock e richiedono il permesso Accessibilità."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バッジは Dock から読み取るため、「アクセシビリティ」の許可が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배지는 Dock에서 읽어오므로 손쉬운 사용 권한이 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges worden uit het Dock gelezen en hebben toegang voor toegankelijkheid nodig."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角标从 Dock 读取，需要“辅助功能”权限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "角標從 Dock 讀取，需要「輔助使用」權限。"
+          }
+        }
+      }
+    },
     "Behavior" : {
       "localizations" : {
         "de" : {
@@ -7086,6 +8017,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每按一次：下 ½ → ⅓ → ⅔"
+          }
+        }
+      }
+    },
+    "brew, homebrew, installbrew" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installieren, paketmanager"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "instalar, gestor de paquetes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installer, gestionnaire de paquets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installa, gestore pacchetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール, パッケージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치, 패키지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installeren, pakketbeheer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装, 包管理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝, 套件管理"
           }
         }
       }
@@ -8198,6 +9188,64 @@
     "Claude Code" : {
       "shouldTranslate" : false
     },
+    "Claude Desktop is not installed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop ist nicht installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop no está instalado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop n’est pas installé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop non è installato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop がインストールされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop이 설치되어 있지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop is niet geïnstalleerd."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未安装 Claude Desktop。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未安裝 Claude Desktop。"
+          }
+        }
+      }
+    },
     "Claude Desktop, Cursor and other clients" : {
       "localizations" : {
         "de" : {
@@ -8252,6 +9300,182 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude Desktop、Cursor 及其他用戶端"
+          }
+        }
+      }
+    },
+    "claude_desktop_config.json is not valid JSON. Fix or delete it, then try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json ist kein gültiges JSON. Korrigiere oder lösche die Datei und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json no es un JSON válido. Corrígelo o elimínalo y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json n’est pas un JSON valide. Corrigez-le ou supprimez-le, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json non è un JSON valido. Correggilo o eliminalo, quindi riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json が有効な JSON ではありません。修正または削除してから、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json이 올바른 JSON이 아닙니다. 수정하거나 삭제한 후 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json is geen geldige JSON. Herstel of verwijder het bestand en probeer het opnieuw."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json 不是有效的 JSON，请修正或删除后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json 不是有效的 JSON，請修正或刪除後再試一次。"
+          }
+        }
+      }
+    },
+    "claude, mcp, addmcp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "añadir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ajouter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aggiungi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "toevoegen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加, 接入"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入, 新增"
+          }
+        }
+      }
+    },
+    "claude, mcp, removemcp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quitar, eliminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "retirer, supprimer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rimuovi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "verwijderen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除, 删除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除, 刪除"
           }
         }
       }
@@ -8894,6 +10118,64 @@
         }
       }
     },
+    "Command-line tools: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Befehlszeilenwerkzeuge: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herramientas de línea de comandos: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outils en ligne de commande : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strumenti da riga di comando: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンドラインツール：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "명령줄 도구: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opdrachtregeltools: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令行工具：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令列工具：%@"
+          }
+        }
+      }
+    },
     "Complete" : {
       "localizations" : {
         "de" : {
@@ -8948,6 +10230,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "補全"
+          }
+        }
+      }
+    },
+    "Confirm before AI installs or uninstalls apps" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen, bevor KI Apps installiert oder deinstalliert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar antes de que la IA instale o desinstale apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer avant que l’IA installe ou désinstalle des apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma prima che l’IA installi o disinstalli app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIがアプリをインストール/アンインストールする前に確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI가 앱을 설치하거나 제거하기 전에 확인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevestigen voordat AI apps installeert of verwijdert"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 安装或卸载 App 前确认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 安裝或解除安裝 App 前確認"
           }
         }
       }
@@ -10230,6 +11570,64 @@
         }
       }
     },
+    "Could not save claude_desktop_config.json: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json konnte nicht gespeichert werden: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar claude_desktop_config.json: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer claude_desktop_config.json : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare claude_desktop_config.json: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json を保存できませんでした：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json을 저장할 수 없습니다: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan claude_desktop_config.json niet opslaan: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法保存 claude_desktop_config.json：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法儲存 claude_desktop_config.json：%@"
+          }
+        }
+      }
+    },
     "Couldn’t move “%@” to the Trash." : {
       "localizations" : {
         "de" : {
@@ -11495,6 +12893,7 @@
       }
     },
     "Describe what you need in plain words, and Claude or another MCP client writes the workflow for you." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11548,6 +12947,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用簡單的話描述你的需求，Claude 或其他 MCP 用戶端就會幫你寫好工作流程。"
+          }
+        }
+      }
+    },
+    "Describe what you need in plain words: Claude or another MCP client writes the workflow for you, and can even tidy up your app icons into pages and folders." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibe in einfachen Worten, was du brauchst: Claude oder ein anderer MCP-Client schreibt den Workflow für dich und ordnet sogar deine App-Symbole in Seiten und Ordner."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe lo que necesitas con tus propias palabras: Claude u otro cliente MCP escribe el flujo de trabajo por ti e incluso ordena los iconos de tus apps en páginas y carpetas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Décrivez simplement ce dont vous avez besoin : Claude ou un autre client MCP écrit le flux de travail pour vous, et peut même ranger les icônes de vos apps en pages et dossiers."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descrivi a parole ciò che ti serve: Claude o un altro client MCP scrive il flusso di lavoro per te e può persino riordinare le icone delle app in pagine e cartelle."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やりたいことを普通の言葉で伝えるだけで、Claude などの MCP クライアントがワークフローを書いてくれます。App のアイコンをページやフォルダに整理することもできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필요한 것을 평소 말로 설명하면 Claude나 다른 MCP 클라이언트가 워크플로를 작성해 주고, 앱 아이콘을 페이지와 폴더로 정리해 줄 수도 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschrijf in gewone woorden wat je nodig hebt: Claude of een andere MCP-client schrijft de workflow voor je en kan zelfs je app-symbolen in pagina’s en mappen ordenen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用大白话描述你的需求，Claude 或其他 MCP 客户端就会帮你写好工作流，还能把 App 图标整理到各个页面和文件夹中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用簡單的話描述你的需求，Claude 或其他 MCP 用戶端就會幫你寫好工作流程，還能把 App 圖像整理到各個頁面和檔案夾中。"
           }
         }
       }
@@ -11722,6 +13179,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開發者工具"
+          }
+        }
+      }
+    },
+    "Developer: %@ (%@)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entwickler: %1$@ (%2$@)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desarrollador: %1$@ (%2$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Développeur : %1$@ (%2$@)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppatore: %1$@ (%2$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デベロッパ：%1$@（%2$@）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개발자: %1$@(%2$@)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ontwikkelaar: %1$@ (%2$@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开发者：%1$@（%2$@）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開發者：%1$@（%2$@）"
           }
         }
       }
@@ -12187,6 +13702,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "圓點"
+          }
+        }
+      }
+    },
+    "Download: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descarga: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード元：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载来源：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載來源：%@"
           }
         }
       }
@@ -16026,6 +17599,64 @@
         }
       }
     },
+    "Homebrew" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew"
+          }
+        }
+      }
+    },
     "Homebrew couldn’t remove the cask of “%@”." : {
       "localizations" : {
         "de" : {
@@ -16080,6 +17711,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Homebrew 無法移除「%@」的 cask。"
+          }
+        }
+      }
+    },
+    "Homebrew deletes the app (brew uninstall --cask %@). It is not moved to the Trash." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew löscht die App (brew uninstall --cask %@). Sie wird nicht in den Papierkorb gelegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew elimina la app (brew uninstall --cask %@). No se traslada a la papelera."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew supprime l’app (brew uninstall --cask %@). Elle n’est pas placée dans la corbeille."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew elimina l’app (brew uninstall --cask %@). Non viene spostata nel Cestino."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrewがアプリを削除します（brew uninstall --cask %@）。ゴミ箱には入りません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew가 앱을 삭제합니다(brew uninstall --cask %@). 휴지통으로 이동되지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew verwijdert de app (brew uninstall --cask %@). Hij wordt niet naar de prullenmand verplaatst."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 会直接删除该 App（brew uninstall --cask %@），不会移到废纸篓。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 會直接刪除該 App（brew uninstall --cask %@），不會丟到垃圾桶。"
+          }
+        }
+      }
+    },
+    "Homebrew is already installed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew ist bereits installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew ya está instalado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew est déjà installé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew è già installato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrewはすでにインストールされています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew가 이미 설치되어 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew is al geïnstalleerd."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 已经安装。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 已經安裝。"
           }
         }
       }
@@ -17073,6 +18820,180 @@
         }
       }
     },
+    "Install Homebrew" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Homebrew"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer Homebrew"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa Homebrew"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrewをインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 설치"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installeer Homebrew"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装 Homebrew"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝 Homebrew"
+          }
+        }
+      }
+    },
+    "Install…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installeer…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝…"
+          }
+        }
+      }
+    },
+    "Installed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installiert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geïnstalleerd"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已安装"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已安裝"
+          }
+        }
+      }
+    },
     "Installed workflows with their icons, panel shortcuts and on/off state." : {
       "localizations" : {
         "de" : {
@@ -17127,6 +19048,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已安裝的工作流程，包括圖像、面板快速鍵和啟用狀態。"
+          }
+        }
+      }
+    },
+    "Invalid configuration file" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungültige Konfigurationsdatei"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo de configuración no válido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichier de configuration non valide"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File di configurazione non valido"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定ファイルが無効です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잘못된 설정 파일"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ongeldig configuratiebestand"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配置文件无效"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定檔無效"
           }
         }
       }
@@ -22648,6 +24627,64 @@
         }
       }
     },
+    "Not added" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht hinzugefügt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No añadido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non ajouté"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non aggiunto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가되지 않음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet toegevoegd"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未添加"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未加入"
+          }
+        }
+      }
+    },
     "Not allowed for this run:" : {
       "localizations" : {
         "de" : {
@@ -22822,6 +24859,64 @@
         }
       }
     },
+    "Not installed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht installiert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No instalado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non installé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non installato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未インストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치되지 않음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet geïnstalleerd"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未安装"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未安裝"
+          }
+        }
+      }
+    },
     "Not run yet" : {
       "localizations" : {
         "de" : {
@@ -22934,6 +25029,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未執行"
+          }
+        }
+      }
+    },
+    "Notarized by Apple" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von Apple notarisiert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notarizada por Apple"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notarisée par Apple"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autenticata da Apple"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appleによる公証済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 공증 완료"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genotariseerd door Apple"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已通过 Apple 公证"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已通過 Apple 公證"
+          }
+        }
+      }
+    },
+    "Notarized does not mean harmless: remote-control tools and similar software pass every check." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notarisiert heißt nicht harmlos: Fernsteuerungsprogramme und ähnliche Software bestehen jede Prüfung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notarizada no significa inofensiva: las herramientas de control remoto y software similar superan todas las comprobaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notarisé ne veut pas dire inoffensif : les outils de contrôle à distance et les logiciels similaires passent tous les contrôles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autenticato non significa innocuo: gli strumenti di controllo remoto e software simili superano ogni verifica."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公証済みでも無害とは限りません。リモート操作ツールなどのソフトウェアはすべてのチェックを通過します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "공증되었다고 해서 무해한 것은 아닙니다. 원격 제어 도구 같은 소프트웨어도 모든 검사를 통과합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genotariseerd betekent niet onschuldig: tools voor bediening op afstand en vergelijkbare software doorstaan elke controle."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "经过公证不等于无害：远程控制工具这类软件同样能通过所有检查。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經過公證不等於無害：遠端控制工具這類軟體同樣能通過所有檢查。"
           }
         }
       }
@@ -23340,6 +25551,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 年以前"
+          }
+        }
+      }
+    },
+    "Only AppPad's own entry in claude_desktop_config.json is changed; your other MCP servers stay as they are. A backup of the previous file is kept next to it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur der eigene Eintrag von AppPad in claude_desktop_config.json wird geändert; deine anderen MCP-Server bleiben unverändert. Eine Sicherung der vorherigen Datei wird daneben abgelegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo se cambia la entrada de AppPad en claude_desktop_config.json; tus otros servidores MCP se quedan como están. Se guarda una copia de seguridad del archivo anterior junto a él."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seule l’entrée d’AppPad dans claude_desktop_config.json est modifiée ; vos autres serveurs MCP restent inchangés. Une sauvegarde du fichier précédent est conservée à côté."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viene modificata solo la voce di AppPad in claude_desktop_config.json; gli altri server MCP restano invariati. Accanto viene conservato un backup del file precedente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json のうち AppPad 自身の項目だけを変更し、ほかの MCP サーバはそのまま残します。変更前のファイルのバックアップを同じ場所に保存します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "claude_desktop_config.json에서 AppPad 항목만 변경하며, 다른 MCP 서버는 그대로 유지됩니다. 이전 파일의 백업이 같은 위치에 보관됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen de eigen vermelding van AppPad in claude_desktop_config.json wordt gewijzigd; je andere MCP-servers blijven zoals ze zijn. Een reservekopie van het vorige bestand wordt ernaast bewaard."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只修改 claude_desktop_config.json 中 AppPad 自己的条目，其他 MCP 服务保持不变。修改前的文件会在同一位置保留一份备份。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只修改 claude_desktop_config.json 中 AppPad 自己的項目，其他 MCP 服務保持不變。修改前的檔案會在同一位置保留一份備份。"
           }
         }
       }
@@ -23978,6 +26247,181 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打開系統設定"
+          }
+        }
+      }
+    },
+    "Open Terminal" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Terminal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Terminal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Terminale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Terminal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开终端"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開終端機"
+          }
+        }
+      }
+    },
+    "Open Terminal and run Homebrew’s official install command. AI assistants use Homebrew to install apps." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet das Terminal und führt den offiziellen Installationsbefehl von Homebrew aus. KI-Assistenten installieren Apps mit Homebrew."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Terminal y ejecuta el comando de instalación oficial de Homebrew. Los asistentes de IA usan Homebrew para instalar apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre Terminal et exécute la commande d’installation officielle de Homebrew. Les assistants IA utilisent Homebrew pour installer des apps."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre Terminale ed esegue il comando di installazione ufficiale di Homebrew. Gli assistenti IA usano Homebrew per installare app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルを開き、Homebrew公式のインストールコマンドを実行します。AIアシスタントはHomebrewでアプリをインストールします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널을 열고 Homebrew 공식 설치 명령을 실행합니다. AI 어시스턴트는 Homebrew로 앱을 설치합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opent Terminal en voert de officiële installatieopdracht van Homebrew uit. AI-assistenten installeren apps met Homebrew."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开终端并运行 Homebrew 官方安装命令。AI 助手通过 Homebrew 安装 App。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開終端機並執行 Homebrew 官方安裝指令。AI 助理透過 Homebrew 安裝 App。"
+          }
+        }
+      }
+    },
+    "Open Terminal with Homebrew’s official install command" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal mit dem offiziellen Installationsbefehl von Homebrew öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Terminal con el comando de instalación oficial de Homebrew"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Terminal avec la commande d’installation officielle de Homebrew"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprire Terminale con il comando di installazione ufficiale di Homebrew"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew公式のインストールコマンドでターミナルを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 공식 설치 명령으로 터미널 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal openen met de officiële installatieopdracht van Homebrew"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 Homebrew 官方安装命令打开终端"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 Homebrew 官方安裝指令打開終端機"
           }
         }
       }
@@ -27355,6 +29799,240 @@
         }
       }
     },
+    "Remove AppPad from Claude Desktop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad aus Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar AppPad de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer AppPad de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi AppPad da Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop から削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 AppPad 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad verwijderen uit Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 移除 AppPad"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 移除 AppPad"
+          }
+        }
+      }
+    },
+    "Remove AppPad from Claude Desktop's MCP servers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad aus den MCP-Servern von Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar AppPad de los servidores MCP de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer AppPad des serveurs MCP de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovere AppPad dai server MCP di Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を Claude Desktop の MCP サーバから削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop의 MCP 서버에서 AppPad 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad verwijderen uit de MCP-servers van Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 的 MCP 服务中移除 AppPad"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 的 MCP 服務中移除 AppPad"
+          }
+        }
+      }
+    },
+    "Remove AppPad's MCP server from Claude Desktop. Other MCP servers are kept." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt den MCP-Server von AppPad aus Claude Desktop. Andere MCP-Server bleiben erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quita el servidor MCP de AppPad de Claude Desktop. Los demás servidores MCP se conservan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retire le serveur MCP d’AppPad de Claude Desktop. Les autres serveurs MCP sont conservés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove il server MCP di AppPad da Claude Desktop. Gli altri server MCP restano invariati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad の MCP サーバを Claude Desktop から削除します。ほかの MCP サーバはそのまま残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 AppPad의 MCP 서버를 제거합니다. 다른 MCP 서버는 그대로 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert de MCP-server van AppPad uit Claude Desktop. Andere MCP-servers blijven behouden."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 移除 AppPad 的 MCP 服务，其他 MCP 服务保持不变。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 移除 AppPad 的 MCP 服務，其他 MCP 服務保持不變。"
+          }
+        }
+      }
+    },
+    "Remove from Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi da Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop から削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijderen uit Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 移除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 移除"
+          }
+        }
+      }
+    },
     "Remove from Saved" : {
       "localizations" : {
         "de" : {
@@ -27583,6 +30261,181 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除步驟"
+          }
+        }
+      }
+    },
+    "Remove YouMindHub from Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub aus Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar YouMindHub de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer YouMindHub de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi YouMindHub da Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop から削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 YouMindHub 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub verwijderen uit Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 中移除 YouMindHub"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 中移除 YouMindHub"
+          }
+        }
+      }
+    },
+    "Remove YouMindHub from Claude Desktop's MCP servers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub aus den MCP-Servern von Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar YouMindHub de los servidores MCP de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer YouMindHub des serveurs MCP de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovere YouMindHub dai server MCP di Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop の MCP サーバから削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop의 MCP 서버에서 YouMindHub 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub verwijderen uit de MCP-servers van Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 的 MCP 服务中移除 YouMindHub"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 的 MCP 服務中移除 YouMindHub"
+          }
+        }
+      }
+    },
+    "Remove YouMindHub's MCP server from Claude Desktop. Other MCP servers are kept." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt den MCP-Server von YouMindHub aus Claude Desktop. Andere MCP-Server bleiben erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quita el servidor MCP de YouMindHub de Claude Desktop. Los demás servidores MCP se conservan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retire le serveur MCP de YouMindHub de Claude Desktop. Les autres serveurs MCP sont conservés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove il server MCP di YouMindHub da Claude Desktop. Gli altri server MCP restano invariati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub の MCP サーバを Claude Desktop から削除します。ほかの MCP サーバはそのまま残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 YouMindHub의 MCP 서버를 제거합니다. 다른 MCP 서버는 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert de MCP-server van YouMindHub uit Claude Desktop. Andere MCP-servers blijven behouden."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 中移除 YouMindHub 的 MCP 服务，其他 MCP 服务保持不变。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 中移除 YouMindHub 的 MCP 服務，其他 MCP 服務保持不變。"
           }
         }
       }
@@ -31770,6 +34623,64 @@
         }
       }
     },
+    "Set up for another copy of AppPad" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für eine andere AppPad-Kopie eingerichtet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurado para otra copia de AppPad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuré pour une autre copie d’AppPad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurato per un’altra copia di AppPad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別の AppPad 用に設定されています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 AppPad 사본으로 설정됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingesteld voor een andere kopie van AppPad"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指向另一个 AppPad 副本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指向另一個 AppPad 副本"
+          }
+        }
+      }
+    },
     "Set Volume" : {
       "localizations" : {
         "de" : {
@@ -32640,6 +35551,64 @@
         }
       }
     },
+    "Show app badges" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Kennzeichen anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar globos de las apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les pastilles des apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra badge delle app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App のバッジを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 배지 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon app-badges"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 App 角标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示 App 角標"
+          }
+        }
+      }
+    },
     "Show Desktop" : {
       "localizations" : {
         "de" : {
@@ -33451,6 +36420,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無論以何種方式啟動，都先顯示確認。適用於難以復原的操作。"
+          }
+        }
+      }
+    },
+    "Shows the app, its developer and where it comes from before anything changes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt die App, ihren Entwickler und ihre Herkunft, bevor sich etwas ändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra la app, su desarrollador y su procedencia antes de cambiar nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche l’app, son développeur et sa provenance avant toute modification."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra l’app, lo sviluppatore e la provenienza prima di qualsiasi modifica."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更する前に、アプリ、デベロッパ、入手元を表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경하기 전에 앱, 개발자, 출처를 보여 줍니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont de app, de ontwikkelaar en de herkomst voordat er iets verandert."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在做任何改动之前，显示 App、开发者及来源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在做任何變更之前，顯示 App、開發者及來源。"
+          }
+        }
+      }
+    },
+    "Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt die roten Kennzeichen aus dem Dock (ungelesene Objekte, Updates) auf den Symbolen in AppPad. Ordner zeigen die Summe der enthaltenen Apps."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra en los iconos de AppPad los globos rojos del Dock (no leídos, actualizaciones). Las carpetas muestran el total de las apps que contienen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche sur les icônes d’AppPad les pastilles rouges du Dock (non lus, mises à jour). Les dossiers affichent le total des apps qu’ils contiennent."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra sulle icone di AppPad i badge rossi del Dock (non letti, aggiornamenti). Le cartelle mostrano il totale delle app contenute."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock と同じ赤いバッジ（未読数、アップデートなど）を AppPad のアイコンに表示します。フォルダには中の App の合計が表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock과 같은 빨간 배지(읽지 않음, 업데이트 등)를 AppPad 아이콘에 표시합니다. 폴더에는 포함된 앱의 합계가 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont de rode badges uit het Dock (ongelezen, updates) op de symbolen in AppPad. Mappen tonen het totaal van de apps erin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 AppPad 的图标上显示与 Dock 相同的红色角标（未读数、更新等），文件夹显示其中 App 的角标总数。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 AppPad 的圖像上顯示與 Dock 相同的紅色角標（未讀數、更新等），檔案夾顯示其中 App 的角標總數。"
           }
         }
       }
@@ -36198,6 +39283,64 @@
         }
       }
     },
+    "Terminal opened. Finish installing Homebrew there." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal geöffnet. Schließe die Installation von Homebrew dort ab."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal abierto. Termina allí la instalación de Homebrew."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal est ouvert. Terminez l’installation de Homebrew dans cette fenêtre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminale aperto. Completa lì l’installazione di Homebrew."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルを開きました。そこでHomebrewのインストールを完了してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널을 열었습니다. 그곳에서 Homebrew 설치를 마치십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal is geopend. Rond daar de installatie van Homebrew af."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打开终端，请在终端中完成 Homebrew 的安装。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打開終端機，請在終端機中完成 Homebrew 的安裝。"
+          }
+        }
+      }
+    },
     "Text" : {
       "localizations" : {
         "de" : {
@@ -36252,6 +39395,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文字"
+          }
+        }
+      }
+    },
+    "The AI can be misled by something it reads, such as a web page, a document or an email, and install an app you never wanted." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die KI kann durch etwas, das sie liest (eine Webseite, ein Dokument, eine E-Mail), in die Irre geführt werden und eine App installieren, die du nie wolltest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La IA puede dejarse engañar por algo que lee, como una página web, un documento o un correo, e instalar una app que nunca quisiste."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA peut être trompée par quelque chose qu’elle lit (une page web, un document, un e-mail) et installer une app que vous n’avez jamais voulue."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA può essere ingannata da qualcosa che legge, come una pagina web, un documento o un’email, e installare un’app che non hai mai voluto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIは、読み込んだWebページ、書類、メールなどの内容にだまされて、望んでいないアプリをインストールすることがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI는 읽은 웹 페이지, 문서, 이메일 등의 내용에 속아 원하지 않은 앱을 설치할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De AI kan worden misleid door iets wat hij leest, zoals een webpagina, een document of een e-mail, en een app installeren die je nooit wilde."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可能被它读到的内容（网页、文档、邮件等）误导，安装你根本不想要的 App。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可能被它讀到的內容（網頁、文件、郵件等）誤導，安裝你根本不想要的 App。"
+          }
+        }
+      }
+    },
+    "The AI can uninstall apps you use." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die KI kann Apps deinstallieren, die du verwendest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La IA puede desinstalar apps que usas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA peut désinstaller des apps que vous utilisez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’IA può disinstallare app che usi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIが使用中のアプリをアンインストールすることがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI가 사용 중인 앱을 제거할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De AI kan apps verwijderen die je gebruikt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可能卸载你正在使用的 App。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 可能解除安裝你正在使用的 App。"
           }
         }
       }
@@ -37474,6 +40733,64 @@
         }
       }
     },
+    "This download has no fixed checksum: Homebrew installs the version the website currently offers." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Download hat keine feste Prüfsumme: Homebrew installiert die Version, die die Website gerade anbietet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta descarga no tiene una suma de verificación fija: Homebrew instala la versión que ofrece el sitio web en este momento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce téléchargement n’a pas de somme de contrôle fixe : Homebrew installe la version actuellement proposée par le site."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo download non ha un checksum fisso: Homebrew installa la versione offerta al momento dal sito."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このダウンロードには固定のチェックサムがありません。Homebrewは、Webサイトが現在提供しているバージョンをインストールします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 다운로드에는 고정된 체크섬이 없습니다. Homebrew는 웹사이트가 현재 제공하는 버전을 설치합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze download heeft geen vaste checksum: Homebrew installeert de versie die de website op dit moment aanbiedt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此下载没有固定的校验和：Homebrew 会安装官网当前提供的版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此下載沒有固定的檢查碼：Homebrew 會安裝官網目前提供的版本。"
+          }
+        }
+      }
+    },
     "This file is not an AppPad backup." : {
       "localizations" : {
         "de" : {
@@ -37760,6 +41077,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此工作流程不需要任何權限。"
+          }
+        }
+      }
+    },
+    "Tidy up my AppPad: keep the system apps in their current order, and put third-party apps into folders by category after them." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Räum mein AppPad auf: System-Apps bleiben in ihrer jetzigen Reihenfolge, Apps von Drittanbietern kommen nach Kategorie in Ordner dahinter."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordena mi AppPad: deja las apps del sistema en su orden actual y pon las apps de terceros en carpetas por categoría después de ellas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Range mon AppPad : garde les apps système dans leur ordre actuel et place les apps tierces dans des dossiers par catégorie, après elles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riordina il mio AppPad: lascia le app di sistema nell’ordine attuale e metti le app di terze parti in cartelle per categoria, dopo di esse."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad を整理して。システム App は今の並びのまま、他社製 App はカテゴリ別のフォルダにまとめてその後ろに。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad를 정리해 줘. 시스템 앱은 지금 순서 그대로 두고, 타사 앱은 카테고리별 폴더로 묶어 그 뒤에 놓아 줘."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruim mijn AppPad op: laat de systeem-apps in hun huidige volgorde en zet apps van derden per categorie in mappen daarachter."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帮我整理 AppPad：系统应用保持现在的排列，第三方应用按类别放进文件夹，排在系统应用后面。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "幫我整理 AppPad：系統 App 維持現在的排列，第三方 App 按類別放進檔案夾，排在系統 App 後面。"
           }
         }
       }
@@ -39043,6 +42418,64 @@
         }
       }
     },
+    "Turn confirmation back on unless you watch every AI request yourself." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schalte die Bestätigung wieder ein, es sei denn, du verfolgst jede KI-Anfrage selbst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a activar la confirmación, salvo que vigiles tú mismo cada petición de la IA."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactivez la confirmation, sauf si vous surveillez vous-même chaque demande de l’IA."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riattiva la conferma, a meno che tu non controlli personalmente ogni richiesta dell’IA."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIのリクエストをすべて自分で確認する場合を除き、確認をオンに戻してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 요청을 모두 직접 확인하는 경우가 아니라면 확인을 다시 켜십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zet de bevestiging weer aan, tenzij je elk AI-verzoek zelf in de gaten houdt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除非你会亲自盯着 AI 的每一个请求，否则请重新打开确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除非你會親自盯著 AI 的每一個請求，否則請重新開啟確認。"
+          }
+        }
+      }
+    },
     "Turn Off Spotlight Shortcut" : {
       "localizations" : {
         "de" : {
@@ -39450,6 +42883,64 @@
         }
       }
     },
+    "Uninstall" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deinstallieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desinstalar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désinstaller"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disinstalla"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アンインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卸载"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解除安裝"
+          }
+        }
+      }
+    },
     "Uninstall “%@”?" : {
       "localizations" : {
         "de" : {
@@ -39504,6 +42995,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "要解除安裝「%@」嗎？"
+          }
+        }
+      }
+    },
+    "Uninstalling an app with Homebrew deletes it right away instead of moving it to the Trash, so work may be lost (it cannot be restored)." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Deinstallieren mit Homebrew wird die App sofort gelöscht statt in den Papierkorb gelegt, dabei kann Arbeit verloren gehen (sie lässt sich nicht wiederherstellen)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al desinstalar una app con Homebrew se borra directamente en lugar de ir a la papelera, por lo que puedes perder trabajo (no se puede recuperar)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désinstaller une app avec Homebrew la supprime directement au lieu de la placer dans la corbeille : du travail peut être perdu (impossible à restaurer)."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disinstallare un’app con Homebrew la elimina subito invece di spostarla nel Cestino, quindi potresti perdere del lavoro (non recuperabile)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrewでアプリをアンインストールすると、ゴミ箱に入らずすぐに削除されるため、作業内容が失われることがあります（元に戻せません）。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew로 앱을 제거하면 휴지통으로 이동되지 않고 바로 삭제되므로 작업 내용이 사라질 수 있습니다(복구할 수 없음)."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een app verwijderen met Homebrew wist hem meteen in plaats van hem naar de prullenmand te verplaatsen, waardoor werk verloren kan gaan (niet te herstellen)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过 Homebrew 卸载 App 会直接删除，不会移到废纸篓，可能会丢失工作内容（无法恢复）。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 Homebrew 解除安裝 App 會直接刪除，不會丟到垃圾桶，可能會遺失工作內容（無法復原）。"
           }
         }
       }
@@ -40787,6 +44336,64 @@
         }
       }
     },
+    "Version: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versione: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버전: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versie: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本：%@"
+          }
+        }
+      }
+    },
     "Video" : {
       "localizations" : {
         "de" : {
@@ -41190,6 +44797,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "官方網站"
+          }
+        }
+      }
+    },
+    "Website: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitio web: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site web : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sito web: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webサイト：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "웹사이트: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "官网：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "官方網站：%@"
           }
         }
       }
@@ -42760,184 +46425,298 @@
         }
       }
     },
-    "zsh, runs sandboxed. Input on stdin and $APPPAD_INPUT." : {
+    "YouMindHub is already in Claude Desktop." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, läuft in der Sandbox. Eingabe über stdin und $APPPAD_INPUT."
+            "value" : "YouMindHub ist bereits in Claude Desktop eingerichtet."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, se ejecuta en un entorno aislado. Entrada por stdin y $APPPAD_INPUT."
+            "value" : "YouMindHub ya está en Claude Desktop."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, exécuté dans le bac à sable. Entrée via stdin et $APPPAD_INPUT."
+            "value" : "YouMindHub est déjà dans Claude Desktop."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, eseguito in sandbox. Input su stdin e $APPPAD_INPUT."
+            "value" : "YouMindHub è già presente in Claude Desktop."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh、サンドボックス内で実行。入力は stdin と $APPPAD_INPUT。"
+            "value" : "YouMindHub はすでに Claude Desktop に追加されています。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, 샌드박스에서 실행. 입력은 stdin 및 $APPPAD_INPUT."
+            "value" : "YouMindHub가 이미 Claude Desktop에 추가되어 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh, draait in sandbox. Invoer via stdin en $APPPAD_INPUT."
+            "value" : "YouMindHub staat al in Claude Desktop."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh，在沙盒中运行。输入来自 stdin 和 $APPPAD_INPUT。"
+            "value" : "YouMindHub 已在 Claude Desktop 中。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zsh，在沙盒中執行。輸入來自 stdin 和 $APPPAD_INPUT。"
+            "value" : "YouMindHub 已在 Claude Desktop 中。"
           }
         }
       }
     },
-    "Add AppPad to Claude Desktop" : {
-      "extractionState" : "manual",
+    "YouMindHub is not in Claude Desktop." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad zu Claude Desktop hinzufügen"
+            "value" : "YouMindHub ist nicht in Claude Desktop eingerichtet."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir AppPad a Claude Desktop"
+            "value" : "YouMindHub no está en Claude Desktop."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter AppPad à Claude Desktop"
+            "value" : "YouMindHub n’est pas dans Claude Desktop."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi AppPad a Claude Desktop"
+            "value" : "YouMindHub non è presente in Claude Desktop."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad を Claude Desktop に追加"
+            "value" : "YouMindHub は Claude Desktop に追加されていません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop에 AppPad 추가"
+            "value" : "YouMindHub가 Claude Desktop에 추가되어 있지 않습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad toevoegen aan Claude Desktop"
+            "value" : "YouMindHub staat niet in Claude Desktop."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将 AppPad 添加到 Claude Desktop"
+            "value" : "YouMindHub 不在 Claude Desktop 中。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 AppPad 加入 Claude Desktop"
+            "value" : "YouMindHub 不在 Claude Desktop 中。"
           }
         }
       }
     },
-    "Add AppPad's MCP server to Claude Desktop so Claude can run your workflows." : {
-      "extractionState" : "manual",
+    "YouMindHub is not installed in the Applications folder." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fügt den MCP-Server von AppPad zu Claude Desktop hinzu, damit Claude deine Workflows ausführen kann."
+            "value" : "YouMindHub ist nicht im Ordner „Programme“ installiert."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade el servidor MCP de AppPad a Claude Desktop para que Claude pueda ejecutar tus flujos de trabajo."
+            "value" : "YouMindHub no está instalado en la carpeta Aplicaciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoute le serveur MCP d’AppPad à Claude Desktop pour que Claude puisse exécuter vos flux de travail."
+            "value" : "YouMindHub n’est pas installé dans le dossier Applications."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiunge il server MCP di AppPad a Claude Desktop, così Claude può eseguire i tuoi flussi di lavoro."
+            "value" : "YouMindHub non è installato nella cartella Applicazioni."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad の MCP サーバを Claude Desktop に追加し、Claude からワークフローを実行できるようにします。"
+            "value" : "YouMindHub が「アプリケーション」フォルダにインストールされていません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude가 워크플로를 실행할 수 있도록 AppPad의 MCP 서버를 Claude Desktop에 추가합니다."
+            "value" : "YouMindHub가 응용 프로그램 폴더에 설치되어 있지 않습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voegt de MCP-server van AppPad toe aan Claude Desktop, zodat Claude je workflows kan uitvoeren."
+            "value" : "YouMindHub is niet geïnstalleerd in de map Apps."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将 AppPad 的 MCP 服务添加到 Claude Desktop，让 Claude 可以运行你的工作流。"
+            "value" : "“应用程序”文件夹中未安装 YouMindHub。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 AppPad 的 MCP 服務加入 Claude Desktop，讓 Claude 可以執行你的工作流程。"
+            "value" : "「應用程式」檔案夾中未安裝 YouMindHub。"
           }
         }
       }
     },
-    "claude, mcp, addmcp" : {
-      "extractionState" : "manual",
+    "YouMindHub was added to Claude Desktop. Restart Claude Desktop to use it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub wurde zu Claude Desktop hinzugefügt. Starte Claude Desktop neu, um es zu verwenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub se ha añadido a Claude Desktop. Reinicia Claude Desktop para usarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub a été ajouté à Claude Desktop. Redémarrez Claude Desktop pour l’utiliser."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub è stato aggiunto a Claude Desktop. Riavvia Claude Desktop per usarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop に追加しました。使うには Claude Desktop を再起動してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub를 Claude Desktop에 추가했습니다. 사용하려면 Claude Desktop을 다시 시작하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub is toegevoegd aan Claude Desktop. Start Claude Desktop opnieuw om het te gebruiken."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已将 YouMindHub 添加到 Claude Desktop。重新启动 Claude Desktop 后即可使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已將 YouMindHub 加入 Claude Desktop。重新啟動 Claude Desktop 後即可使用。"
+          }
+        }
+      }
+    },
+    "YouMindHub was removed from Claude Desktop. Restart Claude Desktop to apply." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub wurde aus Claude Desktop entfernt. Starte Claude Desktop neu, damit die Änderung wirkt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub se ha quitado de Claude Desktop. Reinicia Claude Desktop para aplicar el cambio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub a été retiré de Claude Desktop. Redémarrez Claude Desktop pour appliquer le changement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub è stato rimosso da Claude Desktop. Riavvia Claude Desktop per applicare la modifica."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop から削除しました。反映するには Claude Desktop を再起動してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub를 Claude Desktop에서 제거했습니다. 적용하려면 Claude Desktop을 다시 시작하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub is verwijderd uit Claude Desktop. Start Claude Desktop opnieuw om dit toe te passen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已从 Claude Desktop 中移除 YouMindHub。重新启动 Claude Desktop 后生效。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已從 Claude Desktop 中移除 YouMindHub。重新啟動 Claude Desktop 後生效。"
+          }
+        }
+      }
+    },
+    "youmindhub, claude, mcp, addyoumindhub" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -42995,126 +46774,8 @@
         }
       }
     },
-    "Remove AppPad from Claude Desktop" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad aus Claude Desktop entfernen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar AppPad de Claude Desktop"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retirer AppPad de Claude Desktop"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rimuovi AppPad da Claude Desktop"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad を Claude Desktop から削除"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop에서 AppPad 제거"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad verwijderen uit Claude Desktop"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从 Claude Desktop 移除 AppPad"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從 Claude Desktop 移除 AppPad"
-          }
-        }
-      }
-    },
-    "Remove AppPad's MCP server from Claude Desktop. Other MCP servers are kept." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entfernt den MCP-Server von AppPad aus Claude Desktop. Andere MCP-Server bleiben erhalten."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quita el servidor MCP de AppPad de Claude Desktop. Los demás servidores MCP se conservan."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retire le serveur MCP d’AppPad de Claude Desktop. Les autres serveurs MCP sont conservés."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rimuove il server MCP di AppPad da Claude Desktop. Gli altri server MCP restano invariati."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad の MCP サーバを Claude Desktop から削除します。ほかの MCP サーバはそのまま残ります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop에서 AppPad의 MCP 서버를 제거합니다. 다른 MCP 서버는 그대로 유지됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verwijdert de MCP-server van AppPad uit Claude Desktop. Andere MCP-servers blijven behouden."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从 Claude Desktop 移除 AppPad 的 MCP 服务，其他 MCP 服务保持不变。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從 Claude Desktop 移除 AppPad 的 MCP 服務，其他 MCP 服務保持不變。"
-          }
-        }
-      }
-    },
-    "claude, mcp, removemcp" : {
-      "extractionState" : "manual",
+    "youmindhub, claude, mcp, removeyoumindhub" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -43172,988 +46833,60 @@
         }
       }
     },
-    "Add to Claude Desktop" : {
+    "zsh, runs sandboxed. Input on stdin and $APPPAD_INPUT." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zu Claude Desktop hinzufügen"
+            "value" : "zsh, läuft in der Sandbox. Eingabe über stdin und $APPPAD_INPUT."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir a Claude Desktop"
+            "value" : "zsh, se ejecuta en un entorno aislado. Entrada por stdin y $APPPAD_INPUT."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter à Claude Desktop"
+            "value" : "zsh, exécuté dans le bac à sable. Entrée via stdin et $APPPAD_INPUT."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi a Claude Desktop"
+            "value" : "zsh, eseguito in sandbox. Input su stdin e $APPPAD_INPUT."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop に追加"
+            "value" : "zsh、サンドボックス内で実行。入力は stdin と $APPPAD_INPUT。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop에 추가"
+            "value" : "zsh, 샌드박스에서 실행. 입력은 stdin 및 $APPPAD_INPUT."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toevoegen aan Claude Desktop"
+            "value" : "zsh, draait in sandbox. Invoer via stdin en $APPPAD_INPUT."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加到 Claude Desktop"
+            "value" : "zsh，在沙盒中运行。输入来自 stdin 和 $APPPAD_INPUT。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加入 Claude Desktop"
-          }
-        }
-      }
-    },
-    "Remove from Claude Desktop" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aus Claude Desktop entfernen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar de Claude Desktop"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retirer de Claude Desktop"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rimuovi da Claude Desktop"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop から削除"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop에서 제거"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verwijderen uit Claude Desktop"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从 Claude Desktop 移除"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從 Claude Desktop 移除"
-          }
-        }
-      }
-    },
-    "Add AppPad to Claude Desktop's MCP servers" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad zu den MCP-Servern von Claude Desktop hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir AppPad a los servidores MCP de Claude Desktop"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter AppPad aux serveurs MCP de Claude Desktop"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiungere AppPad ai server MCP di Claude Desktop"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad を Claude Desktop の MCP サーバに追加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop의 MCP 서버에 AppPad 추가"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad toevoegen aan de MCP-servers van Claude Desktop"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "将 AppPad 添加到 Claude Desktop 的 MCP 服务"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "將 AppPad 加入 Claude Desktop 的 MCP 服務"
-          }
-        }
-      }
-    },
-    "Remove AppPad from Claude Desktop's MCP servers" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad aus den MCP-Servern von Claude Desktop entfernen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar AppPad de los servidores MCP de Claude Desktop"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retirer AppPad des serveurs MCP de Claude Desktop"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rimuovere AppPad dai server MCP di Claude Desktop"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad を Claude Desktop の MCP サーバから削除"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop의 MCP 서버에서 AppPad 제거"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad verwijderen uit de MCP-servers van Claude Desktop"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从 Claude Desktop 的 MCP 服务中移除 AppPad"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "從 Claude Desktop 的 MCP 服務中移除 AppPad"
-          }
-        }
-      }
-    },
-    "AppPad was added to Claude Desktop. Restart Claude Desktop to use it." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad wurde zu Claude Desktop hinzugefügt. Starte Claude Desktop neu, um es zu verwenden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad se ha añadido a Claude Desktop. Reinicia Claude Desktop para usarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad a été ajouté à Claude Desktop. Redémarrez Claude Desktop pour l’utiliser."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad è stato aggiunto a Claude Desktop. Riavvia Claude Desktop per usarlo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad を Claude Desktop に追加しました。使用するには Claude Desktop を再起動してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad를 Claude Desktop에 추가했습니다. 사용하려면 Claude Desktop을 다시 시작하세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad is toegevoegd aan Claude Desktop. Start Claude Desktop opnieuw om het te gebruiken."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已将 AppPad 添加到 Claude Desktop，重新启动 Claude Desktop 后即可使用。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已將 AppPad 加入 Claude Desktop，重新啟動 Claude Desktop 後即可使用。"
-          }
-        }
-      }
-    },
-    "AppPad is already in Claude Desktop." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad ist bereits in Claude Desktop eingerichtet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad ya está en Claude Desktop."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad est déjà dans Claude Desktop."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad è già presente in Claude Desktop."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad はすでに Claude Desktop に追加されています。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad가 이미 Claude Desktop에 추가되어 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad staat al in Claude Desktop."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 已在 Claude Desktop 中。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 已在 Claude Desktop 中。"
-          }
-        }
-      }
-    },
-    "AppPad was removed from Claude Desktop. Restart Claude Desktop to apply." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad wurde aus Claude Desktop entfernt. Starte Claude Desktop neu, damit die Änderung wirkt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad se ha quitado de Claude Desktop. Reinicia Claude Desktop para aplicar el cambio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad a été retiré de Claude Desktop. Redémarrez Claude Desktop pour appliquer le changement."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad è stato rimosso da Claude Desktop. Riavvia Claude Desktop per applicare la modifica."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad を Claude Desktop から削除しました。反映するには Claude Desktop を再起動してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop에서 AppPad를 제거했습니다. 적용하려면 Claude Desktop을 다시 시작하세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad is verwijderd uit Claude Desktop. Start Claude Desktop opnieuw om dit toe te passen."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已从 Claude Desktop 移除 AppPad，重新启动 Claude Desktop 后生效。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已從 Claude Desktop 移除 AppPad，重新啟動 Claude Desktop 後生效。"
-          }
-        }
-      }
-    },
-    "AppPad is not in Claude Desktop." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad ist nicht in Claude Desktop eingerichtet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad no está en Claude Desktop."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad n’est pas dans Claude Desktop."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad non è presente in Claude Desktop."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad は Claude Desktop に追加されていません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad가 Claude Desktop에 추가되어 있지 않습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad staat niet in Claude Desktop."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 不在 Claude Desktop 中。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPad 不在 Claude Desktop 中。"
-          }
-        }
-      }
-    },
-    "Claude Desktop is not installed." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop ist nicht installiert."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop no está instalado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop n’est pas installé."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop non è installato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop がインストールされていません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop이 설치되어 있지 않습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop is niet geïnstalleerd."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安装 Claude Desktop。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安裝 Claude Desktop。"
-          }
-        }
-      }
-    },
-    "claude_desktop_config.json is not valid JSON. Fix or delete it, then try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json ist kein gültiges JSON. Korrigiere oder lösche die Datei und versuche es erneut."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json no es un JSON válido. Corrígelo o elimínalo y vuelve a intentarlo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json n’est pas un JSON valide. Corrigez-le ou supprimez-le, puis réessayez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json non è un JSON valido. Correggilo o eliminalo, quindi riprova."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json が有効な JSON ではありません。修正または削除してから、もう一度お試しください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json이 올바른 JSON이 아닙니다. 수정하거나 삭제한 후 다시 시도하세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json is geen geldige JSON. Herstel of verwijder het bestand en probeer het opnieuw."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json 不是有效的 JSON，请修正或删除后重试。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json 不是有效的 JSON，請修正或刪除後再試一次。"
-          }
-        }
-      }
-    },
-    "Could not save claude_desktop_config.json: %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json konnte nicht gespeichert werden: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo guardar claude_desktop_config.json: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossible d’enregistrer claude_desktop_config.json : %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile salvare claude_desktop_config.json: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json を保存できませんでした：%@"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json을 저장할 수 없습니다: %@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kan claude_desktop_config.json niet opslaan: %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法保存 claude_desktop_config.json：%@"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無法儲存 claude_desktop_config.json：%@"
-          }
-        }
-      }
-    },
-    "Not installed" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht installiert"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No instalado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non installé"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non installato"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未インストール"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "설치되지 않음"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niet geïnstalleerd"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安装"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安裝"
-          }
-        }
-      }
-    },
-    "Not added" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht hinzugefügt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No añadido"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non ajouté"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non aggiunto"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未追加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "추가되지 않음"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niet toegevoegd"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未添加"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未加入"
-          }
-        }
-      }
-    },
-    "Added" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hinzugefügt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadido"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouté"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiunto"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追加済み"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "추가됨"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toegevoegd"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已添加"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已加入"
-          }
-        }
-      }
-    },
-    "Set up for another copy of AppPad" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für eine andere AppPad-Kopie eingerichtet"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurado para otra copia de AppPad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuré pour une autre copie d’AppPad"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurato per un’altra copia di AppPad"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "別の AppPad 用に設定されています"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다른 AppPad 사본으로 설정됨"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ingesteld voor een andere kopie van AppPad"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "指向另一个 AppPad 副本"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "指向另一個 AppPad 副本"
-          }
-        }
-      }
-    },
-    "Invalid configuration file" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ungültige Konfigurationsdatei"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Archivo de configuración no válido"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fichier de configuration non valide"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "File di configurazione non valido"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定ファイルが無効です"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "잘못된 설정 파일"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ongeldig configuratiebestand"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "配置文件无效"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定檔無效"
-          }
-        }
-      }
-    },
-    "Only AppPad's own entry in claude_desktop_config.json is changed; your other MCP servers stay as they are. A backup of the previous file is kept next to it." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nur der eigene Eintrag von AppPad in claude_desktop_config.json wird geändert; deine anderen MCP-Server bleiben unverändert. Eine Sicherung der vorherigen Datei wird daneben abgelegt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo se cambia la entrada de AppPad en claude_desktop_config.json; tus otros servidores MCP se quedan como están. Se guarda una copia de seguridad del archivo anterior junto a él."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seule l’entrée d’AppPad dans claude_desktop_config.json est modifiée ; vos autres serveurs MCP restent inchangés. Une sauvegarde du fichier précédent est conservée à côté."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Viene modificata solo la voce di AppPad in claude_desktop_config.json; gli altri server MCP restano invariati. Accanto viene conservato un backup del file precedente."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json のうち AppPad 自身の項目だけを変更し、ほかの MCP サーバはそのまま残します。変更前のファイルのバックアップを同じ場所に保存します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "claude_desktop_config.json에서 AppPad 항목만 변경하며, 다른 MCP 서버는 그대로 유지됩니다. 이전 파일의 백업이 같은 위치에 보관됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alleen de eigen vermelding van AppPad in claude_desktop_config.json wordt gewijzigd; je andere MCP-servers blijven zoals ze zijn. Een reservekopie van het vorige bestand wordt ernaast bewaard."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只修改 claude_desktop_config.json 中 AppPad 自己的条目，其他 MCP 服务保持不变。修改前的文件会在同一位置保留一份备份。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只修改 claude_desktop_config.json 中 AppPad 自己的項目，其他 MCP 服務保持不變。修改前的檔案會在同一位置保留一份備份。"
+            "value" : "zsh，在沙盒中執行。輸入來自 stdin 和 $APPPAD_INPUT。"
           }
         }
       }

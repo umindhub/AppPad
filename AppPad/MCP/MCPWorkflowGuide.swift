@@ -90,7 +90,7 @@ enum MCPWorkflowGuide {
 
     | Action | Input |
     |---|---|
-    | `emptyTrash`, `sleepDisplays`, `sleepMac`, `toggleDarkMode`, `toggleMute`, `ejectDisks`, `toggleHiddenFiles`, `quitAllApps`, `copyIPAddress`, `generateUUID`, `shutDown`, `restart`, `addToClaudeDesktop`, `removeFromClaudeDesktop` | none |
+    | `emptyTrash`, `sleepDisplays`, `sleepMac`, `toggleDarkMode`, `toggleMute`, `ejectDisks`, `toggleHiddenFiles`, `quitAllApps`, `copyIPAddress`, `generateUUID`, `shutDown`, `restart`, `addToClaudeDesktop`, `removeFromClaudeDesktop`, `addYouMindHubToClaudeDesktop`, `removeYouMindHubFromClaudeDesktop`, `installHomebrew` | none |
     | `keepAwake` | seconds; empty or 0 = until stopped |
     | `setVolume` | 0–100 |
     | `quitApp` | app name (exact, then prefix) |

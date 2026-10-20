@@ -16,11 +16,23 @@ enum MCPTools {
         You can also WRITE workflows for the user: call workflow_guide first (it is the only \
         reference for the JSON format), then save_workflows. To change one, export_workflows, \
         edit it, raise its version and save it again. The user approves every save in AppPad.
+        AppPad is also the user's Launchpad (app grid with pages and folders). To tidy it up, call \
+        get_launchpad_layout (it includes usage scores and guidelines), then apply_launchpad_layout \
+        with the complete new arrangement; undo_launchpad_layout restores the previous one.
+        AppPad can also install and uninstall regular Mac apps with Homebrew. Call homebrew_status \
+        first; if Homebrew is missing, install_homebrew asks the user and opens Terminal. Find apps \
+        with search_apps, then install_app with the cask token. Only apps from Homebrew's official \
+        cask catalog that install nothing but the app (command-line tools only from inside the app; \
+        no installers or scripts) and are notarized by Apple can be installed; formulae and third-party taps are not supported, \
+        so do not suggest Terminal commands to get around this. uninstall_app removes an app. \
+        The user confirms installs and uninstalls in AppPad.
         """
 
-    static let names: Set<String> = ["list_workflows", "get_workflows", "run_workflow",
+    static let names: Set<String> = Set(["list_workflows", "get_workflows", "run_workflow",
                                      "get_workflow_result", "stop_workflow",
-                                     "workflow_guide", "export_workflows", "save_workflows"]
+                                     "workflow_guide", "export_workflows", "save_workflows"])
+        .union(MCPLayoutTools.names)
+        .union(MCPHomebrewTools.names)
 
     static var definitions: [[String: Any]] {
         [
@@ -63,7 +75,7 @@ enum MCPTools {
                  the reason and are not shown to the user.
                  """,
                  ["workflows": objectArray("Workflow JSON objects.")], required: ["workflows"]),
-        ]
+        ] + MCPLayoutTools.definitions + MCPHomebrewTools.definitions
     }
 
     // MARK: - Calls
@@ -87,6 +99,9 @@ enum MCPTools {
                 let payload = try MCPWorkflowWriter.save(try args.requireObjects("workflows"), client: client)
                 let savedNothing = (payload["saved"] as? [Any])?.isEmpty ?? true
                 return Outcome(text: json(payload), isError: savedNothing && payload["declined"] == nil)
+            case _ where MCPLayoutTools.names.contains(name): return try MCPLayoutTools.call(name, args)
+            case _ where MCPHomebrewTools.names.contains(name):
+                return try await MCPHomebrewTools.call(name, args, client: client)
             default: return Outcome(text: "Unknown tool: \(name)", isError: true)
             }
         } catch {
@@ -372,6 +387,25 @@ struct MCPArguments {
     func requireString(_ key: String) throws -> String {
         guard let value = string(key) else { throw MCPToolError("Missing required argument: \(key)") }
         return value
+    }
+
+    // Value as sent (arrays / objects for structured arguments).
+    func raw(_ key: String) -> Any? {
+        values[key]
+    }
+
+    func bool(_ key: String) -> Bool? {
+        switch values[key] {
+        case let b as Bool: return b
+        case let n as NSNumber: return n.boolValue
+        case let s as String:
+            switch s.trimmingCharacters(in: .whitespaces).lowercased() {
+            case "true", "yes", "1": return true
+            case "false", "no", "0": return false
+            default: return nil
+            }
+        default: return nil
+        }
     }
 
     func int(_ key: String) -> Int? {

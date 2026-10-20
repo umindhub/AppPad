@@ -399,6 +399,18 @@ final class WorkflowRunner: ObservableObject {
             return claudeDesktop(step, index, ClaudeDesktopMCP.shared.add())
         case .removeFromClaudeDesktop:
             return claudeDesktop(step, index, ClaudeDesktopMCP.shared.remove())
+        case .addYouMindHubToClaudeDesktop:
+            return claudeDesktop(step, index, YouMindHubClaudeDesktop.add())
+        case .removeYouMindHubFromClaudeDesktop:
+            return claudeDesktop(step, index, YouMindHubClaudeDesktop.remove())
+        case .installHomebrew:
+            guard !Homebrew.isInstalled else { return success(step, index, String(localized: "Homebrew is already installed.")) }
+            do {
+                try HomebrewInstaller.openInTerminal()
+                return success(step, index, String(localized: "Terminal opened. Finish installing Homebrew there."))
+            } catch {
+                return failure(step, index, error.localizedDescription)
+            }
         }
     }
 
@@ -749,7 +761,6 @@ nonisolated private final class RedirectGuard: NSObject, URLSessionTaskDelegate,
 // Cancel is the safe answer: Esc and closing the alert both decline.
 enum RunConfirmPrompt {
     static func ask(workflow: Workflow) -> Bool {
-        NSApp.activate()
         let alert = NSAlert()
         alert.messageText = String(localized: "Run “\(workflow.displayName)”?")
         alert.informativeText = workflow.confirmationMessage
@@ -758,7 +769,7 @@ enum RunConfirmPrompt {
         run.hasDestructiveAction = true
         let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
         cancel.keyEquivalent = "\u{1b}"
-        return alert.runModal() == .alertFirstButtonReturn
+        return FloatingAlert.runModal(alert) == .alertFirstButtonReturn
     }
 }
 

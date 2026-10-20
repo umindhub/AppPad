@@ -184,6 +184,9 @@ extension BuiltinAction {
         case .quitAllApps: return String(localized: "Quit All Apps")
         case .addToClaudeDesktop: return String(localized: "Add to Claude Desktop")
         case .removeFromClaudeDesktop: return String(localized: "Remove from Claude Desktop")
+        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop")
+        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop")
+        case .installHomebrew: return String(localized: "Install Homebrew")
         }
     }
 
@@ -208,6 +211,9 @@ extension BuiltinAction {
         case .quitAllApps: return String(localized: "Quit all running apps")
         case .addToClaudeDesktop: return String(localized: "Add AppPad to Claude Desktop's MCP servers")
         case .removeFromClaudeDesktop: return String(localized: "Remove AppPad from Claude Desktop's MCP servers")
+        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop's MCP servers")
+        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop's MCP servers")
+        case .installHomebrew: return String(localized: "Open Terminal with Homebrew’s official install command")
         }
     }
 
@@ -232,6 +238,9 @@ extension BuiltinAction {
         case .quitAllApps: return "xmark.app"
         case .addToClaudeDesktop: return "plus.circle"
         case .removeFromClaudeDesktop: return "minus.circle"
+        case .addYouMindHubToClaudeDesktop: return "plus.circle"
+        case .removeYouMindHubFromClaudeDesktop: return "minus.circle"
+        case .installHomebrew: return "shippingbox"
         }
     }
 

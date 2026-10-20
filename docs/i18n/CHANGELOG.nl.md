@@ -18,6 +18,25 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.2.8
+
+### Added
+
+#### AI-assistenten
+- AI-assistenten kunnen apps zoeken, installeren en verwijderen met Homebrew. Alleen apps uit de officiële Homebrew-catalogus die door Apple zijn genotariseerd worden geïnstalleerd (opdrachtregeltools alleen vanuit de app), en elke app wordt na installatie opnieuw gecontroleerd.
+- Elke installatie en verwijdering vraagt eerst om je bevestiging. Je kunt dit uitzetten via Instellingen › AI-assistenten; een waarschuwing somt dan de risico’s op.
+- Ontbreekt Homebrew, dan biedt AppPad aan Terminal te openen met de officiële installatieopdracht.
+
+#### Workflows
+- Nieuwe ingebouwde workflow ‘Installeer Homebrew’.
+
+### Changed
+- AI-assistenten: Bevestigingen die de AI start (installeren, verwijderen, workflows bewaren, uitvoeren, rechten) verschijnen nu vooraan zonder de andere vensters van AppPad naar voren te halen.
+
+### Note
+- Met Homebrew verwijderde apps worden meteen gewist, niet naar de prullenmand verplaatst.
+- Formules en taps van derden worden niet ondersteund. Homebrew wordt alleen gevonden in /opt/homebrew en /usr/local.
+
 ## v1.2.7
 
 ### Added

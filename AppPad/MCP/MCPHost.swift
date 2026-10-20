@@ -7,6 +7,7 @@ final class MCPHost: ObservableObject {
     static let shared = MCPHost()
 
     private static let enabledKey = "mcpEnabled"
+    private static let confirmAppChangesKey = "mcpConfirmAppChanges"
 
     @Published var enabled: Bool {
         didSet {
@@ -14,6 +15,10 @@ final class MCPHost: ObservableObject {
             UserDefaults.standard.set(enabled, forKey: Self.enabledKey)
             if enabled { start() } else { stop() }
         }
+    }
+    // AI app installs / uninstalls (Homebrew) ask first; on by default.
+    @Published var confirmAppChanges: Bool {
+        didSet { UserDefaults.standard.set(confirmAppChanges, forKey: Self.confirmAppChangesKey) }
     }
     @Published private(set) var isListening = false
     @Published private(set) var clientCount = 0
@@ -28,6 +33,7 @@ final class MCPHost: ObservableObject {
     private init() {
         // Never toggled (no stored value) = on.
         enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
+        confirmAppChanges = UserDefaults.standard.object(forKey: Self.confirmAppChangesKey) as? Bool ?? true
     }
 
     // App launch: hold the beacon for the whole process, listen when enabled.

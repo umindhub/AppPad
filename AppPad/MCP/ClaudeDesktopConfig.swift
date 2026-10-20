@@ -4,6 +4,7 @@ import SwiftUI
 
 nonisolated enum ClaudeDesktopError: Error, Sendable {
     case notInstalled, unreadable, writeFailed(String)
+    case youMindHubNotInstalled
 
     var message: String {
         switch self {
@@ -13,6 +14,8 @@ nonisolated enum ClaudeDesktopError: Error, Sendable {
             return String(localized: "claude_desktop_config.json is not valid JSON. Fix or delete it, then try again.")
         case .writeFailed(let detail):
             return String(localized: "Could not save claude_desktop_config.json: \(detail)")
+        case .youMindHubNotInstalled:
+            return String(localized: "YouMindHub is not installed in the Applications folder.")
         }
     }
 }
@@ -45,7 +48,7 @@ final class ClaudeDesktopMCP: ObservableObject {
     }
 
     // Follow a symlinked config so the link itself is never replaced.
-    private static var targetURL: URL { configURL.resolvingSymlinksInPath() }
+    static var targetURL: URL { configURL.resolvingSymlinksInPath() }
 
     // A real Claude.app on disk: LaunchServices also remembers apps in the Trash or already deleted.
     static var isClaudeInstalled: Bool {
@@ -140,14 +143,14 @@ final class ClaudeDesktopMCP: ObservableObject {
     }
 
     // Empty / whitespace-only file = empty object; anything else must be a JSON object.
-    private static func load(_ url: URL) -> [String: Any]? {
+    static func load(_ url: URL) -> [String: Any]? {
         guard let data = try? Data(contentsOf: url) else { return nil }
         if String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return [:] }
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
     }
 
     // Keeps one backup of the previous file next to it, then writes atomically.
-    private static func write(_ root: [String: Any], to url: URL) throws {
+    static func write(_ root: [String: Any], to url: URL) throws {
         let fm = FileManager.default
         try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         if fm.fileExists(atPath: url.path) {
@@ -159,6 +162,66 @@ final class ClaudeDesktopMCP: ObservableObject {
         var data = try JSONSerialization.data(withJSONObject: root, options: options)
         data.append(contentsOf: Array("\n".utf8))
         try data.write(to: url, options: .atomic)
+    }
+}
+
+// YouMindHub's own MCP server (its bundled helper) in the same config file.
+// Used by the two built-in YouMindHub workflows; only the "youmindhub" key is touched.
+@MainActor
+enum YouMindHubClaudeDesktop {
+    static let serverName = "youmindhub"
+    static let helperPath = "/Applications/YouMindHub.app/Contents/Helpers/youmindhub-mcp"
+
+    static var isYouMindHubInstalled: Bool {
+        FileManager.default.isExecutableFile(atPath: helperPath)
+    }
+
+    static func add() -> Result<String, ClaudeDesktopError> {
+        guard ClaudeDesktopMCP.isClaudeInstalled else { return .failure(.notInstalled) }
+        guard isYouMindHubInstalled else { return .failure(.youMindHubNotInstalled) }
+        let url = ClaudeDesktopMCP.targetURL
+        var root: [String: Any] = [:]
+        if FileManager.default.fileExists(atPath: url.path) {
+            guard let loaded = ClaudeDesktopMCP.load(url) else { return .failure(.unreadable) }
+            root = loaded
+        }
+        if let existing = root["mcpServers"], !(existing is [String: Any]) { return .failure(.unreadable) }
+        var servers = root["mcpServers"] as? [String: Any] ?? [:]
+        if matches(servers[serverName]) {
+            return .success(String(localized: "YouMindHub is already in Claude Desktop."))
+        }
+        servers[serverName] = ["command": helperPath]   // replaces an entry pointing elsewhere
+        root["mcpServers"] = servers
+        do {
+            try ClaudeDesktopMCP.write(root, to: url)
+        } catch {
+            return .failure(.writeFailed(error.localizedDescription))
+        }
+        return .success(String(localized: "YouMindHub was added to Claude Desktop. Restart Claude Desktop to use it."))
+    }
+
+    static func remove() -> Result<String, ClaudeDesktopError> {
+        let url = ClaudeDesktopMCP.targetURL
+        let notPresent = String(localized: "YouMindHub is not in Claude Desktop.")
+        guard FileManager.default.fileExists(atPath: url.path) else { return .success(notPresent) }
+        guard var root = ClaudeDesktopMCP.load(url) else { return .failure(.unreadable) }
+        guard var servers = root["mcpServers"] as? [String: Any], servers[serverName] != nil else {
+            return .success(notPresent)
+        }
+        servers.removeValue(forKey: serverName)
+        root["mcpServers"] = servers
+        do {
+            try ClaudeDesktopMCP.write(root, to: url)
+        } catch {
+            return .failure(.writeFailed(error.localizedDescription))
+        }
+        return .success(String(localized: "YouMindHub was removed from Claude Desktop. Restart Claude Desktop to apply."))
+    }
+
+    // Same helper, no arguments (extra keys such as "env" are allowed).
+    private static func matches(_ server: Any?) -> Bool {
+        guard let server = server as? [String: Any] else { return false }
+        return server["command"] as? String == helperPath && (server["args"] as? [String] ?? []).isEmpty
     }
 }
 

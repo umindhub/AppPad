@@ -575,13 +575,14 @@ private struct AIPage: View {
     private static let examples: [String] = [
         String(localized: "Write an AppPad workflow that shows the free space on my disk."),
         String(localized: "Write an AppPad workflow that starts my GitHub Actions deploy for a branch."),
+        String(localized: "Tidy up my AppPad: keep the system apps in their current order, and put third-party apps into folders by category after them."),
     ]
 
     var body: some View {
         SplitPage(
             symbol: "sparkles",
             title: String(localized: "Let AI write workflows for you"),
-            subtitle: String(localized: "Describe what you need in plain words, and Claude or another MCP client writes the workflow for you.")
+            subtitle: String(localized: "Describe what you need in plain words: Claude or another MCP client writes the workflow for you, and can even tidy up your app icons into pages and folders.")
         ) {
             OnboardingCard {
                 Toggle(isOn: $host.enabled) {

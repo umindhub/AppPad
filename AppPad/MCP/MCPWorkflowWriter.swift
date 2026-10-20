@@ -131,7 +131,6 @@ enum MCPWorkflowWriter {
     // Install / Cancel, with the full steps (scripts included) in a scrollable text view.
     private enum ReviewPrompt {
         static func ask(client: String, items: [(item: WorkflowImportItem, previous: String?)]) -> Bool {
-            NSApp.activate()
             let alert = NSAlert()
             alert.messageText = String(localized: "“\(client)” wants to add or change workflows")
             alert.informativeText = String(localized: "Review the steps below. AppPad still asks for permissions the first time a workflow runs.")
@@ -141,7 +140,7 @@ enum MCPWorkflowWriter {
             alert.addButton(withTitle: String(localized: "Install"))
             let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
             cancel.keyEquivalent = "\u{1b}"
-            return alert.runModal() == .alertFirstButtonReturn
+            return FloatingAlert.runModal(alert) == .alertFirstButtonReturn
         }
 
         private static func describe(_ workflow: Workflow, previous: String?) -> String {

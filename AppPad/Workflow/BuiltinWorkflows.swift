@@ -88,6 +88,23 @@ enum BuiltinWorkflows {
                  "Remove AppPad's MCP server from Claude Desktop. Other MCP servers are kept.",
                  version: "1.0", keywords: ["claude", "mcp", "removemcp"], symbol: "minus.circle", notice: .output,
                  steps: [WorkflowStep(builtin: .removeFromClaudeDesktop, timeout: 10)]),
+            // YouMindHub's bundled MCP helper; only the "youmindhub" entry changes.
+            make("com.youmindhub.claudedesktop.youmindhub.add", "Add YouMindHub to Claude Desktop",
+                 "Add YouMindHub's MCP server to Claude Desktop so Claude can use YouMindHub.",
+                 version: "1.0", keywords: ["youmindhub", "claude", "mcp", "addyoumindhub"], symbol: "plus.circle",
+                 notice: .output,
+                 steps: [WorkflowStep(builtin: .addYouMindHubToClaudeDesktop, timeout: 10)]),
+            make("com.youmindhub.claudedesktop.youmindhub.remove", "Remove YouMindHub from Claude Desktop",
+                 "Remove YouMindHub's MCP server from Claude Desktop. Other MCP servers are kept.",
+                 version: "1.0", keywords: ["youmindhub", "claude", "mcp", "removeyoumindhub"], symbol: "minus.circle",
+                 notice: .output,
+                 steps: [WorkflowStep(builtin: .removeYouMindHubFromClaudeDesktop, timeout: 10)]),
+            // Official command in Terminal (password asked there); asks first like Quit All Apps.
+            make("com.youmindhub.homebrew.install", "Install Homebrew",
+                 "Open Terminal and run Homebrew’s official install command. AI assistants use Homebrew to install apps.",
+                 version: "1.0", keywords: ["brew", "homebrew", "installbrew"], symbol: "shippingbox",
+                 notice: .output, confirm: true,
+                 steps: [WorkflowStep(builtin: .installHomebrew, timeout: 10)]),
         ]
     }
 

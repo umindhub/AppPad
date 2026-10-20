@@ -18,6 +18,25 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.2.8
+
+### Added
+
+#### KI-Assistenten
+- KI-Assistenten können Apps mit Homebrew suchen, installieren und deinstallieren. Installiert werden nur Apps aus dem offiziellen Homebrew-Katalog, die von Apple notarisiert sind (Befehlszeilenwerkzeuge nur aus der App selbst); nach der Installation wird jede App erneut geprüft.
+- Jede Installation und Deinstallation fragt vorher nach deiner Bestätigung. Du kannst das unter Einstellungen › KI-Assistenten ausschalten; eine Warnung listet dann die Risiken auf.
+- Fehlt Homebrew, bietet AppPad an, das Terminal mit dem offiziellen Installationsbefehl zu öffnen.
+
+#### Workflows
+- Neuer integrierter Workflow „Homebrew installieren“.
+
+### Changed
+- KI-Assistenten: Von der KI ausgelöste Bestätigungen (Installieren, Deinstallieren, Workflows sichern, Ausführen, Berechtigungen) erscheinen jetzt im Vordergrund, ohne andere AppPad-Fenster nach vorne zu holen.
+
+### Note
+- Mit Homebrew deinstallierte Apps werden sofort gelöscht, nicht in den Papierkorb gelegt.
+- Formeln und Taps von Drittanbietern werden nicht unterstützt. Homebrew wird nur in /opt/homebrew und /usr/local erkannt.
+
 ## v1.2.7
 
 ### Added
