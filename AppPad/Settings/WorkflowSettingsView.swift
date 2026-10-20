@@ -484,6 +484,7 @@ struct WorkflowSettingsView: View {
 // MARK: - Source pill
 
 // Built-in (green) / Mine (blue) / third-party host or file (orange); "· Edited" once changed.
+// Same colors as the panel pill (WorkflowSourceBadgeView); no EDR here.
 struct WorkflowSourcePill: View {
     let source: WorkflowSource
 
@@ -493,14 +494,14 @@ struct WorkflowSourcePill: View {
             Image(systemName: source.symbol)
                 .font(.system(size: 9, weight: .semibold))
             Text(verbatim: source.label)
-                .font(.system(size: 10.5, weight: .medium))
+                .font(.system(size: 10.5, weight: .semibold))
                 .lineLimit(1)
         }
-        .foregroundStyle(tint)
+        .foregroundStyle(Color(nsColor: source.ink))   // darker / brighter shade, readable on the fill
         .padding(.horizontal, 6)
         .padding(.vertical, 1.5)
-        .background(Capsule().fill(tint.opacity(0.14)))
-        .overlay(Capsule().strokeBorder(tint.opacity(0.4), lineWidth: 1))
+        .background(Capsule().fill(tint.opacity(0.16)))
+        .overlay(Capsule().strokeBorder(tint.opacity(0.5), lineWidth: 1))
         .fixedSize()
         .help(Text(verbatim: source.longLabel))
     }

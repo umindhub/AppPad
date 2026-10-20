@@ -7,7 +7,7 @@ final class WorkflowPreviewView: FlippedView {
 
     private let iconView = NSImageView()
     private let titleLabel = NSTextField(labelWithString: "")
-    private let sourcePill = NSImageView()   // workflows: built-in / mine / third-party, right of the title
+    private let sourcePill = WorkflowSourceBadgeView()   // workflows: built-in / mine / third-party, right of the title
     private let subtitleLabel = NSTextField(labelWithString: "")
     private let textScroll = NSScrollView()
     private let textView = PreviewTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 300))
@@ -50,7 +50,6 @@ final class WorkflowPreviewView: FlippedView {
         textView.onEscape = { [weak self] in self?.onEscape?() }
         textScroll.documentView = textView
 
-        sourcePill.imageScaling = .scaleNone
         [iconView, titleLabel, sourcePill, subtitleLabel, textScroll, hintLabel].forEach { addSubview($0) }
         show(nil)
     }
@@ -63,7 +62,7 @@ final class WorkflowPreviewView: FlippedView {
     func show(_ item: WorkflowPanelItem?, isRunning: Bool = false, lastResult: WorkflowRunResult? = nil,
               argument: String = "", missingShortcut: String? = nil) {
         let views: [NSView] = [iconView, titleLabel, subtitleLabel, textScroll, hintLabel]
-        sourcePill.image = nil
+        sourcePill.configure(nil, style: .pill(fontSize: 13))
         guard let item else {
             views.forEach { $0.isHidden = true }
             needsLayout = true
@@ -81,8 +80,7 @@ final class WorkflowPreviewView: FlippedView {
                 ? String(localized: "Workflow")
                 : String(localized: "Workflow (disabled)")
             subtitleLabel.stringValue = "\(kind) · \(workflow.identifier) · \(workflow.version)"
-            sourcePill.image = WorkflowSourceBadge.pill(workflow.source)
-            sourcePill.toolTip = workflow.source.longLabel
+            sourcePill.configure(workflow.source, style: .pill(fontSize: 13))   // about as tall as the 17pt title
             textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult,
                                                               argument: argument, missingShortcut: missingShortcut))
             // Built-ins aren't editable: ⌘↩ only shows them in Settings.
@@ -527,13 +525,14 @@ final class WorkflowPreviewView: FlippedView {
         let subHeight = ceil(subtitleLabel.cell?.cellSize.height ?? 16)
         let top = ((icon - titleHeight - subHeight) / 2).rounded()
         let available = max(0, b.width - textX)
-        if let pill = sourcePill.image {
+        if sourcePill.source != nil {
+            let pill = sourcePill.contentSize
             // Title shrinks (truncates) before the pill does; the pill sits right after the title text.
             let gap: CGFloat = 8
-            let titleWidth = min(ceil(titleLabel.cell?.cellSize.width ?? 0) + 2, max(0, available - pill.size.width - gap))
+            let titleWidth = min(ceil(titleLabel.cell?.cellSize.width ?? 0) + 2, max(0, available - pill.width - gap))
             titleLabel.frame = NSRect(x: textX, y: top, width: titleWidth, height: titleHeight)
-            sourcePill.frame = NSRect(x: textX + titleWidth + gap, y: top + ((titleHeight - pill.size.height) / 2).rounded(),
-                                      width: pill.size.width, height: pill.size.height)
+            sourcePill.frame = NSRect(x: textX + titleWidth + gap, y: top + ((titleHeight - pill.height) / 2).rounded(),
+                                      width: pill.width, height: pill.height)
         } else {
             titleLabel.frame = NSRect(x: textX, y: top, width: available, height: titleHeight)
             sourcePill.frame = .zero

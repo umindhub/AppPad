@@ -19,6 +19,11 @@ AppPad 的所有重要變更都記錄在此檔案中。
 > 本文為 [CHANGELOG.md](../../CHANGELOG.md) 的譯文，如有出入，以英文版為準。
 
 
+## v1.3.0
+
+### Fixed
+- 剪切板：在 AppPad 中複製計算結果時，來源 App 現在顯示 AppPad 圖示，不再是空白佔位框。
+
 ## v1.2.9
 
 ### Added

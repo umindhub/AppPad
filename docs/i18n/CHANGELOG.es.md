@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.0
+
+### Fixed
+- Portapapeles: los resultados de la calculadora copiados en AppPad ahora muestran el icono de AppPad como app de origen en lugar de un marcador vacío.
+
 ## v1.2.9
 
 ### Added

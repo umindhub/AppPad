@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.0
+
+### Fixed
+- Zwischenablage: In AppPad kopierte Rechnerergebnisse zeigen jetzt das AppPad-Symbol als Quell-App statt eines leeren Platzhalters.
+
 ## v1.2.9
 
 ### Added

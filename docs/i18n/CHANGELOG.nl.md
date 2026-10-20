@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.0
+
+### Fixed
+- Klembord: in AppPad gekopieerde rekenresultaten tonen nu het AppPad-icoon als bron-app in plaats van een lege plaatshouder.
+
 ## v1.2.9
 
 ### Added

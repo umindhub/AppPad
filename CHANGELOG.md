@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.0
+
+### Fixed
+- Clipboard: Calculator results copied in AppPad now show the AppPad icon as the source app instead of an empty placeholder.
+
 ## v1.2.9
 
 ### Added

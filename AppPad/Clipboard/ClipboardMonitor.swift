@@ -97,9 +97,9 @@ final class ClipboardMonitor: NSObject {
         let types = Set((pasteboard.types ?? []).map(\.rawValue))
         guard types.isDisjoint(with: Self.skippedTypes) else { return [] }
 
-        // Copies made inside our own panels have no meaningful source app.
+        // Panels don't activate AppPad, so frontmost is still the previous app: credit AppPad itself.
         let ownWindow = NSApp.keyWindow is LaunchpadPanel
-        let front = ownWindow ? nil : NSWorkspace.shared.frontmostApplication
+        let front = ownWindow ? NSRunningApplication.current : NSWorkspace.shared.frontmostApplication
         let bundleID = front?.bundleIdentifier
         if let bundleID, Preferences.shared.clipboardIgnoredApps.contains(bundleID) { return [] }
 
