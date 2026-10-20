@@ -18,6 +18,21 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.2
+
+### Added
+
+#### Workflows
+- Nieuwe ingebouwde actie 'Terminal-opdracht vooraf invullen': opent Terminal in de gekozen map met een opdracht al bij de prompt. Er wordt niets uitgevoerd tot je op Return drukt. `{{input}}` wordt vervangen door het argument.
+
+### Changed
+- Workflows: 'Installeer Homebrew' vult de officiële installatieopdracht nu alleen in Terminal in; druk op Return om te beginnen.
+- Workflows: voordat een script een andere app bedient, vraagt AppPad eerst macOS om toestemming, zodat de app verschijnt bij Privacy en beveiliging › Automatisering. Wordt toegang geweigerd, dan stopt de workflow met een duidelijke melding.
+- AI-assistenten: AI kan workflows schrijven die Terminal-opdrachten vooraf invullen; ook Homebrew installeren via AI vult de opdracht alleen in.
+
+### Note
+- Vraagt Terminal bij het sluiten van het venster of een actief proces moet worden beëindigd, voeg dan `zsh` toe aan de genegeerde processen in de instellingen van Terminal (Profielen › Shell › Vraag voor sluiten).
+
 ## v1.3.1
 
 ### Added

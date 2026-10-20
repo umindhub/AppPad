@@ -121,6 +121,12 @@ extension Workflow {
                     errors.append(String(localized: "Step \(n): “\(raw)” needs a newer version of AppPad."))
                 } else if step.builtin == .openURL, step.url.trimmingCharacters(in: .whitespaces).isEmpty {
                     errors.append(String(localized: "Step \(n): enter the URL to open."))
+                } else if step.builtin == .prefillTerminal {
+                    if step.command.trimmingCharacters(in: .whitespaces).isEmpty {
+                        errors.append(String(localized: "Step \(n): enter the command to fill in Terminal."))
+                    } else if !TerminalLauncher.isDisplaySafe(step.command) || !TerminalLauncher.isDisplaySafe(step.directory) {
+                        errors.append(String(localized: "Step \(n): the command and folder must be one line without control characters."))
+                    }
                 }
             }
         }
@@ -187,6 +193,7 @@ extension BuiltinAction {
         case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop")
         case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop")
         case .installHomebrew: return String(localized: "Install Homebrew")
+        case .prefillTerminal: return String(localized: "Pre-fill Terminal Command")
         }
     }
 
@@ -214,6 +221,7 @@ extension BuiltinAction {
         case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop's MCP servers")
         case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop's MCP servers")
         case .installHomebrew: return String(localized: "Open Terminal with Homebrew’s official install command")
+        case .prefillTerminal: return String(localized: "Open Terminal with a command filled in (it runs only after you press Return)")
         }
     }
 
@@ -241,6 +249,7 @@ extension BuiltinAction {
         case .addYouMindHubToClaudeDesktop: return "plus.circle"
         case .removeYouMindHubFromClaudeDesktop: return "minus.circle"
         case .installHomebrew: return "shippingbox"
+        case .prefillTerminal: return "terminal"
         }
     }
 
@@ -276,5 +285,58 @@ enum AppLookup {
             if let id = Bundle(url: url)?.bundleIdentifier { return id }
         }
         return nil
+    }
+}
+
+// Automation consent (Privacy & Security › Automation), asked by AppPad itself before a sandboxed
+// script sends Apple Events: the entry is registered under AppPad, and a refusal is reported clearly
+// instead of a bare -1743 from osascript inside sandbox-exec.
+enum AutomationConsent {
+    enum Status { case granted, denied, unknown }
+
+    // Granted in this session: no relaunch / recheck of the target app.
+    private static var granted: Set<String> = []
+    private static let notPermitted = OSStatus(errAEEventNotPermitted)
+    private static let notRunning = OSStatus(procNotFound)
+
+    static func request(_ bundleID: String) async -> Status {
+        if granted.contains(bundleID) { return .granted }
+        guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return .unknown }
+        // AEDeterminePermissionToAutomateTarget needs the target running (else procNotFound, no prompt).
+        if NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty {
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = false
+            configuration.addsToRecentItems = false
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                NSWorkspace.shared.openApplication(at: appURL, configuration: configuration) { _, _ in
+                    continuation.resume()
+                }
+            }
+        }
+        // A just-launched app may need a moment before it accepts events.
+        for _ in 0..<20 {
+            let status = await Task.detached { Self.determine(bundleID) }.value
+            switch status {
+            case 0:
+                granted.insert(bundleID)
+                return .granted
+            case notPermitted:
+                return .denied
+            case notRunning:
+                try? await Task.sleep(for: .milliseconds(250))
+            default:
+                return .unknown
+            }
+        }
+        return .unknown
+    }
+
+    // Blocks until the user answers the system prompt: never call on the main thread.
+    private nonisolated static func determine(_ bundleID: String) -> OSStatus {
+        let target = NSAppleEventDescriptor(bundleIdentifier: bundleID)
+        return withExtendedLifetime(target) {
+            AEDeterminePermissionToAutomateTarget(target.aeDesc, AEEventClass(typeWildCard),
+                                                  AEEventID(typeWildCard), true)
+        }
     }
 }

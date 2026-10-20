@@ -18,6 +18,7 @@ nonisolated enum BuiltinAction: String, Codable, CaseIterable, Sendable {
     case addToClaudeDesktop, removeFromClaudeDesktop
     case addYouMindHubToClaudeDesktop, removeYouMindHubFromClaudeDesktop
     case installHomebrew
+    case prefillTerminal
 }
 
 // Whether a workflow takes the text after the first space in the panel search.
@@ -95,11 +96,13 @@ nonisolated struct WorkflowStep: Codable, Equatable, Identifiable, Sendable {
     var http = HTTPRequestSpec()
     var builtin: BuiltinAction = .emptyTrash
     var url = ""                          // openURL template, {{input}} is percent-encoded
+    var command = ""                      // prefillTerminal: one line typed at the prompt, {{input}} raw
+    var directory = ""                    // prefillTerminal: working folder (~ allowed), empty = home
     var timeout: Double = 60              // seconds
     var unsupportedBuiltin: String?       // builtin from a newer AppPad (not encoded)
 
     private enum CodingKeys: String, CodingKey {
-        case id, kind, script, language, shortcutName, shortcutInput, http, builtin, url, timeout
+        case id, kind, script, language, shortcutName, shortcutInput, http, builtin, url, command, directory, timeout
     }
 
     init(kind: WorkflowStepKind) {
@@ -129,6 +132,8 @@ nonisolated struct WorkflowStep: Codable, Equatable, Identifiable, Sendable {
             unsupportedBuiltin = rawBuiltin
         }
         url = c.value(.url, "")
+        command = c.value(.command, "")
+        directory = c.value(.directory, "")
         timeout = c.value(.timeout, 60)
     }
 
@@ -143,6 +148,8 @@ nonisolated struct WorkflowStep: Codable, Equatable, Identifiable, Sendable {
         try c.encode(http, forKey: .http)
         try c.encode(unsupportedBuiltin ?? builtin.rawValue, forKey: .builtin)   // keep unknown actions intact
         if !url.isEmpty { try c.encode(url, forKey: .url) }
+        if !command.isEmpty { try c.encode(command, forKey: .command) }
+        if !directory.isEmpty { try c.encode(directory, forKey: .directory) }
         try c.encode(timeout, forKey: .timeout)
     }
 }

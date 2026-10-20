@@ -4,183 +4,6 @@
     "" : {
 
     },
-    "App Store Search" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store durchsuchen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buscar en App Store"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rechercher dans l’App Store"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerca su App Store"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store を検索"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 검색"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoeken in App Store"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 搜索"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 搜尋"
-          }
-        }
-      }
-    },
-    "mas, appstore, appstoresearch" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "laden, appladen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tienda, tiendaapps"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "boutique, magasin"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "negozio, negozioapp"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリ, ストア"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱스토어, 스토어"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "winkel, appwinkel"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "应用商店, 商店"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "應用商店, 商店"
-          }
-        }
-      }
-    },
-    "Search the Mac App Store." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Im Mac App Store suchen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Busca en la Mac App Store."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rechercher dans le Mac App Store."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerca nel Mac App Store."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mac App Store で検索します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mac App Store에서 검색합니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoeken in de Mac App Store."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 Mac App Store 中搜索。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 Mac App Store 中搜尋。"
-          }
-        }
-      }
-    },
     "… (output truncated)" : {
       "localizations" : {
         "de" : {
@@ -6109,6 +5932,65 @@
         }
       }
     },
+    "App Store Search" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en App Store"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans l’App Store"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca su App Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store を検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 검색"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeken in App Store"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 搜索"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 搜尋"
+          }
+        }
+      }
+    },
     "Appearance" : {
       "localizations" : {
         "de" : {
@@ -6805,60 +6687,60 @@
         }
       }
     },
-    "AppPad opens Terminal and runs Homebrew’s official install command. Terminal asks for your Mac password; AppPad never sees it." : {
+    "AppPad opens Terminal with Homebrew’s official install command filled in. Press Return there to start it. Terminal asks for your Mac password; AppPad never sees it." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad öffnet das Terminal und führt den offiziellen Installationsbefehl von Homebrew aus. Das Terminal fragt nach deinem Mac-Passwort; AppPad sieht es nie."
+            "value" : "AppPad öffnet das Terminal mit dem offiziellen Installationsbefehl von Homebrew. Drücke dort den Zeilenschalter, um ihn zu starten. Das Terminal fragt nach deinem Mac-Passwort; AppPad sieht es nie."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad abre Terminal y ejecuta el comando de instalación oficial de Homebrew. Terminal te pide la contraseña del Mac; AppPad nunca la ve."
+            "value" : "AppPad abre Terminal con el comando de instalación oficial de Homebrew ya escrito. Pulsa Retorno allí para iniciarlo. Terminal te pide la contraseña del Mac; AppPad nunca la ve."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad ouvre Terminal et exécute la commande d’installation officielle de Homebrew. Terminal demande le mot de passe de votre Mac ; AppPad ne le voit jamais."
+            "value" : "AppPad ouvre Terminal avec la commande d’installation officielle de Homebrew déjà saisie. Appuyez sur Retour dans cette fenêtre pour la lancer. Terminal demande le mot de passe de votre Mac ; AppPad ne le voit jamais."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad apre Terminale ed esegue il comando di installazione ufficiale di Homebrew. Terminale chiede la password del Mac; AppPad non la vede mai."
+            "value" : "AppPad apre Terminale con il comando di installazione ufficiale di Homebrew già inserito. Premi A capo lì per avviarlo. Terminale chiede la password del Mac; AppPad non la vede mai."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPadがターミナルを開き、Homebrew公式のインストールコマンドを実行します。Macのパスワードはターミナルが尋ねます。AppPadがパスワードを見ることはありません。"
+            "value" : "AppPadがHomebrew公式のインストールコマンドを入力した状態でターミナルを開きます。そこでreturnキーを押すと開始します。Macのパスワードはターミナルが尋ねます。AppPadがパスワードを見ることはありません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad가 터미널을 열고 Homebrew 공식 설치 명령을 실행합니다. Mac 암호는 터미널이 묻고, AppPad는 절대 볼 수 없습니다."
+            "value" : "AppPad가 Homebrew 공식 설치 명령이 입력된 터미널을 엽니다. 그곳에서 Return 키를 누르면 시작됩니다. Mac 암호는 터미널이 묻고, AppPad는 절대 볼 수 없습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad opent Terminal en voert de officiële installatieopdracht van Homebrew uit. Terminal vraagt om je Mac-wachtwoord; AppPad ziet het nooit."
+            "value" : "AppPad opent Terminal met de officiële installatieopdracht van Homebrew al ingevuld. Druk daar op Return om te beginnen. Terminal vraagt om je Mac-wachtwoord; AppPad ziet het nooit."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad 会打开终端并运行 Homebrew 官方安装命令。Mac 密码由终端询问，AppPad 不会看到。"
+            "value" : "AppPad 会打开终端并预填 Homebrew 官方安装命令，在终端中按下 Return 键即可开始。Mac 密码由终端询问，AppPad 不会看到。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPad 會打開終端機並執行 Homebrew 官方安裝指令。Mac 密碼由終端機詢問，AppPad 不會看到。"
+            "value" : "AppPad 會打開終端機並預填 Homebrew 官方安裝指令，在終端機中按下 Return 鍵即可開始。Mac 密碼由終端機詢問，AppPad 不會看到。"
           }
         }
       }
@@ -10640,6 +10522,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "欄數：%lld"
+          }
+        }
+      }
+    },
+    "Command" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Befehl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commande"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comando"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "명령"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opdracht"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指令"
           }
         }
       }
@@ -22655,6 +22595,64 @@
         }
       }
     },
+    "macOS does not allow AppPad to control %@. Turn it on in System Settings › Privacy & Security › Automation, then run the workflow again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS erlaubt AppPad nicht, %@ zu steuern. Aktiviere es unter „Systemeinstellungen › Datenschutz & Sicherheit › Automation“ und führe den Workflow erneut aus."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS no permite que AppPad controle %@. Actívalo en Ajustes del Sistema › Privacidad y seguridad › Automatización y vuelve a ejecutar el flujo de trabajo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS n’autorise pas AppPad à contrôler %@. Activez-le dans Réglages Système › Confidentialité et sécurité › Automatisation, puis relancez le workflow."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS non consente ad AppPad di controllare %@. Attivalo in Impostazioni di Sistema › Privacy e sicurezza › Automazione, quindi esegui di nuovo il workflow."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS は AppPad に %@ の制御を許可していません。「システム設定」›「プライバシーとセキュリティ」›「オートメーション」でオンにしてから、ワークフローをもう一度実行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS가 AppPad의 %@ 제어를 허용하지 않습니다. 시스템 설정 › 개인정보 보호 및 보안 › 자동화에서 켠 후 워크플로를 다시 실행하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS staat AppPad niet toe %@ te bedienen. Schakel dit in bij Systeeminstellingen › Privacy en beveiliging › Automatisering en voer de workflow opnieuw uit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 未允许 AppPad 控制“%@”。请在“系统设置” › “隐私与安全性” › “自动化”中打开，然后重新运行此工作流。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 未允許 AppPad 控制「%@」。請在「系統設定」›「隱私權與安全性」›「自動化」中開啟，然後重新執行此工作流程。"
+          }
+        }
+      }
+    },
     "macOS gives %@ to Spotlight by default. Turn off Spotlight's shortcut to use it for AppPad Workflows instead." : {
       "localizations" : {
         "de" : {
@@ -22709,6 +22707,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "macOS 預設將 %@ 指定給 Spotlight。關閉 Spotlight 的快速鍵，即可將它用於 AppPad 工作流程。"
+          }
+        }
+      }
+    },
+    "mas, appstore, appstoresearch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "laden, appladen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tienda, tiendaapps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "boutique, magasin"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "negozio, negozioapp"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ, ストア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱스토어, 스토어"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "winkel, appwinkel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用商店, 商店"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用商店, 商店"
           }
         }
       }
@@ -27415,61 +27472,60 @@
         }
       }
     },
-    "Open Terminal and run Homebrew’s official install command. AI assistants use Homebrew to install apps." : {
-      "extractionState" : "stale",
+    "Open Terminal with a command filled in (it runs only after you press Return)" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Öffnet das Terminal und führt den offiziellen Installationsbefehl von Homebrew aus. KI-Assistenten installieren Apps mit Homebrew."
+            "value" : "Terminal mit einem vorausgefüllten Befehl öffnen (er wird erst ausgeführt, wenn du den Zeilenschalter drückst)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abre Terminal y ejecuta el comando de instalación oficial de Homebrew. Los asistentes de IA usan Homebrew para instalar apps."
+            "value" : "Abrir Terminal con un comando ya escrito (solo se ejecuta cuando pulsas Retorno)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvre Terminal et exécute la commande d’installation officielle de Homebrew. Les assistants IA utilisent Homebrew pour installer des apps."
+            "value" : "Ouvrir Terminal avec une commande préremplie (elle ne s’exécute que lorsque vous appuyez sur Retour)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apre Terminale ed esegue il comando di installazione ufficiale di Homebrew. Gli assistenti IA usano Homebrew per installare app."
+            "value" : "Aprire il Terminale con un comando già inserito (viene eseguito solo dopo aver premuto A capo)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターミナルを開き、Homebrew公式のインストールコマンドを実行します。AIアシスタントはHomebrewでアプリをインストールします。"
+            "value" : "コマンドを入力済みの状態でターミナルを開く（returnキーを押すまで実行されません）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "터미널을 열고 Homebrew 공식 설치 명령을 실행합니다. AI 어시스턴트는 Homebrew로 앱을 설치합니다."
+            "value" : "명령이 미리 입력된 터미널 열기(Return 키를 눌러야 실행됨)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opent Terminal en voert de officiële installatieopdracht van Homebrew uit. AI-assistenten installeren apps met Homebrew."
+            "value" : "Terminal openen met een vooraf ingevulde opdracht (wordt pas uitgevoerd als je op Return drukt)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开终端并运行 Homebrew 官方安装命令。AI 助手通过 Homebrew 安装 App。"
+            "value" : "打开终端并预填命令（按下 Return 键后才会执行）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打開終端機並執行 Homebrew 官方安裝指令。AI 助理透過 Homebrew 安裝 App。"
+            "value" : "打開終端機並預填指令（按下 Return 鍵後才會執行）"
           }
         }
       }
@@ -27528,6 +27584,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用 Homebrew 官方安裝指令打開終端機"
+          }
+        }
+      }
+    },
+    "Open Terminal with Homebrew’s official install command filled in; press Return to start it. AI assistants use Homebrew to install apps." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet das Terminal mit dem offiziellen Installationsbefehl von Homebrew; drücke den Zeilenschalter, um ihn zu starten. KI-Assistenten installieren Apps mit Homebrew."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Terminal con el comando de instalación oficial de Homebrew ya escrito; pulsa Retorno para iniciarlo. Los asistentes de IA usan Homebrew para instalar apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre Terminal avec la commande d’installation officielle de Homebrew déjà saisie ; appuyez sur Retour pour la lancer. Les assistants IA utilisent Homebrew pour installer des apps."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre Terminale con il comando di installazione ufficiale di Homebrew già inserito; premi A capo per avviarlo. Gli assistenti IA usano Homebrew per installare app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew公式のインストールコマンドを入力した状態でターミナルを開きます。returnキーを押すと開始します。AIアシスタントはHomebrewでアプリをインストールします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 공식 설치 명령이 입력된 터미널을 엽니다. Return 키를 누르면 시작됩니다. AI 어시스턴트는 Homebrew로 앱을 설치합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opent Terminal met de officiële installatieopdracht van Homebrew al ingevuld; druk op Return om te beginnen. AI-assistenten installeren apps met Homebrew."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开终端并预填 Homebrew 官方安装命令，按下 Return 键即可开始。AI 助手通过 Homebrew 安装 App。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開終端機並預填 Homebrew 官方安裝指令，按下 Return 鍵即可開始。AI 助理透過 Homebrew 安裝 App。"
           }
         }
       }
@@ -28923,6 +29038,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "還有剪貼簿記錄、工作流程、視窗控制和 App 快速鍵，全都在選單列中。"
+          }
+        }
+      }
+    },
+    "Pre-fill Terminal Command" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal-Befehl vorausfüllen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellenar comando en Terminal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préremplir une commande dans Terminal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precompila comando nel Terminale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルにコマンドを事前入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널 명령 미리 입력"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal-opdracht vooraf invullen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在终端中预填命令"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在終端機中預填指令"
           }
         }
       }
@@ -34913,6 +35086,65 @@
         }
       }
     },
+    "Search the Mac App Store." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Mac App Store suchen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busca en la Mac App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans le Mac App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca nel Mac App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store で検索します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store에서 검색합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeken in de Mac App Store."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Mac App Store 中搜索。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Mac App Store 中搜尋。"
+          }
+        }
+      }
+    },
     "Search the web. Duplicate it and change the URL for other sites." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -39693,6 +39925,64 @@
         }
       }
     },
+    "Step %lld: enter the command to fill in Terminal." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schritt %lld: Gib den Befehl ein, der im Terminal vorausgefüllt wird."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paso %lld: introduce el comando que se escribirá en Terminal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Étape %lld : saisissez la commande à préremplir dans Terminal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passo %lld: inserisci il comando da precompilare nel Terminale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステップ %lld：ターミナルに入力するコマンドを入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld단계: 터미널에 미리 입력할 명령을 입력하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stap %lld: voer de opdracht in die in Terminal wordt ingevuld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 步：请填写要预填到终端的命令。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 步：請填寫要預填到終端機的指令。"
+          }
+        }
+      }
+    },
     "Step %lld: enter the URL to open." : {
       "localizations" : {
         "de" : {
@@ -39747,6 +40037,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "第 %lld 步：請填寫要打開的連結。"
+          }
+        }
+      }
+    },
+    "Step %lld: the command and folder must be one line without control characters." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schritt %lld: Befehl und Ordner müssen einzeilig und ohne Steuerzeichen sein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paso %lld: el comando y la carpeta deben ocupar una sola línea, sin caracteres de control."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Étape %lld : la commande et le dossier doivent tenir sur une ligne, sans caractères de contrôle."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passo %lld: il comando e la cartella devono stare su una sola riga, senza caratteri di controllo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステップ %lld：コマンドとフォルダは制御文字を含まない1行にしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld단계: 명령과 폴더는 제어 문자가 없는 한 줄이어야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stap %lld: opdracht en map moeten op één regel staan, zonder stuurtekens."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 步：命令和文件夹必须是单行，且不能包含控制字符。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 步：指令和檔案夾必須是單行，且不能包含控制字元。"
           }
         }
       }
@@ -40738,60 +41086,234 @@
         }
       }
     },
-    "Terminal opened. Finish installing Homebrew there." : {
+    "Terminal is not available." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal geöffnet. Schließe die Installation von Homebrew dort ab."
+            "value" : "Das Terminal ist nicht verfügbar."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal abierto. Termina allí la instalación de Homebrew."
+            "value" : "Terminal no está disponible."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal est ouvert. Terminez l’installation de Homebrew dans cette fenêtre."
+            "value" : "Terminal n’est pas disponible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminale aperto. Completa lì l’installazione di Homebrew."
+            "value" : "Il Terminale non è disponibile."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターミナルを開きました。そこでHomebrewのインストールを完了してください。"
+            "value" : "ターミナルが見つかりません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "터미널을 열었습니다. 그곳에서 Homebrew 설치를 마치십시오."
+            "value" : "터미널을 사용할 수 없습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal is geopend. Rond daar de installatie van Homebrew af."
+            "value" : "Terminal is niet beschikbaar."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已打开终端，请在终端中完成 Homebrew 的安装。"
+            "value" : "找不到终端。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已打開終端機，請在終端機中完成 Homebrew 的安裝。"
+            "value" : "找不到終端機。"
+          }
+        }
+      }
+    },
+    "Terminal opened. Press Return there to install Homebrew." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal geöffnet. Drücke dort den Zeilenschalter, um Homebrew zu installieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal abierto. Pulsa Retorno allí para instalar Homebrew."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal est ouvert. Appuyez sur Retour dans cette fenêtre pour installer Homebrew."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminale aperto. Premi A capo lì per installare Homebrew."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルを開きました。そこでreturnキーを押してHomebrewをインストールしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널을 열었습니다. 그곳에서 Return 키를 눌러 Homebrew를 설치하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal is geopend. Druk daar op Return om Homebrew te installeren."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打开终端，请在终端中按下 Return 键安装 Homebrew。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打開終端機，請在終端機中按下 Return 鍵安裝 Homebrew。"
+          }
+        }
+      }
+    },
+    "Terminal opened. Review the command and press Return to run it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal geöffnet. Prüfe den Befehl und drücke den Zeilenschalter, um ihn auszuführen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal abierto. Revisa el comando y pulsa Retorno para ejecutarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal est ouvert. Vérifiez la commande et appuyez sur Retour pour l’exécuter."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminale aperto. Controlla il comando e premi A capo per eseguirlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルを開きました。コマンドを確認し、returnキーを押して実行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널을 열었습니다. 명령을 확인한 후 Return 키를 눌러 실행하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal is geopend. Controleer de opdracht en druk op Return om hem uit te voeren."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打开终端。请检查命令，按下 Return 键运行。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已打開終端機。請檢查指令，按下 Return 鍵執行。"
+          }
+        }
+      }
+    },
+    "Terminal opens in this folder with the command typed at the prompt. Nothing runs until you press Return there. {{input}} is replaced by the argument." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Terminal öffnet sich in diesem Ordner mit dem Befehl in der Eingabezeile. Nichts wird ausgeführt, bis du dort den Zeilenschalter drückst. {{input}} wird durch das Argument ersetzt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal se abre en esta carpeta con el comando escrito en la línea de comandos. No se ejecuta nada hasta que pulses Retorno allí. {{input}} se sustituye por el argumento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal s’ouvre dans ce dossier avec la commande saisie à l’invite. Rien ne s’exécute tant que vous n’appuyez pas sur Retour. {{input}} est remplacé par l’argument."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il Terminale si apre in questa cartella con il comando già inserito nel prompt. Non viene eseguito nulla finché non premi A capo. {{input}} viene sostituito dall’argomento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このフォルダでターミナルが開き、プロンプトにコマンドが入力されます。そこでreturnキーを押すまで何も実行されません。{{input}} は引数に置き換えられます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 폴더에서 터미널이 열리고 프롬프트에 명령이 입력됩니다. 그곳에서 Return 키를 누르기 전에는 아무것도 실행되지 않습니다. {{input}}은 인수로 대치됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal opent in deze map met de opdracht al bij de prompt. Er wordt niets uitgevoerd tot je daar op Return drukt. {{input}} wordt vervangen door het argument."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "终端会在此文件夹中打开，并在提示符后预填命令。在终端中按下 Return 键之前不会执行任何内容。{{input}} 会被替换为参数。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終端機會在此檔案夾中打開，並在提示符號後預填指令。在終端機中按下 Return 鍵之前不會執行任何內容。{{input}} 會被取代為參數。"
           }
         }
       }
@@ -41318,6 +41840,64 @@
         }
       }
     },
+    "The command must be one line without control characters." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Befehl muss einzeilig und ohne Steuerzeichen sein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El comando debe ocupar una sola línea, sin caracteres de control."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La commande doit tenir sur une ligne, sans caractères de contrôle."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il comando deve stare su una sola riga, senza caratteri di controllo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンドは制御文字を含まない1行にしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "명령은 제어 문자가 없는 한 줄이어야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De opdracht moet op één regel staan, zonder stuurtekens."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令必须是单行，且不能包含控制字符。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指令必須是單行，且不能包含控制字元。"
+          }
+        }
+      }
+    },
     "The content could not be saved." : {
       "localizations" : {
         "de" : {
@@ -41430,6 +42010,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下載的檔案不是有效的工作流程。"
+          }
+        }
+      }
+    },
+    "The folder “%@” does not exist." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ordner „%@“ existiert nicht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carpeta «%@» no existe."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dossier « %@ » n’existe pas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cartella “%@” non esiste."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダ“%@”が見つかりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” 폴더가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De map ‘%@’ bestaat niet."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件夹“%@”不存在。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案夾「%@」不存在。"
           }
         }
       }

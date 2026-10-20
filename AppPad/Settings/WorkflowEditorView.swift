@@ -747,6 +747,14 @@ private struct StepEditor: View {
                 Text("{{input}} is replaced by the argument (URL-encoded).")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            } else if step.builtin == .prefillTerminal {
+                TextField("Folder", text: $step.directory, prompt: Text(verbatim: "~/Projects/MyApp"))
+                    .font(.system(.body, design: .monospaced))
+                TextField("Command", text: $step.command, prompt: Text(verbatim: "sh build.sh {{input}}"))
+                    .font(.system(.body, design: .monospaced))
+                Text("Terminal opens in this folder with the command typed at the prompt. Nothing runs until you press Return there. {{input}} is replaced by the argument.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else if step.builtin.usesInput {
                 Text("Uses the step input (the panel argument for the first step).")
                     .font(.caption)

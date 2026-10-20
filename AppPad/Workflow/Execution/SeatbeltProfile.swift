@@ -81,6 +81,7 @@ nonisolated enum SeatbeltProfile {
 
         if grant.systemServices {
             lines.append("(allow mach-lookup)")
+            lines.append("(allow lsopen)")
             lines.append("(allow ipc-posix-shm-read-data ipc-posix-shm-write-data)")
             lines.append("(allow iokit-open)")
         }

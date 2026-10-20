@@ -183,7 +183,13 @@ enum MCPWorkflowWriter {
             case .http:
                 return [step.http.url, step.http.headers, step.http.body]
                     .filter { !$0.isEmpty }.joined(separator: "\n")
-            case .builtin: return step.builtin == .openURL ? step.url : ""
+            case .builtin:
+                switch step.builtin {
+                case .openURL: return step.url
+                case .prefillTerminal:
+                    return (step.directory.isEmpty ? "" : "cd " + step.directory + "\n") + step.command
+                default: return ""
+                }
             }
         }
 

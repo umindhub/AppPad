@@ -20,6 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.2
+
+### Added
+
+#### Workflows
+- New built-in action "Pre-fill Terminal Command": opens Terminal in a chosen folder with a command typed at the prompt. Nothing runs until you press Return. `{{input}}` is replaced by the argument.
+
+### Changed
+- Workflows: Install Homebrew now pre-fills the official install command in Terminal; press Return to start it.
+- Workflows: before a script controls another app, AppPad asks macOS for permission first, so the app appears in Privacy & Security › Automation. If access is denied, the workflow stops with a clear message.
+- AI Assistants: AI can write workflows that pre-fill Terminal commands; installing Homebrew through AI also only pre-fills the command.
+
+### Note
+- If Terminal asks to terminate a running process when you close the window, add `zsh` to the processes it ignores in Terminal's settings (Profiles › Shell › Ask before closing).
+
 ## v1.3.1
 
 ### Added

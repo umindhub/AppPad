@@ -18,6 +18,21 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.2
+
+### Added
+
+#### Flujos de trabajo
+- Nueva acción integrada «Rellenar comando en Terminal»: abre Terminal en la carpeta elegida con un comando ya escrito. No se ejecuta nada hasta que pulses Retorno. `{{input}}` se sustituye por el argumento.
+
+### Changed
+- Flujos de trabajo: «Instalar Homebrew» ahora solo escribe el comando de instalación oficial en Terminal; pulsa Retorno para iniciarlo.
+- Flujos de trabajo: antes de que un script controle otra app, AppPad pide permiso a macOS, por lo que la app aparece en Privacidad y seguridad › Automatización. Si se deniega el acceso, el flujo se detiene con un mensaje claro.
+- Asistentes de IA: la IA puede escribir flujos que rellenan comandos en Terminal; instalar Homebrew mediante IA también solo escribe el comando.
+
+### Note
+- Si Terminal pregunta si quieres terminar un proceso en ejecución al cerrar la ventana, añade `zsh` a los procesos ignorados en los ajustes de Terminal (Perfiles › Shell › Preguntar antes de cerrar).
+
 ## v1.3.1
 
 ### Added

@@ -96,6 +96,13 @@ enum MCPWorkflowGuide {
     | `quitApp` | app name (exact, then prefix) |
     | `openURL` | needs `"url"` on the step, e.g. `"https://www.google.com/search?q={{input}}"` (`{{input}}` percent-encoded) |
     | `createReminder` | from `argumentType: "reminder"`, or plain text |
+    | `prefillTerminal` | needs `"command"` (one line, `{{input}}` inserted raw); optional `"directory"` (`~` allowed) |
+
+    `prefillTerminal` opens Terminal in `directory` with `command` typed at the prompt. It never \
+    runs by itself: the user reads it and presses Return. Use it for work that must run outside \
+    the sandbox (build or release scripts, installers). `installHomebrew` works the same way with \
+    Homebrew's official install command. Example: \
+    `{"kind": "builtin", "builtin": "prefillTerminal", "directory": "~/Projects/App", "command": "sh build.sh"}`.
 
     ## Permissions
 
@@ -122,7 +129,7 @@ enum MCPWorkflowGuide {
     ## Validation (save fails otherwise)
 
     - At least one step; no empty scripts; a shortcut name for `shortcut` steps; an http(s) URL \
-    whose host is in `httpHosts` and every referenced secret in `secrets`; a `url` for `openURL`.
+    whose host is in `httpHosts` and every referenced secret in `secrets`; a `url` for `openURL`; a one-line `command` (no control characters) for `prefillTerminal`.
 
     ## Examples
 

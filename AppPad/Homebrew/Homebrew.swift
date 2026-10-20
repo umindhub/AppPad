@@ -117,25 +117,115 @@ nonisolated enum HomebrewError: LocalizedError, Sendable {
 
 // MARK: - Installer
 
-// Terminal runs the official install command from a .command file: no Apple Events needed,
+// Official install command typed into Terminal; the user presses Return to start it,
 // and Terminal itself asks for the password (AppPad never sees it).
 enum HomebrewInstaller {
     static func openInTerminal() throws {
-        let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("AppPad-Homebrew-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true,
-                                                attributes: [.posixPermissions: 0o700])
-        let script = dir.appendingPathComponent("Install Homebrew.command")
-        let body = "#!/bin/bash\n" + Homebrew.installCommand + "\n"
-        try body.write(to: script, atomically: true, encoding: .utf8)
-        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: script.path)
+        try TerminalLauncher.prefill(command: Homebrew.installCommand)
+    }
+}
 
-        guard let terminal = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Terminal") else {
-            throw MCPToolError("Terminal is not available.")
+// MARK: - Terminal
+
+nonisolated struct TerminalLaunchError: LocalizedError, Sendable {
+    let message: String
+    var errorDescription: String? { message }
+}
+
+// Opens Terminal with a command typed at the prompt but NOT run: the user reads it and presses
+// Return. Only AppPad's fixed bootstrap runs on its own (cd + an interactive zsh with the user's
+// rc files), so workflows cannot use this to leave the sandbox. No Apple Events: Terminal opens
+// a one-shot .command file.
+enum TerminalLauncher {
+    private static let terminalID = "com.apple.Terminal"
+
+    // Rejects text whose on-screen form may differ from what runs: control characters
+    // (newlines, escape sequences) and bidirectional overrides.
+    nonisolated static func isDisplaySafe(_ text: String) -> Bool {
+        !text.unicodeScalars.contains { scalar in
+            switch scalar.value {
+            case 0x00...0x1F, 0x7F...0x9F, 0x200E, 0x200F, 0x202A...0x202E, 0x2066...0x2069: return true
+            default: return false
+            }
         }
+    }
+
+    static func prefill(command: String, directory: String = "") throws {
+        let line = command.trimmingCharacters(in: .whitespaces)
+        guard !line.isEmpty, isDisplaySafe(line), isDisplaySafe(directory) else {
+            throw TerminalLaunchError(message: String(localized: "The command must be one line without control characters."))
+        }
+        var folder = ""
+        if !directory.trimmingCharacters(in: .whitespaces).isEmpty {
+            folder = SeatbeltProfile.resolve(directory)
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: folder, isDirectory: &isDirectory), isDirectory.boolValue else {
+                throw TerminalLaunchError(message: String(localized: "The folder “\(directory)” does not exist."))
+            }
+        }
+        guard let terminal = NSWorkspace.shared.urlForApplication(withBundleIdentifier: terminalID) else {
+            throw TerminalLaunchError(message: String(localized: "Terminal is not available."))
+        }
+
+        let fm = FileManager.default
+        let dir = fm.temporaryDirectory.appendingPathComponent("AppPad-Terminal-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: dir, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        try write(zshenv, to: dir.appendingPathComponent(".zshenv"))
+        try write(zshrc(folder: folder), to: dir.appendingPathComponent(".zshrc"))
+        let script = dir.appendingPathComponent("AppPad.command")
+        try write(bootstrap(command: line, zdotdir: dir.path), to: script, executable: true)
+
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         NSWorkspace.shared.open([script], withApplicationAt: terminal, configuration: configuration)
+    }
+
+    // Starts an interactive zsh whose ZDOTDIR is the temp folder, so the rc files below run
+    // around the user's own ones. The command travels in an env var, never as code.
+    private static func bootstrap(command: String, zdotdir: String) -> String {
+        """
+        #!/bin/zsh
+        rm -f -- "$0"
+        export APPPAD_ZDOTDIR="${ZDOTDIR:-$HOME}"
+        export APPPAD_PREFILL=\(quote(command))
+        ZDOTDIR=\(quote(zdotdir)) exec /bin/zsh -i
+
+        """
+    }
+
+    // Sources the user's .zshenv; keeps ZDOTDIR on the temp folder so our .zshrc is read next.
+    private static let zshenv = """
+        _apppad_tmp="$ZDOTDIR"
+        ZDOTDIR="$APPPAD_ZDOTDIR"
+        [[ -r "$ZDOTDIR/.zshenv" ]] && source "$ZDOTDIR/.zshenv"
+        APPPAD_ZDOTDIR="$ZDOTDIR"
+        ZDOTDIR="$_apppad_tmp"
+
+        """
+
+    // User's .zshrc, then cd, then the command pushed into the line editor (print -z: not run).
+    private static func zshrc(folder: String) -> String {
+        let cd = folder.isEmpty ? "" : "cd -- \(quote(folder))\n"
+        return """
+            ZDOTDIR="$APPPAD_ZDOTDIR"
+            unset APPPAD_ZDOTDIR
+            [[ -r "$ZDOTDIR/.zshrc" ]] && source "$ZDOTDIR/.zshrc"
+            \(cd)print -rz -- "$APPPAD_PREFILL"
+            unset APPPAD_PREFILL
+            rm -rf -- "$_apppad_tmp"
+            unset _apppad_tmp
+
+            """
+    }
+
+    private static func write(_ text: String, to url: URL, executable: Bool = false) throws {
+        try text.write(to: url, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: executable ? 0o700 : 0o600], ofItemAtPath: url.path)
+    }
+
+    // POSIX single quotes: nothing inside is expanded.
+    private static func quote(_ text: String) -> String {
+        "'" + text.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 }
 

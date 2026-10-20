@@ -110,6 +110,10 @@ final class WorkflowRunner: ObservableObject {
             return finish(result, workflow, trigger)
         }
         let allowed = resolvePermissions(workflow, result: &result)
+        if workflow.usesSandbox, let refused = await requestAutomation(allowed) {
+            result.message = refused
+            return finish(result, workflow, trigger)
+        }
         let tempDir = makeTempDir()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
@@ -165,6 +169,17 @@ final class WorkflowRunner: ObservableObject {
         let allowed = needed.filter { once.contains($0) || store.decision(for: $0, workflow: workflow.id) == .allow }
         result.denied = needed.filter { !allowed.contains($0) }
         return allowed
+    }
+
+    // Asks macOS up front for every app the scripts may control (see AutomationConsent).
+    private func requestAutomation(_ allowed: [PermissionItem]) async -> String? {
+        for item in allowed where item.kind == .appleEvents {
+            if await AutomationConsent.request(item.value) == .denied {
+                let name = AppLookup.name(forBundleID: item.value)
+                return String(localized: "macOS does not allow AppPad to control \(name). Turn it on in System Settings › Privacy & Security › Automation, then run the workflow again.")
+            }
+        }
+        return nil
     }
 
     // MARK: - Steps
@@ -407,7 +422,17 @@ final class WorkflowRunner: ObservableObject {
             guard !Homebrew.isInstalled else { return success(step, index, String(localized: "Homebrew is already installed.")) }
             do {
                 try HomebrewInstaller.openInTerminal()
-                return success(step, index, String(localized: "Terminal opened. Finish installing Homebrew there."))
+                return success(step, index, String(localized: "Terminal opened. Press Return there to install Homebrew."))
+            } catch {
+                return failure(step, index, error.localizedDescription)
+            }
+        case .prefillTerminal:
+            // {{input}} goes in raw: the user sees the whole line before pressing Return.
+            let command = step.command.trimmingCharacters(in: .whitespaces)
+                .replacingOccurrences(of: WorkflowPlaceholders.input, with: input)
+            do {
+                try TerminalLauncher.prefill(command: command, directory: step.directory)
+                return success(step, index, String(localized: "Terminal opened. Review the command and press Return to run it."))
             } catch {
                 return failure(step, index, error.localizedDescription)
             }

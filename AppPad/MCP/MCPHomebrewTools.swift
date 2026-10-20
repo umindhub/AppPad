@@ -5,7 +5,7 @@ import AppKit
 // apps (command-line tools only from inside those apps), and every app is notarized by Apple
 // (checked after download, again after install).
 // Installs and uninstalls are confirmed in AppPad (Settings › AI Assistants can turn that off);
-// installing Homebrew itself always asks and runs the official command in Terminal.
+// installing Homebrew itself always asks and pre-fills the official command in Terminal (runs on Return).
 enum MCPHomebrewTools {
     static let names: Set<String> = ["homebrew_status", "install_homebrew", "search_apps", "get_app_info",
                                      "install_app", "app_install_status", "uninstall_app"]
@@ -16,7 +16,7 @@ enum MCPHomebrewTools {
         [
             tool("homebrew_status", "Whether Homebrew is installed (needed for search_apps, get_app_info and install_app).", [:]),
             tool("install_homebrew",
-                 "Ask the user to install Homebrew. If they agree, AppPad opens Terminal with Homebrew's official install command; the user finishes it there (Return, Mac password). Call homebrew_status afterwards.",
+                 "Ask the user to install Homebrew. If they agree, AppPad opens Terminal with Homebrew's official install command filled in; nothing runs until the user presses Return, then Terminal asks for the Mac password. Call homebrew_status afterwards.",
                  [:]),
             tool("search_apps",
                  "Search Mac apps in Homebrew's official cask catalog. Returns token, name, description, homepage, whether it is installed, and whether AppPad can install it (with the reason if not).",
@@ -79,7 +79,7 @@ enum MCPHomebrewTools {
         }
         try HomebrewInstaller.openInTerminal()
         return ["status": "terminal opened",
-                "message": "Terminal is running Homebrew's installer; the user finishes it there. Call homebrew_status later."]
+                "message": "Terminal shows Homebrew's install command; the user presses Return to start it and finishes there. Call homebrew_status later."]
     }
 
     private static func requireHomebrew() throws {
@@ -390,7 +390,7 @@ enum AppChangePrompt {
 
     // Always asked (not covered by the confirmation setting).
     static func installHomebrew(client: String) async -> Bool {
-        let message = String(localized: "AppPad opens Terminal and runs Homebrew’s official install command. Terminal asks for your Mac password; AppPad never sees it.")
+        let message = String(localized: "AppPad opens Terminal with Homebrew’s official install command filled in. Press Return there to start it. Terminal asks for your Mac password; AppPad never sees it.")
             + "\n\n" + Homebrew.installCommand
         return await ask(title: String(localized: "“\(client)” wants to install Homebrew"),
                    message: message, icon: NSImage(systemSymbolName: "shippingbox", accessibilityDescription: nil),

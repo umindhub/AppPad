@@ -18,6 +18,21 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.2
+
+### Added
+
+#### Workflows
+- Nouvelle action intégrée « Préremplir une commande dans Terminal » : ouvre Terminal dans le dossier choisi avec une commande saisie à l’invite. Rien ne s’exécute tant que vous n’appuyez pas sur Retour. `{{input}}` est remplacé par l’argument.
+
+### Changed
+- Workflows : « Installer Homebrew » préremplit désormais la commande d’installation officielle dans Terminal ; appuyez sur Retour pour la lancer.
+- Workflows : avant qu’un script ne contrôle une autre app, AppPad demande d’abord l’autorisation à macOS, l’app apparaît donc dans Confidentialité et sécurité › Automatisation. Si l’accès est refusé, le workflow s’arrête avec un message clair.
+- Assistants IA : l’IA peut écrire des workflows qui préremplissent des commandes dans Terminal ; l’installation de Homebrew par l’IA ne fait aussi que préremplir la commande.
+
+### Note
+- Si Terminal demande de mettre fin à un processus en cours à la fermeture de la fenêtre, ajoutez `zsh` aux processus ignorés dans les réglages de Terminal (Profils › Shell › Demander avant de fermer).
+
 ## v1.3.1
 
 ### Added

@@ -106,10 +106,10 @@ enum BuiltinWorkflows {
                  version: "1.0", keywords: ["youmindhub", "claude", "mcp", "removeyoumindhub"], symbol: "minus.circle",
                  notice: .output,
                  steps: [WorkflowStep(builtin: .removeYouMindHubFromClaudeDesktop, timeout: 10)]),
-            // Official command in Terminal (password asked there); asks first like Quit All Apps.
+            // Official command pre-filled in Terminal (user presses Return, password asked there).
             make("com.youmindhub.homebrew.install", "Install Homebrew",
-                 "Open Terminal and run Homebrew’s official install command. AI assistants use Homebrew to install apps.",
-                 version: "1.0", keywords: ["brew", "homebrew", "installbrew"], symbol: "shippingbox",
+                 "Open Terminal with Homebrew’s official install command filled in; press Return to start it. AI assistants use Homebrew to install apps.",
+                 version: "1.1", keywords: ["brew", "homebrew", "installbrew"], symbol: "shippingbox",
                  notice: .output, confirm: true,
                  steps: [WorkflowStep(builtin: .installHomebrew, timeout: 10)]),
         ]
