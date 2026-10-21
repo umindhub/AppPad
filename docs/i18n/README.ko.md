@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### 기타
 - 로그인 시 실행
-- `⌘⇧J` / `⌘⇧K`로 Launchpad, 클립보드, 워크플로 간 애니메이션 전환
+- `⌘⇧K` / `⌘⇧J`로 Launchpad, 워크플로, 클립보드 간 애니메이션 전환
 - 10개 언어: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## 시스템 요구 사항

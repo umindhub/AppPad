@@ -54,6 +54,10 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         searchField.delegate = self
         searchField.focusRingType = .none
 
+        header.onSwitch = { [weak self] step in self?.controller?.switchPanel(step) }
+        header.setSwitchToolTips(previous: String(localized: "Previous Panel", table: "Clipboard") + "  ⌘⇧K",
+                                 next: String(localized: "Next Panel", table: "Clipboard") + "  ⌘⇧J")
+
         savedToggle.toolTip = String(localized: "Show saved items only", table: "Clipboard")
         savedToggle.onToggle = { [weak self] in
             guard let self else { return }
@@ -150,7 +154,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         reload(selectFirst: true)
     }
 
-    // ⌘⇧J / ⌘⇧K / hotkey while visible: keep the typed search.
+    // ⌘⇧K / ⌘⇧J / hotkey while visible: keep the typed search.
     func setScope(_ newScope: ClipScope) {
         _ = view
         scope = newScope
@@ -432,8 +436,9 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
                 return true
             }
             switch key {
-            case "j": controller?.switchPanel(-1); return true
-            case "k": controller?.switchPanel(1); return true
+            // Vim-like: ⌘⇧K previous (←), ⌘⇧J next (→).
+            case "k": controller?.switchPanel(-1); return true
+            case "j": controller?.switchPanel(1); return true
             default: return false
             }
         }

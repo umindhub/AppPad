@@ -18,6 +18,19 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Abbreviazione da tastiera opzionale per aprire Launchpad (⌥Spazio di default, disattivata di default): premila di nuovo per chiuderlo. Attivala e modificala in Impostazioni › AppPad › Apri con abbreviazione; quando è attiva compare anche nel menu della barra dei menu.
+
+#### Guida di benvenuto
+- La pagina del pizzico ora permette di attivare l’abbreviazione di Launchpad e di scegliere un angolo attivo per Launchpad.
+
+### Changed
+- Backup: i backup delle abbreviazioni ora includono l’abbreviazione di Launchpad.
+
 ## v1.3.4
 
 ### Added

@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Altro
 - Avvia al login
-- `⌘⇧J` / `⌘⇧K` passa con un’animazione tra Launchpad, Appunti e Flussi di lavoro
+- `⌘⇧K` / `⌘⇧J` passa con un’animazione tra Launchpad, Flussi di lavoro e Appunti
 - 10 lingue: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Requisiti

@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Otros
 - Abrir al iniciar sesión
-- `⌘⇧J` / `⌘⇧K` cambia con una animación entre Launchpad, portapapeles y flujos de trabajo
+- `⌘⇧K` / `⌘⇧J` cambia con una animación entre Launchpad, flujos de trabajo y portapapeles
 - 10 idiomas: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Requisitos

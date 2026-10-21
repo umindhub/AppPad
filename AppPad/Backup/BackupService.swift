@@ -49,6 +49,8 @@ final class BackupService {
             var windows: [String: KeyCombo] = [:]
             for (action, combo) in prefs.windowHotKeys { windows[action.rawValue] = combo }
             let backup = ShortcutsBackup(appHotKeys: prefs.appHotKeys,
+                                         launchpad: prefs.launchpadHotKey,
+                                         launchpadEnabled: prefs.launchpadHotKeyEnabled,
                                          workflowPanel: prefs.workflowPanelHotKey,
                                          clipboard: prefs.clipboardHotKey,
                                          clipboardSaved: prefs.clipboardSavedHotKey,
@@ -197,6 +199,10 @@ final class BackupService {
     // Global shortcuts come from the backup in both modes; app rows merge by app key.
     private func restoreShortcuts(_ backup: ShortcutsBackup, mode: BackupImportMode) -> Int {
         let prefs = Preferences.shared
+        if let enabled = backup.launchpadEnabled {
+            prefs.launchpadHotKey = backup.launchpad
+            prefs.launchpadHotKeyEnabled = enabled
+        }
         prefs.workflowPanelHotKey = backup.workflowPanel
         prefs.clipboardHotKey = backup.clipboard
         prefs.clipboardSavedHotKey = backup.clipboardSaved
@@ -235,7 +241,8 @@ final class BackupService {
         func same(_ other: KeyCombo?) -> Bool {
             other.map { $0.keyCode == combo.keyCode && $0.modifiers == combo.modifiers } ?? false
         }
-        if same(prefs.workflowPanelHotKey) || same(prefs.clipboardHotKey) || same(prefs.clipboardSavedHotKey) {
+        if same(prefs.activeLaunchpadHotKey) || same(prefs.workflowPanelHotKey)
+            || same(prefs.clipboardHotKey) || same(prefs.clipboardSavedHotKey) {
             return true
         }
         if prefs.windowHotKeys.values.contains(where: { same($0) }) { return true }

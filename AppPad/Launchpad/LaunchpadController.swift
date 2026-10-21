@@ -20,7 +20,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     var onOpenSettings: (() -> Void)?
     var onRequestShortcut: ((AppInfo) -> Void)?
-    // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
+    // ⌘⇧K (-1) / ⌘⇧J (+1): previous / next panel (Launchpad → Workflows → Clipboard).
     var onSwitchPanel: ((Int) -> Void)?
 
     private let prefs = Preferences.shared
@@ -823,10 +823,10 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
     private func handleKeyEquivalent(_ event: NSEvent) -> Bool {
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
         guard let key = event.charactersIgnoringModifiers?.lowercased() else { return false }
-        // ⌘⇧J / ⌘⇧K: previous / next panel.
+        // ⌘⇧K / ⌘⇧J: previous / next panel (vim-like).
         if flags == [.command, .shift], key == "j" || key == "k" {
             beginHandOff()
-            onSwitchPanel?(key == "j" ? -1 : 1)
+            onSwitchPanel?(key == "k" ? -1 : 1)
             return true
         }
         guard flags == .command else { return false }

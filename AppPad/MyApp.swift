@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private var statusBar: StatusBarController?
     private var settings: SettingsWindowController?
     private var workflowPanelHotKeyID: UInt32?
+    private var launchpadHotKeyID: UInt32?
     private var clipboardHotKeyIDs: [UInt32] = []
     private var appHotKeyIDs: [UInt32] = []
     private var windowHotKeyIDs: [UInt32] = []
@@ -64,7 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         NSApp.mainMenu = MainMenu.build()
         launchpad.onOpenSettings = { [weak self] in self?.showSettings() }
         launchpad.onRequestShortcut = { [weak self] app in self?.addAppShortcut(for: app) }
-        // ⌘⇧J / ⌘⇧K: previous / next of Launchpad → Clipboard → Workflows (wraps around).
+        // ⌘⇧K / ⌘⇧J: previous / next of Launchpad → Workflows → Clipboard (wraps around).
         launchpad.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .launchpad, step: step) }
         clipboard.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .clipboard, step: step) }
         workflows.onSwitchPanel = { [weak self] step in self?.switchPanel(from: .workflows, step: step) }
@@ -344,8 +345,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         settings?.show()
     }
 
+    // ⌘⇧J/K cycle order (allCases): Launchpad → Workflows → Clipboard.
     private enum Panel: CaseIterable {
-        case launchpad, clipboard, workflows
+        case launchpad, workflows, clipboard
     }
 
     // Open and focused panel, if any.
@@ -428,12 +430,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         case .none:
             break
         case .launchpad:
-            if launchpad.isShown {
-                launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
-            } else {
-                handOffIfNeeded(to: .launchpad)
-                launchpad.show()
-            }
+            toggleLaunchpad()
         case .workflows:
             handOffIfNeeded(to: .workflows)
             workflows.toggle()
@@ -450,6 +447,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
                 launchpad.hide()
             }
             SystemCornerActions.perform(action)
+        }
+    }
+
+    // Hot corner / ⌥Space: close with the empty-space fade, or open (switching like ⌘⇧J/K).
+    private func toggleLaunchpad() {
+        if launchpad.isShown {
+            launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration)
+        } else {
+            handOffIfNeeded(to: .launchpad)
+            launchpad.show()
         }
     }
 
@@ -511,6 +518,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         let center = HotKeyCenter.shared
         if let id = workflowPanelHotKeyID { center.unregister(id) }
         workflowPanelHotKeyID = nil
+        if let id = launchpadHotKeyID { center.unregister(id) }
+        launchpadHotKeyID = nil
         appHotKeyIDs.forEach { center.unregister($0) }
         appHotKeyIDs = []
         clipboardHotKeyIDs.forEach { center.unregister($0) }
@@ -519,7 +528,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         windowHotKeyIDs = []
 
         let prefs = Preferences.shared
-        // ⌘Space → Workflow panel. Launchpad has no global shortcut (pinch / menu bar).
+        // ⌥Space → Launchpad, only while turned on (off by default).
+        if let combo = prefs.activeLaunchpadHotKey {
+            launchpadHotKeyID = center.register(combo) { [weak self] in self?.toggleLaunchpad() }
+        }
+        // ⌘Space → Workflow panel.
         if let combo = prefs.workflowPanelHotKey {
             workflowPanelHotKeyID = center.register(combo) { [weak self] in
                 self?.handOffIfNeeded(to: .workflows)
@@ -554,6 +567,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         let ok = workflowPanelHotKeyID.map { center.isInstalled($0) } ?? true
         if !ok { NSLog("Workflow panel hotkey could not be registered (taken by another app?)") }
         statusBar?.hotKeyAvailable = ok
+        let launchpadOK = launchpadHotKeyID.map { center.isInstalled($0) } ?? true
+        if !launchpadOK { NSLog("AppPad hotkey could not be registered (taken by another app?)") }
+        statusBar?.launchpadHotKeyAvailable = launchpadOK
         statusBar?.refresh()
     }
 }

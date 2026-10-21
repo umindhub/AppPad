@@ -18,6 +18,19 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Optionaler Tastaturkurzbefehl zum Öffnen von Launchpad (standardmäßig ⌥Leertaste, standardmäßig aus): Erneut drücken schließt es. Einschalten und ändern unter Einstellungen › AppPad › Mit Kurzbefehl öffnen; eingeschaltet erscheint er auch im Menüleistenmenü.
+
+#### Willkommensanleitung
+- Auf der Seite zur Zusammenzieh-Geste lassen sich jetzt der Launchpad-Kurzbefehl einschalten und eine aktive Ecke für Launchpad wählen.
+
+### Changed
+- Backup: Backups der Kurzbefehle enthalten jetzt auch den Launchpad-Kurzbefehl.
+
 ## v1.3.4
 
 ### Added

@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Overig
 - Starten bij inloggen
-- `⌘⇧J` / `⌘⇧K` wisselt met een animatie tussen Launchpad, klembord en workflows
+- `⌘⇧K` / `⌘⇧J` wisselt met een animatie tussen Launchpad, workflows en klembord
 - 10 talen: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Systeemvereisten

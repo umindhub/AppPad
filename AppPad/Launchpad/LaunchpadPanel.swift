@@ -348,7 +348,7 @@ final class LaunchpadRootView: FlippedView {
     }
 }
 
-// MARK: - Panel switch (⌘⇧J / ⌘⇧K)
+// MARK: - Panel switch (⌘⇧K / ⌘⇧J)
 // Gap-free hand-over: the outgoing panel stays on screen until the incoming one is drawn
 // on top of it, then orders out.
 // Same size (Clipboard ⇄ Workflows): incoming opaque at once, old one leaves on the next run-loop turn.
@@ -973,51 +973,95 @@ final class PanelMorph {
 // MARK: - Panel header
 // Clipboard / Workflow panel, left of the search field: title on the first line, shortcut hints
 // on one second line; the two lines as a block are vertically centered on the search field.
+// Small ← / → arrows right after the title switch panels like ⌘⇧K / ⌘⇧J.
 final class PanelHeaderView: FlippedView {
     struct Hint {
         let keys: String
         let action: String
     }
 
+    // -1 previous / +1 next panel (same steps as ⌘⇧K / ⌘⇧J).
+    var onSwitch: ((Int) -> Void)?
+
     private static let titleHeight: CGFloat = 18
     private static let hintHeight: CGFloat = 15
     private static let lineGap: CGFloat = 2
     private static let textPadding: CGFloat = 8
+    private static let titleInset: CGFloat = 2      // label's inner text inset
+    private static let arrowGap: CGFloat = 4        // title text → first circle
+    private static let arrowSize: CGFloat = 22      // round hit area
+    private static let titleFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
     private static let hintFont = NSFont.systemFont(ofSize: 11)
     private static let keyFont = NSFont.systemFont(ofSize: 11, weight: .medium)
 
     private let titleLabel = NSTextField(labelWithString: "")
     private let hintLabel = NSTextField(labelWithString: "")
+    private let previousButton = PanelArrowButton(symbolName: "arrowshape.backward")
+    private let nextButton = PanelArrowButton(symbolName: "arrowshape.forward")
 
     init(title: String, hints: [Hint]) {
         super.init(frame: .zero)
         titleLabel.stringValue = title
-        titleLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        titleLabel.font = Self.titleFont
         titleLabel.textColor = .secondaryLabelColor
         hintLabel.attributedStringValue = Self.hintText(hints)
         hintLabel.lineBreakMode = .byClipping
         titleLabel.lineBreakMode = .byClipping
+        previousButton.onClick = { [weak self] in self?.switchPanel(-1) }
+        nextButton.onClick = { [weak self] in self?.switchPanel(1) }
         addSubview(titleLabel)
         addSubview(hintLabel)
+        addSubview(previousButton)
+        addSubview(nextButton)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func setSwitchToolTips(previous: String, next: String) {
+        previousButton.toolTip = previous
+        nextButton.toolTip = next
+    }
+
+    private var titleWidth: CGFloat {
+        ceil((titleLabel.stringValue as NSString).size(withAttributes: [.font: Self.titleFont]).width)
+    }
+
     // Measured from the text itself (+ the label's inner padding): the field's intrinsic width
     // came out a few points short for the mixed-weight hint line and clipped its last character.
     var preferredSize: NSSize {
-        let hintWidth = hintLabel.attributedStringValue.size().width
-        let titleWidth = (titleLabel.stringValue as NSString).size(withAttributes: [.font: titleLabel.font ?? NSFont.systemFont(ofSize: 14, weight: .semibold)]).width
-        let width = ceil(max(hintWidth, titleWidth)) + Self.textPadding
-        return NSSize(width: width, height: Self.titleHeight + Self.lineGap + Self.hintHeight)
+        let hintWidth = ceil(hintLabel.attributedStringValue.size().width) + Self.textPadding
+        let titleLine = Self.titleInset + titleWidth + Self.arrowGap + 2 * Self.arrowSize
+        return NSSize(width: max(hintWidth, titleLine), height: Self.titleHeight + Self.lineGap + Self.hintHeight)
     }
 
     override func layout() {
         super.layout()
-        titleLabel.frame = NSRect(x: 0, y: 0, width: bounds.width, height: Self.titleHeight)
+        let titleLabelWidth = titleWidth + Self.textPadding
+        titleLabel.frame = NSRect(x: 0, y: 0, width: titleLabelWidth, height: Self.titleHeight)
         hintLabel.frame = NSRect(x: 0, y: Self.titleHeight + Self.lineGap, width: bounds.width, height: Self.hintHeight)
+        // Circles centered on the title line (may reach slightly above the header).
+        let size = Self.arrowSize
+        let y = ((Self.titleHeight - size) / 2).rounded(.down)
+        let x = Self.titleInset + titleWidth + Self.arrowGap
+        previousButton.frame = NSRect(x: x, y: y, width: size, height: size)
+        nextButton.frame = NSRect(x: x + size, y: y, width: size, height: size)
+    }
+
+    // Arrow circles first: their top edge pokes out of the header's bounds.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let local = convert(point, from: superview)
+        for button in [previousButton, nextButton] {
+            if let hit = button.hitTest(local) { return hit }
+        }
+        return super.hitTest(point)
+    }
+
+    private func switchPanel(_ step: Int) {
+        // Ignore clicks on a panel that is already handing over.
+        if let window, PanelSwitch.isOutgoing(window) { return }
+        onSwitch?(step)
     }
 
     // "⌘K/J Up/Down   ⌘⇧K/J Switch": keys a shade brighter than their action.
@@ -1035,6 +1079,92 @@ final class PanelHeaderView: FlippedView {
             ]))
         }
         return text
+    }
+}
+
+// Arrow symbol (smaller than the title text) with a round hit area: brighter on hover, filled while pressed.
+// Never takes first responder, so the search field keeps focus.
+final class PanelArrowButton: NSView {
+    var onClick: (() -> Void)?
+
+    private let imageView = NSImageView()
+    private let outline: NSImage?
+    private let filled: NSImage?
+    private var tracking: NSTrackingArea?
+    private var isHovering = false { didSet { updateLook() } }
+    private var isPressed = false { didSet { updateLook() } }
+
+    init(symbolName: String) {
+        let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .medium)
+        outline = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+        filled = NSImage(systemSymbolName: symbolName + ".fill", accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+        super.init(frame: .zero)
+        imageView.image = outline
+        imageView.imageScaling = .scaleNone
+        addSubview(imageView)
+        updateLook()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        imageView.frame = bounds
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    // Round hit area; returns self so the image view never eats the click.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard !isHidden else { return nil }
+        return isInsideCircle(convert(point, from: superview)) ? self : nil
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let tracking { removeTrackingArea(tracking) }
+        let area = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect],
+                                  owner: self, userInfo: nil)
+        addTrackingArea(area)
+        tracking = area
+    }
+
+    override func mouseEntered(with event: NSEvent) { updateHover(event) }
+    override func mouseMoved(with event: NSEvent) { updateHover(event) }
+    override func mouseExited(with event: NSEvent) { isHovering = false }
+
+    override func mouseDown(with event: NSEvent) { isPressed = true }
+
+    override func mouseDragged(with event: NSEvent) {
+        isPressed = isInsideCircle(convert(event.locationInWindow, from: nil))
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        let fire = isPressed && isInsideCircle(convert(event.locationInWindow, from: nil))
+        isPressed = false
+        guard fire else { return }
+        isHovering = false   // panel switches away; don't come back with a stale hover plate
+        onClick?()
+    }
+
+    private func updateHover(_ event: NSEvent) {
+        isHovering = isInsideCircle(convert(event.locationInWindow, from: nil))
+    }
+
+    private func isInsideCircle(_ point: NSPoint) -> Bool {
+        let r = min(bounds.width, bounds.height) / 2
+        let dx = point.x - bounds.midX
+        let dy = point.y - bounds.midY
+        return dx * dx + dy * dy <= r * r
+    }
+
+    private func updateLook() {
+        imageView.image = isPressed ? (filled ?? outline) : outline
+        imageView.contentTintColor = (isHovering || isPressed) ? .labelColor : .secondaryLabelColor
     }
 }
 

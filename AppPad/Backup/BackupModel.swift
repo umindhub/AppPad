@@ -20,7 +20,7 @@ nonisolated enum BackupSection: String, Codable, CaseIterable, Identifiable, Sen
     var detail: String {
         switch self {
         case .shortcuts:
-            return String(localized: "Per-app shortcuts, plus the Workflows, Clipboard and window shortcuts.", table: "Settings")
+            return String(localized: "Per-app shortcuts, plus the AppPad, Workflows, Clipboard and window shortcuts.", table: "Settings")
         case .layout:
             return String(localized: "Pages, folders, app positions and grid size.", table: "Settings")
         case .workflows:
@@ -62,8 +62,11 @@ nonisolated struct BackupManifest: Codable, Sendable {
 }
 
 // shortcuts.json. A missing combo means "cleared by the user".
+// launchpadEnabled: nil in backups made before the AppPad shortcut existed (local one kept).
 nonisolated struct ShortcutsBackup: Codable, Sendable {
     var appHotKeys: [AppHotKey]
+    var launchpad: KeyCombo?
+    var launchpadEnabled: Bool?
     var workflowPanel: KeyCombo?
     var clipboard: KeyCombo?
     var clipboardSaved: KeyCombo?

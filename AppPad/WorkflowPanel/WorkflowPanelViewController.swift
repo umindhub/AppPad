@@ -61,6 +61,10 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         root.layer?.masksToBounds = true
         view = root
 
+        header.onSwitch = { [weak self] step in self?.controller?.switchPanel(step) }
+        header.setSwitchToolTips(previous: String(localized: "Previous Panel", table: "Workflow") + "  ⌘⇧K",
+                                 next: String(localized: "Next Panel", table: "Workflow") + "  ⌘⇧J")
+
         searchField.placeholderString = String(localized: "Search workflows and apps", table: "Workflow")
         searchField.delegate = self
         searchField.focusRingType = .none
@@ -615,7 +619,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
         let key = event.charactersIgnoringModifiers?.lowercased() ?? ""
         if flags == [.command, .shift], key == "j" || key == "k" {
-            controller?.switchPanel(key == "j" ? -1 : 1)
+            controller?.switchPanel(key == "k" ? -1 : 1)   // ⌘⇧K previous, ⌘⇧J next
             return true
         }
         guard flags == .command else { return false }

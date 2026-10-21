@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Other
 - Launch at login
-- `⌘⇧J` / `⌘⇧K` morphs between Launchpad, Clipboard and Workflows
+- `⌘⇧K` / `⌘⇧J` morphs between Launchpad, Workflows and Clipboard
 - 10 languages: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Requirements

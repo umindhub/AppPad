@@ -987,6 +987,64 @@
         }
       }
     },
+    "AppPad shortcut" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad-Kurzbefehl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atajo de AppPad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raccourci d’AppPad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbreviazione di AppPad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad のショートカット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 단축키"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sneltoets voor AppPad"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 快捷键"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPad 快速鍵"
+          }
+        }
+      }
+    },
     "Auto" : {
       "localizations" : {
         "de" : {
@@ -3597,6 +3655,64 @@
         }
       }
     },
+    "Keyboard shortcut opens AppPad" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tastaturkurzbefehl öffnet AppPad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un atajo de teclado abre AppPad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un raccourci clavier ouvre AppPad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un’abbreviazione da tastiera apre AppPad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーボードショートカットで AppPad を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키보드 단축키로 AppPad 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sneltoets opent AppPad"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷键打开 AppPad"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速鍵打開 AppPad"
+          }
+        }
+      }
+    },
     "Last checked" : {
       "localizations" : {
         "de" : {
@@ -4293,6 +4409,64 @@
         }
       }
     },
+    "Open with Shortcut" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Kurzbefehl öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir con atajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir avec un raccourci"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri con abbreviazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットで開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "단축키로 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Openen met sneltoets"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷键打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速鍵打開"
+          }
+        }
+      }
+    },
     "Page indicator" : {
       "localizations" : {
         "de" : {
@@ -4409,60 +4583,60 @@
         }
       }
     },
-    "Per-app shortcuts, plus the Workflows, Clipboard and window shortcuts." : {
+    "Per-app shortcuts, plus the AppPad, Workflows, Clipboard and window shortcuts." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kurzbefehle pro App sowie die Kurzbefehle für Workflows, Zwischenablage und Fenster."
+            "value" : "Kurzbefehle pro App sowie die Kurzbefehle für AppPad, Workflows, Zwischenablage und Fenster."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Atajos por app, además de los atajos de flujos de trabajo, portapapeles y ventanas."
+            "value" : "Atajos por app, además de los atajos de AppPad, flujos de trabajo, portapapeles y ventanas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Raccourcis par app, ainsi que ceux des flux de travail, du presse-papiers et des fenêtres."
+            "value" : "Raccourcis par app, ainsi que ceux d’AppPad, des flux de travail, du presse-papiers et des fenêtres."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abbreviazioni per app, più quelle di flussi di lavoro, appunti e finestre."
+            "value" : "Abbreviazioni per app, più quelle di AppPad, flussi di lavoro, appunti e finestre."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリごとのショートカットと、ワークフロー・クリップボード・ウインドウのショートカット。"
+            "value" : "アプリごとのショートカットと、AppPad・ワークフロー・クリップボード・ウインドウのショートカット。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "앱별 단축키와 워크플로, 클립보드, 윈도우 단축키."
+            "value" : "앱별 단축키와 AppPad, 워크플로, 클립보드, 윈도우 단축키."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sneltoetsen per app, plus de sneltoetsen voor workflows, klembord en vensters."
+            "value" : "Sneltoetsen per app, plus de sneltoetsen voor AppPad, workflows, klembord en vensters."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "各 App 的快捷键，以及工作流、剪切板和窗口快捷键。"
+            "value" : "各 App 的快捷键，以及 AppPad、工作流、剪切板和窗口快捷键。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "各 App 的快速鍵，以及工作流程、剪貼簿和視窗快速鍵。"
+            "value" : "各 App 的快速鍵，以及 AppPad、工作流程、剪貼簿和視窗快速鍵。"
           }
         }
       }
@@ -4579,6 +4753,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用拇指和三指捏合"
+          }
+        }
+      }
+    },
+    "Press it again to close AppPad." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut drücken schließt AppPad."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Púlsalo de nuevo para cerrar AppPad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez à nouveau pour fermer AppPad."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premila di nuovo per chiudere AppPad."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "もう一度押すと AppPad を閉じます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 누르면 AppPad가 닫힙니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Druk nogmaals om AppPad te sluiten."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再按一次即可关闭 AppPad。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再按一次即可關閉 AppPad。"
           }
         }
       }

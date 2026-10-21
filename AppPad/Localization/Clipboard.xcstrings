@@ -539,6 +539,122 @@
         }
       }
     },
+    "Next Panel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nächstes Panel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel siguiente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panneau suivant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pannello successivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次のパネル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 패널"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volgend paneel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一个面板"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一個面板"
+          }
+        }
+      }
+    },
+    "Previous Panel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorheriges Panel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel anterior"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panneau précédent"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pannello precedente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前のパネル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 패널"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorig paneel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一个面板"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一個面板"
+          }
+        }
+      }
+    },
     "↩ Paste   ⌘S Save   ⌘⇧⌫ Delete" : {
       "localizations" : {
         "de" : {
@@ -713,60 +829,60 @@
         }
       }
     },
-    "⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app." : {
+    "⌘⇧K / ⌘⇧J switch between AppPad, Workflows and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘K / ⌘J move like ↑ / ↓, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K wechseln zwischen AppPad und Zwischenablage; die Taste „Gesichert“ (oder der Kurzbefehl für gesicherte Objekte) zeigt nur gesicherte Objekte. ⌘1–⌘0 setzen die ersten zehn Objekte ein, ⌘J / ⌘K bewegen wie ↓ / ↑, ⌘S sichert, ⌘⇧⌫ löscht. Gib „App::Text“ ein, um nach App zu filtern."
+            "value" : "⌘⇧K / ⌘⇧J wechseln zwischen AppPad, Workflows und Zwischenablage; die Taste „Gesichert“ (oder der Kurzbefehl für gesicherte Objekte) zeigt nur gesicherte Objekte. ⌘1–⌘0 setzen die ersten zehn Objekte ein, ⌘K / ⌘J bewegen wie ↑ / ↓, ⌘S sichert, ⌘⇧⌫ löscht. Gib „App::Text“ ein, um nach App zu filtern."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K alternan entre AppPad y el portapapeles; el botón Guardado (o el atajo de elementos guardados) muestra solo los elementos guardados. ⌘1–⌘0 pegan los diez primeros elementos, ⌘J / ⌘K se mueven como ↓ / ↑, ⌘S guarda y ⌘⇧⌫ elimina. Escribe “App::texto” para filtrar por app."
+            "value" : "⌘⇧K / ⌘⇧J alternan entre AppPad, los flujos de trabajo y el portapapeles; el botón Guardado (o el atajo de elementos guardados) muestra solo los elementos guardados. ⌘1–⌘0 pegan los diez primeros elementos, ⌘K / ⌘J se mueven como ↑ / ↓, ⌘S guarda y ⌘⇧⌫ elimina. Escribe “App::texto” para filtrar por app."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K basculent entre AppPad et le presse-papiers ; le bouton Enregistré (ou le raccourci des éléments enregistrés) n’affiche que les éléments enregistrés. ⌘1–⌘0 collent les dix premiers éléments, ⌘J / ⌘K déplacent comme ↓ / ↑, ⌘S enregistre, ⌘⇧⌫ supprime. Tapez « App::texte » pour filtrer par app."
+            "value" : "⌘⇧K / ⌘⇧J basculent entre AppPad, les flux de travail et le presse-papiers ; le bouton Enregistré (ou le raccourci des éléments enregistrés) n’affiche que les éléments enregistrés. ⌘1–⌘0 collent les dix premiers éléments, ⌘K / ⌘J déplacent comme ↑ / ↓, ⌘S enregistre, ⌘⇧⌫ supprime. Tapez « App::texte » pour filtrer par app."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K passano da AppPad agli Appunti e viceversa; il pulsante Salvato (o l’abbreviazione degli elementi salvati) mostra solo gli elementi salvati. ⌘1–⌘0 incollano i primi dieci elementi, ⌘J / ⌘K spostano come ↓ / ↑, ⌘S salva, ⌘⇧⌫ elimina. Digita “App::testo” per filtrare per app."
+            "value" : "⌘⇧K / ⌘⇧J passano tra AppPad, Flussi di lavoro e Appunti; il pulsante Salvato (o l’abbreviazione degli elementi salvati) mostra solo gli elementi salvati. ⌘1–⌘0 incollano i primi dieci elementi, ⌘K / ⌘J spostano come ↑ / ↓, ⌘S salva, ⌘⇧⌫ elimina. Digita “App::testo” per filtrare per app."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K で AppPad とクリップボードを切り替えます。「保存済み」ボタン(または保存済み項目のショートカット)で保存済み項目のみ表示します。⌘1〜⌘0 で最初の10項目をペースト、⌘J / ⌘K で ↓ / ↑ と同様に移動、⌘S で保存、⌘⇧⌫ で削除。「App::テキスト」と入力するとアプリで絞り込めます。"
+            "value" : "⌘⇧K / ⌘⇧J で AppPad、ワークフロー、クリップボードを切り替えます。「保存済み」ボタン(または保存済み項目のショートカット)で保存済み項目のみ表示します。⌘1〜⌘0 で最初の10項目をペースト、⌘K / ⌘J で ↑ / ↓ と同様に移動、⌘S で保存、⌘⇧⌫ で削除。「App::テキスト」と入力するとアプリで絞り込めます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K로 AppPad와 클립보드 간에 전환합니다. 저장됨 버튼(또는 저장된 항목 단축키)은 저장된 항목만 보여줍니다. ⌘1–⌘0은 처음 10개 항목을 붙여넣고, ⌘J / ⌘K는 ↓ / ↑처럼 이동하며, ⌘S는 저장, ⌘⇧⌫는 삭제합니다. 'App::텍스트'를 입력하면 앱별로 필터링합니다."
+            "value" : "⌘⇧K / ⌘⇧J로 AppPad, 워크플로, 클립보드 간에 전환합니다. 저장됨 버튼(또는 저장된 항목 단축키)은 저장된 항목만 보여줍니다. ⌘1–⌘0은 처음 10개 항목을 붙여넣고, ⌘K / ⌘J는 ↑ / ↓처럼 이동하며, ⌘S는 저장, ⌘⇧⌫는 삭제합니다. 'App::텍스트'를 입력하면 앱별로 필터링합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K wisselen tussen AppPad en klembord; de knop Bewaard (of de sneltoets voor bewaarde onderdelen) toont alleen bewaarde onderdelen. ⌘1–⌘0 plakken de eerste tien onderdelen, ⌘J / ⌘K bewegen als ↓ / ↑, ⌘S bewaart, ⌘⇧⌫ verwijdert. Typ ‘App::tekst’ om op app te filteren."
+            "value" : "⌘⇧K / ⌘⇧J wisselen tussen AppPad, workflows en klembord; de knop Bewaard (of de sneltoets voor bewaarde onderdelen) toont alleen bewaarde onderdelen. ⌘1–⌘0 plakken de eerste tien onderdelen, ⌘K / ⌘J bewegen als ↑ / ↓, ⌘S bewaart, ⌘⇧⌫ verwijdert. Typ ‘App::tekst’ om op app te filteren."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪切板之间切换；“已保存”按钮（或已保存的剪切内容快捷键）仅显示已保存的剪切内容。⌘1–⌘0 粘贴前十个项目，⌘J / ⌘K 等同 ↓ / ↑ 移动，⌘S 保存，⌘⇧⌫ 删除。输入“App名::文本”可按 App 筛选。"
+            "value" : "⌘⇧K / ⌘⇧J 在 AppPad、工作流和剪切板之间切换；“已保存”按钮（或已保存的剪切内容快捷键）仅显示已保存的剪切内容。⌘1–⌘0 粘贴前十个项目，⌘K / ⌘J 等同 ↑ / ↓ 移动，⌘S 保存，⌘⇧⌫ 删除。输入“App名::文本”可按 App 筛选。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⌘⇧J / ⌘⇧K 在 AppPad 和剪貼簿之間切換；「已儲存」按鈕（或已儲存的剪貼內容快速鍵）僅顯示已儲存的剪貼內容。⌘1–⌘0 貼上前十個項目，⌘J / ⌘K 等同 ↓ / ↑ 移動，⌘S 儲存，⌘⇧⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
+            "value" : "⌘⇧K / ⌘⇧J 在 AppPad、工作流程和剪貼簿之間切換；「已儲存」按鈕（或已儲存的剪貼內容快速鍵）僅顯示已儲存的剪貼內容。⌘1–⌘0 貼上前十個項目，⌘K / ⌘J 等同 ↑ / ↓ 移動，⌘S 儲存，⌘⇧⌫ 刪除。輸入「App名稱::文字」可依 App 篩選。"
           }
         }
       }

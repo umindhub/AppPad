@@ -3,7 +3,8 @@ import AppKit
 
 // Case order = sidebar order.
 enum SettingsTab: String, CaseIterable {
-    case general, launchpad, clipboard, savedClips, workflows, mcp, shortcuts, windows, backup, about
+    // Sidebar order (allCases); panels follow ⌘⇧J/K: AppPad → Workflows → Clipboard.
+    case general, launchpad, workflows, mcp, clipboard, savedClips, shortcuts, windows, backup, about
 
     // UserDefaults key shared with @AppStorage (also set from AppDelegate).
     static let storageKey = "settingsTab"
@@ -180,6 +181,17 @@ struct SettingsView: View {
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
             }
 
+            // Own section between Behavior and Hot Corners.
+            Section(String(localized: "Open with Shortcut", table: "Settings")) {
+                Toggle(isOn: $prefs.launchpadHotKeyEnabled) {
+                    Text("Keyboard shortcut opens AppPad", tableName: "Settings")
+                    Text("Press it again to close AppPad.", tableName: "Settings")
+                }
+                if prefs.launchpadHotKeyEnabled {
+                    launchpadShortcutRow
+                }
+            }
+
             HotCornerSection(prefs: prefs)
 
             // Always follows the screen size.
@@ -224,6 +236,28 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    // Recorder for the AppPad shortcut (⌥Space by default), with the same conflict note as Windows.
+    private var launchpadShortcutRow: some View {
+        let conflict = prefs.conflictName(for: prefs.launchpadHotKey, excluding: .launchpad)
+        return LabeledContent {
+            HStack(spacing: 8) {
+                if conflict != nil {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .help(Text("Only one of them will work."))
+                }
+                ShortcutRecorder(combo: $prefs.launchpadHotKey)
+                    .frame(width: 170, height: 24)
+            }
+        } label: {
+            Text("AppPad shortcut", tableName: "Settings")
+            if let conflict {
+                Text("Same shortcut as \(conflict)")
+                    .foregroundStyle(.orange)
+            }
+        }
     }
 }
 

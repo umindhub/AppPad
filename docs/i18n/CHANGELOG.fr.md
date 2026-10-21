@@ -18,6 +18,19 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Raccourci clavier facultatif pour ouvrir Launchpad (⌥Espace par défaut, désactivé par défaut) : appuyez à nouveau pour le fermer. Activez-le et modifiez-le dans Réglages › AppPad › Ouvrir avec un raccourci ; une fois activé, il apparaît aussi dans le menu de la barre des menus.
+
+#### Guide de bienvenue
+- La page du pincement permet désormais d’activer le raccourci de Launchpad et de choisir un coin actif pour Launchpad.
+
+### Changed
+- Sauvegarde : les sauvegardes des raccourcis incluent désormais le raccourci de Launchpad.
+
 ## v1.3.4
 
 ### Added

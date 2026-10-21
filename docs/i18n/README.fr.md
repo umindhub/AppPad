@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Autres
 - Lancer à l’ouverture de session
-- `⌘⇧J` / `⌘⇧K` passe avec une animation entre Launchpad, presse-papiers et flux de travail
+- `⌘⇧K` / `⌘⇧J` passe avec une animation entre Launchpad, flux de travail et presse-papiers
 - 10 langues : de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Configuration requise

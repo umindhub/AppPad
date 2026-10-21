@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Optional keyboard shortcut to open Launchpad (⌥Space by default, off by default): press it again to close. Turn it on and change it in Settings › AppPad › Open with Shortcut; when on, it also appears in the menu bar menu.
+
+#### Welcome Guide
+- The pinch page now lets you turn on the Launchpad shortcut and pick a hot corner for Launchpad.
+
+### Changed
+- Backup: App shortcut backups now include the Launchpad shortcut.
+
 ## v1.3.4
 
 ### Added

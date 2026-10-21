@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### その他
 - ログイン時に起動
-- `⌘⇧J` / `⌘⇧K` で Launchpad、クリップボード、ワークフローをアニメーションで切り替え
+- `⌘⇧K` / `⌘⇧J` で Launchpad、ワークフロー、クリップボードをアニメーションで切り替え
 - 10 言語：de、en、es、fr、it、ja、ko、nl、zh-Hans、zh-Hant
 
 ## 動作環境

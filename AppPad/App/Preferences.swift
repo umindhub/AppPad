@@ -153,6 +153,8 @@ final class Preferences: ObservableObject {
         static let workflowEnglishInput = "workflowPanelSwitchToEnglishInput"
         static let halfLife = "frecencyHalfLifeDays"
         static let workflowHotKey = "workflowPanelHotKey"
+        static let launchpadHotKey = "launchpadHotKey"
+        static let launchpadHotKeyEnabled = "launchpadHotKeyEnabled"
         static let appHotKeys = "appHotKeys"
         static let glassControls = "glassControls"
         static let pinchToOpen = "pinchToOpen"
@@ -199,8 +201,20 @@ final class Preferences: ObservableObject {
     @Published var clipboardSwitchToEnglishInput: Bool { didSet { save(clipboardSwitchToEnglishInput, Key.clipEnglishInput) } }
     @Published var workflowSwitchToEnglishInput: Bool { didSet { save(workflowSwitchToEnglishInput, Key.workflowEnglishInput) } }
     @Published var frecencyHalfLifeDays: Int { didSet { save(frecencyHalfLifeDays, Key.halfLife) } }
-    // Opens the Workflow panel (⌘Space). Launchpad has no global shortcut (pinch / menu bar).
+    // Opens the Workflow panel (⌘Space).
     @Published var workflowPanelHotKey: KeyCombo? { didSet { saveCombo(workflowPanelHotKey, Key.workflowHotKey) } }
+    // Launchpad global shortcut (⌥Space), off by default; when off it is neither registered
+    // nor shown in the menu bar menu.
+    @Published var launchpadHotKeyEnabled: Bool {
+        didSet {
+            // Turning it on with a cleared shortcut brings ⌥Space back.
+            if launchpadHotKeyEnabled && !oldValue && launchpadHotKey == nil { launchpadHotKey = .defaultLauncher }
+            save(launchpadHotKeyEnabled, Key.launchpadHotKeyEnabled)
+        }
+    }
+    @Published var launchpadHotKey: KeyCombo? { didSet { saveCombo(launchpadHotKey, Key.launchpadHotKey) } }
+    // Shortcut actually in effect (nil while turned off).
+    var activeLaunchpadHotKey: KeyCombo? { launchpadHotKeyEnabled ? launchpadHotKey : nil }
     // Liquid Glass on controls (search field, page indicator).
     @Published var glassControls: Bool { didSet { save(glassControls, Key.glassControls) } }
     // Four-finger pinch in opens Launchpad, spread closes it.
@@ -306,6 +320,8 @@ final class Preferences: ObservableObject {
         showAppBadges = d.object(forKey: Key.appBadges) as? Bool ?? true
         fastPageSwipe = d.object(forKey: Key.fastPageSwipe) as? Bool ?? false
         workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
+        launchpadHotKey = Self.loadCombo(d, Key.launchpadHotKey, default: .defaultLauncher)
+        launchpadHotKeyEnabled = d.object(forKey: Key.launchpadHotKeyEnabled) as? Bool ?? false
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)
         clipboardSavedHotKey = Self.loadCombo(d, Key.clipSavedHotKey, default: .defaultClipboardSaved)

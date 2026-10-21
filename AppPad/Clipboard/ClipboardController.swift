@@ -2,7 +2,7 @@ import AppKit
 
 // Owns the clipboard panel, store and monitor. Panel style matches the launcher.
 final class ClipboardController: NSObject, NSWindowDelegate {
-    // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
+    // ⌘⇧K (-1) / ⌘⇧J (+1): previous / next panel (Launchpad → Workflows → Clipboard).
     var onSwitchPanel: ((Int) -> Void)?
     var onOpenSettings: (() -> Void)?
     // Runs the ⌘V once the paste target app is frontmost (AppPad may be active after an alert).
@@ -137,7 +137,7 @@ final class ClipboardController: NSObject, NSWindowDelegate {
         hide()
     }
 
-    // ⌘⇧J / ⌘⇧K: previous / next panel. Saved is a filter of the clipboard, not a panel.
+    // ⌘⇧K / ⌘⇧J: previous / next panel. Saved is a filter of the clipboard, not a panel.
     func switchPanel(_ step: Int) {
         beginHandOff()
         onSwitchPanel?(step)

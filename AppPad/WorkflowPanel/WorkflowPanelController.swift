@@ -4,7 +4,7 @@ import AppKit
 final class WorkflowPanelController: NSObject, NSWindowDelegate {
     var onOpenSettings: (() -> Void)?
     var onEditWorkflow: ((UUID) -> Void)?
-    // ⌘⇧J (-1) / ⌘⇧K (+1): previous / next panel (Launchpad → Clipboard → Workflows).
+    // ⌘⇧K (-1) / ⌘⇧J (+1): previous / next panel (Launchpad → Workflows → Clipboard).
     var onSwitchPanel: ((Int) -> Void)?
 
     let launchpad: LaunchpadController

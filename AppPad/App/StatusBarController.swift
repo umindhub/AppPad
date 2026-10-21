@@ -20,9 +20,11 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let updatesItem = NSMenuItem()
     private let quitItem = NSMenuItem()
     // Hidden twins carrying the key equivalents.
+    private let launchpadKeyItem = NSMenuItem()
     private let workflowsKeyItem = NSMenuItem()
     private let clipboardKeyItem = NSMenuItem()
     var hotKeyAvailable = true
+    var launchpadHotKeyAvailable = true
     private let onOpen: () -> Void
     private let onClipboard: () -> Void
     private let onSettings: () -> Void
@@ -55,9 +57,10 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         configure(updatesItem, action: #selector(checkForUpdates))
         configure(quitItem, action: #selector(quit))
 
+        // Same order as ⌘⇧J/K: Launchpad → Workflows → Clipboard.
         menu.addItem(openItem)
-        menu.addItem(clipboardItem)
         menu.addItem(workflowsItem)
+        menu.addItem(clipboardItem)
         menu.addItem(settingsItem)
         menu.addItem(loginItem)
         menu.addItem(.separator())
@@ -70,6 +73,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         menu.addItem(quitItem)
 
         // Hidden key-equivalent twins.
+        configure(launchpadKeyItem, action: #selector(openLaunchpad))
         configure(workflowsKeyItem, action: #selector(openWorkflows))
         configure(clipboardKeyItem, action: #selector(openClipboard))
         let settingsKey = NSMenuItem(title: "", action: #selector(openSettings), keyEquivalent: ",")
@@ -81,7 +85,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let updatesKey = NSMenuItem(title: "", action: #selector(checkForUpdates), keyEquivalent: "u")
         updatesKey.keyEquivalentModifierMask = .command
         updatesKey.target = self
-        for twin in [workflowsKeyItem, clipboardKeyItem, settingsKey, quitKey, updatesKey] {
+        for twin in [launchpadKeyItem, workflowsKeyItem, clipboardKeyItem, settingsKey, quitKey, updatesKey] {
             twin.isHidden = true
             twin.allowsKeyEquivalentWhenHidden = true
             menu.addItem(twin)
@@ -137,13 +141,20 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let workflowsTitle = String(localized: "Workflows") + (available ? "" : "  ⚠︎")
         workflowsItem.toolTip = available ? nil : String(localized: "The shortcut could not be registered. It may be used by Spotlight or another app.", table: "Settings")
 
+        // AppPad shortcut: shown (and usable as a key equivalent) only while turned on.
+        let launchpadCombo = prefs.activeLaunchpadHotKey
+        let launchpadReady = launchpadCombo == nil || launchpadHotKeyAvailable
+        let launchpadTitle = String(localized: "Open AppPad") + (launchpadReady ? "" : "  ⚠︎")
+        openItem.toolTip = launchpadReady ? nil : String(localized: "The shortcut could not be registered. It may be used by Spotlight or another app.", table: "Settings")
+        apply(launchpadCombo, to: launchpadKeyItem)
+        launchpadKeyItem.allowsKeyEquivalentWhenHidden = launchpadCombo != nil
         apply(prefs.workflowPanelHotKey, to: workflowsKeyItem)
         apply(prefs.clipboardHotKey, to: clipboardKeyItem)
         clipboardItem.isHidden = !prefs.clipboardEnabled
         clipboardKeyItem.allowsKeyEquivalentWhenHidden = prefs.clipboardEnabled
 
         rows = [
-            (openItem, String(localized: "Open AppPad"), ""),
+            (openItem, launchpadTitle, launchpadCombo?.displayString ?? ""),
             (clipboardItem, String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString ?? ""),
             (workflowsItem, workflowsTitle, prefs.workflowPanelHotKey?.displayString ?? ""),
             (settingsItem, String(localized: "Settings", table: "Settings"), "⌘,"),

@@ -78,7 +78,7 @@ brew install --cask apppad
 
 ### Sonstiges
 - Beim Anmelden starten
-- `⌘⇧J` / `⌘⇧K` wechselt mit einer fließenden Animation zwischen Launchpad, Zwischenablage und Workflows
+- `⌘⇧K` / `⌘⇧J` wechselt mit einer fließenden Animation zwischen Launchpad, Workflows und Zwischenablage
 - 10 Sprachen: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
 
 ## Systemvoraussetzungen

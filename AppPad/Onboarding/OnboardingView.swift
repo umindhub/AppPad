@@ -228,7 +228,8 @@ private struct FeaturesPage: View {
                 FeatureCard(icon: .image(StatusBarController.makeIcon(padded: false)), tint: .blue,
                             title: String(localized: "AppPad"),
                             detail: String(localized: "All your apps in a Launchpad-style grid with folders, search and drag and drop.", table: "Onboarding"),
-                            shortcut: prefs.pinchToOpen ? String(localized: "Four-finger pinch", table: "Onboarding") : nil)
+                            shortcut: prefs.activeLaunchpadHotKey?.displayString
+                                ?? (prefs.pinchToOpen ? String(localized: "Four-finger pinch", table: "Onboarding") : nil))
                 FeatureCard(icon: .symbol("doc.on.clipboard"), tint: .orange,
                             title: String(localized: "Clipboard"),
                             detail: String(localized: "History of copied text, images and files, plus a library of saved clips.", table: "Onboarding"),
@@ -283,7 +284,99 @@ private struct PinchPage: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            OpenAppPadCard(prefs: prefs)
         }
+    }
+}
+
+// ⌥Space and a hot corner for AppPad; same storage as Settings › AppPad.
+private struct OpenAppPadCard: View {
+    @ObservedObject var prefs: Preferences
+    // Corners also used by macOS hot corners; refreshed when the window becomes key.
+    @State private var systemCorners = SystemHotCorners.occupied()
+
+    var body: some View {
+        OnboardingCard {
+            Text("More ways to open AppPad", tableName: "Onboarding")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            shortcutRow
+            if let conflict = prefs.conflictName(for: prefs.activeLaunchpadHotKey, excluding: .launchpad) {
+                note(String(localized: "Same shortcut as \(conflict)"))
+            }
+            Divider()
+            cornerRow
+            if let corner = launchpadCorner, systemCorners.contains(corner) {
+                note(String(localized: "macOS hot corners also use: \(corner.title). Both run when the pointer reaches that corner.", table: "HotCorner"))
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            systemCorners = SystemHotCorners.occupied()
+        }
+    }
+
+    private var shortcutRow: some View {
+        HStack(spacing: 10) {
+            Text("Keyboard shortcut", tableName: "Onboarding").fontWeight(.medium)
+            Spacer(minLength: 8)
+            if prefs.launchpadHotKeyEnabled {
+                ShortcutRecorder(combo: $prefs.launchpadHotKey)
+                    .frame(width: 140, height: 24)
+            }
+            Toggle("", isOn: $prefs.launchpadHotKeyEnabled)
+                .labelsHidden()
+                .toggleStyle(.appSwitch)
+        }
+    }
+
+    private var cornerRow: some View {
+        HStack(spacing: 10) {
+            Text("Hot corner", tableName: "Onboarding").fontWeight(.medium)
+            Spacer(minLength: 8)
+            Picker("", selection: cornerBinding) {
+                Text("None").tag(HotCorner?.none)
+                Divider()
+                ForEach(HotCorner.allCases, id: \.self) { corner in
+                    Text(verbatim: corner.title).tag(HotCorner?.some(corner))
+                }
+            }
+            .labelsHidden()
+            .frame(width: 160)
+        }
+    }
+
+    private func note(_ text: String) -> some View {
+        Label {
+            Text(verbatim: text)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill")
+        }
+        .font(.caption)
+        .foregroundStyle(.orange)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    // First corner that opens AppPad (any modifier keys).
+    private var launchpadCorner: HotCorner? {
+        HotCorner.allCases.first { prefs.hotCorners[$0].action == .launchpad }
+    }
+
+    // Picking a corner sets it to AppPad (replacing its action) and clears AppPad from the
+    // other corners; None only clears the AppPad corners, other actions stay.
+    private var cornerBinding: Binding<HotCorner?> {
+        Binding(
+            get: { launchpadCorner },
+            set: { target in
+                var config = prefs.hotCorners
+                for corner in HotCorner.allCases where config[corner].action == .launchpad && corner != target {
+                    config[corner] = HotCornerSetting()
+                }
+                if let target, config[target].action != .launchpad {
+                    config[target] = HotCornerSetting(action: .launchpad)
+                }
+                prefs.hotCorners = config
+            }
+        )
     }
 }
 
@@ -805,8 +898,7 @@ private struct DonePage: View {
             subtitle: String(localized: "Here is how to open everything. The menu bar icon has it all, too.", table: "Onboarding")
         ) {
             OnboardingCard {
-                referenceRow(String(localized: "AppPad"),
-                             prefs.pinchToOpen ? String(localized: "Four-finger pinch", table: "Onboarding") : String(localized: "Menu bar icon", table: "Onboarding"))
+                referenceRow(String(localized: "AppPad"), appPadWays)
                 if prefs.clipboardEnabled {
                     Divider()
                     referenceRow(String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString)
@@ -816,17 +908,30 @@ private struct DonePage: View {
                 Divider()
                 referenceRow(String(localized: "Workflows"), prefs.workflowPanelHotKey?.displayString)
                 Divider()
-                referenceRow(String(localized: "Switch between panels", table: "Onboarding"), "⌘⇧J / ⌘⇧K")
+                referenceRow(String(localized: "Switch between panels", table: "Onboarding"), "⌘⇧K / ⌘⇧J")
             }
         }
     }
 
-    @ViewBuilder
+    // Pinch and ⌥Space side by side; menu bar icon when neither is on.
+    private var appPadWays: [String] {
+        var ways: [String] = []
+        if prefs.pinchToOpen { ways.append(String(localized: "Four-finger pinch", table: "Onboarding")) }
+        if let combo = prefs.activeLaunchpadHotKey { ways.append(combo.displayString) }
+        return ways.isEmpty ? [String(localized: "Menu bar icon", table: "Onboarding")] : ways
+    }
+
     private func referenceRow(_ title: String, _ value: String?) -> some View {
+        referenceRow(title, value.map { [$0] } ?? [])
+    }
+
+    private func referenceRow(_ title: String, _ values: [String]) -> some View {
         HStack {
             Text(verbatim: title)
             Spacer()
-            if let value { KeyChip(text: value) }
+            HStack(spacing: 6) {
+                ForEach(values, id: \.self) { KeyChip(text: $0) }
+            }
         }
     }
 }

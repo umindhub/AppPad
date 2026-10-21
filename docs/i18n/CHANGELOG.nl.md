@@ -18,6 +18,19 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Optionele sneltoets om Launchpad te openen (standaard ⌥Spatie, standaard uit): druk nogmaals om te sluiten. Zet hem aan en wijzig hem in Instellingen › AppPad › Openen met sneltoets; als hij aan staat, verschijnt hij ook in het menubalkmenu.
+
+#### Welkomstgids
+- Op de knijppagina kun je nu de Launchpad-sneltoets aanzetten en een actieve hoek voor Launchpad kiezen.
+
+### Changed
+- Reservekopie: reservekopieën van sneltoetsen bevatten nu ook de Launchpad-sneltoets.
+
 ## v1.3.4
 
 ### Added

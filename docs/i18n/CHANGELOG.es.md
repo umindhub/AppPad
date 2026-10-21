@@ -18,6 +18,19 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.5
+
+### Added
+
+#### Launchpad
+- Atajo de teclado opcional para abrir Launchpad (⌥Espacio por omisión, desactivado por omisión): púlsalo de nuevo para cerrarlo. Actívalo y cámbialo en Ajustes › AppPad › Abrir con atajo; cuando está activado, también aparece en el menú de la barra de menús.
+
+#### Guía de bienvenida
+- La página de juntar los dedos ahora permite activar el atajo de Launchpad y elegir una esquina activa para Launchpad.
+
+### Changed
+- Copia de seguridad: las copias de los atajos ahora incluyen el atajo de Launchpad.
+
 ## v1.3.4
 
 ### Added
