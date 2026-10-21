@@ -18,6 +18,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.7
+
+### Changed
+- Bewaarde clips: Het naamveld loopt nu door tot de datum en de inhoud lijnt uit met de naam; in Wijzig inhoud lijnen titel en naam uit met de tekst.
+
+### Fixed
+- Instellingen: Het instellingenvenster komt nu naar voren wanneer het wordt geopend vanuit Launchpad, Workflows, Klembord of de menubalk.
+- Bewaarde clips: ⌘Q en Stop AppPad werken nu ook terwijl Wijzig inhoud of een bevestiging open is.
+
 ## v1.3.6
 
 ### Added

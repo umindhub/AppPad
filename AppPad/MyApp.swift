@@ -95,7 +95,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             // Same hand-over as ⌘⇧J/K / the panel hotkeys when another panel is open (no flash).
             onOpen: { [weak self] in self?.openFromMenu(.launchpad) },
             onClipboard: { [weak self] in self?.openFromMenu(.clipboard) },
-            onSettings: { [weak self] in self?.showSettings() },
+            // Menu bar click: the display whose menu bar was used (under the mouse).
+            onSettings: { [weak self] in self?.showSettings(on: SettingsWindowController.mouseScreen) },
             onWorkflows: { [weak self] in self?.openFromMenu(.workflows) },
             onCheckForUpdates: { UpdateController.shared.checkForUpdates() }
         )
@@ -305,7 +306,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     // Target of the ⌘Q main menu item (works while Settings has focus).
     @objc func quitFromMenu(_ sender: Any?) {
-        NSApp.terminate(nil)
+        AppTermination.quit()
     }
 
     // ⌘Q only while the Settings window is key, so it never fires from the panels.
@@ -318,21 +319,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     // Every Settings entry (panel ⌘, / menus / status bar / guides) lands here:
     // close all panels first (Launchpad: same fade as a click on empty space), then open Settings.
-    private func showSettings() {
+    // Activation is requested right away, inside the triggering key / click event: cooperative
+    // activation (macOS 14+) honors it there, but often refuses it once the panels are gone.
+    // screen: display to open on; nil = the open panel's display, else the one under the mouse.
+    private func showSettings(on screen: NSScreen? = nil) {
         settingsToken &+= 1
         let token = settingsToken
+        // Read before the panels close and before AppPad becomes frontmost.
+        let target = screen ?? Self.panelScreen ?? SettingsWindowController.mouseScreen
+        let returnTo = frontmost.last.flatMap { $0.isTerminated ? nil : $0 }
+        NSApp.activate()
+        scheduleSettingsFocusCheck(token)
         clipboard.hide()
         workflows.hide()   // LaunchpadPanel commits the order-out itself (see order(_:relativeTo:))
         launchpad.hide(animated: true, duration: LaunchpadController.backgroundClickHideDuration) { [weak self] in
             // Next run loop: the order-out reaches the screen before Settings comes up.
             DispatchQueue.main.async { [weak self] in
                 guard let self, token == self.settingsToken else { return }
-                self.presentSettings()
+                self.presentSettings(on: target, returningFocusTo: returnTo)
             }
         }
     }
 
-    private func presentSettings() {
+    // Early activation without Settings ever showing (request superseded, e.g. Launchpad reopened
+    // during its fade) would leave an active agent app with no window swallowing the keyboard.
+    private func scheduleSettingsFocusCheck(_ token: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self, token == self.settingsToken,
+                  NSApp.isActive, NSApp.keyWindow == nil,
+                  self.settings?.isVisible != true, !OnboardingGuide.isVisible
+            else { return }
+            self.handOffActivation()
+        }
+    }
+
+    // Display of the open Launchpad / Clipboard / Workflow panel (key one first).
+    private static var panelScreen: NSScreen? {
+        if let key = NSApp.keyWindow as? LaunchpadPanel, key.isVisible, let screen = key.screen {
+            return screen
+        }
+        return NSApp.windows.first { $0 is LaunchpadPanel && $0.isVisible && $0.alphaValue > 0 }?.screen
+    }
+
+    private func presentSettings(on screen: NSScreen? = nil, returningFocusTo returnTo: NSRunningApplication? = nil) {
         if settings == nil {
             settings = SettingsWindowController(
                 onResetLayout: { [weak self] in self?.launchpad.confirmResetLayout() },
@@ -342,7 +371,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
                 )
             )
         }
-        settings?.show()
+        settings?.show(on: screen, returningFocusTo: returnTo)
     }
 
     // ⌘⇧J/K cycle order (allCases): Launchpad → Workflows → Clipboard.

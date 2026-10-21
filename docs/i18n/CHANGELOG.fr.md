@@ -18,6 +18,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.7
+
+### Changed
+- Clips enregistrés : Le champ du nom s’étend désormais jusqu’à la date et le contenu est aligné sur le nom ; dans Modifier le contenu, le titre et le nom sont alignés sur le texte.
+
+### Fixed
+- Réglages : La fenêtre Réglages passe désormais au premier plan quand elle est ouverte depuis Launchpad, Workflows, Presse-papiers ou la barre des menus.
+- Clips enregistrés : ⌘Q et Quitter AppPad fonctionnent désormais lorsque Modifier le contenu ou une confirmation est ouvert.
+
 ## v1.3.6
 
 ### Added

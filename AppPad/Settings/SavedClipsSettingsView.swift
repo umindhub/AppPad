@@ -240,7 +240,8 @@ private struct SavedClipRow: View {
 
     private static let iconSize: CGFloat = 40
     private static let actionSize = CGSize(width: 20, height: 16)
-    private static let nameRatio: CGFloat = 2.0 / 3.0
+    // Text inset inside the name box; the content line below uses the same leading inset.
+    private static let textInset: CGFloat = 6
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateStyle = .medium
@@ -259,11 +260,21 @@ private struct SavedClipRow: View {
                 .frame(width: Self.iconSize, height: Self.iconSize)
                 .help(item.sourceName ?? "")
             VStack(alignment: .leading, spacing: 4) {
-                // Name field 2/3, date in the rest.
-                RatioSplit(ratio: Self.nameRatio) {
+                // Name field fills the row up to the date; the date keeps its natural width.
+                HStack(alignment: .center, spacing: 10) {
+                    // Plain field in a drawn box: known text inset, so the content can line up with it.
                     TextField(String(localized: "Name"), text: $draft, prompt: Text("Add a name", tableName: "Clipboard"))
                         .labelsHidden()
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
+                        .focusEffectDisabled()
+                        .padding(.horizontal, Self.textInset)
+                        .padding(.vertical, 3)
+                        .background(RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .fill(Color(nsColor: .textBackgroundColor)))
+                        .overlay(RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .strokeBorder(isFocused ? Color.accentColor : Color(nsColor: .separatorColor),
+                                          lineWidth: isFocused ? 2 : 1))
+                        .frame(maxWidth: .infinity)
                         .focused(focus, equals: item.id)
                         .onSubmit(commit)
                         .onExitCommand {
@@ -275,14 +286,14 @@ private struct SavedClipRow: View {
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                         .lineLimit(1)
-                        .truncationMode(.head)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .fixedSize()
                 }
                 Text(content)
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .lineLimit(2, reservesSpace: true)
                     .truncationMode(.tail)
+                    .padding(.leading, Self.textInset)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
                     .help(item.kind == .text ? String(localized: "Click to edit", table: "Clipboard") : item.snippet)
@@ -398,6 +409,10 @@ private struct ClipContentEditor: View {
     @State private var text = ""
     @State private var error: String?
 
+    // Where CodeTextView draws its first glyph: textContainerInset.width (4) + lineFragmentPadding (5).
+    // Title, name and the character count use it so they line up with the text.
+    private static let textLeading: CGFloat = 9
+
     private var canSave: Bool {
         text != draft.text && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -413,20 +428,24 @@ private struct ClipContentEditor: View {
                         .lineLimit(1)
                 }
             }
+            .padding(.leading, Self.textLeading)
             CodeTextView(text: $text, fontSize: 13)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color(nsColor: .separatorColor)))
             HStack(spacing: 10) {
-                if let error {
-                    Text(error)
-                        .font(.callout)
-                        .foregroundStyle(.red)
-                } else {
-                    Text("\(text.count) characters", tableName: "Clipboard")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                Group {
+                    if let error {
+                        Text(error)
+                            .font(.callout)
+                            .foregroundStyle(.red)
+                    } else {
+                        Text("\(text.count) characters", tableName: "Clipboard")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
                 }
+                .padding(.leading, Self.textLeading)
                 Spacer()
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -471,39 +490,6 @@ private struct ClipContentEditor: View {
             error = String(localized: "Another saved item already has this content.", table: "Clipboard")
         case .failed:
             error = String(localized: "The content could not be saved.", table: "Clipboard")
-        }
-    }
-}
-
-// Two subviews side by side: the first gets `ratio` of the width, the second the rest.
-// Both are vertically centered on the taller one.
-private struct RatioSplit: SwiftUI.Layout {
-    var ratio: CGFloat
-    var spacing: CGFloat = 10
-
-    private func widths(_ total: CGFloat) -> (CGFloat, CGFloat) {
-        let first = ((total - spacing) * ratio).rounded()
-        return (first, max(0, total - spacing - first))
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout ()) -> CGSize {
-        let total = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? 360
-        let (a, b) = widths(total)
-        var height: CGFloat = 0
-        for (view, width) in zip(subviews, [a, b]) {
-            let size: CGSize = view.sizeThatFits(ProposedViewSize(width: width, height: nil))
-            height = max(height, size.height)
-        }
-        return CGSize(width: total, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout ()) {
-        let (a, b) = widths(bounds.width)
-        var x = bounds.minX
-        for (view, width) in zip(subviews, [a, b]) {
-            view.place(at: CGPoint(x: x, y: bounds.midY), anchor: .leading,
-                       proposal: ProposedViewSize(width: width, height: nil))
-            x += width + spacing
         }
     }
 }

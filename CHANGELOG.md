@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.7
+
+### Changed
+- Saved Clips: The name field now extends up to the date, and the content lines up with the name; in Edit Content, the title and name line up with the text.
+
+### Fixed
+- Settings: The Settings window now comes to the front when opened from Launchpad, Workflows, Clipboard or the menu bar.
+- Saved Clips: ⌘Q and Quit AppPad now work while Edit Content or a confirmation is open.
+
 ## v1.3.6
 
 ### Added

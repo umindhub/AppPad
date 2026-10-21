@@ -353,8 +353,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
             NotificationCenter.default.post(name: .clipboardStoreDidChange, object: nil)
         }
         SavedClipsNavigator.reveal(item.id)
-        controller?.hide()
-        controller?.onOpenSettings?()
+        controller?.onOpenSettings?()   // hides the panel after requesting activation
     }
 
     // ⌘⇧↩: show the original file (image copied from a folder, or copied files) in Finder.
@@ -463,8 +462,7 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         case "s": if let id = selectedItem?.id { toggleSaved(id) }
         case "w": controller?.hide()
         case ",":
-            controller?.hide()
-            controller?.onOpenSettings?()
+            controller?.onOpenSettings?()   // hides the panel after requesting activation
         default: return false
         }
         return true

@@ -278,7 +278,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func openClipboard() { perform(onClipboard) }
     @objc private func openSettings() { perform(onSettings) }
     @objc private func openWorkflows() { perform(onWorkflows) }
-    @objc private func quit() { NSApp.terminate(nil) }
+    @objc private func quit() { AppTermination.quit() }
     @objc private func checkForUpdates() { perform(onCheckForUpdates) }
 
     @objc private func toggleLogin() {

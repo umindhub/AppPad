@@ -18,6 +18,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.7
+
+### Changed
+- Clips guardados: El campo de nombre ahora llega hasta la fecha y el contenido se alinea con el nombre; en Editar contenido, el título y el nombre se alinean con el texto.
+
+### Fixed
+- Ajustes: La ventana de Ajustes ahora pasa al frente al abrirse desde Launchpad, Flujos de trabajo, Portapapeles o la barra de menús.
+- Clips guardados: ⌘Q y Salir de AppPad ahora funcionan con Editar contenido o una confirmación abiertos.
+
 ## v1.3.6
 
 ### Added

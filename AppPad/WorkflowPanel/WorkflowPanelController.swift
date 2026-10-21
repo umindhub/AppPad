@@ -145,8 +145,8 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         }
     }
 
+    // Settings hides this panel itself (after requesting activation).
     func edit(_ workflow: Workflow) {
-        hide()
         onEditWorkflow?(workflow.id)
     }
 
@@ -160,8 +160,8 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         PanelSwitch.begin(from: panel) { [weak self] in self?.hide() }
     }
 
+    // No hide() here: Settings requests activation first, while this panel still has key.
     func openSettings() {
-        hide()
         onOpenSettings?()
     }
 

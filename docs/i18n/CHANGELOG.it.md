@@ -18,6 +18,15 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.7
+
+### Changed
+- Clip salvate: Il campo del nome ora arriva fino alla data e il contenuto è allineato al nome; in Modifica contenuto, titolo e nome sono allineati al testo.
+
+### Fixed
+- Impostazioni: La finestra Impostazioni ora passa in primo piano quando viene aperta da Launchpad, Flussi di lavoro, Appunti o dalla barra dei menu.
+- Clip salvate: ⌘Q ed Esci da AppPad ora funzionano anche con Modifica contenuto o una conferma aperti.
+
 ## v1.3.6
 
 ### Added

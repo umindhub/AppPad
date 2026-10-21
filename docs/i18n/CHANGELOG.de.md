@@ -18,6 +18,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.7
+
+### Changed
+- Gesicherte Clips: Das Namensfeld reicht jetzt bis zum Datum, der Inhalt ist am Namen ausgerichtet; in „Inhalt bearbeiten“ sind Titel und Name am Text ausgerichtet.
+
+### Fixed
+- Einstellungen: Das Einstellungsfenster kommt jetzt nach vorne, wenn es aus Launchpad, Workflows, Zwischenablage oder der Menüleiste geöffnet wird.
+- Gesicherte Clips: ⌘Q und „AppPad beenden“ funktionieren jetzt auch, während „Inhalt bearbeiten“ oder eine Bestätigung geöffnet ist.
+
 ## v1.3.6
 
 ### Added

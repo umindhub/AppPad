@@ -39,3 +39,28 @@ enum MainMenu {
         return main
     }
 }
+
+// Quit that also works while Settings shows a sheet or alert:
+// AppKit ignores terminate while a sheet / modal session is up, so end those first.
+enum AppTermination {
+    static func quit() {
+        var dismissed = false
+        if NSApp.modalWindow != nil {
+            NSApp.abortModal()
+            dismissed = true
+        }
+        for window in NSApp.windows {
+            if let sheet = window.attachedSheet {
+                window.endSheet(sheet)
+                sheet.orderOut(nil)
+                dismissed = true
+            }
+        }
+        // Next run loop: the sheet is fully detached before terminate runs.
+        if dismissed {
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        } else {
+            NSApp.terminate(nil)
+        }
+    }
+}
