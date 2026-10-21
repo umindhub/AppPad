@@ -18,6 +18,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Paso rápido de páginas (Ajustes › General, desactivado por omisión): un deslizamiento corto con dos dedos pasa de página, y un solo deslizamiento puede avanzar varias páginas. Los deslizamientos hacia arriba/abajo también siguen a los dedos.
+- Con el paso rápido de páginas activado, mantén pulsados y arrastra los puntos de página para desplazar las páginas de forma continua; al soltar se ajusta a la página más cercana. También funciona dentro de las carpetas.
+
+### Changed
+- Launchpad: Puedes arrastrar el siguiente icono mientras el anterior aún vuela a su sitio (por ejemplo, a una carpeta), sin esperar a que termine la animación.
+
 ## v1.3.3
 
 ### Added

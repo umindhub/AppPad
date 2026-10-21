@@ -18,6 +18,17 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Défilement rapide des pages (Réglages › Général, désactivé par défaut) : un court balayage à deux doigts change de page, et un seul balayage peut faire défiler plusieurs pages. Les balayages vers le haut/bas suivent aussi les doigts.
+- Avec le défilement rapide activé, maintenez et faites glisser les points de page pour faire défiler les pages en continu ; au relâchement, la page la plus proche se cale. Fonctionne aussi dans les dossiers.
+
+### Changed
+- Launchpad : Vous pouvez faire glisser l’icône suivante pendant que la précédente rejoint encore sa place (par exemple un dossier), sans attendre la fin de l’animation.
+
 ## v1.3.3
 
 ### Added

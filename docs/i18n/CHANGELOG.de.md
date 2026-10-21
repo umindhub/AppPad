@@ -18,6 +18,17 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Schnelles Blättern (Einstellungen › Allgemein, standardmäßig aus): Schon ein kurzes Wischen mit zwei Fingern blättert um, und ein Wischen kann mehrere Seiten weiterblättern. Wischen nach oben/unten folgt den Fingern genauso.
+- Bei aktivem schnellem Blättern lassen sich die Seiten durch Ziehen an den Seitenpunkten stufenlos verschieben; beim Loslassen rastet die nächste Seite ein. Funktioniert auch in Ordnern.
+
+### Changed
+- Launchpad: Das nächste Symbol lässt sich schon ziehen, während das vorherige noch an seinen Platz fliegt (z. B. in einen Ordner) – kein Warten mehr auf das Ende der Animation.
+
 ## v1.3.3
 
 ### Added

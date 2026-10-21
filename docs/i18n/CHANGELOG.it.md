@@ -18,6 +18,17 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Scorrimento rapido delle pagine (Impostazioni › Generali, disattivato di default): basta un breve scorrimento con due dita per cambiare pagina, e un solo scorrimento può avanzare di più pagine. Anche gli scorrimenti in alto/in basso seguono le dita.
+- Con lo scorrimento rapido attivo, tieni premuti e trascina i punti di pagina per scorrere le pagine in modo continuo; al rilascio si posiziona sulla pagina più vicina. Funziona anche nelle cartelle.
+
+### Changed
+- Launchpad: Puoi trascinare l’icona successiva mentre la precedente sta ancora raggiungendo il suo posto (ad esempio una cartella), senza attendere la fine dell’animazione.
+
 ## v1.3.3
 
 ### Added

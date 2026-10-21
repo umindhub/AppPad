@@ -18,6 +18,17 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Snel bladeren (Instellingen › Algemeen, standaard uit): een korte veeg met twee vingers slaat al een pagina om, en één veeg kan meerdere pagina's verder gaan. Vegen omhoog/omlaag volgt je vingers op dezelfde manier.
+- Met snel bladeren aan kun je de paginapunten ingedrukt houden en slepen om de pagina's vloeiend te scrollen; bij loslaten klikt de dichtstbijzijnde pagina vast. Werkt ook in mappen.
+
+### Changed
+- Launchpad: Je kunt het volgende symbool al slepen terwijl het vorige nog naar zijn plek vliegt (bijvoorbeeld in een map), zonder op het einde van de animatie te wachten.
+
 ## v1.3.3
 
 ### Added

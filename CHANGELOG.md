@@ -20,6 +20,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.4
+
+### Added
+
+#### Launchpad
+- Fast page swiping (Settings › General, off by default): a short two-finger swipe turns a page, and one swipe can move several pages. Up/down swipes follow your fingers the same way.
+- With fast page swiping on, press and drag the page dots to scroll the pages continuously; release to settle on the nearest page. Also works inside folders.
+
+### Changed
+- Launchpad: You can pick up the next icon while the previous one is still flying into place (e.g. into a folder) — no need to wait for the animation to finish.
+
 ## v1.3.3
 
 ### Added
