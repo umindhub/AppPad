@@ -940,9 +940,9 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
 
     func confirmResetLayout() {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Reset layout?")
-        alert.informativeText = String(localized: "All pages and folders will be rearranged in the default order.")
-        alert.addButton(withTitle: String(localized: "Reset"))
+        alert.messageText = String(localized: "Reset layout?", table: "Launchpad")
+        alert.informativeText = String(localized: "All pages and folders will be rearranged in the default order.", table: "Launchpad")
+        alert.addButton(withTitle: String(localized: "Reset", table: "Launchpad"))
         alert.addButton(withTitle: String(localized: "Cancel"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         layoutStore.reset(apps: apps, capacity: capacity)

@@ -12,11 +12,11 @@ enum PinchSetupGuide {
 
     static let steps: [Step] = [
         Step(id: 1,
-             title: String(localized: "Show Desktop"),
-             gesture: String(localized: "Spread with thumb and three fingers")),
+             title: String(localized: "Show Desktop", table: "Settings"),
+             gesture: String(localized: "Spread with thumb and three fingers", table: "Settings")),
         Step(id: 2,
              title: String(localized: "Apps"),
-             gesture: String(localized: "Pinch with thumb and three fingers")),
+             gesture: String(localized: "Pinch with thumb and three fingers", table: "Settings")),
     ]
 
     private static let shownKey = "pinchSetupGuideShown"
@@ -124,9 +124,9 @@ private struct PinchGuideContent: View {
                     .resizable()
                     .frame(width: 48, height: 48)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: String(localized: "Use four-finger pinch for AppPad"))
+                    Text(verbatim: String(localized: "Use four-finger pinch for AppPad", table: "Settings"))
                         .font(.headline)
-                    Text(verbatim: String(localized: "Turn off these macOS gestures so they don't fire together with AppPad."))
+                    Text(verbatim: String(localized: "Turn off these macOS gestures so they don't fire together with AppPad.", table: "Settings"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -156,7 +156,7 @@ struct PinchSetupStepsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("In System Settings › Trackpad › More Gestures, turn off in this order:")
+            Text("In System Settings › Trackpad › More Gestures, turn off in this order:", tableName: "Settings")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -177,12 +177,12 @@ struct PinchSetupStepsView: View {
                 }
             }
 
-            Label("The order is important — turn off Show Desktop first.", systemImage: "exclamationmark.triangle.fill")
+            Label(String(localized: "The order is important — turn off Show Desktop first.", table: "Settings"), systemImage: "exclamationmark.triangle.fill")
                 .font(.caption)
                 .foregroundStyle(.orange)
 
             if showsButton {
-                Button("Open Trackpad Settings…") { PinchSetupGuide.openTrackpadSettings() }
+                Button(String(localized: "Open Trackpad Settings…", table: "Settings")) { PinchSetupGuide.openTrackpadSettings() }
             }
         }
         .padding(.vertical, 2)

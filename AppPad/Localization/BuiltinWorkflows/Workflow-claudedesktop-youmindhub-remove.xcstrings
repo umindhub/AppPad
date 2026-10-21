@@ -1,0 +1,183 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Remove YouMindHub from Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub aus Claude Desktop entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar YouMindHub de Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer YouMindHub de Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi YouMindHub da Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop から削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 YouMindHub 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub verwijderen uit Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 中移除 YouMindHub"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 中移除 YouMindHub"
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
+    "Remove YouMindHub's MCP server from Claude Desktop. Other MCP servers are kept." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt den MCP-Server von YouMindHub aus Claude Desktop. Andere MCP-Server bleiben erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quita el servidor MCP de YouMindHub de Claude Desktop. Los demás servidores MCP se conservan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retire le serveur MCP de YouMindHub de Claude Desktop. Les autres serveurs MCP sont conservés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove il server MCP di YouMindHub da Claude Desktop. Gli altri server MCP restano invariati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub の MCP サーバを Claude Desktop から削除します。ほかの MCP サーバはそのまま残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 YouMindHub의 MCP 서버를 제거합니다. 다른 MCP 서버는 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert de MCP-server van YouMindHub uit Claude Desktop. Andere MCP-servers blijven behouden."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 Claude Desktop 中移除 YouMindHub 的 MCP 服务，其他 MCP 服务保持不变。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Claude Desktop 中移除 YouMindHub 的 MCP 服務，其他 MCP 服務保持不變。"
+          }
+        }
+      }
+    },
+    "youmindhub, claude, mcp, removeyoumindhub" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quitar, eliminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "retirer, supprimer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rimuovi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "verwijderen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除, 删除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除, 刪除"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

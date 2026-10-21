@@ -30,7 +30,7 @@ nonisolated enum WorkflowArguments {
         case .optional where text.isEmpty:
             return .success(ParsedArgument(value: "", summary: ""))
         case .required where text.isEmpty:
-            return .failure(ArgumentError(message: String(localized: "Type the argument after a space.")))
+            return .failure(ArgumentError(message: String(localized: "Type the argument after a space.", table: "Workflow")))
         default:
             break
         }
@@ -39,12 +39,12 @@ nonisolated enum WorkflowArguments {
             return .success(ParsedArgument(value: text, summary: text))
         case .reminder:
             guard let request = ReminderParser.parse(text), let json = request.json else {
-                return .failure(ArgumentError(message: String(localized: "Add the reminder text.")))
+                return .failure(ArgumentError(message: String(localized: "Add the reminder text.", table: "Workflow")))
             }
             return .success(ParsedArgument(value: json, summary: request.summary))
         case .number:
             guard let number = Int(text) else {
-                return .failure(ArgumentError(message: String(localized: "Not a number.")))
+                return .failure(ArgumentError(message: String(localized: "Not a number.", table: "Workflow")))
             }
             return .success(ParsedArgument(value: String(number), summary: String(number)))
         case .percent:
@@ -52,18 +52,18 @@ nonisolated enum WorkflowArguments {
             var digits = text
             if digits.hasSuffix("%") { digits = String(digits.dropLast()).trimmingCharacters(in: .whitespaces) }
             guard let number = Double(digits), number.isFinite else {
-                return .failure(ArgumentError(message: String(localized: "Not a number.")))
+                return .failure(ArgumentError(message: String(localized: "Not a number.", table: "Workflow")))
             }
             let level = Int(min(max(number, 0), 100).rounded())
             return .success(ParsedArgument(value: String(level), summary: percentText(level)))
         case .duration:
             guard let seconds = durationSeconds(text), seconds > 0, seconds < 86_400 else {
-                return .failure(ArgumentError(message: String(localized: "Not a duration. Try 10, 90s or 1h30m.")))
+                return .failure(ArgumentError(message: String(localized: "Not a duration. Try 10, 90s or 1h30m.", table: "Workflow")))
             }
             return .success(ParsedArgument(value: String(seconds), summary: formatDuration(seconds)))
         case .time:
             guard let time = timeAndLabel(text) else {
-                return .failure(ArgumentError(message: String(localized: "Not a time. Try 7:30, 19:30 or 7pm.")))
+                return .failure(ArgumentError(message: String(localized: "Not a time. Try 7:30, 19:30 or 7pm.", table: "Workflow")))
             }
             // "07:30" or "07:30\nWake up" (the label is everything after the time).
             let clock = String(format: "%02d:%02d", time.hour, time.minute)
@@ -82,8 +82,8 @@ nonisolated enum WorkflowArguments {
         case .percent: return ["30", "75", "100"]
         case .text: return []
         case .reminder:
-            return [String(localized: "tomorrow 3pm Call Mom"), String(localized: "in 2 hours Pay bills !!"),
-                    String(localized: "Buy milk @Shopping")]
+            return [String(localized: "tomorrow 3pm Call Mom", table: "Workflow"), String(localized: "in 2 hours Pay bills !!", table: "Workflow"),
+                    String(localized: "Buy milk @Shopping", table: "Workflow")]
         }
     }
 
@@ -251,9 +251,9 @@ nonisolated struct ReminderRequest: Codable, Sendable {
             parts.append(formatter.string(from: Date(timeIntervalSince1970: date / 1000)))
         }
         switch priority {
-        case 1: parts.append(String(localized: "High priority"))
-        case 5: parts.append(String(localized: "Medium priority"))
-        case 9: parts.append(String(localized: "Low priority"))
+        case 1: parts.append(String(localized: "High priority", table: "Workflow"))
+        case 5: parts.append(String(localized: "Medium priority", table: "Workflow"))
+        case 9: parts.append(String(localized: "Low priority", table: "Workflow"))
         default: break
         }
         if !list.isEmpty { parts.append("@" + list) }

@@ -140,7 +140,7 @@ private final class OnboardingWindowController: NSObject, NSWindowDelegate {
                                   styleMask: [.titled, .closable, .fullSizeContentView],
                                   backing: .buffered, defer: false)
         super.init()
-        window.title = String(localized: "Welcome to AppPad")
+        window.title = String(localized: "Welcome to AppPad", table: "Onboarding")
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true

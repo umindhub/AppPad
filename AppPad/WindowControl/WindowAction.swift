@@ -34,26 +34,26 @@ nonisolated enum WindowAction: String, CaseIterable, Codable, Sendable {
 
     var title: String {
         switch self {
-        case .snapLeft: return String(localized: "Snap Left")
-        case .snapRight: return String(localized: "Snap Right")
-        case .snapTop: return String(localized: "Snap Top")
-        case .snapBottom: return String(localized: "Snap Bottom")
-        case .maximize: return String(localized: "Maximize")
-        case .restore: return String(localized: "Restore")
-        case .previousDisplay: return String(localized: "Move to Previous Display")
-        case .nextDisplay: return String(localized: "Move to Next Display")
+        case .snapLeft: return String(localized: "Snap Left", table: "WindowControl")
+        case .snapRight: return String(localized: "Snap Right", table: "WindowControl")
+        case .snapTop: return String(localized: "Snap Top", table: "WindowControl")
+        case .snapBottom: return String(localized: "Snap Bottom", table: "WindowControl")
+        case .maximize: return String(localized: "Maximize", table: "WindowControl")
+        case .restore: return String(localized: "Restore", table: "WindowControl")
+        case .previousDisplay: return String(localized: "Move to Previous Display", table: "WindowControl")
+        case .nextDisplay: return String(localized: "Move to Next Display", table: "WindowControl")
         }
     }
 
     var detail: String {
         switch self {
-        case .snapLeft: return String(localized: "Left ½ → ⅓ → ⅔ on each press")
-        case .snapRight: return String(localized: "Right ½ → ⅓ → ⅔ on each press")
-        case .snapTop: return String(localized: "Top ½ → ⅓ → ⅔ on each press")
-        case .snapBottom: return String(localized: "Bottom ½ → ⅓ → ⅔ on each press")
-        case .maximize: return String(localized: "Fill the screen without entering full screen")
-        case .restore: return String(localized: "Back to the size and position before snapping")
-        case .previousDisplay, .nextDisplay: return String(localized: "Keeps the snapped layout on the new display")
+        case .snapLeft: return String(localized: "Left ½ → ⅓ → ⅔ on each press", table: "WindowControl")
+        case .snapRight: return String(localized: "Right ½ → ⅓ → ⅔ on each press", table: "WindowControl")
+        case .snapTop: return String(localized: "Top ½ → ⅓ → ⅔ on each press", table: "WindowControl")
+        case .snapBottom: return String(localized: "Bottom ½ → ⅓ → ⅔ on each press", table: "WindowControl")
+        case .maximize: return String(localized: "Fill the screen without entering full screen", table: "WindowControl")
+        case .restore: return String(localized: "Back to the size and position before snapping", table: "WindowControl")
+        case .previousDisplay, .nextDisplay: return String(localized: "Keeps the snapped layout on the new display", table: "WindowControl")
         }
     }
 

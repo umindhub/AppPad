@@ -24,20 +24,20 @@ struct MCPSettingsView: View {
                     Text("Claude and other MCP clients can list, run and write your workflows. You approve every new or changed workflow.")
                 }
                 if host.enabled {
-                    LabeledContent("Status") { statusText }
+                    LabeledContent(String(localized: "Status", table: "MCP")) { statusText }
                 }
             } footer: {
-                Text("AI runs use the same permissions as the Workflow panel: AppPad asks before anything you have not allowed yet. Disabled workflows are hidden.")
+                Text("AI runs use the same permissions as the Workflow panel: AppPad asks before anything you have not allowed yet. Disabled workflows are hidden.", tableName: "MCP")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             if host.enabled {
                 appsSection
                 claudeDesktopSection
-                snippetSection(.json, title: "Claude Desktop, Cursor and other clients",
-                               caption: "Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client.",
+                snippetSection(.json, title: String(localized: "Claude Desktop, Cursor and other clients"),
+                               caption: String(localized: "Add this to the client's MCP configuration (Claude Desktop: claude_desktop_config.json), then restart the client."),
                                text: MCPClientConfig.json)
-                snippetSection(.claudeCode, title: "Claude Code", caption: "Run once in Terminal.",
+                snippetSection(.claudeCode, title: String(localized: "Claude Code", table: "MCP"), caption: String(localized: "Run once in Terminal."),
                                text: MCPClientConfig.claudeCodeCommand)
             }
         }
@@ -57,37 +57,37 @@ struct MCPSettingsView: View {
     private var appsSection: some View {
         Section {
             Toggle(isOn: $host.confirmAppChanges) {
-                Text("Confirm before AI installs or uninstalls apps")
-                Text("Shows the app, its developer and where it comes from before anything changes.")
+                Text("Confirm before AI installs or uninstalls apps", tableName: "MCP")
+                Text("Shows the app, its developer and where it comes from before anything changes.", tableName: "MCP")
             }
             if !host.confirmAppChanges {
                 autoInstallWarning
             }
-            LabeledContent("Homebrew") {
+            LabeledContent(String(localized: "Homebrew", table: "MCP")) {
                 if homebrewInstalled {
-                    Text("Installed").foregroundStyle(.green)
+                    Text("Installed", tableName: "MCP").foregroundStyle(.green)
                 } else {
                     HStack(spacing: 8) {
-                        Text("Not installed").foregroundStyle(.secondary)
-                        Button("Install…") { try? HomebrewInstaller.openInTerminal() }
+                        Text("Not installed", tableName: "MCP").foregroundStyle(.secondary)
+                        Button(String(localized: "Install…", table: "MCP")) { try? HomebrewInstaller.openInTerminal() }
                     }
                 }
             }
         } header: {
             SelectableText(text: String(localized: "Apps"), font: .boldSystemFont(ofSize: NSFont.systemFontSize))
         } footer: {
-            Text("AI assistants can install apps from Homebrew’s official catalog that are notarized by Apple and contain only the app, including command-line tools that live inside it. Formulae, installers and third-party taps are not supported.")
+            Text("AI assistants can install apps from Homebrew’s official catalog that are notarized by Apple and contain only the app, including command-line tools that live inside it. Formulae, installers and third-party taps are not supported.", tableName: "MCP")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
 
     // Shown while confirmation is off: the risk must be visible, not buried in a footer.
-    private static let autoInstallRisks: [LocalizedStringKey] = [
-        "The AI can be misled by something it reads, such as a web page, a document or an email, and install an app you never wanted.",
-        "Notarized does not mean harmless: remote-control tools and similar software pass every check.",
-        "The AI can uninstall apps you use.",
-        "Uninstalling an app with Homebrew deletes it right away instead of moving it to the Trash, so work may be lost (it cannot be restored).",
+    private static let autoInstallRisks: [String] = [
+        String(localized: "The AI can be misled by something it reads, such as a web page, a document or an email, and install an app you never wanted.", table: "MCP"),
+        String(localized: "Notarized does not mean harmless: remote-control tools and similar software pass every check.", table: "MCP"),
+        String(localized: "The AI can uninstall apps you use.", table: "MCP"),
+        String(localized: "Uninstalling an app with Homebrew deletes it right away instead of moving it to the Trash, so work may be lost (it cannot be restored).", table: "MCP"),
     ]
 
     private var autoInstallWarning: some View {
@@ -96,7 +96,7 @@ struct MCPSettingsView: View {
                 .font(.title3)
                 .foregroundStyle(.orange)
             VStack(alignment: .leading, spacing: 4) {
-                Text("AI can install and uninstall apps without asking")
+                Text("AI can install and uninstall apps without asking", tableName: "MCP")
                     .fontWeight(.semibold)
                 ForEach(Array(Self.autoInstallRisks.enumerated()), id: \.offset) { index, risk in
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
@@ -106,7 +106,7 @@ struct MCPSettingsView: View {
                     }
                     .font(.callout)
                 }
-                Text("Turn confirmation back on unless you watch every AI request yourself.")
+                Text("Turn confirmation back on unless you watch every AI request yourself.", tableName: "MCP")
                     .font(.callout)
                     .fontWeight(.medium)
                     .fixedSize(horizontal: false, vertical: true)
@@ -123,7 +123,7 @@ struct MCPSettingsView: View {
     // One-click setup: writes only AppPad's entry into claude_desktop_config.json.
     private var claudeDesktopSection: some View {
         Section {
-            LabeledContent("Status") { ClaudeDesktopStatusText(status: claude.status) }
+            LabeledContent(String(localized: "Status", table: "MCP")) { ClaudeDesktopStatusText(status: claude.status) }
             HStack(spacing: 8) {
                 Button("Add to Claude Desktop") { show(claude.add()) }
                     .pillProminentButton()
@@ -141,7 +141,7 @@ struct MCPSettingsView: View {
         } header: {
             SelectableText(text: "Claude Desktop", font: .boldSystemFont(ofSize: NSFont.systemFontSize))
         } footer: {
-            Text("Only AppPad's own entry in claude_desktop_config.json is changed; your other MCP servers stay as they are. A backup of the previous file is kept next to it.")
+            Text("Only AppPad's own entry in claude_desktop_config.json is changed; your other MCP servers stay as they are. A backup of the previous file is kept next to it.", tableName: "MCP")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -171,7 +171,7 @@ struct MCPSettingsView: View {
         }
     }
 
-    private func snippetSection(_ kind: Snippet, title: String.LocalizationValue, caption: String.LocalizationValue,
+    private func snippetSection(_ kind: Snippet, title: String, caption: String,
                                 text: String) -> some View {
         Section {
             VStack(alignment: .leading, spacing: 8) {
@@ -185,14 +185,14 @@ struct MCPSettingsView: View {
                 }
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.05)))
-                SelectableText(text: String(localized: caption),
+                SelectableText(text: caption,
                                font: .preferredFont(forTextStyle: .caption1),
                                color: .secondaryLabelColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 2)
         } header: {
-            SelectableText(text: String(localized: title),
+            SelectableText(text: title,
                            font: .boldSystemFont(ofSize: NSFont.systemFontSize))
         }
     }

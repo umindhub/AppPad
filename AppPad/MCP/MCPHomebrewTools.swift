@@ -362,39 +362,39 @@ enum AppChangePrompt {
     static func install(client: String, cask: CaskInfo, signature: CaskVerifier.Signature, icon: NSImage?) async -> Bool {
         var lines: [String] = []
         if !cask.summary.isEmpty { lines += [cask.summary, ""] }
-        lines.append(String(localized: "Version: \(cask.version)"))
-        lines.append(String(localized: "Developer: \(signature.developer) (\(signature.teamID))"))
-        lines.append(String(localized: "Website: \(cask.homepageHost)"))
-        lines.append(String(localized: "Download: \(cask.downloadHost)"))
-        lines.append(String(localized: "Notarized by Apple"))
+        lines.append(String(localized: "Version: \(cask.version)", table: "MCP"))
+        lines.append(String(localized: "Developer: \(signature.developer) (\(signature.teamID))", table: "MCP"))
+        lines.append(String(localized: "Website: \(cask.homepageHost)", table: "MCP"))
+        lines.append(String(localized: "Download: \(cask.downloadHost)", table: "MCP"))
+        lines.append(String(localized: "Notarized by Apple", table: "MCP"))
         if !cask.tools.isEmpty {
             let tools = cask.tools.map(\.name).joined(separator: ", ")
-            lines.append(String(localized: "Command-line tools: \(tools)"))
+            lines.append(String(localized: "Command-line tools: \(tools)", table: "MCP"))
         }
         if cask.noChecksum {
-            lines += ["", String(localized: "This download has no fixed checksum: Homebrew installs the version the website currently offers.")]
+            lines += ["", String(localized: "This download has no fixed checksum: Homebrew installs the version the website currently offers.", table: "MCP")]
         }
-        return await ask(title: String(localized: "“\(client)” wants to install “\(cask.name)”"),
+        return await ask(title: String(localized: "“\(client)” wants to install “\(cask.name)”", table: "MCP"),
                    message: lines.joined(separator: "\n"), icon: icon,
-                   confirm: String(localized: "Install"), destructive: false)
+                   confirm: String(localized: "Install", table: "MCP"), destructive: false)
     }
 
     static func uninstall(client: String, app: AppInfo, caskToken: String?) async -> Bool {
         let message = caskToken.map {
-            String(localized: "Homebrew deletes the app (brew uninstall --cask \($0)). It is not moved to the Trash.")
+            String(localized: "Homebrew deletes the app (brew uninstall --cask \($0)). It is not moved to the Trash.", table: "MCP")
         } ?? String(localized: "The app will be moved to the Trash.")
-        return await ask(title: String(localized: "“\(client)” wants to uninstall “\(app.name)”"),
+        return await ask(title: String(localized: "“\(client)” wants to uninstall “\(app.name)”", table: "MCP"),
                    message: message, icon: IconCache.shared.icon(for: app),
-                   confirm: String(localized: "Uninstall"), destructive: true)
+                   confirm: String(localized: "Uninstall", table: "MCP"), destructive: true)
     }
 
     // Always asked (not covered by the confirmation setting).
     static func installHomebrew(client: String) async -> Bool {
-        let message = String(localized: "AppPad opens Terminal with Homebrew’s official install command filled in. Press Return there to start it. Terminal asks for your Mac password; AppPad never sees it.")
+        let message = String(localized: "AppPad opens Terminal with Homebrew’s official install command filled in. Press Return there to start it. Terminal asks for your Mac password; AppPad never sees it.", table: "MCP")
             + "\n\n" + Homebrew.installCommand
-        return await ask(title: String(localized: "“\(client)” wants to install Homebrew"),
+        return await ask(title: String(localized: "“\(client)” wants to install Homebrew", table: "MCP"),
                    message: message, icon: NSImage(systemSymbolName: "shippingbox", accessibilityDescription: nil),
-                   confirm: String(localized: "Open Terminal"), destructive: false)
+                   confirm: String(localized: "Open Terminal", table: "MCP"), destructive: false)
     }
 
     private static func ask(title: String, message: String, icon: NSImage?, confirm: String,

@@ -1,0 +1,242 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add a reminder to the Reminders app. Dates like “tomorrow 3pm” set an alert; !–!!! sets the priority, @List picks a list." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügt eine Erinnerung zur App „Erinnerungen“ hinzu. Angaben wie „tomorrow 3pm“ setzen einen Hinweis; ! bis !!! legt die Priorität fest, @Liste wählt eine Liste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un recordatorio a la app Recordatorios. Fechas como “tomorrow 3pm” crean un aviso; de ! a !!! fija la prioridad y @Lista elige una lista."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoute un rappel dans l’app Rappels. Une date comme « tomorrow 3pm » crée une alerte ; ! à !!! fixe la priorité, @Liste choisit une liste."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiunge un promemoria all’app Promemoria. Date come “tomorrow 3pm” impostano un avviso; da ! a !!! la priorità, @Elenco sceglie l’elenco."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リマインダー App に項目を追加します。「tomorrow 3pm」のような日時で通知を設定、!〜!!! で優先度、@リスト でリストを指定します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리 알림 앱에 항목을 추가합니다. ‘tomorrow 3pm’ 같은 날짜로 알림을 설정하고, !~!!!로 우선순위를, @목록으로 목록을 지정합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voegt een herinnering toe aan de Herinneringen-app. Een datum als ‘tomorrow 3pm’ zet een melding; ! tot !!! zet de prioriteit, @Lijst kiest een lijst."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向“提醒事项”添加提醒。写上“明天下午3点”“10分钟后”这类时间会设置提醒时间；! 到 !!! 设置优先级，@列表名 指定列表。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向「提醒事項」加入提醒。寫上「明天下午3點」「10分鐘後」這類時間會設定提醒時間；! 到 !!! 設定優先順序，@列表名 指定列表。"
+          }
+        }
+      }
+    },
+    "remind, reminder, todo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erinnerung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "recordatorio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rappel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "promemoria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リマインダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리알림"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herinnering"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒, 待办"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒, 待辦"
+          }
+        }
+      }
+    },
+    "reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "recordatorio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rappel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "promemoria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リマインダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리 알림"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "herinnering"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒内容"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒內容"
+          }
+        }
+      }
+    },
+    "Set Reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerung erstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear recordatorio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer un rappel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea promemoria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リマインダーを設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리 알림 설정"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak herinnering"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置提醒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定提醒"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

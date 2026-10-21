@@ -31,19 +31,19 @@ struct ClipboardSettingsView: View {
         Form {
             Section("General") {
                 Toggle("Enable clipboard history", isOn: $prefs.clipboardEnabled)
-                LabeledContent("Clipboard shortcut") {
+                LabeledContent(String(localized: "Clipboard shortcut", table: "Clipboard")) {
                     ShortcutRecorder(combo: $prefs.clipboardHotKey)
                         .frame(width: 170, height: 24)
                 }
-                LabeledContent("Saved items shortcut") {
+                LabeledContent(String(localized: "Saved items shortcut", table: "Clipboard")) {
                     ShortcutRecorder(combo: $prefs.clipboardSavedHotKey)
                         .frame(width: 170, height: 24)
                 }
                 Toggle("Switch to English input when opened", isOn: $prefs.clipboardSwitchToEnglishInput)
-                Toggle("Paste directly into the active app", isOn: $prefs.clipboardAutoPaste)
+                Toggle(String(localized: "Paste directly into the active app", table: "Clipboard"), isOn: $prefs.clipboardAutoPaste)
                 if prefs.clipboardAutoPaste && !trusted {
                     HStack {
-                        Text("Needs Accessibility permission; until then items are only copied.")
+                        Text("Needs Accessibility permission; until then items are only copied.", tableName: "Clipboard")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -53,7 +53,7 @@ struct ClipboardSettingsView: View {
                         }
                     }
                 }
-                Text("⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app.")
+                Text("⌘⇧J / ⌘⇧K switch between AppPad and Clipboard; the Saved button (or the saved items shortcut) shows saved items only. ⌘1–⌘0 paste the first ten items, ⌘J / ⌘K move like ↓ / ↑, ⌘S saves, ⌘⇧⌫ deletes. Type \"App::text\" to filter by app.", tableName: "Clipboard")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -65,27 +65,27 @@ struct ClipboardSettingsView: View {
 
             BackgroundSection(settings: $prefs.clipboardBackground, allowsFollow: true)
 
-            Section("Fonts") {
-                fontPicker("Search font", family: $prefs.clipboardSearchFontFamily)
-                Stepper("Search size: \(prefs.clipboardSearchFontSize) pt",
+            Section(String(localized: "Fonts", table: "Clipboard")) {
+                fontPicker(String(localized: "Search font", table: "Clipboard"), family: $prefs.clipboardSearchFontFamily)
+                Stepper(String(localized: "Search size: \(prefs.clipboardSearchFontSize) pt", table: "Clipboard"),
                         value: $prefs.clipboardSearchFontSize, in: 11...40)
-                fontPicker("List font", family: $prefs.clipboardListFontFamily)
-                Stepper("List size: \(prefs.clipboardListFontSize) pt",
+                fontPicker(String(localized: "List font", table: "Clipboard"), family: $prefs.clipboardListFontFamily)
+                Stepper(String(localized: "List size: \(prefs.clipboardListFontSize) pt", table: "Clipboard"),
                         value: $prefs.clipboardListFontSize, in: 11...40)
             }
 
-            Section("History") {
-                Picker("Keep up to", selection: $prefs.clipboardHistoryLimit) {
+            Section(String(localized: "History", table: "Clipboard")) {
+                Picker(String(localized: "Keep up to", table: "Clipboard"), selection: $prefs.clipboardHistoryLimit) {
                     ForEach(Self.limits, id: \.self) { limit in
-                        (limit == 0 ? Text("Unlimited") : Text("\(limit) items")).tag(limit)
+                        (limit == 0 ? Text("Unlimited", tableName: "Clipboard") : Text("\(limit) items")).tag(limit)
                     }
                 }
-                Picker("Keep for", selection: $prefs.clipboardRetentionDays) {
+                Picker(String(localized: "Keep for", table: "Clipboard"), selection: $prefs.clipboardRetentionDays) {
                     ForEach(Self.retention, id: \.self) { days in
-                        (days == 0 ? Text("Forever") : Text("\(days) days")).tag(days)
+                        (days == 0 ? Text("Forever", tableName: "Clipboard") : Text("\(days) days", tableName: "Clipboard")).tag(days)
                     }
                 }
-                LabeledContent("Image quality (HEIC)") {
+                LabeledContent(String(localized: "Image quality (HEIC)", table: "Clipboard")) {
                     HStack {
                         Slider(
                             value: Binding(
@@ -101,7 +101,7 @@ struct ClipboardSettingsView: View {
                     }
                     .frame(width: 220)
                 }
-                Text("Saved items are never removed by these limits.")
+                Text("Saved items are never removed by these limits.", tableName: "Clipboard")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -121,7 +121,7 @@ struct ClipboardSettingsView: View {
                         }
                     }
                 }
-                LabeledContent("All history") {
+                LabeledContent(String(localized: "All history", table: "Clipboard")) {
                     HStack(spacing: 10) {
                         Text(totalCount, format: .number)
                             .monospacedDigit()
@@ -131,14 +131,14 @@ struct ClipboardSettingsView: View {
                     }
                 }
             } header: {
-                Text("Delete History")
+                Text("Delete History", tableName: "Clipboard")
             } footer: {
-                Text("Saved items are never deleted here.")
+                Text("Saved items are never deleted here.", tableName: "Clipboard")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("Ignored Apps") {
+            Section(String(localized: "Ignored Apps", table: "Clipboard")) {
                 ForEach(prefs.clipboardIgnoredApps, id: \.self) { bundleID in
                     HStack(spacing: 8) {
                         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
@@ -176,23 +176,23 @@ struct ClipboardSettingsView: View {
             trusted = PasteService.isTrusted
             refreshCounts()
         }
-        .alert("Delete clipboard history?", isPresented: $confirmDelete, presenting: pendingDelete) { range in
-            Button("Delete \(counts[range] ?? 0) Items", role: .destructive) {
+        .alert(String(localized: "Delete clipboard history?", table: "Clipboard"), isPresented: $confirmDelete, presenting: pendingDelete) { range in
+            Button(String(localized: "Delete \(counts[range] ?? 0) Items", table: "Clipboard"), role: .destructive) {
                 maintenance.delete(range)
                 refreshCounts()
             }
             Button("Cancel", role: .cancel) {}
         } message: { range in
-            Text("\(Self.title(for: range)). Saved items are kept.")
+            Text("\(Self.title(for: range)). Saved items are kept.", tableName: "Clipboard")
         }
-        .alert("Delete all clipboard history?", isPresented: $confirmDeleteAll) {
-            Button("Delete \(totalCount) Items", role: .destructive) {
+        .alert(String(localized: "Delete all clipboard history?", table: "Clipboard"), isPresented: $confirmDeleteAll) {
+            Button(String(localized: "Delete \(totalCount) Items", table: "Clipboard"), role: .destructive) {
                 maintenance.delete(nil)
                 refreshCounts()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Saved items are kept.")
+            Text("Saved items are kept.", tableName: "Clipboard")
         }
     }
 
@@ -205,16 +205,16 @@ struct ClipboardSettingsView: View {
 
     private static func title(for range: ClipAgeRange) -> String {
         switch range {
-        case .olderThanYear: return String(localized: "Older than 1 year")
-        case .sixToTwelveMonths: return String(localized: "6 months – 1 year ago")
-        case .threeToSixMonths: return String(localized: "3 – 6 months ago")
-        case .lastWeek: return String(localized: "Last 7 days")
-        case .lastDay: return String(localized: "Last 24 hours")
-        case .lastHour: return String(localized: "Last hour")
+        case .olderThanYear: return String(localized: "Older than 1 year", table: "Clipboard")
+        case .sixToTwelveMonths: return String(localized: "6 months – 1 year ago", table: "Clipboard")
+        case .threeToSixMonths: return String(localized: "3 – 6 months ago", table: "Clipboard")
+        case .lastWeek: return String(localized: "Last 7 days", table: "Clipboard")
+        case .lastDay: return String(localized: "Last 24 hours", table: "Clipboard")
+        case .lastHour: return String(localized: "Last hour", table: "Clipboard")
         }
     }
 
-    private func fontPicker(_ title: LocalizedStringKey, family: Binding<String>) -> some View {
+    private func fontPicker(_ title: String, family: Binding<String>) -> some View {
         Picker(title, selection: family) {
             Text("System").tag("")
             Divider()

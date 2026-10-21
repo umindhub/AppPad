@@ -43,7 +43,7 @@ final class ClipRowView: NSView {
         badgeLabel.stringValue = index < 10 ? "⌘\((index + 1) % 10)" : ""
         savedMark.isHidden = !(showSavedMark && item.saved)
         let symbolConfig = NSImage.SymbolConfiguration(pointSize: max(12, (font.pointSize * 0.8).rounded()), weight: .medium)
-        savedMark.image = NSImage(systemSymbolName: "star.fill", accessibilityDescription: String(localized: "Saved"))?
+        savedMark.image = NSImage(systemSymbolName: "star.fill", accessibilityDescription: String(localized: "Saved", table: "Clipboard"))?
             .withSymbolConfiguration(symbolConfig)
         kindIcon.image = NSImage(systemSymbolName: Self.kindSymbol(item.kind), accessibilityDescription: nil)?
             .withSymbolConfiguration(symbolConfig)
@@ -59,7 +59,7 @@ final class ClipRowView: NSView {
         case .image:
             let size = (item.imageWidth != nil && item.imageHeight != nil)
                 ? "  \(item.imageWidth!) × \(item.imageHeight!)" : ""
-            let name = item.snippet.isEmpty ? String(localized: "Image") : item.snippet   // file name if copied as a file
+            let name = item.snippet.isEmpty ? String(localized: "Image", table: "Clipboard") : item.snippet   // file name if copied as a file
             content = name + size
             hasThumb = true
             loadThumb(item, store: store)

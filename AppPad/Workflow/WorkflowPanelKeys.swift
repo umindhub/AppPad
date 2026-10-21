@@ -35,7 +35,7 @@ enum WorkflowPanelKeys {
     // Why this in-panel shortcut can't be used, or nil.
     static func conflict(for combo: KeyCombo?, excluding id: UUID) -> String? {
         guard let combo else { return nil }
-        if isReserved(combo) { return String(localized: "Used by the Workflow panel") }
+        if isReserved(combo) { return String(localized: "Used by the Workflow panel", table: "Workflow") }
         if let other = WorkflowStore.shared.workflows.first(where: {
             $0.id != id && $0.panelKey?.keyCode == combo.keyCode && $0.panelKey?.modifiers == combo.modifiers
         }) {
@@ -189,8 +189,8 @@ enum SpotlightShortcut {
     static func showGuide() {
         let combo = Preferences.shared.workflowPanelHotKey?.displayString ?? ""
         let alert = NSAlert()
-        alert.messageText = String(localized: "\(combo) is used by Spotlight")
-        alert.informativeText = String(localized: "To open AppPad Workflows with \(combo), go to System Settings › Keyboard › Keyboard Shortcuts › Spotlight and turn off “Show Spotlight search” (or give it another shortcut).")
+        alert.messageText = String(localized: "\(combo) is used by Spotlight", table: "Workflow")
+        alert.informativeText = String(localized: "To open AppPad Workflows with \(combo), go to System Settings › Keyboard › Keyboard Shortcuts › Spotlight and turn off “Show Spotlight search” (or give it another shortcut).", table: "Workflow")
         alert.addButton(withTitle: String(localized: "Open Keyboard Settings"))
         alert.addButton(withTitle: String(localized: "Later"))
         NSApp.unhide(nil)

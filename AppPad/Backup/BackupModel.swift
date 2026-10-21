@@ -10,9 +10,9 @@ nonisolated enum BackupSection: String, Codable, CaseIterable, Identifiable, Sen
     var title: String {
         switch self {
         case .shortcuts: return String(localized: "App Shortcuts")
-        case .layout: return String(localized: "AppPad Layout")
+        case .layout: return String(localized: "AppPad Layout", table: "Settings")
         case .workflows: return String(localized: "Workflows")
-        case .clipboardHistory: return String(localized: "Clipboard History")
+        case .clipboardHistory: return String(localized: "Clipboard History", table: "Settings")
         case .clipboardSaved: return String(localized: "Saved items")
         }
     }
@@ -20,15 +20,15 @@ nonisolated enum BackupSection: String, Codable, CaseIterable, Identifiable, Sen
     var detail: String {
         switch self {
         case .shortcuts:
-            return String(localized: "Per-app shortcuts, plus the Workflows, Clipboard and window shortcuts.")
+            return String(localized: "Per-app shortcuts, plus the Workflows, Clipboard and window shortcuts.", table: "Settings")
         case .layout:
-            return String(localized: "Pages, folders, app positions and grid size.")
+            return String(localized: "Pages, folders, app positions and grid size.", table: "Settings")
         case .workflows:
-            return String(localized: "Installed workflows with their icons, panel shortcuts and on/off state.")
+            return String(localized: "Installed workflows with their icons, panel shortcuts and on/off state.", table: "Settings")
         case .clipboardHistory:
-            return String(localized: "Copied text, images and files.")
+            return String(localized: "Copied text, images and files.", table: "Settings")
         case .clipboardSaved:
-            return String(localized: "The saved clipboard library.")
+            return String(localized: "The saved clipboard library.", table: "Settings")
         }
     }
 
@@ -95,13 +95,13 @@ nonisolated enum BackupError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notABackup:
-            return String(localized: "This file is not an AppPad backup.")
+            return String(localized: "This file is not an AppPad backup.", table: "Settings")
         case .unsupportedFormat(let version):
-            return String(localized: "This backup was made by a newer version of AppPad (format \(version)). Update AppPad to restore it.")
+            return String(localized: "This backup was made by a newer version of AppPad (format \(version)). Update AppPad to restore it.", table: "Settings")
         case .unsafeArchive:
-            return String(localized: "This backup contains invalid file paths and was not opened.")
+            return String(localized: "This backup contains invalid file paths and was not opened.", table: "Settings")
         case .archiveFailed(let message):
-            return String(localized: "The backup file could not be processed: \(message)")
+            return String(localized: "The backup file could not be processed: \(message)", table: "Settings")
         }
     }
 }
@@ -131,16 +131,16 @@ struct BackupReport {
     var lines: [String] {
         var result: [String] = []
         if let shortcuts {
-            result.append(String(localized: "App Shortcuts: \(shortcuts) restored"))
+            result.append(String(localized: "App Shortcuts: \(shortcuts) restored", table: "Settings"))
         }
         if layoutRestored {
-            result.append(String(localized: "AppPad Layout: restored"))
+            result.append(String(localized: "AppPad Layout: restored", table: "Settings"))
         }
         if restoredWorkflows {
-            result.append(String(localized: "Workflows: \(workflowsAdded) added, \(workflowsUpdated) updated, \(workflowsRemoved) removed, \(workflowsSkipped) unchanged"))
+            result.append(String(localized: "Workflows: \(workflowsAdded) added, \(workflowsUpdated) updated, \(workflowsRemoved) removed, \(workflowsSkipped) unchanged", table: "Settings"))
         }
         if restoredClipboard {
-            result.append(String(localized: "Clipboard: \(clipboardAdded) added, \(clipboardExisting) already present"))
+            result.append(String(localized: "Clipboard: \(clipboardAdded) added, \(clipboardExisting) already present", table: "Settings"))
         }
         return result
     }

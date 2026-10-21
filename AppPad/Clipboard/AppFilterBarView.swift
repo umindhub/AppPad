@@ -95,7 +95,7 @@ final class SavedToggleView: NSView {
     private let glass = GlassBackdropView()
     private let fill = NSView()          // tint / plain background above the glass
     private let icon = NSImageView()
-    private let label = NSTextField(labelWithString: String(localized: "Saved"))
+    private let label = NSTextField(labelWithString: String(localized: "Saved", table: "Clipboard"))
     private(set) var height: CGFloat = 32
 
     override init(frame frameRect: NSRect) {

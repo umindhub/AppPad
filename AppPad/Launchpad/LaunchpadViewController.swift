@@ -81,7 +81,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         root.press.onClick = { [weak self] in self?.handleBackgroundClick() }
         view = root
 
-        searchField.placeholderString = String(localized: "Search")
+        searchField.placeholderString = String(localized: "Search", table: "Launchpad")
         searchField.delegate = self
         searchField.focusRingType = .none
 

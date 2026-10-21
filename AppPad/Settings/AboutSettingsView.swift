@@ -43,24 +43,24 @@ struct AboutSettingsView: View {
                     Text(verbatim: AppEnvironment.versionNumber)
                         .textSelection(.enabled)
                 }
-                LabeledContent("Website") {
+                LabeledContent(String(localized: "Website", table: "Settings")) {
                     Link(AppEnvironment.websiteURL.host() ?? AppEnvironment.websiteURL.absoluteString,
                          destination: AppEnvironment.websiteURL)
                         .buttonStyle(.link)
                 }
-                LabeledContent("Welcome Guide") {
-                    Button("Show Welcome Guide…") { OnboardingGuide.show() }
+                LabeledContent(String(localized: "Welcome Guide", table: "Settings")) {
+                    Button(String(localized: "Show Welcome Guide…", table: "Settings")) { OnboardingGuide.show() }
                 }
             }
 
             updatesSection
 
-            Section("Acknowledgements") {
+            Section(String(localized: "Acknowledgements", table: "Settings")) {
                 // Name + description on the left, GitHub icon vertically centered on the right.
                 HStack(alignment: .center, spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: "GRDB.swift")
-                        Text("A toolkit for SQLite databases. MIT License.")
+                        Text("A toolkit for SQLite databases. MIT License.", tableName: "Settings")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -70,7 +70,7 @@ struct AboutSettingsView: View {
                 HStack(alignment: .center, spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: "Sparkle")
-                        Text("A software update framework for macOS. MIT License.")
+                        Text("A software update framework for macOS. MIT License.", tableName: "Settings")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -87,35 +87,35 @@ struct AboutSettingsView: View {
 
 extension AboutSettingsView {
     @ViewBuilder fileprivate var updatesSection: some View {
-        Section("Updates") {
+        Section(String(localized: "Updates", table: "Settings")) {
             if updates.isSupported {
                 Toggle(isOn: $prefs.autoUpdateEnabled) {
-                    Text("Automatic updates")
-                    Text("Checks every day at the time below, then downloads and installs new versions in the background. AppPad restarts by itself while no panel is open.")
+                    Text("Automatic updates", tableName: "Settings")
+                    Text("Checks every day at the time below, then downloads and installs new versions in the background. AppPad restarts by itself while no panel is open.", tableName: "Settings")
                 }
-                DatePicker("Check at", selection: updateTime, displayedComponents: .hourAndMinute)
+                DatePicker(String(localized: "Check at", table: "Settings"), selection: updateTime, displayedComponents: .hourAndMinute)
                     .disabled(!prefs.autoUpdateEnabled)
-                LabeledContent("Last checked") {
+                LabeledContent(String(localized: "Last checked", table: "Settings")) {
                     if let date = updates.lastCheckDate {
                         Text(date, format: .dateTime.year().month().day().hour().minute())
                     } else {
-                        Text("Never")
+                        Text("Never", tableName: "Settings")
                     }
                 }
                 HStack {
                     if updates.installPending {
-                        Text("A new version is ready to install.")
+                        Text("A new version is ready to install.", tableName: "Settings")
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
                     if updates.installPending {
-                        Button("Restart to Update") { updates.installNow() }
+                        Button(String(localized: "Restart to Update", table: "Settings")) { updates.installNow() }
                     }
-                    Button("Check for Updates…") { updates.checkForUpdates() }
+                    Button(String(localized: "Check for Updates…", table: "Settings")) { updates.checkForUpdates() }
                         .disabled(!updates.canCheckForUpdates)
                 }
             } else {
-                Text("Updates are turned off in Dev builds.")
+                Text("Updates are turned off in Dev builds.", tableName: "Settings")
                     .foregroundStyle(.secondary)
             }
         }

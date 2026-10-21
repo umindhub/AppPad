@@ -63,20 +63,20 @@ struct SavedClipsSettingsView: View {
             ClipContentEditor(draft: draft) { saveContent(draft.id, text: $0) }
                 .pillButtons()
         }
-        .alert("Remove from Saved?", isPresented: Binding(
+        .alert(String(localized: "Remove from Saved?", table: "Clipboard"), isPresented: Binding(
             get: { pendingRemove != nil },
             set: { if !$0 { pendingRemove = nil } }
         ), presenting: pendingRemove) { item in
             Button("Remove", role: .destructive) { remove(item) }
             Button("Cancel", role: .cancel) {}
         } message: { _ in
-            Text("Items no longer in the clipboard history are deleted.")
+            Text("Items no longer in the clipboard history are deleted.", tableName: "Clipboard")
         }
     }
 
     private var searchBar: some View {
         GlassSearchField(text: $query,
-                         placeholder: String(localized: "Search saved items"),
+                         placeholder: String(localized: "Search saved items", table: "Clipboard"),
                          isGlass: prefs.glassControls)
             .frame(maxWidth: Self.formCardMaxWidth)
             .frame(height: GlassSearchFieldView.height)
@@ -98,12 +98,12 @@ struct SavedClipsSettingsView: View {
         Form {
             Section {
                 if store == nil {
-                    Text("The clipboard store could not be opened.")
+                    Text("The clipboard store could not be opened.", tableName: "Clipboard")
                         .foregroundStyle(.secondary)
                 } else if items.isEmpty {
                     Text(query.isEmpty
-                         ? String(localized: "Nothing saved yet — press ⌘S on an item to keep it here")
-                         : String(localized: "No Items"))
+                         ? String(localized: "Nothing saved yet — press ⌘S on an item to keep it here", table: "Clipboard")
+                         : String(localized: "No Items", table: "Clipboard"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } else {
@@ -119,9 +119,9 @@ struct SavedClipsSettingsView: View {
                     }
                 }
             } header: {
-                Text("\(total) saved items")
+                Text("\(total) saved items", tableName: "Clipboard")
             } footer: {
-                Text("Names are searchable here and in the Clipboard panel. Return saves a name, Esc reverts it. Click the text of a text item to edit its content.")
+                Text("Names are searchable here and in the Clipboard panel. Return saves a name, Esc reverts it. Click the text of a text item to edit its content.", tableName: "Clipboard")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -261,7 +261,7 @@ private struct SavedClipRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 // Name field 2/3, date in the rest.
                 RatioSplit(ratio: Self.nameRatio) {
-                    TextField(String(localized: "Name"), text: $draft, prompt: Text("Add a name"))
+                    TextField(String(localized: "Name"), text: $draft, prompt: Text("Add a name", tableName: "Clipboard"))
                         .labelsHidden()
                         .textFieldStyle(.roundedBorder)
                         .focused(focus, equals: item.id)
@@ -285,7 +285,7 @@ private struct SavedClipRow: View {
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
-                    .help(item.kind == .text ? String(localized: "Click to edit") : item.snippet)
+                    .help(item.kind == .text ? String(localized: "Click to edit", table: "Clipboard") : item.snippet)
                     .pointerStyle(item.kind == .text ? .link : nil)
                     .onTapGesture { if item.kind == .text { onEditContent() } }
             }
@@ -310,7 +310,7 @@ private struct SavedClipRow: View {
                         .frame(width: Self.actionSize.width, height: Self.actionSize.height)
                 }
                 .buttonStyle(.borderless)
-                .help(String(localized: "Remove from Saved"))
+                .help(String(localized: "Remove from Saved", table: "Clipboard"))
                 Image(systemName: Self.kindSymbol(item.kind))
                     .foregroundStyle(Self.kindColor(item.kind))
                     .frame(width: Self.actionSize.width, height: Self.actionSize.height)
@@ -351,7 +351,7 @@ private struct SavedClipRow: View {
             return item.snippet.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
                 .trimmingCharacters(in: .whitespaces)
         case .image:
-            let name = item.snippet.isEmpty ? String(localized: "Image") : item.snippet
+            let name = item.snippet.isEmpty ? String(localized: "Image", table: "Clipboard") : item.snippet
             guard let w = item.imageWidth, let h = item.imageHeight else { return name }
             return "\(name)  \(w) × \(h)"
         case .file:
@@ -405,7 +405,7 @@ private struct ClipContentEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Edit Content")
+                Text("Edit Content", tableName: "Clipboard")
                     .font(.headline)
                 if let name = draft.name, !name.isEmpty {
                     Text(name)
@@ -422,7 +422,7 @@ private struct ClipContentEditor: View {
                         .font(.callout)
                         .foregroundStyle(.red)
                 } else {
-                    Text("\(text.count) characters")
+                    Text("\(text.count) characters", tableName: "Clipboard")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
@@ -468,9 +468,9 @@ private struct ClipContentEditor: View {
         case .updated, .unchanged:
             dismiss()
         case .duplicate:
-            error = String(localized: "Another saved item already has this content.")
+            error = String(localized: "Another saved item already has this content.", table: "Clipboard")
         case .failed:
-            error = String(localized: "The content could not be saved.")
+            error = String(localized: "The content could not be saved.", table: "Clipboard")
         }
     }
 }

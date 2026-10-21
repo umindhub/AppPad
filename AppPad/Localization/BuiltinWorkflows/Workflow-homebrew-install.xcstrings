@@ -1,0 +1,183 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "brew, homebrew, installbrew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installieren, paketmanager"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "instalar, gestor de paquetes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installer, gestionnaire de paquets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installa, gestore pacchetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール, パッケージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치, 패키지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installeren, pakketbeheer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装, 包管理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝, 套件管理"
+          }
+        }
+      }
+    },
+    "Install Homebrew" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar Homebrew"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer Homebrew"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa Homebrew"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrewをインストール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 설치"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installeer Homebrew"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装 Homebrew"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝 Homebrew"
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
+    "Open Terminal with Homebrew’s official install command filled in; press Return to start it. AI assistants use Homebrew to install apps." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet das Terminal mit dem offiziellen Installationsbefehl von Homebrew; drücke den Zeilenschalter, um ihn zu starten. KI-Assistenten installieren Apps mit Homebrew."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Terminal con el comando de instalación oficial de Homebrew ya escrito; pulsa Retorno para iniciarlo. Los asistentes de IA usan Homebrew para instalar apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre Terminal avec la commande d’installation officielle de Homebrew déjà saisie ; appuyez sur Retour pour la lancer. Les assistants IA utilisent Homebrew pour installer des apps."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre Terminale con il comando di installazione ufficiale di Homebrew già inserito; premi A capo per avviarlo. Gli assistenti IA usano Homebrew per installare app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew公式のインストールコマンドを入力した状態でターミナルを開きます。returnキーを押すと開始します。AIアシスタントはHomebrewでアプリをインストールします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homebrew 공식 설치 명령이 입력된 터미널을 엽니다. Return 키를 누르면 시작됩니다. AI 어시스턴트는 Homebrew로 앱을 설치합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opent Terminal met de officiële installatieopdracht van Homebrew al ingevuld; druk op Return om te beginnen. AI-assistenten installeren apps met Homebrew."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开终端并预填 Homebrew 官方安装命令，按下 Return 键即可开始。AI 助手通过 Homebrew 安装 App。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開終端機並預填 Homebrew 官方安裝指令，按下 Return 鍵即可開始。AI 助理透過 Homebrew 安裝 App。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

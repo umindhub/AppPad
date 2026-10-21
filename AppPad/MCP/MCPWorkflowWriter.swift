@@ -135,19 +135,19 @@ enum MCPWorkflowWriter {
     private enum ReviewPrompt {
         static func ask(client: String, items: [(item: WorkflowImportItem, previous: String?)]) -> Bool {
             let alert = NSAlert()
-            alert.messageText = String(localized: "“\(client)” wants to add or change workflows")
-            alert.informativeText = String(localized: "Review the steps below. AppPad still asks for permissions the first time a workflow runs.")
+            alert.messageText = String(localized: "“\(client)” wants to add or change workflows", table: "MCP")
+            alert.informativeText = String(localized: "Review the steps below. AppPad still asks for permissions the first time a workflow runs.", table: "MCP")
             alert.icon = NSImage(systemSymbolName: "sparkles", accessibilityDescription: nil)
             alert.accessoryView = textView(items.map { describe($0.item.workflow, previous: $0.previous) }
                 .joined(separator: "\n\n────────\n\n"))
-            alert.addButton(withTitle: String(localized: "Install"))
+            alert.addButton(withTitle: String(localized: "Install", table: "MCP"))
             let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
             cancel.keyEquivalent = "\u{1b}"
             return FloatingAlert.runModal(alert) == .alertFirstButtonReturn
         }
 
         private static func describe(_ workflow: Workflow, previous: String?) -> String {
-            let status = previous.map { String(localized: "Replaces version \($0)") } ?? String(localized: "New")
+            let status = previous.map { String(localized: "Replaces version \($0)", table: "MCP") } ?? String(localized: "New", table: "MCP")
             var lines = ["\(workflow.name)  ·  \(workflow.identifier) \(workflow.version)  ·  \(status)"]
             if !workflow.summary.isEmpty { lines.append(workflow.summary) }
             let permissions = workflow.requiredPermissions.map { "  • " + $0.title }

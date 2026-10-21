@@ -48,13 +48,13 @@ struct HotCornerSection: View {
                         PasteService.openAccessibilitySettings()
                     }
                 } label: {
-                    warning(String(localized: "Notification Center and Quick Note need Accessibility permission."))
+                    warning(String(localized: "Notification Center and Quick Note need Accessibility permission.", table: "HotCorner"))
                 }
             }
         } header: {
-            Text("Hot Corners")
+            Text("Hot Corners", tableName: "HotCorner")
         } footer: {
-            Text("Move the pointer into a corner of the screen to run its action. Hold ⌘, ⌥, ⌃ or ⇧ (or several) while choosing an action to make the corner work only while those keys are held.")
+            Text("Move the pointer into a corner of the screen to run its action. Hold ⌘, ⌥, ⌃ or ⇧ (or several) while choosing an action to make the corner work only while those keys are held.", tableName: "HotCorner")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -89,7 +89,7 @@ struct HotCornerSection: View {
 
     private var conflictMessage: String {
         let list = ListFormatter.localizedString(byJoining: conflicts.map(\.title))
-        return String(localized: "macOS hot corners also use: \(list). Both run when the pointer reaches that corner.")
+        return String(localized: "macOS hot corners also use: \(list). Both run when the pointer reaches that corner.", table: "HotCorner")
     }
 }
 

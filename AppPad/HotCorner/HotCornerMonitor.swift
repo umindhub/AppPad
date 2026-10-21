@@ -6,10 +6,10 @@ nonisolated enum HotCorner: String, CaseIterable, Codable, Sendable {
 
     var title: String {
         switch self {
-        case .topLeft: return String(localized: "Top left")
-        case .topRight: return String(localized: "Top right")
-        case .bottomLeft: return String(localized: "Bottom left")
-        case .bottomRight: return String(localized: "Bottom right")
+        case .topLeft: return String(localized: "Top left", table: "HotCorner")
+        case .topRight: return String(localized: "Top right", table: "HotCorner")
+        case .bottomLeft: return String(localized: "Bottom left", table: "HotCorner")
+        case .bottomRight: return String(localized: "Bottom right", table: "HotCorner")
         }
     }
 
@@ -56,15 +56,15 @@ nonisolated enum HotCornerAction: String, CaseIterable, Codable, Sendable {
         case .launchpad: return String(localized: "AppPad")
         case .workflows: return String(localized: "Workflows")
         case .clipboard: return String(localized: "Clipboard")
-        case .missionControl: return String(localized: "Mission Control")
-        case .applicationWindows: return String(localized: "Application Windows")
-        case .desktop: return String(localized: "Desktop")
-        case .notificationCenter: return String(localized: "Notification Center")
-        case .quickNote: return String(localized: "Quick Note")
-        case .startScreenSaver: return String(localized: "Start Screen Saver")
-        case .disableScreenSaver: return String(localized: "Disable Screen Saver")
-        case .displaySleep: return String(localized: "Put Display to Sleep")
-        case .lockScreen: return String(localized: "Lock Screen")
+        case .missionControl: return String(localized: "Mission Control", table: "HotCorner")
+        case .applicationWindows: return String(localized: "Application Windows", table: "HotCorner")
+        case .desktop: return String(localized: "Desktop", table: "HotCorner")
+        case .notificationCenter: return String(localized: "Notification Center", table: "HotCorner")
+        case .quickNote: return String(localized: "Quick Note", table: "HotCorner")
+        case .startScreenSaver: return String(localized: "Start Screen Saver", table: "HotCorner")
+        case .disableScreenSaver: return String(localized: "Disable Screen Saver", table: "HotCorner")
+        case .displaySleep: return String(localized: "Put Display to Sleep", table: "HotCorner")
+        case .lockScreen: return String(localized: "Lock Screen", table: "HotCorner")
         case .none: return "–"
         }
     }

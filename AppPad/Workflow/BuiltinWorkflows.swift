@@ -2,7 +2,7 @@ import AppKit
 
 // Workflows shipped with AppPad (group "system"). Bump a version to push changes to installed copies. Installed on launch; a higher version here
 // replaces the installed one. They can't be edited or deleted, only disabled.
-// Names / descriptions / hints are English keys; translations come from Localizable.
+// Names / descriptions / hints are English keys; translations come from Workflow-<id>.xcstrings (see stringsTable).
 enum BuiltinWorkflows {
     static let group = "system"
     // One shortcut for both (same approach as Alfred): input "timer\n<seconds>" or "alarm\n<HH:mm>[\n<label>]".
@@ -184,9 +184,9 @@ enum BuiltinWorkflows {
     static func setupText(for shortcut: String) -> String? {
         guard shortcut == clockShortcut else { return nil }
         if bundledShortcut(shortcut) != nil {
-            return String(localized: "Timers and alarms use the “AppPad Clock” shortcut. Press ↩ to add it once; after that it runs in the background.")
+            return String(localized: "Timers and alarms use the “AppPad Clock” shortcut. Press ↩ to add it once; after that it runs in the background.", table: "Workflow")
         }
-        return String(localized: "Timers and alarms need the “AppPad Clock” shortcut, which is not included in this build.")
+        return String(localized: "Timers and alarms need the “AppPad Clock” shortcut, which is not included in this build.", table: "Workflow")
     }
 
     // A signed .shortcut file shipped in the app bundle, if any (opening it imports the shortcut).
@@ -195,6 +195,13 @@ enum BuiltinWorkflows {
     }
 
     // MARK: - Helpers
+
+    // One string table per built-in: com.youmindhub.claudedesktop.add -> Workflow-claudedesktop-add
+    static func stringsTable(for identifier: String) -> String {
+        let prefix = "com.youmindhub."
+        let id = identifier.hasPrefix(prefix) ? String(identifier.dropFirst(prefix.count)) : identifier
+        return "Workflow-" + id.replacingOccurrences(of: ".", with: "-")
+    }
 
     private static func make(_ identifier: String, _ name: String, _ summary: String, version: String = "1.0",
                              keywords: [String], symbol: String, notice: SuccessNotice = .none, copy: Bool = false,
@@ -214,7 +221,8 @@ enum BuiltinWorkflows {
         w.argumentType = type
         w.argumentHint = hint
         w.localizations = WorkflowLanguage.translations(of: name, summary: summary, hint: hint,
-                                                        keywords: keywords.joined(separator: ", "))
+                                                        keywords: keywords.joined(separator: ", "),
+                                                        tableName: stringsTable(for: identifier))
         return w
     }
 

@@ -162,7 +162,7 @@ final class WorkflowStore: ObservableObject {
         var copy = workflow
         copy.id = UUID()
         copy.identifier = uniqueIdentifier(from: workflow.identifier + ".copy")
-        copy.name = String(localized: "\(workflow.displayName) Copy")
+        copy.name = String(localized: "\(workflow.displayName) Copy", table: "Workflow")
         copy.localizations = [:]
         copy.panelKey = nil
         // A copy of a built-in is the user's own; a copy of a third-party one stays third-party.

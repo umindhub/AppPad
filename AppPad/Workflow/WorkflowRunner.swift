@@ -34,7 +34,7 @@ nonisolated struct WorkflowRunResult: Identifiable, Sendable {
 
     var failureSummary: String {
         if let message { return message }
-        if cancelled { return String(localized: "Cancelled") }
+        if cancelled { return String(localized: "Cancelled", table: "Workflow") }
         guard let failed = steps.first(where: { !$0.success }) else { return "" }
         let detail = failed.message ?? (failed.stderr.isEmpty ? failed.output : failed.stderr)
         return failed.title + (detail.isEmpty ? "" : ": " + detail)
@@ -176,7 +176,7 @@ final class WorkflowRunner: ObservableObject {
         for item in allowed where item.kind == .appleEvents {
             if await AutomationConsent.request(item.value) == .denied {
                 let name = AppLookup.name(forBundleID: item.value)
-                return String(localized: "macOS does not allow AppPad to control \(name). Turn it on in System Settings › Privacy & Security › Automation, then run the workflow again.")
+                return String(localized: "macOS does not allow AppPad to control \(name). Turn it on in System Settings › Privacy & Security › Automation, then run the workflow again.", table: "Workflow")
             }
         }
         return nil
@@ -197,7 +197,7 @@ final class WorkflowRunner: ObservableObject {
 
     private func denied(_ step: WorkflowStep, _ index: Int, _ item: PermissionItem) -> StepResult {
         var r = StepResult(title: stepTitle(step, index))
-        r.message = String(localized: "Not allowed: \(item.title)")
+        r.message = String(localized: "Not allowed: \(item.title)", table: "Workflow")
         return r
     }
 
@@ -211,11 +211,11 @@ final class WorkflowRunner: ObservableObject {
         } else {
             r.exitCode = out.exitCode
             if out.timedOut {
-                r.message = String(localized: "Timed out after \(Int(step.timeout)) s")
+                r.message = String(localized: "Timed out after \(Int(step.timeout)) s", table: "Workflow")
             } else if out.cancelled {
-                r.message = String(localized: "Cancelled")
+                r.message = String(localized: "Cancelled", table: "Workflow")
             } else if out.exitCode != 0 {
-                r.message = String(localized: "Exit code \(out.exitCode)")
+                r.message = String(localized: "Exit code \(out.exitCode)", table: "Workflow")
             }
         }
         return r
@@ -279,7 +279,7 @@ final class WorkflowRunner: ObservableObject {
         let spec = step.http
         guard let host = spec.host else {
             var r = StepResult(title: stepTitle(step, index))
-            r.message = String(localized: "Invalid URL")
+            r.message = String(localized: "Invalid URL", table: "Workflow")
             return r
         }
         let hostItem = PermissionItem(kind: .httpHost, value: host)
@@ -290,7 +290,7 @@ final class WorkflowRunner: ObservableObject {
             guard allowed.contains(item) else { return denied(step, index, item) }
             guard let value = KeychainSecrets.value(name) else {
                 var r = StepResult(title: stepTitle(step, index))
-                r.message = String(localized: "Secret “\(name)” is not set (Settings › Workflows › Secrets).")
+                r.message = String(localized: "Secret “\(name)” is not set (Settings › Workflows › Secrets).", table: "Workflow")
                 return r
             }
             secrets[name] = value
@@ -311,7 +311,7 @@ final class WorkflowRunner: ObservableObject {
         // Re-check the host after substitution ({{input}} must not move the request elsewhere).
         guard let url = URL(string: render(spec.url, encodeInput: true)), url.host?.lowercased() == host else {
             var r = StepResult(title: stepTitle(step, index))
-            r.message = String(localized: "Invalid URL")
+            r.message = String(localized: "Invalid URL", table: "Workflow")
             return r
         }
         var request = URLRequest(url: url, timeoutInterval: step.timeout)
@@ -334,9 +334,9 @@ final class WorkflowRunner: ObservableObject {
             r.output = body.isEmpty ? "HTTP \(status)" : Self.trimTrailingNewlines(body)
             if !r.success { r.message = "HTTP \(status)" }
         } catch is CancellationError {
-            r.message = String(localized: "Cancelled")
+            r.message = String(localized: "Cancelled", table: "Workflow")
         } catch let error as URLError where error.code == .cancelled {
-            r.message = String(localized: "Cancelled")
+            r.message = String(localized: "Cancelled", table: "Workflow")
         } catch {
             r.message = error.localizedDescription
         }
@@ -346,7 +346,7 @@ final class WorkflowRunner: ObservableObject {
     // AppPad's own trusted actions (not sandboxed, still permission-gated).
     private func runBuiltin(_ step: WorkflowStep, index: Int, allowed: [PermissionItem], input: String) async -> StepResult {
         if let raw = step.unsupportedBuiltin {
-            return failure(step, index, String(localized: "“\(raw)” needs a newer version of AppPad."))
+            return failure(step, index, String(localized: "“\(raw)” needs a newer version of AppPad.", table: "Workflow"))
         }
         let item = PermissionItem(kind: .builtin, value: step.builtin.rawValue)
         guard allowed.contains(item) else { return denied(step, index, item) }
@@ -358,8 +358,8 @@ final class WorkflowRunner: ObservableObject {
             var r = makeResult(step, index, from: out)
             if r.success {
                 r.output = r.output == "empty"
-                    ? String(localized: "The Trash is already empty.")
-                    : String(localized: "Trash emptied.")
+                    ? String(localized: "The Trash is already empty.", table: "Workflow")
+                    : String(localized: "Trash emptied.", table: "Workflow")
             }
             return r
         case .sleepDisplays:
@@ -372,13 +372,13 @@ final class WorkflowRunner: ObservableObject {
             let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.darkModeScript], timeout: step.timeout)
             var r = makeResult(step, index, from: out)
             if r.success {
-                r.output = r.output == "dark" ? String(localized: "Dark appearance") : String(localized: "Light appearance")
+                r.output = r.output == "dark" ? String(localized: "Dark appearance", table: "Workflow") : String(localized: "Light appearance", table: "Workflow")
             }
             return r
         case .setVolume:
             // Out-of-range values are clamped (older copies may still pass "150" as a plain number).
             guard let raw = Double(input.trimmingCharacters(in: .whitespaces)), raw.isFinite else {
-                return failure(step, index, String(localized: "Enter a volume from 0 to 100."))
+                return failure(step, index, String(localized: "Enter a volume from 0 to 100.", table: "Workflow"))
             }
             let level = Int(min(max(raw, 0), 100).rounded())
             return await setVolume(step, index, level: level)
@@ -419,10 +419,10 @@ final class WorkflowRunner: ObservableObject {
         case .removeYouMindHubFromClaudeDesktop:
             return claudeDesktop(step, index, YouMindHubClaudeDesktop.remove())
         case .installHomebrew:
-            guard !Homebrew.isInstalled else { return success(step, index, String(localized: "Homebrew is already installed.")) }
+            guard !Homebrew.isInstalled else { return success(step, index, String(localized: "Homebrew is already installed.", table: "Workflow")) }
             do {
                 try HomebrewInstaller.openInTerminal()
-                return success(step, index, String(localized: "Terminal opened. Press Return there to install Homebrew."))
+                return success(step, index, String(localized: "Terminal opened. Press Return there to install Homebrew.", table: "Workflow"))
             } catch {
                 return failure(step, index, error.localizedDescription)
             }
@@ -432,7 +432,7 @@ final class WorkflowRunner: ObservableObject {
                 .replacingOccurrences(of: WorkflowPlaceholders.input, with: input)
             do {
                 try TerminalLauncher.prefill(command: command, directory: step.directory)
-                return success(step, index, String(localized: "Terminal opened. Review the command and press Return to run it."))
+                return success(step, index, String(localized: "Terminal opened. Review the command and press Return to run it.", table: "Workflow"))
             } catch {
                 return failure(step, index, error.localizedDescription)
             }
@@ -451,16 +451,16 @@ final class WorkflowRunner: ObservableObject {
     // Reminders via JXA (like Alfred): JSON from the reminder argument, or plain text parsed here.
     private func createReminder(_ step: WorkflowStep, _ index: Int, input: String) async -> StepResult {
         guard let request = ReminderRequest.decode(input) ?? ReminderParser.parse(input), let json = request.json else {
-            return failure(step, index, String(localized: "Add the reminder text."))
+            return failure(step, index, String(localized: "Add the reminder text.", table: "Workflow"))
         }
         let out = await ProcessRunner.run("/usr/bin/osascript", ["-l", "JavaScript", "-e", Self.reminderScript, json],
                                           timeout: step.timeout)
         var r = makeResult(step, index, from: out)
         if r.success, r.output == "nolist" {
             r.success = false
-            r.message = String(localized: "No Reminders list named “\(request.list)”.")
+            r.message = String(localized: "No Reminders list named “\(request.list)”.", table: "Workflow")
         } else if r.success {
-            r.output = String(localized: "Reminder added: \(request.summary)")
+            r.output = String(localized: "Reminder added: \(request.summary)", table: "Workflow")
         }
         return r
     }
@@ -485,7 +485,7 @@ final class WorkflowRunner: ObservableObject {
         let limit: TimeInterval = seconds > 0 ? TimeInterval(seconds) + 10 : 7 * 86_400
         let out = await ProcessRunner.run("/usr/bin/caffeinate", arguments, timeout: limit)
         var r = makeResult(step, index, from: out)
-        if r.success { r.output = String(localized: "Keep Awake ended.") }
+        if r.success { r.output = String(localized: "Keep Awake ended.", table: "Workflow") }
         return r
     }
 
@@ -499,7 +499,7 @@ final class WorkflowRunner: ObservableObject {
                   values.volumeIsRootFileSystem != true else { return false }
             return values.volumeIsEjectable == true || values.volumeIsInternal == false
         }
-        guard !targets.isEmpty else { return success(step, index, String(localized: "No disks to eject.")) }
+        guard !targets.isEmpty else { return success(step, index, String(localized: "No disks to eject.", table: "Workflow")) }
         var failed: [String] = []
         for url in targets {
             var out = await ProcessRunner.run("/usr/sbin/diskutil", ["eject", url.path], timeout: 60)
@@ -509,9 +509,9 @@ final class WorkflowRunner: ObservableObject {
             if !out.succeeded { failed.append(url.lastPathComponent) }
         }
         if failed.isEmpty {
-            return success(step, index, String(localized: "Ejected \(targets.count) disk(s)."))
+            return success(step, index, String(localized: "Ejected \(targets.count) disk(s).", table: "Workflow"))
         }
-        return failure(step, index, String(localized: "Could not eject: \(failed.joined(separator: ", "))"))
+        return failure(step, index, String(localized: "Could not eject: \(failed.joined(separator: ", "))", table: "Workflow"))
     }
 
     private func toggleHiddenFiles(_ step: WorkflowStep, _ index: Int) async -> StepResult {
@@ -522,25 +522,25 @@ final class WorkflowRunner: ObservableObject {
                                             timeout: 10)
         guard write.succeeded else { return makeResult(step, index, from: write) }
         _ = await ProcessRunner.run("/usr/bin/killall", ["Finder"], timeout: 10)
-        return success(step, index, current ? String(localized: "Hidden files are hidden.")
-                                            : String(localized: "Hidden files are shown."))
+        return success(step, index, current ? String(localized: "Hidden files are hidden.", table: "Workflow")
+                                            : String(localized: "Hidden files are shown.", table: "Workflow"))
     }
 
     // Exact name first, then prefix; never AppPad itself. Normal quit (apps may ask to save).
     private func quitApp(_ step: WorkflowStep, _ index: Int, name: String) -> StepResult {
         let query = SearchIndex.normalize(name.trimmingCharacters(in: .whitespaces))
-        guard !query.isEmpty else { return failure(step, index, String(localized: "Type the app name after a space.")) }
+        guard !query.isEmpty else { return failure(step, index, String(localized: "Type the app name after a space.", table: "Workflow")) }
         let apps = NSWorkspace.shared.runningApplications.filter {
             $0.activationPolicy == .regular && $0.processIdentifier != ProcessInfo.processInfo.processIdentifier
         }
         func normalized(_ app: NSRunningApplication) -> String { SearchIndex.normalize(app.localizedName ?? "") }
         guard let app = apps.first(where: { normalized($0) == query })
                 ?? apps.first(where: { normalized($0).hasPrefix(query) }) else {
-            return failure(step, index, String(localized: "No running app named “\(name)”."))
+            return failure(step, index, String(localized: "No running app named “\(name)”.", table: "Workflow"))
         }
         let display = app.localizedName ?? name
-        guard app.terminate() else { return failure(step, index, String(localized: "“\(display)” did not quit.")) }
-        return success(step, index, String(localized: "Quit \(display)."))
+        guard app.terminate() else { return failure(step, index, String(localized: "“\(display)” did not quit.", table: "Workflow")) }
+        return success(step, index, String(localized: "Quit \(display).", table: "Workflow"))
     }
 
     // Every regular app except AppPad and Finder. Normal quit: apps with unsaved changes still ask.
@@ -550,12 +550,12 @@ final class WorkflowRunner: ObservableObject {
             $0.activationPolicy == .regular && $0.processIdentifier != ownPID
                 && $0.bundleIdentifier != "com.apple.finder" && !$0.isTerminated
         }
-        guard !targets.isEmpty else { return success(step, index, String(localized: "No apps to quit.")) }
+        guard !targets.isEmpty else { return success(step, index, String(localized: "No apps to quit.", table: "Workflow")) }
         let failed = targets.filter { !$0.terminate() }.map { $0.localizedName ?? $0.bundleIdentifier ?? "?" }
         guard failed.isEmpty else {
-            return failure(step, index, String(localized: "Could not quit: \(failed.joined(separator: ", "))"))
+            return failure(step, index, String(localized: "Could not quit: \(failed.joined(separator: ", "))", table: "Workflow"))
         }
-        return success(step, index, String(localized: "Quit \(targets.count) app(s)."))
+        return success(step, index, String(localized: "Quit \(targets.count) app(s).", table: "Workflow"))
     }
 
     // {{input}} is percent-encoded (RFC 3986 unreserved characters stay as they are).
@@ -566,9 +566,9 @@ final class WorkflowRunner: ObservableObject {
         let text = step.url.trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: WorkflowPlaceholders.input, with: encoded)
         guard let url = URL(string: text), url.scheme != nil else {
-            return failure(step, index, String(localized: "Invalid URL"))
+            return failure(step, index, String(localized: "Invalid URL", table: "Workflow"))
         }
-        guard NSWorkspace.shared.open(url) else { return failure(step, index, String(localized: "Could not open \(text)")) }
+        guard NSWorkspace.shared.open(url) else { return failure(step, index, String(localized: "Could not open \(text)", table: "Workflow")) }
         return success(step, index, text)
     }
 
@@ -582,12 +582,12 @@ final class WorkflowRunner: ObservableObject {
             let text = String(decoding: reply.0.prefix(64), as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty { publicIP = text }
         }
-        guard let copy = local ?? publicIP else { return failure(step, index, String(localized: "No network connection.")) }
+        guard let copy = local ?? publicIP else { return failure(step, index, String(localized: "No network connection.", table: "Workflow")) }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(copy, forType: .string)
         var lines: [String] = []
-        if let local { lines.append(String(localized: "Local: \(local)")) }
-        if let publicIP { lines.append(String(localized: "Public: \(publicIP)")) }
+        if let local { lines.append(String(localized: "Local: \(local)", table: "Workflow")) }
+        if let publicIP { lines.append(String(localized: "Public: \(publicIP)", table: "Workflow")) }
         return success(step, index, lines.joined(separator: "\n"))
     }
 
@@ -679,21 +679,21 @@ final class WorkflowRunner: ObservableObject {
     // Percent is formatted per locale (e.g. "50 %" in German), not hard-coded into the string.
     private static func volumeText(_ level: Int) -> String {
         let percent = (Double(level) / 100).formatted(.percent.precision(.fractionLength(0)))
-        return String(localized: "Volume \(percent)")
+        return String(localized: "Volume \(percent)", table: "Workflow")
     }
 
     // Mute key when allowed (system HUD), otherwise the silent AppleScript toggle.
     private func toggleMute(_ step: WorkflowStep, _ index: Int) async -> StepResult {
         guard MediaKeys.canPost() else {
             var r = makeResult(step, index, from: await ProcessRunner.run("/usr/bin/osascript", ["-e", Self.muteScript], timeout: 10))
-            if r.success { r.output = r.output == "muted" ? String(localized: "Sound muted") : String(localized: "Sound on") }
+            if r.success { r.output = r.output == "muted" ? String(localized: "Sound muted", table: "Workflow") : String(localized: "Sound on", table: "Workflow") }
             return r
         }
         MediaKeys.press(.mute)
         try? await Task.sleep(for: .milliseconds(150))
         let out = await ProcessRunner.run("/usr/bin/osascript", ["-e", "output muted of (get volume settings)"], timeout: 10)
         var r = makeResult(step, index, from: out)
-        if r.success { r.output = r.output == "true" ? String(localized: "Sound muted") : String(localized: "Sound on") }
+        if r.success { r.output = r.output == "true" ? String(localized: "Sound muted", table: "Workflow") : String(localized: "Sound on", table: "Workflow") }
         return r
     }
 
@@ -717,7 +717,7 @@ final class WorkflowRunner: ObservableObject {
             case .error: body = error
             case .custom: body = Self.fill(workflow.failureMessage, placeholder: "{{error}}", with: error, fallback: error)
             }
-            notifier.post(title: String(localized: "“\(workflow.displayName)” failed"), body: body)
+            notifier.post(title: String(localized: "“\(workflow.displayName)” failed", table: "Workflow"), body: body)
             return
         }
         let output = result.finalOutput
@@ -727,10 +727,10 @@ final class WorkflowRunner: ObservableObject {
         }
         switch workflow.successNotice {
         case .output:
-            notifier.post(title: workflow.displayName, body: output.isEmpty ? String(localized: "Done") : output)
+            notifier.post(title: workflow.displayName, body: output.isEmpty ? String(localized: "Done", table: "Workflow") : output)
         case .custom:
             let body = Self.fill(workflow.successMessage, placeholder: "{{output}}", with: output,
-                                 fallback: String(localized: "Done"))
+                                 fallback: String(localized: "Done", table: "Workflow"))
             notifier.post(title: workflow.displayName, body: body)
         case .none:
             break
@@ -787,14 +787,14 @@ nonisolated private final class RedirectGuard: NSObject, URLSessionTaskDelegate,
 enum RunConfirmPrompt {
     static func ask(workflow: Workflow) -> Bool {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Run “\(workflow.displayName)”?")
+        alert.messageText = String(localized: "Run “\(workflow.displayName)”?", table: "Workflow")
         var message = workflow.confirmationMessage
         if workflow.source.isThirdParty {
-            message += "\n\n" + String(localized: "Source: \(workflow.source.longLabel)")
+            message += "\n\n" + String(localized: "Source: \(workflow.source.longLabel)", table: "Workflow")
         }
         alert.informativeText = message
         alert.icon = WorkflowIcon.image(for: workflow)
-        let run = alert.addButton(withTitle: String(localized: "Run"))
+        let run = alert.addButton(withTitle: String(localized: "Run", table: "Workflow"))
         run.hasDestructiveAction = true
         let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
         cancel.keyEquivalent = "\u{1b}"
@@ -806,7 +806,7 @@ extension Workflow {
     // Body of the confirmation dialog: the description, or a generic line.
     var confirmationMessage: String {
         let summary = displaySummary.trimmingCharacters(in: .whitespacesAndNewlines)
-        return summary.isEmpty ? String(localized: "This workflow asks before it runs.") : summary
+        return summary.isEmpty ? String(localized: "This workflow asks before it runs.", table: "Workflow") : summary
     }
 }
 

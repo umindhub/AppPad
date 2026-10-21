@@ -80,8 +80,8 @@ final class ClipPreviewView: FlippedView {
         let location = item.locationPath
         pathLabel.stringValue = location.map { ($0 as NSString).abbreviatingWithTildeInPath } ?? ""
         pathLabel.toolTip = location
-        var hint = String(localized: "↩ Paste   ⌘S Save   ⌘⇧⌫ Delete") + "   " + String(localized: "⌘↩ Edit")
-        if location != nil { hint += "   " + String(localized: "⌘⇧↩ Show in Finder") }
+        var hint = String(localized: "↩ Paste   ⌘S Save   ⌘⇧⌫ Delete", table: "Clipboard") + "   " + String(localized: "⌘↩ Edit", table: "Clipboard")
+        if location != nil { hint += "   " + String(localized: "⌘⇧↩ Show in Finder", table: "Clipboard") }
         hintLabel.stringValue = hint
         // Older file items that point to an image: preview the image itself.
         let fileImage = item.kind == .file ? Self.firstImageFile(item) : nil
@@ -139,7 +139,7 @@ final class ClipPreviewView: FlippedView {
         parts.append(dateFormatter.string(from: Date(timeIntervalSince1970: item.lastUsedAt)))
         switch item.kind {
         case .text:
-            parts.append(String(localized: "\((item.text ?? "").count) characters"))
+            parts.append(String(localized: "\((item.text ?? "").count) characters", table: "Clipboard"))
         case .image:
             if let name = item.text, !name.isEmpty { parts.append(name) }
             if let w = item.imageWidth, let h = item.imageHeight { parts.append("\(w) × \(h)") }
@@ -149,7 +149,7 @@ final class ClipPreviewView: FlippedView {
             let count = (item.text ?? "").split(separator: "\n").count
             parts.append(String(localized: "\(count) items"))
         }
-        if item.saved { parts.append(String(localized: "Saved")) }
+        if item.saved { parts.append(String(localized: "Saved", table: "Clipboard")) }
         return parts.joined(separator: " · ")
     }
 

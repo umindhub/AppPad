@@ -22,7 +22,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private let searchChrome = GlassSearchFieldView()
     private var searchField: NSSearchField { searchChrome.field }
     private let header = PanelHeaderView(title: String(localized: "Workflows"), hints: [
-        .init(keys: "Tab", action: String(localized: "Complete")),
+        .init(keys: "Tab", action: String(localized: "Complete", table: "Workflow")),
         .init(keys: "⌘K/J", action: String(localized: "Up/Down")),
         .init(keys: "⌘⇧K/J", action: String(localized: "Switch")),
     ])
@@ -61,7 +61,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         root.layer?.masksToBounds = true
         view = root
 
-        searchField.placeholderString = String(localized: "Search workflows and apps")
+        searchField.placeholderString = String(localized: "Search workflows and apps", table: "Workflow")
         searchField.delegate = self
         searchField.focusRingType = .none
 
@@ -434,9 +434,9 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         dismissConfirm()
         let overlay = ConfirmOverlayView(
             icon: WorkflowIcon.image(for: workflow),
-            title: String(localized: "Run “\(workflow.displayName)”?"),
+            title: String(localized: "Run “\(workflow.displayName)”?", table: "Workflow"),
             message: workflow.confirmationMessage, items: [],
-            confirmTitle: String(localized: "Run"), destructive: true,
+            confirmTitle: String(localized: "Run", table: "Workflow"), destructive: true,
             cornerRadius: root.layer?.cornerRadius ?? LaunchpadController.cornerRadius
         )
         overlay.onConfirm = { [weak self] _ in

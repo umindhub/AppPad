@@ -131,28 +131,28 @@ nonisolated enum DefaultLayout {
 
     // Localized App Store category names (all *-games subcategories → Games).
     private static func categoryName(_ id: String) -> String? {
-        if id == "games" || id.hasSuffix("-games") { return String(localized: "Games") }
+        if id == "games" || id.hasSuffix("-games") { return String(localized: "Games", table: "Launchpad") }
         switch id {
-        case "business": return String(localized: "Business")
-        case "developer-tools": return String(localized: "Developer Tools")
-        case "education": return String(localized: "Education")
-        case "entertainment": return String(localized: "Entertainment")
-        case "finance": return String(localized: "Finance")
-        case "graphics-design": return String(localized: "Graphics & Design")
-        case "healthcare-fitness": return String(localized: "Health & Fitness")
-        case "lifestyle": return String(localized: "Lifestyle")
-        case "medical": return String(localized: "Medical")
-        case "music": return String(localized: "Music")
-        case "news": return String(localized: "News")
-        case "photography": return String(localized: "Photography")
-        case "productivity": return String(localized: "Productivity")
-        case "reference": return String(localized: "Reference")
-        case "social-networking": return String(localized: "Social Networking")
-        case "sports": return String(localized: "Sports")
-        case "travel": return String(localized: "Travel")
-        case "utilities": return String(localized: "Utilities")
-        case "video": return String(localized: "Video")
-        case "weather": return String(localized: "Weather")
+        case "business": return String(localized: "Business", table: "Launchpad")
+        case "developer-tools": return String(localized: "Developer Tools", table: "Launchpad")
+        case "education": return String(localized: "Education", table: "Launchpad")
+        case "entertainment": return String(localized: "Entertainment", table: "Launchpad")
+        case "finance": return String(localized: "Finance", table: "Launchpad")
+        case "graphics-design": return String(localized: "Graphics & Design", table: "Launchpad")
+        case "healthcare-fitness": return String(localized: "Health & Fitness", table: "Launchpad")
+        case "lifestyle": return String(localized: "Lifestyle", table: "Launchpad")
+        case "medical": return String(localized: "Medical", table: "Launchpad")
+        case "music": return String(localized: "Music", table: "Launchpad")
+        case "news": return String(localized: "News", table: "Launchpad")
+        case "photography": return String(localized: "Photography", table: "Launchpad")
+        case "productivity": return String(localized: "Productivity", table: "Launchpad")
+        case "reference": return String(localized: "Reference", table: "Launchpad")
+        case "social-networking": return String(localized: "Social Networking", table: "Launchpad")
+        case "sports": return String(localized: "Sports", table: "Launchpad")
+        case "travel": return String(localized: "Travel", table: "Launchpad")
+        case "utilities": return String(localized: "Utilities", table: "Launchpad")
+        case "video": return String(localized: "Video", table: "Launchpad")
+        case "weather": return String(localized: "Weather", table: "Launchpad")
         default: return nil
         }
     }

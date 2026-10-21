@@ -379,11 +379,11 @@ final class WorkflowRowView: NSView {
 
         switch item {
         case .workflow(let workflow):
-            subtitleLabel.stringValue = isRunning ? String(localized: "Running…") : Self.summary(workflow)
+            subtitleLabel.stringValue = isRunning ? String(localized: "Running…", table: "Workflow") : Self.summary(workflow)
             keyLabel.stringValue = workflow.panelKey?.displayString ?? ""
             if workflow.source.isThirdParty { markSource = workflow.source }
         case .app:
-            subtitleLabel.stringValue = String(localized: "Application")
+            subtitleLabel.stringValue = String(localized: "Application", table: "Workflow")
             keyLabel.stringValue = ""
         case .calculator(let expression, _):
             subtitleLabel.stringValue = expression
@@ -408,7 +408,7 @@ final class WorkflowRowView: NSView {
             kinds.append(step.kind.title)
         }
         let text = kinds.joined(separator: " · ")
-        return text.isEmpty ? String(localized: "Workflow") : text
+        return text.isEmpty ? String(localized: "Workflow", table: "Workflow") : text
     }
 
     override func layout() {

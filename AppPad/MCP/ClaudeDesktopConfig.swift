@@ -9,13 +9,13 @@ nonisolated enum ClaudeDesktopError: Error, Sendable {
     var message: String {
         switch self {
         case .notInstalled:
-            return String(localized: "Claude Desktop is not installed.")
+            return String(localized: "Claude Desktop is not installed.", table: "MCP")
         case .unreadable:
-            return String(localized: "claude_desktop_config.json is not valid JSON. Fix or delete it, then try again.")
+            return String(localized: "claude_desktop_config.json is not valid JSON. Fix or delete it, then try again.", table: "MCP")
         case .writeFailed(let detail):
-            return String(localized: "Could not save claude_desktop_config.json: \(detail)")
+            return String(localized: "Could not save claude_desktop_config.json: \(detail)", table: "MCP")
         case .youMindHubNotInstalled:
-            return String(localized: "YouMindHub is not installed in the Applications folder.")
+            return String(localized: "YouMindHub is not installed in the Applications folder.", table: "MCP")
         }
     }
 }
@@ -88,7 +88,7 @@ final class ClaudeDesktopMCP: ObservableObject {
         var servers = root["mcpServers"] as? [String: Any] ?? [:]
         if Self.matches(servers[MCPPaths.serverName]) {
             Self.enableHost()
-            return .success(String(localized: "AppPad is already in Claude Desktop."))
+            return .success(String(localized: "AppPad is already in Claude Desktop.", table: "MCP"))
         }
         servers[MCPPaths.serverName] = Self.entry
         root["mcpServers"] = servers
@@ -98,13 +98,13 @@ final class ClaudeDesktopMCP: ObservableObject {
             return .failure(.writeFailed(error.localizedDescription))
         }
         Self.enableHost()
-        return .success(String(localized: "AppPad was added to Claude Desktop. Restart Claude Desktop to use it."))
+        return .success(String(localized: "AppPad was added to Claude Desktop. Restart Claude Desktop to use it.", table: "MCP"))
     }
 
     func remove() -> Result<String, ClaudeDesktopError> {
         defer { refresh() }
         let url = Self.targetURL
-        let notPresent = String(localized: "AppPad is not in Claude Desktop.")
+        let notPresent = String(localized: "AppPad is not in Claude Desktop.", table: "MCP")
         guard FileManager.default.fileExists(atPath: url.path) else { return .success(notPresent) }
         guard var root = Self.load(url) else { return .failure(.unreadable) }
         guard var servers = root["mcpServers"] as? [String: Any], servers[MCPPaths.serverName] != nil else {
@@ -117,7 +117,7 @@ final class ClaudeDesktopMCP: ObservableObject {
         } catch {
             return .failure(.writeFailed(error.localizedDescription))
         }
-        return .success(String(localized: "AppPad was removed from Claude Desktop. Restart Claude Desktop to apply."))
+        return .success(String(localized: "AppPad was removed from Claude Desktop. Restart Claude Desktop to apply.", table: "MCP"))
     }
 
     // A client entry without a running server is useless: turn the MCP host on as well.
@@ -188,7 +188,7 @@ enum YouMindHubClaudeDesktop {
         if let existing = root["mcpServers"], !(existing is [String: Any]) { return .failure(.unreadable) }
         var servers = root["mcpServers"] as? [String: Any] ?? [:]
         if matches(servers[serverName]) {
-            return .success(String(localized: "YouMindHub is already in Claude Desktop."))
+            return .success(String(localized: "YouMindHub is already in Claude Desktop.", table: "MCP"))
         }
         servers[serverName] = ["command": helperPath]   // replaces an entry pointing elsewhere
         root["mcpServers"] = servers
@@ -197,12 +197,12 @@ enum YouMindHubClaudeDesktop {
         } catch {
             return .failure(.writeFailed(error.localizedDescription))
         }
-        return .success(String(localized: "YouMindHub was added to Claude Desktop. Restart Claude Desktop to use it."))
+        return .success(String(localized: "YouMindHub was added to Claude Desktop. Restart Claude Desktop to use it.", table: "MCP"))
     }
 
     static func remove() -> Result<String, ClaudeDesktopError> {
         let url = ClaudeDesktopMCP.targetURL
-        let notPresent = String(localized: "YouMindHub is not in Claude Desktop.")
+        let notPresent = String(localized: "YouMindHub is not in Claude Desktop.", table: "MCP")
         guard FileManager.default.fileExists(atPath: url.path) else { return .success(notPresent) }
         guard var root = ClaudeDesktopMCP.load(url) else { return .failure(.unreadable) }
         guard var servers = root["mcpServers"] as? [String: Any], servers[serverName] != nil else {
@@ -215,7 +215,7 @@ enum YouMindHubClaudeDesktop {
         } catch {
             return .failure(.writeFailed(error.localizedDescription))
         }
-        return .success(String(localized: "YouMindHub was removed from Claude Desktop. Restart Claude Desktop to apply."))
+        return .success(String(localized: "YouMindHub was removed from Claude Desktop. Restart Claude Desktop to apply.", table: "MCP"))
     }
 
     // Same helper, no arguments (extra keys such as "env" are allowed).
@@ -231,11 +231,11 @@ struct ClaudeDesktopStatusText: View {
 
     var body: some View {
         switch status {
-        case .notInstalled: Text("Not installed").foregroundStyle(.secondary)
-        case .notAdded: Text("Not added").foregroundStyle(.secondary)
-        case .added: Text("Added").foregroundStyle(.green)
-        case .outdated: Text("Set up for another copy of AppPad").foregroundStyle(.orange)
-        case .unreadable: Text("Invalid configuration file").foregroundStyle(.red)
+        case .notInstalled: Text("Not installed", tableName: "MCP").foregroundStyle(.secondary)
+        case .notAdded: Text("Not added", tableName: "MCP").foregroundStyle(.secondary)
+        case .added: Text("Added", tableName: "MCP").foregroundStyle(.green)
+        case .outdated: Text("Set up for another copy of AppPad", tableName: "MCP").foregroundStyle(.orange)
+        case .unreadable: Text("Invalid configuration file", tableName: "MCP").foregroundStyle(.red)
         }
     }
 }

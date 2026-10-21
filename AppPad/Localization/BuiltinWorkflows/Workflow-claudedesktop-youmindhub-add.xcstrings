@@ -1,0 +1,183 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add YouMindHub to Claude Desktop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub zu Claude Desktop hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir YouMindHub a Claude Desktop"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter YouMindHub à Claude Desktop"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi YouMindHub a Claude Desktop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub を Claude Desktop に追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에 YouMindHub 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub toevoegen aan Claude Desktop"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 YouMindHub 添加到 Claude Desktop"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 YouMindHub 加入 Claude Desktop"
+          }
+        }
+      },
+      "extractionState" : "manual"
+    },
+    "Add YouMindHub's MCP server to Claude Desktop so Claude can use YouMindHub." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügt den MCP-Server von YouMindHub zu Claude Desktop hinzu, damit Claude YouMindHub nutzen kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade el servidor MCP de YouMindHub a Claude Desktop para que Claude pueda usar YouMindHub."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoute le serveur MCP de YouMindHub à Claude Desktop pour que Claude puisse utiliser YouMindHub."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiunge il server MCP di YouMindHub a Claude Desktop, così Claude può usare YouMindHub."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub の MCP サーバを Claude Desktop に追加し、Claude から YouMindHub を使えるようにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YouMindHub의 MCP 서버를 Claude Desktop에 추가해 Claude가 YouMindHub를 사용할 수 있게 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voegt de MCP-server van YouMindHub toe aan Claude Desktop, zodat Claude YouMindHub kan gebruiken."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 YouMindHub 的 MCP 服务添加到 Claude Desktop，让 Claude 可以使用 YouMindHub。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 YouMindHub 的 MCP 服務加入 Claude Desktop，讓 Claude 可以使用 YouMindHub。"
+          }
+        }
+      }
+    },
+    "youmindhub, claude, mcp, addyoumindhub" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "añadir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ajouter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aggiungi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "toevoegen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加, 接入"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入, 新增"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

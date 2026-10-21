@@ -11,7 +11,7 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Startup") {
+            Section(String(localized: "Startup", table: "Settings")) {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         guard newValue != LoginItem.isEnabled else { return }
@@ -21,7 +21,7 @@ struct GeneralSettingsView: View {
             }
 
             // Shared by AppPad, Clipboard, Workflows and the Settings sidebar.
-            Section("Appearance") {
+            Section(String(localized: "Appearance", table: "Settings")) {
                 // Tabs like the sidebar: glass lens on macOS 26, pill otherwise.
                 LabeledContent {
                     GlassSegmentedControl(
@@ -38,43 +38,43 @@ struct GeneralSettingsView: View {
                     .fixedSize()
                     .padding(.vertical, 6)   // room for the lifted lens
                 } label: {
-                    Text("Theme")
-                    Text("Auto follows the macOS appearance. AppPad, Clipboard and Workflows backgrounds follow the theme.")
+                    Text("Theme", tableName: "Settings")
+                    Text("Auto follows the macOS appearance. AppPad, Clipboard and Workflows backgrounds follow the theme.", tableName: "Settings")
                 }
                 // Liquid Glass needs macOS 26; hidden on older systems.
                 if GlassAvailability.isSupported {
                     Toggle(isOn: $prefs.glassControls) {
-                        Text("Liquid Glass controls")
-                        Text("Applies to search fields and controls in AppPad, Clipboard and Workflows.")
+                        Text("Liquid Glass controls", tableName: "Settings")
+                        Text("Applies to search fields and controls in AppPad, Clipboard and Workflows.", tableName: "Settings")
                     }
                 }
                 Toggle(isOn: $prefs.showAppBadges) {
-                    Text("Show app badges")
-                    Text("Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside.")
+                    Text("Show app badges", tableName: "Settings")
+                    Text("Shows the red badges from the Dock (unread counts, updates) on AppPad icons. Folders show the total of the apps inside.", tableName: "Settings")
                 }
                 // No prompt here; only a hint with a shortcut to the pane.
                 if prefs.showAppBadges && !axTrusted {
                     LabeledContent {
                         Button("Open System Settings") { Self.openAccessibilitySettings() }
                     } label: {
-                        Label("Badges are read from the Dock and need Accessibility permission.",
+                        Label(String(localized: "Badges are read from the Dock and need Accessibility permission.", table: "Settings"),
                               systemImage: "exclamationmark.triangle.fill")
                             .foregroundStyle(.secondary)
                     }
                 }
             }
 
-            Section("Keyboard") {
+            Section(String(localized: "Keyboard", table: "Settings")) {
                 Toggle(isOn: $prefs.escClearsSearchFirst) {
-                    Text("Esc clears the search first")
-                    Text("When on, Esc clears the search text first and closes on the next press. When off, Esc closes right away. Applies to AppPad, Clipboard and Workflows.")
+                    Text("Esc clears the search first", tableName: "Settings")
+                    Text("When on, Esc clears the search text first and closes on the next press. When off, Esc closes right away. Applies to AppPad, Clipboard and Workflows.", tableName: "Settings")
                 }
             }
 
-            Section("Displays") {
+            Section(String(localized: "Displays", table: "Settings")) {
                 Toggle(isOn: $prefs.panelsFollowMouseScreen) {
-                    Text("Open on the display with the pointer")
-                    Text("Applies to AppPad, Clipboard and Workflows. When off, they open on the main display.")
+                    Text("Open on the display with the pointer", tableName: "Settings")
+                    Text("Applies to AppPad, Clipboard and Workflows. When off, they open on the main display.", tableName: "Settings")
                 }
             }
         }
@@ -102,9 +102,9 @@ struct GeneralSettingsView: View {
 private extension AppTheme {
     var tabTitle: String {
         switch self {
-        case .auto: return String(localized: "Auto")
-        case .light: return String(localized: "Light")
-        case .dark: return String(localized: "Dark")
+        case .auto: return String(localized: "Auto", table: "Settings")
+        case .light: return String(localized: "Light", table: "Settings")
+        case .dark: return String(localized: "Dark", table: "Settings")
         }
     }
 
@@ -151,20 +151,20 @@ struct BackgroundSection: View {
         Section {
             if allowsFollow {
                 Toggle(isOn: $settings.follow) {
-                    Text("Same as AppPad")
-                    Text("Uses AppPad's background, blur and transparency.")
+                    Text("Same as AppPad", tableName: "Settings")
+                    Text("Uses AppPad's background, blur and transparency.", tableName: "Settings")
                 }
             }
             if isOwn {
-                Picker("Background", selection: $settings.style) {
-                    Text("White").tag(BackgroundStyle.white)
-                    Text("Light gray").tag(BackgroundStyle.lightGray)
-                    Text("Dark gray").tag(BackgroundStyle.darkGray)
-                    Text("Wallpaper").tag(BackgroundStyle.wallpaper)
-                    Text("Custom color").tag(BackgroundStyle.custom)
+                Picker(String(localized: "Background", table: "Settings"), selection: $settings.style) {
+                    Text("White", tableName: "Settings").tag(BackgroundStyle.white)
+                    Text("Light gray", tableName: "Settings").tag(BackgroundStyle.lightGray)
+                    Text("Dark gray", tableName: "Settings").tag(BackgroundStyle.darkGray)
+                    Text("Wallpaper", tableName: "Settings").tag(BackgroundStyle.wallpaper)
+                    Text("Custom color", tableName: "Settings").tag(BackgroundStyle.custom)
                 }
                 // Same tabs as the General theme switch.
-                LabeledContent("Adjust for") {
+                LabeledContent(String(localized: "Adjust for", table: "Settings")) {
                     GlassSegmentedControl(
                         segments: [
                             GlassSegment(value: ThemeVariant.light, title: AppTheme.light.tabTitle,
@@ -182,14 +182,14 @@ struct BackgroundSection: View {
                     .padding(.vertical, 6)   // room for the lifted lens
                 }
                 if settings.style == .custom {
-                    ColorPicker("Color", selection: customColor, supportsOpacity: false)
+                    ColorPicker(String(localized: "Color", table: "Settings"), selection: customColor, supportsOpacity: false)
                 }
-                percentSlider("Blur", value: tuningBinding(\.blur))
+                percentSlider(String(localized: "Blur", table: "Settings"), value: tuningBinding(\.blur))
                     .disabled(tuning.opacity >= 0.995)   // fully covered: blur is invisible
                 if settings.style == .wallpaper {
-                    percentSlider("Tint", value: tuningBinding(\.opacity))
+                    percentSlider(String(localized: "Tint", table: "Settings"), value: tuningBinding(\.opacity))
                 } else {
-                    percentSlider("Transparency", value: transparencyBinding)
+                    percentSlider(String(localized: "Transparency", table: "Settings"), value: transparencyBinding)
                 }
                 HStack {
                     Spacer()
@@ -197,16 +197,16 @@ struct BackgroundSection: View {
                 }
             }
         } header: {
-            Text("Background")
+            Text("Background", tableName: "Settings")
         } footer: {
             if isOwn {
                 VStack(alignment: .leading, spacing: 2) {
                     if settings.style == .wallpaper {
-                        Text("Blur and Tint apply to the desktop wallpaper.")
+                        Text("Blur and Tint apply to the desktop wallpaper.", tableName: "Settings")
                     } else {
-                        Text("Above \(Double(0).formatted(.percent)) transparency the open windows behind show through, blurred by the Blur value.")
+                        Text("Above \(Double(0).formatted(.percent)) transparency the open windows behind show through, blurred by the Blur value.", tableName: "Settings")
                     }
-                    Text("Each background keeps its own values for the light and dark theme.")
+                    Text("Each background keeps its own values for the light and dark theme.", tableName: "Settings")
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -246,7 +246,7 @@ struct BackgroundSection: View {
         )
     }
 
-    private func percentSlider(_ title: LocalizedStringKey, value: Binding<Double>) -> some View {
+    private func percentSlider(_ title: String, value: Binding<Double>) -> some View {
         LabeledContent(title) {
             HStack {
                 Slider(value: value, in: 0...1, step: 0.05)

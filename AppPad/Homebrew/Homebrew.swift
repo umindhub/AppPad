@@ -153,18 +153,18 @@ enum TerminalLauncher {
     static func prefill(command: String, directory: String = "") throws {
         let line = command.trimmingCharacters(in: .whitespaces)
         guard !line.isEmpty, isDisplaySafe(line), isDisplaySafe(directory) else {
-            throw TerminalLaunchError(message: String(localized: "The command must be one line without control characters."))
+            throw TerminalLaunchError(message: String(localized: "The command must be one line without control characters.", table: "MCP"))
         }
         var folder = ""
         if !directory.trimmingCharacters(in: .whitespaces).isEmpty {
             folder = SeatbeltProfile.resolve(directory)
             var isDirectory: ObjCBool = false
             guard FileManager.default.fileExists(atPath: folder, isDirectory: &isDirectory), isDirectory.boolValue else {
-                throw TerminalLaunchError(message: String(localized: "The folder “\(directory)” does not exist."))
+                throw TerminalLaunchError(message: String(localized: "The folder “\(directory)” does not exist.", table: "MCP"))
             }
         }
         guard let terminal = NSWorkspace.shared.urlForApplication(withBundleIdentifier: terminalID) else {
-            throw TerminalLaunchError(message: String(localized: "Terminal is not available."))
+            throw TerminalLaunchError(message: String(localized: "Terminal is not available.", table: "MCP"))
         }
 
         let fm = FileManager.default

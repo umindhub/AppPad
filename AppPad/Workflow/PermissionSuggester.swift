@@ -27,11 +27,11 @@ enum PermissionSuggester {
                 guard !p.fileWrite.contains(path) else { return }
                 p.fileWrite.append(path)
                 p.fileRead.removeAll { $0 == path }
-                added.append(String(localized: "Read and change \(path)"))
+                added.append(String(localized: "Read and change \(path)", table: "WorkflowPermissions"))
             } else {
                 guard !p.fileRead.contains(path), !p.fileWrite.contains(path) else { return }
                 p.fileRead.append(path)
-                added.append(String(localized: "Read \(path)"))
+                added.append(String(localized: "Read \(path)", table: "WorkflowPermissions"))
             }
         }
 
@@ -41,11 +41,11 @@ enum PermissionSuggester {
                 let script = step.script
                 if !p.network, matches(script, networkPattern) {
                     p.network = true
-                    added.append(String(localized: "Network access"))
+                    added.append(String(localized: "Network access", table: "Workflow"))
                 }
                 if !p.systemServices, step.kind == .shell, matches(script, servicesPattern) {
                     p.systemServices = true
-                    added.append(String(localized: "System services"))
+                    added.append(String(localized: "System services", table: "Workflow"))
                 }
                 for line in script.split(whereSeparator: \.isNewline).map(String.init) {
                     let write = matches(line, writePattern)
@@ -53,16 +53,16 @@ enum PermissionSuggester {
                 }
                 for id in controlledApps(in: script) where !p.appleEvents.contains(id) {
                     p.appleEvents.append(id)
-                    added.append(String(localized: "Control \(AppLookup.name(forBundleID: id))"))
+                    added.append(String(localized: "Control \(AppLookup.name(forBundleID: id))", table: "WorkflowPermissions"))
                 }
             case .http:
                 if let host = step.http.host, !p.httpHosts.map({ $0.lowercased() }).contains(host) {
                     p.httpHosts.append(host)
-                    added.append(String(localized: "HTTP host \(host)"))
+                    added.append(String(localized: "HTTP host \(host)", table: "WorkflowPermissions"))
                 }
                 for name in step.http.referencedSecrets where !p.secrets.contains(name) {
                     p.secrets.append(name)
-                    added.append(String(localized: "Secret \(name)"))
+                    added.append(String(localized: "Secret \(name)", table: "WorkflowPermissions"))
                 }
             case .shortcut, .builtin:
                 break   // implied by the step itself
@@ -106,10 +106,10 @@ enum WorkflowTemplate: CaseIterable {
 
     var title: String {
         switch self {
-        case .blankShell: return String(localized: "Shell Script")
-        case .blankAppleScript: return String(localized: "AppleScript")
-        case .githubAction: return String(localized: "Run GitHub Action")
-        case .runShortcut: return String(localized: "Run Shortcut")
+        case .blankShell: return String(localized: "Shell Script", table: "WorkflowPermissions")
+        case .blankAppleScript: return String(localized: "AppleScript", table: "Workflow")
+        case .githubAction: return String(localized: "Run GitHub Action", table: "WorkflowPermissions")
+        case .runShortcut: return String(localized: "Run Shortcut", table: "WorkflowPermissions")
         }
     }
 
@@ -148,7 +148,7 @@ enum WorkflowTemplate: CaseIterable {
     // English base name plus the app's own translations of that key as localizations.
     private static func named(_ key: String, identifier: String = "", steps: [WorkflowStep]) -> Workflow {
         var workflow = Workflow(name: key, identifier: identifier, steps: steps)
-        workflow.localizations = WorkflowLanguage.translations(of: key)
+        workflow.localizations = WorkflowLanguage.translations(of: key, tableName: "WorkflowPermissions")
         return workflow
     }
 }

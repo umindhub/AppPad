@@ -33,7 +33,7 @@ nonisolated struct KeyCombo: Codable, Equatable, Sendable {
         if modifiers & UInt32(shiftKey) != 0 { s += "⇧" }
         if modifiers & UInt32(cmdKey) != 0 { s += "⌘" }
         // Stored label is English; localize the Space key name for display
-        let key = keyCode == UInt32(kVK_Space) ? String(localized: "Space") : keyLabel
+        let key = keyCode == UInt32(kVK_Space) ? String(localized: "Space", table: "HotKey") : keyLabel
         return s + key
     }
 }

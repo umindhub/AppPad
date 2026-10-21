@@ -13,13 +13,13 @@ enum SettingsTab: String, CaseIterable {
         case .general: return String(localized: "General")
         case .launchpad: return String(localized: "AppPad")
         case .clipboard: return String(localized: "Clipboard")
-        case .savedClips: return String(localized: "Saved Clips")
+        case .savedClips: return String(localized: "Saved Clips", table: "Settings")
         case .shortcuts: return String(localized: "App Shortcuts")
         case .windows: return String(localized: "Windows")
         case .workflows: return String(localized: "Workflows")
         case .mcp: return String(localized: "AI Assistants (MCP)")
-        case .backup: return String(localized: "Backup")
-        case .about: return String(localized: "About")
+        case .backup: return String(localized: "Backup", table: "Settings")
+        case .about: return String(localized: "About", table: "Settings")
         }
     }
 
@@ -161,21 +161,21 @@ struct SettingsView: View {
 
     private var launchpadForm: some View {
         Form {
-            Section("Behavior") {
+            Section(String(localized: "Behavior", table: "Settings")) {
                 Toggle(isOn: $prefs.pinchToOpen) {
                     Text("Four-finger pinch opens AppPad")
-                    Text("Pinch in to open, spread to close.")
+                    Text("Pinch in to open, spread to close.", tableName: "Settings")
                 }
                 if prefs.pinchToOpen {
                     PinchSetupStepsView(showsButton: true)
                 }
-                Picker("When opened", selection: $prefs.openPagePolicy) {
-                    Text("Always first page").tag(OpenPagePolicy.firstPage)
-                    Text("Last visited page").tag(OpenPagePolicy.lastPage)
+                Picker(String(localized: "When opened", table: "Settings"), selection: $prefs.openPagePolicy) {
+                    Text("Always first page", tableName: "Settings").tag(OpenPagePolicy.firstPage)
+                    Text("Last visited page", tableName: "Settings").tag(OpenPagePolicy.lastPage)
                 }
-                Picker("Click on empty space", selection: $prefs.backgroundClickAction) {
-                    Text("Close AppPad").tag(BackgroundClickAction.closePanel)
-                    Text("Do nothing").tag(BackgroundClickAction.nothing)
+                Picker(String(localized: "Click on empty space", table: "Settings"), selection: $prefs.backgroundClickAction) {
+                    Text("Close AppPad", tableName: "Settings").tag(BackgroundClickAction.closePanel)
+                    Text("Do nothing", tableName: "Settings").tag(BackgroundClickAction.nothing)
                 }
                 Toggle("Switch to English input when opened", isOn: $prefs.switchToEnglishInput)
             }
@@ -184,7 +184,7 @@ struct SettingsView: View {
 
             // Always follows the screen size.
             Section("Window") {
-                LabeledContent("Screen percentage") {
+                LabeledContent(String(localized: "Screen percentage", table: "Settings")) {
                     HStack {
                         Slider(
                             value: Binding(
@@ -202,25 +202,25 @@ struct SettingsView: View {
                 }
                 if prefs.windowPercent >= 100 {
                     Toggle(isOn: $prefs.launchpadCoversMenuBar) {
-                        Text("Cover the menu bar")
-                        Text("Fills the screen up to the top edge. The Dock stays below AppPad while it is open.")
+                        Text("Cover the menu bar", tableName: "Settings")
+                        Text("Fills the screen up to the top edge. The Dock stays below AppPad while it is open.", tableName: "Settings")
                     }
                 }
             }
 
             BackgroundSection(settings: $prefs.launchpadBackground, allowsFollow: false)
 
-            Section("Grid") {
-                Stepper("Columns: \(prefs.gridColumns)", value: $prefs.gridColumns, in: 3...10)
-                Stepper("Rows: \(prefs.gridRows)", value: $prefs.gridRows, in: 2...8)
-                Picker("Page indicator", selection: $prefs.pageIndicatorStyle) {
-                    Text("Dots").tag(PageIndicatorStyle.dots)
-                    Text("Numbers").tag(PageIndicatorStyle.numbers)
+            Section(String(localized: "Grid", table: "Settings")) {
+                Stepper(String(localized: "Columns: \(prefs.gridColumns)", table: "Settings"), value: $prefs.gridColumns, in: 3...10)
+                Stepper(String(localized: "Rows: \(prefs.gridRows)", table: "Settings"), value: $prefs.gridRows, in: 2...8)
+                Picker(String(localized: "Page indicator", table: "Settings"), selection: $prefs.pageIndicatorStyle) {
+                    Text("Dots", tableName: "Settings").tag(PageIndicatorStyle.dots)
+                    Text("Numbers", tableName: "Settings").tag(PageIndicatorStyle.numbers)
                 }
             }
 
             Section {
-                Button("Reset Layout…", action: onResetLayout)
+                Button(String(localized: "Reset Layout…", table: "Settings"), action: onResetLayout)
             }
         }
         .formStyle(.grouped)

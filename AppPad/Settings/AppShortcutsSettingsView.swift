@@ -187,7 +187,7 @@ struct AppShortcutsSettingsView: View {
     // Same rule as the cards below: inset by contentMargins, capped width, centered.
     private var searchBar: some View {
         GlassSearchField(text: $query,
-                         placeholder: String(localized: "Search apps"),
+                         placeholder: String(localized: "Search apps", table: "HotKey"),
                          isGlass: prefs.glassControls)
             .frame(maxWidth: Self.formCardMaxWidth)
             .frame(height: GlassSearchFieldView.height)
@@ -217,9 +217,9 @@ struct AppShortcutsSettingsView: View {
                 if assigned.isEmpty {
                     Group {
                         if query.isEmpty {
-                            Text("No app shortcuts yet. Click a field below to record one.")
+                            Text("No app shortcuts yet. Click a field below to record one.", tableName: "HotKey")
                         } else {
-                            Text("No apps match.")
+                            Text("No apps match.", tableName: "HotKey")
                         }
                     }
                     .font(.callout)
@@ -231,9 +231,9 @@ struct AppShortcutsSettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("With Shortcuts")
+                    Text("With Shortcuts", tableName: "HotKey")
                     Spacer()
-                    Text("\(assignedCount) of \(prefs.appHotKeys.count) assigned")
+                    Text("\(assignedCount) of \(prefs.appHotKeys.count) assigned", tableName: "HotKey")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -241,7 +241,7 @@ struct AppShortcutsSettingsView: View {
                 .background(EnclosingScrollViewFinder { scrollAnchor.attach($0) })
             } footer: {
                 HStack {
-                    Text("Press the shortcut to open or focus the app; press again while it is in front to hide it. Click a field to record, Delete clears, Esc cancels.")
+                    Text("Press the shortcut to open or focus the app; press again while it is in front to hide it. Click a field to record, Delete clears, Esc cancels.", tableName: "HotKey")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 12)
@@ -254,12 +254,12 @@ struct AppShortcutsSettingsView: View {
                 Section {
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
-                        Text("Scanning apps…").foregroundStyle(.secondary)
+                        Text("Scanning apps…", tableName: "HotKey").foregroundStyle(.secondary)
                     }
                 }
             } else if groups.isEmpty, !query.isEmpty, !assigned.isEmpty {
                 Section {
-                    Text("No apps match.").foregroundStyle(.secondary)
+                    Text("No apps match.", tableName: "HotKey").foregroundStyle(.secondary)
                 }
             }
 
@@ -336,7 +336,7 @@ struct AppShortcutsSettingsView: View {
                 Text(value.name)
                     .lineLimit(1)
                 if missing {
-                    Text("App not found")
+                    Text("App not found", tableName: "HotKey")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if let conflict {
@@ -518,7 +518,7 @@ private struct ShortcutPill: View {
                     .fill(Color(nsColor: .controlBackgroundColor))
                 RoundedRectangle(cornerRadius: 6)
                     .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
-                Text(verbatim: combo?.displayString ?? String(localized: "Click to record"))
+                Text(verbatim: combo?.displayString ?? String(localized: "Click to record", table: "HotKey"))
                     .font(.system(size: 12))
                     .foregroundStyle(combo == nil ? Color(nsColor: .secondaryLabelColor) : Color(nsColor: .labelColor))
                     .lineLimit(1)

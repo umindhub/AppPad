@@ -9,10 +9,10 @@ struct WindowControlSettingsView: View {
     var body: some View {
         Form {
             Section("General") {
-                Toggle("Enable window control", isOn: $prefs.windowControlEnabled)
+                Toggle(String(localized: "Enable window control", table: "WindowControl"), isOn: $prefs.windowControlEnabled)
                 if !trusted {
                     HStack {
-                        Text("Needs Accessibility permission to move and resize windows.")
+                        Text("Needs Accessibility permission to move and resize windows.", tableName: "WindowControl")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -29,10 +29,10 @@ struct WindowControlSettingsView: View {
                     row(for: action)
                 }
             } header: {
-                Text("Shortcuts")
+                Text("Shortcuts", tableName: "WindowControl")
             } footer: {
                 HStack(alignment: .top) {
-                    Text("Works on the focused window of the frontmost app. Click a field to record, Delete clears, Esc cancels.")
+                    Text("Works on the focused window of the frontmost app. Click a field to record, Delete clears, Esc cancels.", tableName: "WindowControl")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 12)

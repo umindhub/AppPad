@@ -16,7 +16,7 @@ struct BackupSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Back Up") {
+            Section(String(localized: "Back Up", table: "Settings")) {
                 ForEach(service.availableSections) { section in
                     Toggle(isOn: binding(for: section)) {
                         Text(section.title)
@@ -36,24 +36,24 @@ struct BackupSettingsView: View {
                     }
                     Spacer()
                     if isWorking { ProgressView().controlSize(.small) }
-                    Button("Export Backup…", action: chooseExport)
+                    Button(String(localized: "Export Backup…", table: "Settings"), action: chooseExport)
                         .disabled(exportSelection.isEmpty || isWorking)
                 }
             }
 
-            Section("Restore Backup") {
+            Section(String(localized: "Restore Backup", table: "Settings")) {
                 HStack {
-                    Text("Choose a backup file. You can pick what to restore before anything changes.")
+                    Text("Choose a backup file. You can pick what to restore before anything changes.", tableName: "Settings")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("Import Backup…", action: chooseImport)
+                    Button(String(localized: "Import Backup…", table: "Settings"), action: chooseImport)
                         .disabled(isWorking)
                 }
             }
 
             Section {
-                Text("Not included: Keychain secrets used by workflows and “Always Allow” permissions. Restored workflows ask for permission again the first time they run.")
+                Text("Not included: Keychain secrets used by workflows and “Always Allow” permissions. Restored workflows ask for permission again the first time they run.", tableName: "Settings")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -100,7 +100,7 @@ struct BackupSettingsView: View {
                 try await service.export(sections, to: url)
                 lastExport = url
             } catch {
-                present(String(localized: "Backup failed"), error.localizedDescription)
+                present(String(localized: "Backup failed", table: "Settings"), error.localizedDescription)
             }
         }
     }
@@ -117,7 +117,7 @@ struct BackupSettingsView: View {
             do {
                 opened = try await service.open(url)
             } catch {
-                present(String(localized: "Could not open the backup"), error.localizedDescription)
+                present(String(localized: "Could not open the backup", table: "Settings"), error.localizedDescription)
             }
         }
     }
@@ -131,10 +131,10 @@ struct BackupSettingsView: View {
             let message: String
             do {
                 let report = try await service.restore(backup, sections: sections, mode: mode)
-                title = String(localized: "Backup restored")
+                title = String(localized: "Backup restored", table: "Settings")
                 message = report.lines.joined(separator: "\n")
             } catch {
-                title = String(localized: "Restore failed")
+                title = String(localized: "Restore failed", table: "Settings")
                 message = error.localizedDescription
             }
             service.discard(backup)
@@ -166,13 +166,13 @@ private struct BackupImportSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Restore from Backup")
+                Text("Restore from Backup", tableName: "Settings")
                     .font(.title3.weight(.semibold))
                 Text(backup.fileName)
                     .font(.callout)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                Text("Created \(backup.manifest.createdAt.formatted(date: .abbreviated, time: .shortened)) with AppPad \(backup.manifest.appVersion)")
+                Text("Created \(backup.manifest.createdAt.formatted(date: .abbreviated, time: .shortened)) with AppPad \(backup.manifest.appVersion)", tableName: "Settings")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -198,25 +198,25 @@ private struct BackupImportSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Picker("When an item already exists", selection: $mode) {
-                    Text("Merge").tag(BackupImportMode.merge)
+                Picker(String(localized: "When an item already exists", table: "Settings"), selection: $mode) {
+                    Text("Merge", tableName: "Settings").tag(BackupImportMode.merge)
                     Text("Replace").tag(BackupImportMode.replace)
                 }
                 .pickerStyle(.segmented)
                 Group {
                     switch mode {
                     case .merge:
-                        Text("Adds what is missing. Newer workflow versions replace older ones; everything else here stays.")
+                        Text("Adds what is missing. Newer workflow versions replace older ones; everything else here stays.", tableName: "Settings")
                             .foregroundStyle(.secondary)
                     case .replace:
-                        Text("Current items in the selected parts are removed first and replaced by the backup.")
+                        Text("Current items in the selected parts are removed first and replaced by the backup.", tableName: "Settings")
                             .foregroundStyle(.red)
                     }
                 }
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
                 if selection.contains(.layout) {
-                    Text("The AppPad layout is always replaced. Apps not installed on this Mac are skipped; apps missing from the backup are added at the end.")
+                    Text("The AppPad layout is always replaced. Apps not installed on this Mac are skipped; apps missing from the backup are added at the end.", tableName: "Settings")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -229,7 +229,7 @@ private struct BackupImportSheet: View {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                     .disabled(isWorking)
-                Button("Restore Backup") { onRestore(selection, mode) }
+                Button(String(localized: "Restore Backup", table: "Settings")) { onRestore(selection, mode) }
                     .keyboardShortcut(.defaultAction)
                     .pillProminentButton()
                     .disabled(selection.isEmpty || isWorking)

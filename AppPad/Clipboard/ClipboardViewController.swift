@@ -50,11 +50,11 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         root.layer?.masksToBounds = true
         view = root
 
-        searchField.placeholderString = String(localized: "Search clipboard")
+        searchField.placeholderString = String(localized: "Search clipboard", table: "Clipboard")
         searchField.delegate = self
         searchField.focusRingType = .none
 
-        savedToggle.toolTip = String(localized: "Show saved items only")
+        savedToggle.toolTip = String(localized: "Show saved items only", table: "Clipboard")
         savedToggle.onToggle = { [weak self] in
             guard let self else { return }
             self.setScope(self.scope == .saved ? .history : .saved)
@@ -220,8 +220,8 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
         select(row: items.isEmpty ? -1 : row)
 
         emptyLabel.stringValue = scope == .saved && searchField.stringValue.isEmpty
-            ? String(localized: "Nothing saved yet — press ⌘S on an item to keep it here")
-            : String(localized: "No Items")
+            ? String(localized: "Nothing saved yet — press ⌘S on an item to keep it here", table: "Clipboard")
+            : String(localized: "No Items", table: "Clipboard")
         emptyLabel.isHidden = !items.isEmpty
     }
 
@@ -501,9 +501,9 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
                 self?.revealInFinder(row: row)
             })
         }
-        let saveTitle = item.saved ? String(localized: "Remove from Saved") : String(localized: "Save")
+        let saveTitle = item.saved ? String(localized: "Remove from Saved", table: "Clipboard") : String(localized: "Save")
         menu.addItem(ClosureMenuItem(saveTitle) { [weak self] in self?.toggleSaved(item.id) })
-        menu.addItem(ClosureMenuItem(String(localized: "Edit in Saved Clips")) { [weak self] in
+        menu.addItem(ClosureMenuItem(String(localized: "Edit in Saved Clips", table: "Clipboard")) { [weak self] in
             self?.editInSavedClips(row: row)
         })
         menu.addItem(.separator())

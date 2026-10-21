@@ -113,7 +113,7 @@ final class SettingsWindowController {
         host.sizingOptions = [.minSize]
 
         let newWindow = SettingsWindow(contentViewController: host)
-        newWindow.title = String(localized: "AppPad Settings")
+        newWindow.title = String(localized: "AppPad Settings", table: "Settings")
         newWindow.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         newWindow.toolbarStyle = .unified
         newWindow.isReleasedWhenClosed = false

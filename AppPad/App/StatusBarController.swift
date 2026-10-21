@@ -135,7 +135,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         // checked live, the user may change System Settings at any time).
         let available = hotKeyAvailable && !SpotlightShortcut.conflicts(with: prefs.workflowPanelHotKey)
         let workflowsTitle = String(localized: "Workflows") + (available ? "" : "  ⚠︎")
-        workflowsItem.toolTip = available ? nil : String(localized: "The shortcut could not be registered. It may be used by Spotlight or another app.")
+        workflowsItem.toolTip = available ? nil : String(localized: "The shortcut could not be registered. It may be used by Spotlight or another app.", table: "Settings")
 
         apply(prefs.workflowPanelHotKey, to: workflowsKeyItem)
         apply(prefs.clipboardHotKey, to: clipboardKeyItem)
@@ -146,10 +146,10 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             (openItem, String(localized: "Open AppPad"), ""),
             (clipboardItem, String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString ?? ""),
             (workflowsItem, workflowsTitle, prefs.workflowPanelHotKey?.displayString ?? ""),
-            (settingsItem, String(localized: "Settings"), "⌘,"),
-            (loginItem, String(localized: "Launch at Login"), LoginItem.isEnabled ? "✓" : "✕"),
-            (updatesItem, String(localized: "Check for Updates…"), "⌘U"),
-            (quitItem, String(localized: "Quit AppPad"), "⌘Q"),
+            (settingsItem, String(localized: "Settings", table: "Settings"), "⌘,"),
+            (loginItem, String(localized: "Launch at Login", table: "Settings"), LoginItem.isEnabled ? "✓" : "✕"),
+            (updatesItem, String(localized: "Check for Updates…", table: "Settings"), "⌘U"),
+            (quitItem, String(localized: "Quit AppPad", table: "Settings"), "⌘Q"),
         ]
         renderTitles()
     }

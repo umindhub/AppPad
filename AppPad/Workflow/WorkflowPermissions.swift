@@ -26,21 +26,21 @@ extension PermissionItem {
     var title: String {
         switch kind {
         case .fileRead:
-            return String(localized: "Read files in \(Self.displayPath(value))")
+            return String(localized: "Read files in \(Self.displayPath(value))", table: "WorkflowPermissions")
         case .fileWrite:
-            return String(localized: "Read and change files in \(Self.displayPath(value))")
+            return String(localized: "Read and change files in \(Self.displayPath(value))", table: "WorkflowPermissions")
         case .network:
-            return String(localized: "Access the network from scripts")
+            return String(localized: "Access the network from scripts", table: "WorkflowPermissions")
         case .systemServices:
-            return String(localized: "Use system services (open apps, clipboard, notifications)")
+            return String(localized: "Use system services (open apps, clipboard, notifications)", table: "WorkflowPermissions")
         case .appleEvents:
-            return String(localized: "Control \(AppLookup.name(forBundleID: value))")
+            return String(localized: "Control \(AppLookup.name(forBundleID: value))", table: "WorkflowPermissions")
         case .httpHost:
-            return String(localized: "Send HTTP requests to \(value)")
+            return String(localized: "Send HTTP requests to \(value)", table: "WorkflowPermissions")
         case .secret:
-            return String(localized: "Use the secret “\(value)” in HTTP requests")
+            return String(localized: "Use the secret “\(value)” in HTTP requests", table: "WorkflowPermissions")
         case .shortcut:
-            return String(localized: "Run the shortcut “\(value)”")
+            return String(localized: "Run the shortcut “\(value)”", table: "WorkflowPermissions")
         case .builtin:
             return (BuiltinAction(rawValue: value) ?? .emptyTrash).permissionTitle
         }
@@ -91,7 +91,7 @@ extension Workflow {
     // Problems that block running (shown in the editor too).
     var validationErrors: [String] {
         var errors: [String] = []
-        if steps.isEmpty { errors.append(String(localized: "Add at least one step.")) }
+        if steps.isEmpty { errors.append(String(localized: "Add at least one step.", table: "WorkflowPermissions")) }
         let hosts = Set(permissions.httpHosts.map { $0.lowercased() })
         let secrets = Set(permissions.secrets)
         for (index, step) in steps.enumerated() {
@@ -99,33 +99,33 @@ extension Workflow {
             switch step.kind {
             case .shell, .appleScript:
                 if step.script.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    errors.append(String(localized: "Step \(n): the script is empty."))
+                    errors.append(String(localized: "Step \(n): the script is empty.", table: "WorkflowPermissions"))
                 }
             case .shortcut:
                 if step.shortcutName.isEmpty {
-                    errors.append(String(localized: "Step \(n): choose a shortcut."))
+                    errors.append(String(localized: "Step \(n): choose a shortcut.", table: "WorkflowPermissions"))
                 }
             case .http:
                 guard let host = step.http.host, step.http.url.lowercased().hasPrefix("http") else {
-                    errors.append(String(localized: "Step \(n): enter a valid http(s) URL."))
+                    errors.append(String(localized: "Step \(n): enter a valid http(s) URL.", table: "WorkflowPermissions"))
                     continue
                 }
                 if !hosts.contains(host) {
-                    errors.append(String(localized: "Step \(n): add \(host) to the declared HTTP hosts."))
+                    errors.append(String(localized: "Step \(n): add \(host) to the declared HTTP hosts.", table: "WorkflowPermissions"))
                 }
                 for name in step.http.referencedSecrets where !secrets.contains(name) {
-                    errors.append(String(localized: "Step \(n): declare the secret “\(name)”."))
+                    errors.append(String(localized: "Step \(n): declare the secret “\(name)”.", table: "WorkflowPermissions"))
                 }
             case .builtin:
                 if let raw = step.unsupportedBuiltin {
-                    errors.append(String(localized: "Step \(n): “\(raw)” needs a newer version of AppPad."))
+                    errors.append(String(localized: "Step \(n): “\(raw)” needs a newer version of AppPad.", table: "WorkflowPermissions"))
                 } else if step.builtin == .openURL, step.url.trimmingCharacters(in: .whitespaces).isEmpty {
-                    errors.append(String(localized: "Step \(n): enter the URL to open."))
+                    errors.append(String(localized: "Step \(n): enter the URL to open.", table: "WorkflowPermissions"))
                 } else if step.builtin == .prefillTerminal {
                     if step.command.trimmingCharacters(in: .whitespaces).isEmpty {
-                        errors.append(String(localized: "Step \(n): enter the command to fill in Terminal."))
+                        errors.append(String(localized: "Step \(n): enter the command to fill in Terminal.", table: "WorkflowPermissions"))
                     } else if !TerminalLauncher.isDisplaySafe(step.command) || !TerminalLauncher.isDisplaySafe(step.directory) {
-                        errors.append(String(localized: "Step \(n): the command and folder must be one line without control characters."))
+                        errors.append(String(localized: "Step \(n): the command and folder must be one line without control characters.", table: "WorkflowPermissions"))
                     }
                 }
             }
@@ -149,11 +149,11 @@ extension Workflow {
 extension WorkflowStepKind {
     var title: String {
         switch self {
-        case .shell: return String(localized: "Shell Script")
-        case .appleScript: return String(localized: "AppleScript")
-        case .shortcut: return String(localized: "Shortcut")
-        case .http: return String(localized: "HTTP Request")
-        case .builtin: return String(localized: "Built-in Action")
+        case .shell: return String(localized: "Shell Script", table: "WorkflowPermissions")
+        case .appleScript: return String(localized: "AppleScript", table: "Workflow")
+        case .shortcut: return String(localized: "Shortcut", table: "WorkflowPermissions")
+        case .http: return String(localized: "HTTP Request", table: "WorkflowPermissions")
+        case .builtin: return String(localized: "Built-in Action", table: "WorkflowPermissions")
         }
     }
 
@@ -171,57 +171,57 @@ extension WorkflowStepKind {
 extension BuiltinAction {
     var title: String {
         switch self {
-        case .emptyTrash: return String(localized: "Empty Trash")
-        case .sleepDisplays: return String(localized: "Sleep Displays")
-        case .sleepMac: return String(localized: "Sleep Mac")
-        case .keepAwake: return String(localized: "Keep Awake")
-        case .toggleDarkMode: return String(localized: "Toggle Light/Dark Mode")
-        case .setVolume: return String(localized: "Set Volume")
-        case .toggleMute: return String(localized: "Toggle Mute")
-        case .ejectDisks: return String(localized: "Eject All Disks")
-        case .toggleHiddenFiles: return String(localized: "Toggle Hidden Files")
-        case .quitApp: return String(localized: "Quit App")
-        case .openURL: return String(localized: "Open URL")
-        case .copyIPAddress: return String(localized: "Copy IP Address")
-        case .generateUUID: return String(localized: "Generate UUID")
-        case .shutDown: return String(localized: "Shut Down…")
-        case .restart: return String(localized: "Restart…")
-        case .createReminder: return String(localized: "Add Reminder")
-        case .quitAllApps: return String(localized: "Quit All Apps")
+        case .emptyTrash: return String(localized: "Empty Trash", table: "WorkflowPermissions")
+        case .sleepDisplays: return String(localized: "Sleep Displays", table: "WorkflowPermissions")
+        case .sleepMac: return String(localized: "Sleep Mac", table: "WorkflowPermissions")
+        case .keepAwake: return String(localized: "Keep Awake", table: "WorkflowPermissions")
+        case .toggleDarkMode: return String(localized: "Toggle Light/Dark Mode", table: "WorkflowPermissions")
+        case .setVolume: return String(localized: "Set Volume", table: "WorkflowPermissions")
+        case .toggleMute: return String(localized: "Toggle Mute", table: "WorkflowPermissions")
+        case .ejectDisks: return String(localized: "Eject All Disks", table: "WorkflowPermissions")
+        case .toggleHiddenFiles: return String(localized: "Toggle Hidden Files", table: "WorkflowPermissions")
+        case .quitApp: return String(localized: "Quit App", table: "WorkflowPermissions")
+        case .openURL: return String(localized: "Open URL", table: "WorkflowPermissions")
+        case .copyIPAddress: return String(localized: "Copy IP Address", table: "WorkflowPermissions")
+        case .generateUUID: return String(localized: "Generate UUID", table: "WorkflowPermissions")
+        case .shutDown: return String(localized: "Shut Down…", table: "WorkflowPermissions")
+        case .restart: return String(localized: "Restart…", table: "WorkflowPermissions")
+        case .createReminder: return String(localized: "Add Reminder", table: "WorkflowPermissions")
+        case .quitAllApps: return String(localized: "Quit All Apps", table: "WorkflowPermissions")
         case .addToClaudeDesktop: return String(localized: "Add to Claude Desktop")
         case .removeFromClaudeDesktop: return String(localized: "Remove from Claude Desktop")
-        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop")
-        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop")
-        case .installHomebrew: return String(localized: "Install Homebrew")
-        case .prefillTerminal: return String(localized: "Pre-fill Terminal Command")
+        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop", table: "WorkflowPermissions")
+        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop", table: "WorkflowPermissions")
+        case .installHomebrew: return String(localized: "Install Homebrew", table: "WorkflowPermissions")
+        case .prefillTerminal: return String(localized: "Pre-fill Terminal Command", table: "WorkflowPermissions")
         }
     }
 
     var permissionTitle: String {
         switch self {
-        case .emptyTrash: return String(localized: "Empty the Trash")
-        case .sleepDisplays: return String(localized: "Put the displays to sleep")
-        case .sleepMac: return String(localized: "Put the Mac to sleep")
-        case .keepAwake: return String(localized: "Keep the Mac awake")
-        case .toggleDarkMode: return String(localized: "Switch between light and dark appearance")
-        case .setVolume: return String(localized: "Change the output volume")
-        case .toggleMute: return String(localized: "Mute or unmute the sound")
-        case .ejectDisks: return String(localized: "Eject disks")
-        case .toggleHiddenFiles: return String(localized: "Change Finder’s hidden files setting and relaunch Finder")
-        case .quitApp: return String(localized: "Quit running apps")
-        case .openURL: return String(localized: "Open web pages and links")
-        case .copyIPAddress: return String(localized: "Look up the public IP address (api.ipify.org)")
-        case .generateUUID: return String(localized: "Generate UUIDs")
-        case .shutDown: return String(localized: "Show the Shut Down dialog")
-        case .restart: return String(localized: "Show the Restart dialog")
-        case .createReminder: return String(localized: "Add reminders to the Reminders app")
-        case .quitAllApps: return String(localized: "Quit all running apps")
-        case .addToClaudeDesktop: return String(localized: "Add AppPad to Claude Desktop's MCP servers")
-        case .removeFromClaudeDesktop: return String(localized: "Remove AppPad from Claude Desktop's MCP servers")
-        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop's MCP servers")
-        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop's MCP servers")
-        case .installHomebrew: return String(localized: "Open Terminal with Homebrew’s official install command")
-        case .prefillTerminal: return String(localized: "Open Terminal with a command filled in (it runs only after you press Return)")
+        case .emptyTrash: return String(localized: "Empty the Trash", table: "WorkflowPermissions")
+        case .sleepDisplays: return String(localized: "Put the displays to sleep", table: "WorkflowPermissions")
+        case .sleepMac: return String(localized: "Put the Mac to sleep", table: "WorkflowPermissions")
+        case .keepAwake: return String(localized: "Keep the Mac awake", table: "WorkflowPermissions")
+        case .toggleDarkMode: return String(localized: "Switch between light and dark appearance", table: "WorkflowPermissions")
+        case .setVolume: return String(localized: "Change the output volume", table: "WorkflowPermissions")
+        case .toggleMute: return String(localized: "Mute or unmute the sound", table: "WorkflowPermissions")
+        case .ejectDisks: return String(localized: "Eject disks", table: "WorkflowPermissions")
+        case .toggleHiddenFiles: return String(localized: "Change Finder’s hidden files setting and relaunch Finder", table: "WorkflowPermissions")
+        case .quitApp: return String(localized: "Quit running apps", table: "WorkflowPermissions")
+        case .openURL: return String(localized: "Open web pages and links", table: "WorkflowPermissions")
+        case .copyIPAddress: return String(localized: "Look up the public IP address (api.ipify.org)", table: "WorkflowPermissions")
+        case .generateUUID: return String(localized: "Generate UUIDs", table: "WorkflowPermissions")
+        case .shutDown: return String(localized: "Show the Shut Down dialog", table: "WorkflowPermissions")
+        case .restart: return String(localized: "Show the Restart dialog", table: "WorkflowPermissions")
+        case .createReminder: return String(localized: "Add reminders to the Reminders app", table: "WorkflowPermissions")
+        case .quitAllApps: return String(localized: "Quit all running apps", table: "WorkflowPermissions")
+        case .addToClaudeDesktop: return String(localized: "Add AppPad to Claude Desktop's MCP servers", table: "WorkflowPermissions")
+        case .removeFromClaudeDesktop: return String(localized: "Remove AppPad from Claude Desktop's MCP servers", table: "WorkflowPermissions")
+        case .addYouMindHubToClaudeDesktop: return String(localized: "Add YouMindHub to Claude Desktop's MCP servers", table: "WorkflowPermissions")
+        case .removeYouMindHubFromClaudeDesktop: return String(localized: "Remove YouMindHub from Claude Desktop's MCP servers", table: "WorkflowPermissions")
+        case .installHomebrew: return String(localized: "Open Terminal with Homebrew’s official install command", table: "WorkflowPermissions")
+        case .prefillTerminal: return String(localized: "Open Terminal with a command filled in (it runs only after you press Return)", table: "WorkflowPermissions")
         }
     }
 

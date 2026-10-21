@@ -84,12 +84,12 @@ struct WorkflowSettingsView: View {
         ) { workflow in
             Button("Delete", role: .destructive) { store.delete(id: workflow.id) }
         } message: { _ in
-            Text("Its permissions are removed too.")
+            Text("Its permissions are removed too.", tableName: "WorkflowEditor")
         }
         .alert(Text(errorMessage ?? ""), isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK") { errorMessage = nil }
         }
-        .alert(Text("Replace workflows with the same version?"),
+        .alert(Text("Replace workflows with the same version?", tableName: "WorkflowEditor"),
                isPresented: Binding(get: { !pendingReplace.isEmpty }, set: { if !$0 { finishReplace(false) } })) {
             Button("Replace") { finishReplace(true) }
             Button("Skip", role: .cancel) { finishReplace(false) }
@@ -97,7 +97,7 @@ struct WorkflowSettingsView: View {
             Text(verbatim: pendingReplace.map { "\($0.item.workflow.displayName)  (\($0.item.workflow.identifier) \($0.item.workflow.version))" }
                 .joined(separator: "\n"))
         }
-        .alert(Text("Some workflows were not imported"),
+        .alert(Text("Some workflows were not imported", tableName: "WorkflowEditor"),
                isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
             Button("OK") { importReport = nil }
         } message: {
@@ -109,7 +109,7 @@ struct WorkflowSettingsView: View {
 
     private var panelSection: some View {
         Section {
-            LabeledContent("Open Workflows") {
+            LabeledContent(String(localized: "Open Workflows", table: "WorkflowEditor")) {
                 VStack(alignment: .trailing, spacing: 2) {
                     ShortcutRecorder(combo: $prefs.workflowPanelHotKey)
                         .frame(width: 170, height: 24)
@@ -128,14 +128,14 @@ struct WorkflowSettingsView: View {
                     Text("System Settings › Keyboard › Keyboard Shortcuts › Spotlight: turn off “Show Spotlight search” or give it another shortcut.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Button("Open Keyboard Settings…") { SpotlightShortcut.openKeyboardShortcuts() }
+                    Button(String(localized: "Open Keyboard Settings…", table: "WorkflowEditor")) { SpotlightShortcut.openKeyboardShortcuts() }
                 }
             }
             Toggle("Switch to English input when opened", isOn: $prefs.workflowSwitchToEnglishInput)
         } header: {
-            Text("Workflow Panel")
+            Text("Workflow Panel", tableName: "WorkflowEditor")
         } footer: {
-            Text("The panel lists your workflows and apps. ↩ runs or opens, ⌘1–⌘0 picks a row, ⌘↩ edits the workflow here.")
+            Text("The panel lists your workflows and apps. ↩ runs or opens, ⌘1–⌘0 picks a row, ⌘↩ edits the workflow here.", tableName: "WorkflowEditor")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -147,8 +147,8 @@ struct WorkflowSettingsView: View {
     private var windowSection: some View {
         Section("Window") {
             Toggle(isOn: $prefs.workflowFollowsClipboardSize) {
-                Text("Same as Clipboard")
-                Text("Uses the Clipboard window's width, height and position.")
+                Text("Same as Clipboard", tableName: "WorkflowEditor")
+                Text("Uses the Clipboard window's width, height and position.", tableName: "WorkflowEditor")
             }
             if !prefs.workflowFollowsClipboardSize {
                 PanelPercentSlider(title: "Width", value: $prefs.workflowWidthPercent)
@@ -177,7 +177,7 @@ struct WorkflowSettingsView: View {
             Text(verbatim: BuiltinWorkflows.groupTitle(group))
         } footer: {
             if group == BuiltinWorkflows.group {
-                Text("Built-in workflows are updated with AppPad and can’t be edited or deleted. Duplicate one to make your own version.")
+                Text("Built-in workflows are updated with AppPad and can’t be edited or deleted. Duplicate one to make your own version.", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.top, 4)
@@ -189,7 +189,7 @@ struct WorkflowSettingsView: View {
         Section {
             let own = store.workflows.filter { $0.group.isEmpty }
             if own.isEmpty {
-                Text("No workflows yet. Add one to run shell scripts, AppleScript, Shortcuts or HTTP requests from the Workflow panel.")
+                Text("No workflows yet. Add one to run shell scripts, AppleScript, Shortcuts or HTTP requests from the Workflow panel.", tableName: "WorkflowEditor")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else {
@@ -201,12 +201,12 @@ struct WorkflowSettingsView: View {
             Text("Workflows")
         } footer: {
             HStack {
-                Text("Scripts run in a sandbox with only the permissions you grant.")
+                Text("Scripts run in a sandbox with only the permissions you grant.", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 12)
-                Button("Import…", action: importWorkflows)
-                Menu("Add") {
+                Button(String(localized: "Import…", table: "WorkflowEditor"), action: importWorkflows)
+                Menu(String(localized: "Add", table: "Workflow")) {
                     ForEach(WorkflowTemplate.allCases, id: \.self) { template in
                         Button(template.title) { edit(template.make(), isNew: true) }
                     }
@@ -234,14 +234,14 @@ struct WorkflowSettingsView: View {
                     WorkflowSourcePill(source: workflow.source)
                 }
                 if !workflow.enabled {
-                    Text("Disabled").font(.caption).foregroundStyle(.secondary)
+                    Text("Disabled", tableName: "WorkflowEditor").font(.caption).foregroundStyle(.secondary)
                 } else if let conflict {
                     Text(verbatim: conflict).font(.caption).foregroundStyle(.orange)
                 } else if let last, !last.success, !last.cancelled {
                     Button {
                         shownResult = last
                     } label: {
-                        Text("Last run failed").font(.caption).foregroundStyle(.red)
+                        Text("Last run failed", tableName: "WorkflowEditor").font(.caption).foregroundStyle(.red)
                     }
                     .buttonStyle(.plain)
                 } else {
@@ -257,7 +257,7 @@ struct WorkflowSettingsView: View {
             Spacer()
             ShortcutRecorder(combo: panelKeyBinding(workflow.id))
                 .frame(width: 140, height: 22)
-                .help(Text("Shortcut in the Workflow panel"))
+                .help(Text("Shortcut in the Workflow panel", tableName: "WorkflowEditor"))
             Button {
                 if isRunning {
                     runner.cancel(id: workflow.id)
@@ -269,7 +269,7 @@ struct WorkflowSettingsView: View {
                     .font(.system(size: 16))
             }
             .buttonStyle(.borderless)
-            .help(isRunning ? Text("Stop") : Text("Run"))
+            .help(isRunning ? Text("Stop", tableName: "WorkflowEditor") : Text("Run", tableName: "Workflow"))
             Menu {
                 rowActions(workflow, last: last)
             } label: {
@@ -296,16 +296,16 @@ struct WorkflowSettingsView: View {
     @ViewBuilder
     private func rowActions(_ workflow: Workflow, last: WorkflowRunResult?) -> some View {
         if !workflow.isBuiltin {
-            Button("Edit…") { edit(workflow, isNew: false) }
+            Button(String(localized: "Edit…", table: "WorkflowEditor")) { edit(workflow, isNew: false) }
         }
-        Button("Duplicate") { store.duplicate(workflow) }
-        Button("Export…") { export(workflow) }
+        Button(String(localized: "Duplicate", table: "WorkflowEditor")) { store.duplicate(workflow) }
+        Button(String(localized: "Export…", table: "WorkflowEditor")) { export(workflow) }
         if let last {
-            Button("Show Last Result") { shownResult = last }
+            Button(String(localized: "Show Last Result", table: "WorkflowEditor")) { shownResult = last }
         }
         Divider()
         if workflow.isBuiltin {
-            Button(workflow.enabled ? LocalizedStringKey("Disable") : LocalizedStringKey("Enable")) { setEnabled(!workflow.enabled, for: workflow.id) }
+            Button(workflow.enabled ? String(localized: "Disable", table: "WorkflowEditor") : String(localized: "Enable", table: "WorkflowEditor")) { setEnabled(!workflow.enabled, for: workflow.id) }
         } else {
             Button("Delete…", role: .destructive) { pendingDelete = workflow }
         }
@@ -363,7 +363,7 @@ struct WorkflowSettingsView: View {
     // Settings has no search field: ask for the argument (an invalid one shows in the result sheet).
     private func askArgument(_ workflow: Workflow) -> String? {
         let word = workflow.keyword.isEmpty ? workflow.displayName : workflow.keyword
-        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument") : workflow.displayArgumentHint
+        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument", table: "Workflow") : workflow.displayArgumentHint
         let examples = WorkflowArguments.examples(for: workflow.argumentType)
         let alert = NSAlert()
         alert.messageText = workflow.displayName
@@ -371,7 +371,7 @@ struct WorkflowSettingsView: View {
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.placeholderString = examples.first ?? hint
         alert.accessoryView = field
-        alert.addButton(withTitle: String(localized: "Run"))
+        alert.addButton(withTitle: String(localized: "Run", table: "Workflow"))
         alert.addButton(withTitle: String(localized: "Cancel"))
         alert.window.initialFirstResponder = field
         guard alert.runModal() == .alertFirstButtonReturn else { return nil }
@@ -395,15 +395,15 @@ struct WorkflowSettingsView: View {
                     case .sameVersion:
                         replace.append((item, source))
                     case .older(let installed):
-                        notes.append(String(localized: "“\(item.workflow.displayName)” \(item.workflow.version) is older than the installed \(installed.version) and was skipped."))
+                        notes.append(String(localized: "“\(item.workflow.displayName)” \(item.workflow.version) is older than the installed \(installed.version) and was skipped.", table: "WorkflowEditor"))
                     case .reserved:
-                        notes.append(String(localized: "“\(item.workflow.displayName)” uses the id of a built-in workflow and was skipped."))
+                        notes.append(String(localized: "“\(item.workflow.displayName)” uses the id of a built-in workflow and was skipped.", table: "WorkflowEditor"))
                     }
                 }
             } catch let error as WorkflowImportError {
                 notes.append(url.lastPathComponent + ": " + (error.errorDescription ?? ""))
             } catch {
-                notes.append(String(localized: "Could not import \(url.lastPathComponent)."))
+                notes.append(String(localized: "Could not import \(url.lastPathComponent).", table: "WorkflowEditor"))
             }
         }
         importNotes = notes
@@ -446,7 +446,7 @@ struct WorkflowSettingsView: View {
     private var secretsSection: some View {
         Section {
             if secretNames.isEmpty {
-                Text("No secrets yet.")
+                Text("No secrets yet.", tableName: "WorkflowEditor")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -455,7 +455,7 @@ struct WorkflowSettingsView: View {
                     Image(systemName: "key.fill").foregroundStyle(.secondary)
                     Text(verbatim: name).font(.system(.body, design: .monospaced))
                     Spacer()
-                    Button("Replace…") { editingSecret = SecretDraft(name: name, isNew: false) }
+                    Button(String(localized: "Replace…", table: "WorkflowEditor")) { editingSecret = SecretDraft(name: name, isNew: false) }
                     Button {
                         KeychainSecrets.delete(name)
                         secretNames = KeychainSecrets.names()
@@ -467,14 +467,14 @@ struct WorkflowSettingsView: View {
                 }
             }
         } header: {
-            Text("Secrets")
+            Text("Secrets", tableName: "WorkflowEditor")
         } footer: {
             HStack {
-                Text("Stored in the Keychain. Use {{secret:NAME}} in HTTP steps; scripts never see them.")
+                Text("Stored in the Keychain. Use {{secret:NAME}} in HTTP steps; scripts never see them.", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 12)
-                Button("Add Secret…") { editingSecret = SecretDraft(name: "", isNew: true) }
+                Button(String(localized: "Add Secret…", table: "WorkflowEditor")) { editingSecret = SecretDraft(name: "", isNew: true) }
             }
             .padding(.top, 4)
         }
@@ -531,15 +531,15 @@ private struct SecretEditorView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(draft.isNew ? LocalizedStringKey("Add Secret") : LocalizedStringKey("Replace Secret"))
+            Text(draft.isNew ? String(localized: "Add Secret", table: "WorkflowEditor") : String(localized: "Replace Secret", table: "WorkflowEditor"))
                 .font(.headline)
             Form {
                 TextField("Name", text: $name, prompt: Text(verbatim: "github-token"))
                     .disabled(!draft.isNew)
-                SecureField("Value", text: $value)
+                SecureField(String(localized: "Value", table: "WorkflowEditor"), text: $value)
             }
             if !name.isEmpty, !nameIsValid {
-                Text("Use letters, digits, “-”, “_” or “.” only.")
+                Text("Use letters, digits, “-”, “_” or “.” only.", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }

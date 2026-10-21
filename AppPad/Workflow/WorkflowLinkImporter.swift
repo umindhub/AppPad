@@ -20,7 +20,7 @@ final class WorkflowLinkImporter {
         guard link.host()?.lowercased() == "import-workflow" else { return false }
         guard !busy else { return true }   // one import at a time
         guard let source = Self.sourceURL(in: link) else {
-            showError(String(localized: "This link does not point to a workflow file."))
+            showError(String(localized: "This link does not point to a workflow file.", table: "Workflow"))
             return true
         }
         busy = true
@@ -30,7 +30,7 @@ final class WorkflowLinkImporter {
             do {
                 data = try await download(source)
             } catch {
-                showError(String(localized: "Could not download the workflow from \(Self.hostName(source))."))
+                showError(String(localized: "Could not download the workflow from \(Self.hostName(source)).", table: "Workflow"))
                 return
             }
             do {
@@ -38,7 +38,7 @@ final class WorkflowLinkImporter {
             } catch let error as WorkflowImportError {
                 showError(error.errorDescription ?? "")
             } catch {
-                showError(String(localized: "The downloaded file is not a valid workflow."))
+                showError(String(localized: "The downloaded file is not a valid workflow.", table: "Workflow"))
             }
         }
         return true
@@ -100,7 +100,7 @@ final class WorkflowLinkImporter {
 
         guard !installable.isEmpty else {
             // Only older versions: nothing to do.
-            alert.messageText = String(localized: "A newer version is already installed")
+            alert.messageText = String(localized: "A newer version is already installed", table: "Workflow")
             alert.informativeText = items.map { describe($0, from: source) }.joined(separator: "\n\n")
             alert.addButton(withTitle: String(localized: "OK"))
             alert.runModal()
@@ -108,19 +108,19 @@ final class WorkflowLinkImporter {
         }
 
         if items.count == 1 {
-            alert.messageText = String(localized: "Add the workflow “\(items[0].workflow.displayName)”?")
+            alert.messageText = String(localized: "Add the workflow “\(items[0].workflow.displayName)”?", table: "Workflow")
         } else {
-            alert.messageText = String(localized: "Add \(installable.count) workflows?")
+            alert.messageText = String(localized: "Add \(installable.count) workflows?", table: "Workflow")
         }
         var lines = items.map { describe($0, from: source) }
-        lines.append(String(localized: "From \(Self.hostName(source))"))
+        lines.append(String(localized: "From \(Self.hostName(source))", table: "Workflow"))
         if !Self.isTrusted(source) {
             alert.alertStyle = .warning
-            lines.append(String(localized: "This workflow does not come from AppPad’s website. Only add workflows you trust."))
+            lines.append(String(localized: "This workflow does not come from AppPad’s website. Only add workflows you trust.", table: "Workflow"))
         }
-        lines.append(String(localized: "AppPad asks you before a workflow uses any of its permissions."))
+        lines.append(String(localized: "AppPad asks you before a workflow uses any of its permissions.", table: "Workflow"))
         alert.informativeText = lines.joined(separator: "\n\n")
-        alert.addButton(withTitle: String(localized: "Add"))
+        alert.addButton(withTitle: String(localized: "Add", table: "Workflow"))
         alert.addButton(withTitle: String(localized: "Cancel"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
@@ -134,61 +134,61 @@ final class WorkflowLinkImporter {
         var lines = ["\(workflow.displayName)  (\(workflow.identifier) \(workflow.version))"]
         switch item.action {
         case .add:
-            lines.append(String(localized: "New workflow"))
+            lines.append(String(localized: "New workflow", table: "Workflow"))
         case .upgrade(let installed):
-            lines.append(String(localized: "Updates the installed version \(installed.version)"))
+            lines.append(String(localized: "Updates the installed version \(installed.version)", table: "Workflow"))
         case .sameVersion:
-            lines.append(String(localized: "Replaces the installed copy of the same version"))
+            lines.append(String(localized: "Replaces the installed copy of the same version", table: "Workflow"))
         case .older(let installed):
-            lines.append(String(localized: "Skipped: the installed version \(installed.version) is newer"))
+            lines.append(String(localized: "Skipped: the installed version \(installed.version) is newer", table: "Workflow"))
         case .reserved:
-            lines.append(String(localized: "Skipped: built-in workflows can’t be replaced"))
+            lines.append(String(localized: "Skipped: built-in workflows can’t be replaced", table: "Workflow"))
         }
         // Replacing a copy from somewhere else: say where it was from, answers are asked again.
         switch item.action {
         case .upgrade(let installed), .sameVersion(let installed):
             if !WorkflowSource.link(source).sameOrigin(as: installed.source) {
-                lines.append(String(localized: "Replaces a workflow marked “\(installed.source.longLabel)”. AppPad will ask for its permissions again."))
+                lines.append(String(localized: "Replaces a workflow marked “\(installed.source.longLabel)”. AppPad will ask for its permissions again.", table: "Workflow"))
             }
         default:
             break
         }
         let steps = workflow.steps.map { Self.stepName($0) }
         if !steps.isEmpty {
-            lines.append(String(localized: "Steps: \(steps.joined(separator: ", "))"))
+            lines.append(String(localized: "Steps: \(steps.joined(separator: ", "))", table: "Workflow"))
         }
         let permissions = Self.permissionNames(workflow.permissions)
         lines.append(permissions.isEmpty
-            ? String(localized: "Permissions: none")
-            : String(localized: "Permissions: \(permissions.joined(separator: "; "))"))
+            ? String(localized: "Permissions: none", table: "Workflow")
+            : String(localized: "Permissions: \(permissions.joined(separator: "; "))", table: "Workflow"))
         return lines.joined(separator: "\n")
     }
 
     private static func stepName(_ step: WorkflowStep) -> String {
         switch step.kind {
         case .shell:
-            return String(localized: "Shell script")
+            return String(localized: "Shell script", table: "Workflow")
         case .appleScript:
             return step.language == .javaScript ? "JavaScript" : "AppleScript"
         case .shortcut:
-            return String(localized: "Shortcut “\(step.shortcutName)”")
+            return String(localized: "Shortcut “\(step.shortcutName)”", table: "Workflow")
         case .http:
             let host = URL(string: step.http.url)?.host() ?? step.http.url
             return "HTTP \(step.http.method.rawValue) \(host)"
         case .builtin:
-            return String(localized: "Built-in action")
+            return String(localized: "Built-in action", table: "Workflow")
         }
     }
 
     private static func permissionNames(_ p: WorkflowPermissions) -> [String] {
         var names: [String] = []
-        if !p.fileRead.isEmpty { names.append(String(localized: "read \(p.fileRead.joined(separator: ", "))")) }
-        if !p.fileWrite.isEmpty { names.append(String(localized: "write \(p.fileWrite.joined(separator: ", "))")) }
-        if p.network { names.append(String(localized: "network")) }
-        if p.systemServices { names.append(String(localized: "system services")) }
-        if !p.appleEvents.isEmpty { names.append(String(localized: "control \(p.appleEvents.joined(separator: ", "))")) }
-        if !p.httpHosts.isEmpty { names.append(String(localized: "hosts \(p.httpHosts.joined(separator: ", "))")) }
-        if !p.secrets.isEmpty { names.append(String(localized: "secrets \(p.secrets.joined(separator: ", "))")) }
+        if !p.fileRead.isEmpty { names.append(String(localized: "read \(p.fileRead.joined(separator: ", "))", table: "Workflow")) }
+        if !p.fileWrite.isEmpty { names.append(String(localized: "write \(p.fileWrite.joined(separator: ", "))", table: "Workflow")) }
+        if p.network { names.append(String(localized: "network", table: "Workflow")) }
+        if p.systemServices { names.append(String(localized: "system services", table: "Workflow")) }
+        if !p.appleEvents.isEmpty { names.append(String(localized: "control \(p.appleEvents.joined(separator: ", "))", table: "Workflow")) }
+        if !p.httpHosts.isEmpty { names.append(String(localized: "hosts \(p.httpHosts.joined(separator: ", "))", table: "Workflow")) }
+        if !p.secrets.isEmpty { names.append(String(localized: "secrets \(p.secrets.joined(separator: ", "))", table: "Workflow")) }
         return names
     }
 
@@ -198,7 +198,7 @@ final class WorkflowLinkImporter {
         NSApp.activate()
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "Could not add the workflow")
+        alert.messageText = String(localized: "Could not add the workflow", table: "Workflow")
         alert.informativeText = message
         alert.addButton(withTitle: String(localized: "OK"))
         alert.runModal()

@@ -131,9 +131,9 @@ final class ShortcutRecorderView: NSView {
 
         let text: String
         if isRecording {
-            text = String(localized: "Press shortcut…")
+            text = String(localized: "Press shortcut…", table: "HotKey")
         } else {
-            text = combo?.displayString ?? String(localized: "Click to record")
+            text = combo?.displayString ?? String(localized: "Click to record", table: "HotKey")
         }
         let color: NSColor = (combo == nil && !isRecording) ? .secondaryLabelColor : .labelColor
         let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: color]

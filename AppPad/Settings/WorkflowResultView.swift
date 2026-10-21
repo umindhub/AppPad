@@ -21,7 +21,7 @@ struct WorkflowResultView: View {
                     }
                     if !result.denied.isEmpty {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Not allowed for this run:")
+                            Text("Not allowed for this run:", tableName: "WorkflowEditor")
                                 .font(.callout.weight(.semibold))
                             ForEach(result.denied) { item in
                                 Text(verbatim: "• " + item.title).font(.callout)
@@ -34,17 +34,17 @@ struct WorkflowResultView: View {
                     }
                     if let denials {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Sandbox denials")
+                            Text("Sandbox denials", tableName: "WorkflowEditor")
                                 .font(.callout.weight(.semibold))
                             if denials.isEmpty {
-                                Text("No sandbox denials were logged for this run.")
+                                Text("No sandbox denials were logged for this run.", tableName: "WorkflowEditor")
                                     .font(.callout)
                                     .foregroundStyle(.secondary)
                             } else {
                                 Text(verbatim: denials.joined(separator: "\n"))
                                     .font(.system(.caption, design: .monospaced))
                                     .textSelection(.enabled)
-                                Text("Declare the missing paths or services under Declared Permissions.")
+                                Text("Declare the missing paths or services under Declared Permissions.", tableName: "WorkflowEditor")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -56,15 +56,15 @@ struct WorkflowResultView: View {
 
             HStack {
                 if result.sandboxProfile != nil {
-                    Button(loadingDenials ? LocalizedStringKey("Reading Log…") : LocalizedStringKey("Show Sandbox Denials"),
+                    Button(loadingDenials ? String(localized: "Reading Log…", table: "WorkflowEditor") : String(localized: "Show Sandbox Denials", table: "WorkflowEditor"),
                            action: loadDenials)
                         .disabled(loadingDenials)
-                    Button("Copy Sandbox Profile") { copy(result.sandboxProfile ?? "") }
+                    Button(String(localized: "Copy Sandbox Profile", table: "WorkflowEditor")) { copy(result.sandboxProfile ?? "") }
                 }
                 Spacer()
-                Button("Copy Output") { copy(result.finalOutput) }
+                Button(String(localized: "Copy Output", table: "WorkflowEditor")) { copy(result.finalOutput) }
                     .disabled(result.finalOutput.isEmpty)
-                Button("Done", action: onClose)
+                Button(String(localized: "Done", table: "Workflow"), action: onClose)
                     .keyboardShortcut(.defaultAction)
                     .pillProminentButton()
             }
@@ -133,10 +133,10 @@ struct WorkflowResultView: View {
 
     private var statusText: String {
         let seconds = String(format: "%.2f", result.finishedAt.timeIntervalSince(result.startedAt))
-        if result.cancelled { return String(localized: "Cancelled after \(seconds) s") }
+        if result.cancelled { return String(localized: "Cancelled after \(seconds) s", table: "WorkflowEditor") }
         return result.success
-            ? String(localized: "Finished in \(seconds) s")
-            : String(localized: "Failed after \(seconds) s")
+            ? String(localized: "Finished in \(seconds) s", table: "WorkflowEditor")
+            : String(localized: "Failed after \(seconds) s", table: "WorkflowEditor")
     }
 
     private func loadDenials() {

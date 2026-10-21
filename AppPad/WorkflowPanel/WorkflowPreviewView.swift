@@ -77,23 +77,23 @@ final class WorkflowPreviewView: FlippedView {
         switch item {
         case .workflow(let workflow):
             let kind = workflow.enabled
-                ? String(localized: "Workflow")
-                : String(localized: "Workflow (disabled)")
+                ? String(localized: "Workflow", table: "Workflow")
+                : String(localized: "Workflow (disabled)", table: "Workflow")
             subtitleLabel.stringValue = "\(kind) · \(workflow.identifier) · \(workflow.version)"
             sourcePill.configure(workflow.source, style: .pill(fontSize: 13))   // about as tall as the 17pt title
             textView.textStorage?.setAttributedString(details(workflow, isRunning: isRunning, lastResult: lastResult,
                                                               argument: argument, missingShortcut: missingShortcut))
             // Built-ins aren't editable: ⌘↩ only shows them in Settings.
             let builtin = workflow.isBuiltin
-            var hint = builtin ? String(localized: "↩ Run   ⌘↩ Show in Settings")
-                               : String(localized: "↩ Run   ⌘↩ Edit in Settings")
+            var hint = builtin ? String(localized: "↩ Run   ⌘↩ Show in Settings", table: "Workflow")
+                               : String(localized: "↩ Run   ⌘↩ Edit in Settings", table: "Workflow")
             if let missingShortcut {
                 let bundled = BuiltinWorkflows.bundledShortcut(missingShortcut) != nil
                 switch (bundled, builtin) {
-                case (true, true): hint = String(localized: "↩ Install Shortcut   ⌘↩ Show in Settings")
-                case (true, false): hint = String(localized: "↩ Install Shortcut   ⌘↩ Edit in Settings")
-                case (false, true): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Show in Settings")
-                case (false, false): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Edit in Settings")
+                case (true, true): hint = String(localized: "↩ Install Shortcut   ⌘↩ Show in Settings", table: "Workflow")
+                case (true, false): hint = String(localized: "↩ Install Shortcut   ⌘↩ Edit in Settings", table: "Workflow")
+                case (false, true): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Show in Settings", table: "Workflow")
+                case (false, false): hint = String(localized: "↩ Open Shortcuts   ⌘↩ Edit in Settings", table: "Workflow")
                 }
             }
             if let key = workflow.panelKey?.displayString { hint += "   " + key }
@@ -101,11 +101,11 @@ final class WorkflowPreviewView: FlippedView {
         case .app(let app):
             subtitleLabel.stringValue = (app.url.path as NSString).abbreviatingWithTildeInPath
             textView.textStorage?.setAttributedString(details(app))
-            hintLabel.stringValue = String(localized: "↩ Open")
+            hintLabel.stringValue = String(localized: "↩ Open", table: "Workflow")
         case .calculator(let expression, let result):
-            subtitleLabel.stringValue = String(localized: "Calculator")
+            subtitleLabel.stringValue = String(localized: "Calculator", table: "Workflow")
             textView.textStorage?.setAttributedString(details(expression: expression, result: result))
-            hintLabel.stringValue = String(localized: "↩ Copy")
+            hintLabel.stringValue = String(localized: "↩ Copy", table: "Workflow")
         }
         textView.scrollToBeginningOfDocument(nil)
         needsLayout = true
@@ -120,9 +120,9 @@ final class WorkflowPreviewView: FlippedView {
         if !description.isEmpty { line(description, in: text) }
 
         if let missingShortcut {
-            section(String(localized: "Setup"), in: text)
+            section(String(localized: "Setup", table: "Workflow"), in: text)
             let help = BuiltinWorkflows.setupText(for: missingShortcut)
-                ?? String(localized: "The shortcut “\(missingShortcut)” is not in the Shortcuts app.")
+                ?? String(localized: "The shortcut “\(missingShortcut)” is not in the Shortcuts app.", table: "Workflow")
             line(help, in: text, color: .systemOrange)
         }
 
@@ -152,21 +152,21 @@ final class WorkflowPreviewView: FlippedView {
             }
         }
 
-        section(String(localized: "Last Run"), in: text)
+        section(String(localized: "Last Run", table: "Workflow"), in: text)
         if isRunning {
-            line(String(localized: "Running…"), in: text)
+            line(String(localized: "Running…", table: "Workflow"), in: text)
         } else if let result = lastResult {
             let when = Self.relativeFormatter.localizedString(for: result.finishedAt, relativeTo: Date())
             let status: String
             let state: ResultState
             if result.cancelled {
-                status = String(localized: "Cancelled")
+                status = String(localized: "Cancelled", table: "Workflow")
                 state = .cancelled
             } else if result.success {
-                status = String(localized: "Succeeded")
+                status = String(localized: "Succeeded", table: "Workflow")
                 state = .valid
             } else {
-                status = String(localized: "Failed")
+                status = String(localized: "Failed", table: "Workflow")
                 state = .invalid
             }
             lastRun(status + " · " + when, in: text, state: state)
@@ -174,35 +174,35 @@ final class WorkflowPreviewView: FlippedView {
             if output.count > Self.outputLimit { output = String(output.prefix(Self.outputLimit)) + "\n…" }
             if !output.isEmpty { line(output, in: text, monospaced: true) }
         } else {
-            line(String(localized: "Not run yet"), in: text, color: .secondaryLabelColor)
+            line(String(localized: "Not run yet", table: "Workflow"), in: text, color: .secondaryLabelColor)
         }
         return text
     }
 
     // Where it came from: full link / file name and when, plus "edited" once its behavior changed.
     private func sourceDetails(_ source: WorkflowSource, in text: NSMutableAttributedString) {
-        section(String(localized: "Source"), in: text)
+        section(String(localized: "Source", table: "Workflow"), in: text)
         let when = source.date.map { Self.relativeFormatter.localizedString(for: $0, relativeTo: Date()) }
         switch source.kind {
         case .builtin:
-            line(String(localized: "Included with AppPad"), in: text)
+            line(String(localized: "Included with AppPad", table: "Workflow"), in: text)
         case .local:
-            line(source.client.isEmpty ? String(localized: "Created by you")
-                                       : String(localized: "Saved by \(source.client)"), in: text)
+            line(source.client.isEmpty ? String(localized: "Created by you", table: "Workflow")
+                                       : String(localized: "Saved by \(source.client)", table: "Workflow"), in: text)
         case .link:
-            line(String(localized: "Third-party"), in: text, color: .systemOrange)
+            line(String(localized: "Third-party", table: "Workflow"), in: text, color: .systemOrange)
             line(source.url, in: text, color: .secondaryLabelColor, monospaced: true)
         case .file:
-            line(String(localized: "Third-party"), in: text, color: .systemOrange)
-            line(source.fileName.isEmpty ? String(localized: "Imported from a file")
-                                         : String(localized: "Imported from the file “\(source.fileName)”"),
+            line(String(localized: "Third-party", table: "Workflow"), in: text, color: .systemOrange)
+            line(source.fileName.isEmpty ? String(localized: "Imported from a file", table: "Workflow")
+                                         : String(localized: "Imported from the file “\(source.fileName)”", table: "Workflow"),
                  in: text, color: .secondaryLabelColor)
         }
         if source.isThirdParty, let when {
-            line(String(localized: "Imported \(when)"), in: text, color: .secondaryLabelColor)
+            line(String(localized: "Imported \(when)", table: "Workflow"), in: text, color: .secondaryLabelColor)
         }
         if source.modified {
-            line(String(localized: "Steps or permissions were changed after it was added."), in: text,
+            line(String(localized: "Steps or permissions were changed after it was added.", table: "Workflow"), in: text,
                  color: source.isThirdParty ? .systemOrange : .secondaryLabelColor)
         }
     }
@@ -267,10 +267,10 @@ final class WorkflowPreviewView: FlippedView {
 
     // "设置倒计时 ‹时长›", one example pill per line with what it means, then the typed argument's result.
     private func usage(_ workflow: Workflow, argument: String, in text: NSMutableAttributedString) {
-        section(String(localized: "Usage"), in: text)
+        section(String(localized: "Usage", table: "Workflow"), in: text)
         // Same word the field gets when the row is picked ("设置倒计时"), not the short keyword.
         let word = WorkflowPanelViewController.token(workflow.displayName)
-        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument") : workflow.displayArgumentHint
+        let hint = workflow.displayArgumentHint.isEmpty ? String(localized: "argument", table: "Workflow") : workflow.displayArgumentHint
         let slot = workflow.argument == .optional ? "[‹\(hint)›]" : "‹\(hint)›"
         text.append(NSAttributedString(string: "\(word) \(slot)\n", attributes: [
             .font: NSFont.monospacedSystemFont(ofSize: 14, weight: .semibold),
@@ -279,7 +279,7 @@ final class WorkflowPreviewView: FlippedView {
 
         let examples = WorkflowArguments.examples(for: workflow.argumentType)
         if !examples.isEmpty {
-            text.append(NSAttributedString(string: String(localized: "Examples") + "\n", attributes: [
+            text.append(NSAttributedString(string: String(localized: "Examples", table: "Workflow") + "\n", attributes: [
                 .font: NSFont.systemFont(ofSize: 11, weight: .medium),
                 .foregroundColor: NSColor.tertiaryLabelColor,
                 .paragraphStyle: Self.captionStyle,

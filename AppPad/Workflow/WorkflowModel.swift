@@ -288,7 +288,7 @@ nonisolated struct Workflow: Codable, Equatable, Identifiable, Sendable {
             identifier = rawID
         }
         version = c.value(.version, "1.0")
-        name = c.value(.name, String(localized: "Workflow"))
+        name = c.value(.name, String(localized: "Workflow", table: "Workflow"))
         summary = c.value(.summary, "")
         localizations = c.value(.localizations, [:])
         group = c.value(.group, "")
@@ -530,18 +530,18 @@ extension WorkflowSource {
     nonisolated var label: String {
         let base: String
         switch kind {
-        case .builtin: base = String(localized: "Built-in")
-        case .local: base = String(localized: "Mine")
-        case .link: base = host.isEmpty ? String(localized: "Third-party") : host
-        case .file: base = String(localized: "Imported File")
+        case .builtin: base = String(localized: "Built-in", table: "Workflow")
+        case .local: base = String(localized: "Mine", table: "Workflow")
+        case .link: base = host.isEmpty ? String(localized: "Third-party", table: "Workflow") : host
+        case .file: base = String(localized: "Imported File", table: "Workflow")
         }
-        return modified ? base + " · " + String(localized: "Edited") : base
+        return modified ? base + " · " + String(localized: "Edited", table: "Workflow") : base
     }
 
     // Dialog text, says "Third-party" in words: "Third-party · example.com".
     nonisolated var longLabel: String {
         guard isThirdParty, !(kind == .link && host.isEmpty) else { return label }
-        return String(localized: "Third-party") + " · " + label
+        return String(localized: "Third-party", table: "Workflow") + " · " + label
     }
 
     nonisolated var symbol: String {
@@ -612,7 +612,7 @@ nonisolated enum WorkflowImportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedFormat(let version):
-            return String(localized: "Workflow format \(version) is not supported by this version of AppPad.")
+            return String(localized: "Workflow format \(version) is not supported by this version of AppPad.", table: "Workflow")
         }
     }
 }
@@ -697,17 +697,17 @@ nonisolated enum WorkflowLanguage {
         return nil
     }
 
-    // Translations of an app string key (Localizable) for every editable language.
+    // Translations of an app string key for every editable language, looked up in `tableName` (nil = Localizable).
     // keywords = the English list joined by ", " (its translation is split the same way).
     static func translations(of key: String, summary: String = "", hint: String = "",
-                             keywords: String = "") -> [String: WorkflowLocalization] {
+                             keywords: String = "", tableName: String? = nil) -> [String: WorkflowLocalization] {
         var table: [String: WorkflowLocalization] = [:]
         for code in editable {
             guard let path = Bundle.main.path(forResource: code, ofType: "lproj"),
                   let bundle = Bundle(path: path) else { continue }
             func look(_ k: String) -> String {
                 guard !k.isEmpty else { return "" }
-                let value = bundle.localizedString(forKey: k, value: nil, table: nil)
+                let value = bundle.localizedString(forKey: k, value: nil, table: tableName)
                 return value == k ? "" : value
             }
             let entry = WorkflowLocalization(name: look(key), summary: look(summary), argumentHint: look(hint),

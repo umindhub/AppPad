@@ -94,11 +94,11 @@ struct OnboardingView: View {
         go(to: target)
     }
 
-    private var primaryTitle: LocalizedStringKey {
+    private var primaryTitle: String {
         switch page {
-        case .welcome: return "Get Started"
-        case .done: return "Open AppPad"
-        default: return "Continue"
+        case .welcome: return String(localized: "Get Started", table: "Onboarding")
+        case .done: return String(localized: "Open AppPad")
+        default: return String(localized: "Continue", table: "Onboarding")
         }
     }
 
@@ -113,7 +113,7 @@ struct OnboardingView: View {
                 }
                 Spacer()
                 if page != .welcome {
-                    Button("Back") { step(-1) }
+                    Button(String(localized: "Back", table: "Onboarding")) { step(-1) }
                         .onboardingSecondary(glass: useGlass)
                 }
                 Button {
@@ -192,20 +192,20 @@ private struct WelcomePage: View {
                 .interpolation(.high)
                 .frame(width: 128, height: 128)
             VStack(spacing: 10) {
-                Text("Welcome to AppPad")
+                Text("Welcome to AppPad", tableName: "Onboarding")
                     .font(.system(size: 30, weight: .bold))
-                Text("Built for Mac: the fast, authentic Launchpad, just like in macOS 15.")
+                Text("Built for Mac: the fast, authentic Launchpad, just like in macOS 15.", tableName: "Onboarding")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.accentColor)
                     .multilineTextAlignment(.center)
-                Text("Plus clipboard history, workflows, window control and app shortcuts — all from the menu bar.")
+                Text("Plus clipboard history, workflows, window control and app shortcuts — all from the menu bar.", tableName: "Onboarding")
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 620)
             }
             .fixedSize(horizontal: false, vertical: true)
-            Text("Setup takes about a minute.")
+            Text("Setup takes about a minute.", tableName: "Onboarding")
                 .font(.callout)
                 .foregroundStyle(.tertiary)
             Spacer(minLength: 0)
@@ -221,33 +221,33 @@ private struct FeaturesPage: View {
     var body: some View {
         VStack(spacing: 22) {
             OnboardingTitle(
-                title: String(localized: "What AppPad can do"),
-                subtitle: String(localized: "Everything lives in the menu bar. You can change every shortcut in Settings.")
+                title: String(localized: "What AppPad can do", table: "Onboarding"),
+                subtitle: String(localized: "Everything lives in the menu bar. You can change every shortcut in Settings.", table: "Onboarding")
             )
             LazyVGrid(columns: Self.columns, spacing: 14) {
                 FeatureCard(icon: .image(StatusBarController.makeIcon(padded: false)), tint: .blue,
                             title: String(localized: "AppPad"),
-                            detail: String(localized: "All your apps in a Launchpad-style grid with folders, search and drag and drop."),
-                            shortcut: prefs.pinchToOpen ? String(localized: "Four-finger pinch") : nil)
+                            detail: String(localized: "All your apps in a Launchpad-style grid with folders, search and drag and drop.", table: "Onboarding"),
+                            shortcut: prefs.pinchToOpen ? String(localized: "Four-finger pinch", table: "Onboarding") : nil)
                 FeatureCard(icon: .symbol("doc.on.clipboard"), tint: .orange,
                             title: String(localized: "Clipboard"),
-                            detail: String(localized: "History of copied text, images and files, plus a library of saved clips."),
+                            detail: String(localized: "History of copied text, images and files, plus a library of saved clips.", table: "Onboarding"),
                             shortcut: prefs.clipboardEnabled ? prefs.clipboardHotKey?.displayString : nil)
                 FeatureCard(icon: .symbol("bolt"), tint: .yellow,
                             title: String(localized: "Workflows"),
-                            detail: String(localized: "Open apps and run actions like a timer or Empty Trash from one search field."),
+                            detail: String(localized: "Open apps and run actions like a timer or Empty Trash from one search field.", table: "Onboarding"),
                             shortcut: prefs.workflowPanelHotKey?.displayString)
                 FeatureCard(icon: .symbol("rectangle.split.2x1"), tint: .green,
                             title: String(localized: "Windows"),
-                            detail: String(localized: "Snap, maximize and move windows between displays with the keyboard."),
+                            detail: String(localized: "Snap, maximize and move windows between displays with the keyboard.", table: "Onboarding"),
                             shortcut: nil)
                 FeatureCard(icon: .symbol("keyboard"), tint: .purple,
                             title: String(localized: "App Shortcuts"),
-                            detail: String(localized: "Give any app its own global shortcut to open or hide it."),
+                            detail: String(localized: "Give any app its own global shortcut to open or hide it.", table: "Onboarding"),
                             shortcut: nil)
                 FeatureCard(icon: .symbol("sparkles"), tint: .pink,
                             title: String(localized: "AI Assistants (MCP)"),
-                            detail: String(localized: "Let AI assistants run your workflows and even write new ones."),
+                            detail: String(localized: "Let AI assistants run your workflows and even write new ones.", table: "Onboarding"),
                             shortcut: nil)
             }
         }
@@ -261,8 +261,8 @@ private struct PinchPage: View {
     var body: some View {
         SplitPage(
             symbol: "hand.pinch",
-            title: String(localized: "Open AppPad with a pinch"),
-            subtitle: String(localized: "Pinch with thumb and three fingers to open AppPad and spread them to close it, just like Launchpad.")
+            title: String(localized: "Open AppPad with a pinch", table: "Onboarding"),
+            subtitle: String(localized: "Pinch with thumb and three fingers to open AppPad and spread them to close it, just like Launchpad.", table: "Onboarding")
         ) {
             OnboardingCard {
                 Toggle(isOn: $prefs.pinchToOpen) {
@@ -278,7 +278,7 @@ private struct PinchPage: View {
                             .onboardingSecondary(glass: glass)
                     }
                 } else {
-                    Text("You can still open AppPad from the menu bar icon or the Dock.")
+                    Text("You can still open AppPad from the menu bar icon or the Dock.", tableName: "Onboarding")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -308,14 +308,14 @@ private struct SpotlightPage: View {
         SplitPage(
             symbol: "command",
             title: combo == nil ? String(localized: "Workflows")
-                                : String(localized: "Use \(comboText) for Workflows"),
+                                : String(localized: "Use \(comboText) for Workflows", table: "Onboarding"),
             subtitle: combo == nil
-                ? String(localized: "Open apps and run actions like a timer or Empty Trash from one search field.")
-                : String(localized: "macOS gives \(comboText) to Spotlight by default. Turn off Spotlight's shortcut to use it for AppPad Workflows instead.")
+                ? String(localized: "Open apps and run actions like a timer or Empty Trash from one search field.", table: "Onboarding")
+                : String(localized: "macOS gives \(comboText) to Spotlight by default. Turn off Spotlight's shortcut to use it for AppPad Workflows instead.", table: "Onboarding")
         ) {
             OnboardingCard {
                 if combo == nil {
-                    Label("Workflows has no global shortcut. You can set one in Settings › Workflows.",
+                    Label(String(localized: "Workflows has no global shortcut. You can set one in Settings › Workflows.", table: "Onboarding"),
                           systemImage: "info.circle")
                         .foregroundStyle(.secondary)
                 } else if conflict {
@@ -334,7 +334,7 @@ private struct SpotlightPage: View {
             .foregroundStyle(.orange)
             .fixedSize(horizontal: false, vertical: true)
         HStack(spacing: 10) {
-            Button("Turn Off Spotlight Shortcut") {
+            Button(String(localized: "Turn Off Spotlight Shortcut", table: "Onboarding")) {
                 result = SpotlightShortcut.setSpotlightSearchEnabled(false)
             }
             .onboardingProminent(glass: glass)
@@ -352,25 +352,25 @@ private struct SpotlightPage: View {
     @ViewBuilder
     private func readyContent(_ comboText: String) -> some View {
         Label {
-            Text(verbatim: String(localized: "\(comboText) now opens Workflows."))
+            Text(verbatim: String(localized: "\(comboText) now opens Workflows.", table: "Onboarding"))
                 .fontWeight(.medium)
         } icon: {
             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
         }
         if result == .needsRelogin {
-            Text(verbatim: String(localized: "If \(comboText) still opens Spotlight, log out and back in."))
+            Text(verbatim: String(localized: "If \(comboText) still opens Spotlight, log out and back in.", table: "Onboarding"))
                 .font(.callout)
                 .foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         }
         if SpotlightShortcut.isTurnedOff {
-            Text("You can give Spotlight another shortcut in Keyboard Settings, or turn its shortcut back on here.")
+            Text("You can give Spotlight another shortcut in Keyboard Settings, or turn its shortcut back on here.", tableName: "Onboarding")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 10) {
                 Spacer()
-                Button("Restore Spotlight Shortcut") {
+                Button(String(localized: "Restore Spotlight Shortcut", table: "Onboarding")) {
                     result = SpotlightShortcut.setSpotlightSearchEnabled(true)
                     if result != .failed { result = nil }
                 }
@@ -388,8 +388,8 @@ private struct ClipboardPage: View {
     var body: some View {
         SplitPage(
             symbol: "doc.on.clipboard",
-            title: String(localized: "Everything you copy, one shortcut away"),
-            subtitle: String(localized: "AppPad keeps the text, images and files you copy. Items you save stay until you remove them.")
+            title: String(localized: "Everything you copy, one shortcut away", table: "Onboarding"),
+            subtitle: String(localized: "AppPad keeps the text, images and files you copy. Items you save stay until you remove them.", table: "Onboarding")
         ) {
             OnboardingCard {
                 Toggle(isOn: $prefs.clipboardEnabled) {
@@ -404,10 +404,10 @@ private struct ClipboardPage: View {
             }
             if prefs.clipboardEnabled {
                 OnboardingCard {
-                    tipRow("⌘1–⌘0", String(localized: "Paste one of the first ten items"))
-                    tipRow("⌘S", String(localized: "Save the selected item"))
-                    tipRow("⌘↩", String(localized: "Name a saved item or edit its text"))
-                    tipRow(String(localized: "Click the Safari icon to show only items copied from Safari")) {
+                    tipRow("⌘1–⌘0", String(localized: "Paste one of the first ten items", table: "Onboarding"))
+                    tipRow("⌘S", String(localized: "Save the selected item", table: "Onboarding"))
+                    tipRow("⌘↩", String(localized: "Name a saved item or edit its text", table: "Onboarding"))
+                    tipRow(String(localized: "Click the Safari icon to show only items copied from Safari", table: "Onboarding")) {
                         AppFilterChip(icon: Self.safariIcon)
                     }
                 }
@@ -469,25 +469,25 @@ private struct AppShortcutsPage: View {
     var body: some View {
         SplitPage(
             symbol: "keyboard",
-            title: String(localized: "A shortcut for every app"),
-            subtitle: String(localized: "Press it to open or switch to the app, and press it again to hide it. It works wherever you are.")
+            title: String(localized: "A shortcut for every app", table: "Onboarding"),
+            subtitle: String(localized: "Press it to open or switch to the app, and press it again to hide it. It works wherever you are.", table: "Onboarding")
         ) {
             if let url = safariURL {
                 OnboardingCard {
-                    Text("Try it with Safari:")
+                    Text("Try it with Safari:", tableName: "Onboarding")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                     safariRow(url)
                 }
             }
             OnboardingCard {
-                Text("Add more in Settings › App Shortcuts, or choose Set Shortcut… on an app in AppPad.")
+                Text("Add more in Settings › App Shortcuts, or choose Set Shortcut… on an app in AppPad.", tableName: "Onboarding")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
-                    Button("Open App Shortcuts") { OnboardingGuide.openSettings?(.shortcuts) }
+                    Button(String(localized: "Open App Shortcuts", table: "Onboarding")) { OnboardingGuide.openSettings?(.shortcuts) }
                         .onboardingSecondary(glass: glass)
                 }
             }
@@ -510,17 +510,17 @@ private struct AppShortcutsPage: View {
                 Text(verbatim: "Safari").fontWeight(.medium)
                 if current == combo {
                     Label {
-                        Text(verbatim: String(localized: "Press \(comboText) to try it."))
+                        Text(verbatim: String(localized: "Press \(comboText) to try it.", table: "Onboarding"))
                     } icon: {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                     }
                     .font(.callout)
                 } else if let current {
-                    Text(verbatim: String(localized: "Safari already uses \(current.displayString)."))
+                    Text(verbatim: String(localized: "Safari already uses \(current.displayString).", table: "Onboarding"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } else if let conflict {
-                    Text(verbatim: String(localized: "\(comboText) is already used by \(conflict)."))
+                    Text(verbatim: String(localized: "\(comboText) is already used by \(conflict).", table: "Onboarding"))
                         .font(.callout)
                         .foregroundStyle(.orange)
                 }
@@ -531,7 +531,7 @@ private struct AppShortcutsPage: View {
                 Button("Remove") { setSafari(nil, url: url) }
                     .onboardingSecondary(glass: glass, size: .regular)
             } else if current == nil {
-                Button(String(localized: "Set \(comboText) for Safari")) { setSafari(combo, url: url) }
+                Button(String(localized: "Set \(comboText) for Safari", table: "Onboarding")) { setSafari(combo, url: url) }
                     .onboardingProminent(glass: glass, size: .regular)
                     .disabled(conflict != nil)
             }
@@ -573,16 +573,16 @@ private struct AIPage: View {
     }
 
     private static let examples: [String] = [
-        String(localized: "Write an AppPad workflow that shows the free space on my disk."),
-        String(localized: "Write an AppPad workflow that starts my GitHub Actions deploy for a branch."),
-        String(localized: "Tidy up my AppPad: keep the system apps in their current order, and put third-party apps into folders by category after them."),
+        String(localized: "Write an AppPad workflow that shows the free space on my disk.", table: "Onboarding"),
+        String(localized: "Write an AppPad workflow that starts my GitHub Actions deploy for a branch.", table: "Onboarding"),
+        String(localized: "Tidy up my AppPad: keep the system apps in their current order, and put third-party apps into folders by category after them.", table: "Onboarding"),
     ]
 
     var body: some View {
         SplitPage(
             symbol: "sparkles",
-            title: String(localized: "Let AI write workflows for you"),
-            subtitle: String(localized: "Describe what you need in plain words: Claude or another MCP client writes the workflow for you, and can even tidy up your app icons into pages and folders.")
+            title: String(localized: "Let AI write workflows for you", table: "Onboarding"),
+            subtitle: String(localized: "Describe what you need in plain words: Claude or another MCP client writes the workflow for you, and can even tidy up your app icons into pages and folders.", table: "Onboarding")
         ) {
             OnboardingCard {
                 Toggle(isOn: $host.enabled) {
@@ -625,7 +625,7 @@ private struct AIPage: View {
                 }
             }
             OnboardingCard {
-                Text("Try asking your AI assistant:")
+                Text("Try asking your AI assistant:", tableName: "Onboarding")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 ForEach(Self.examples, id: \.self) { example in
@@ -750,15 +750,15 @@ private struct PermissionsPage: View {
 
         SplitPage(
             symbol: "lock.shield",
-            title: String(localized: "Permissions and startup"),
-            subtitle: String(localized: "AppPad works without these, but some features need them. You can change them later in System Settings.")
+            title: String(localized: "Permissions and startup", table: "Onboarding"),
+            subtitle: String(localized: "AppPad works without these, but some features need them. You can change them later in System Settings.", table: "Onboarding")
         ) {
             OnboardingCard {
                 OnboardingRow(symbol: "accessibility",
-                              title: String(localized: "Accessibility"),
-                              detail: String(localized: "Pastes clipboard items into the app you are using, and moves and resizes windows.")) {
+                              title: String(localized: "Accessibility", table: "Onboarding"),
+                              detail: String(localized: "Pastes clipboard items into the app you are using, and moves and resizes windows.", table: "Onboarding")) {
                     if trusted {
-                        Label("Allowed", systemImage: "checkmark.circle.fill")
+                        Label(String(localized: "Allowed", table: "Onboarding"), systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                     } else {
                         Button("Grant Access…") {
@@ -776,7 +776,7 @@ private struct PermissionsPage: View {
                 Divider()
                 OnboardingRow(symbol: "power",
                               title: String(localized: "Launch at login"),
-                              detail: String(localized: "Keeps AppPad, the clipboard history and your shortcuts ready after you log in.")) {
+                              detail: String(localized: "Keeps AppPad, the clipboard history and your shortcuts ready after you log in.", table: "Onboarding")) {
                     Toggle(isOn: $launchAtLogin) { EmptyView() }
                         .toggleStyle(.appSwitch)
                         .labelsHidden()
@@ -801,12 +801,12 @@ private struct DonePage: View {
     var body: some View {
         SplitPage(
             symbol: "checkmark",
-            title: String(localized: "You're all set"),
-            subtitle: String(localized: "Here is how to open everything. The menu bar icon has it all, too.")
+            title: String(localized: "You're all set", table: "Onboarding"),
+            subtitle: String(localized: "Here is how to open everything. The menu bar icon has it all, too.", table: "Onboarding")
         ) {
             OnboardingCard {
                 referenceRow(String(localized: "AppPad"),
-                             prefs.pinchToOpen ? String(localized: "Four-finger pinch") : String(localized: "Menu bar icon"))
+                             prefs.pinchToOpen ? String(localized: "Four-finger pinch", table: "Onboarding") : String(localized: "Menu bar icon", table: "Onboarding"))
                 if prefs.clipboardEnabled {
                     Divider()
                     referenceRow(String(localized: "Clipboard"), prefs.clipboardHotKey?.displayString)
@@ -816,7 +816,7 @@ private struct DonePage: View {
                 Divider()
                 referenceRow(String(localized: "Workflows"), prefs.workflowPanelHotKey?.displayString)
                 Divider()
-                referenceRow(String(localized: "Switch between panels"), "⌘⇧J / ⌘⇧K")
+                referenceRow(String(localized: "Switch between panels", table: "Onboarding"), "⌘⇧J / ⌘⇧K")
             }
         }
     }

@@ -56,14 +56,14 @@ nonisolated enum PermissionAnswer: Sendable {
 enum PermissionPrompt {
     static func ask(workflow: Workflow, items: [PermissionItem]) -> PermissionAnswer {
         let alert = NSAlert()
-        alert.messageText = String(localized: "“\(workflow.displayName)” wants to:")
+        alert.messageText = String(localized: "“\(workflow.displayName)” wants to:", table: "WorkflowPermissions")
         // Source first: deciding "Always Allow" depends on who wrote it.
-        let source = String(localized: "Source: \(workflow.source.longLabel)")
+        let source = String(localized: "Source: \(workflow.source.longLabel)", table: "Workflow")
         alert.informativeText = source + "\n\n" + items.map { "• " + $0.title }.joined(separator: "\n")
         alert.icon = NSImage(systemSymbolName: "lock.shield", accessibilityDescription: nil)
-        alert.addButton(withTitle: String(localized: "Allow Once"))
-        alert.addButton(withTitle: String(localized: "Always Allow"))
-        let deny = alert.addButton(withTitle: String(localized: "Don't Allow"))
+        alert.addButton(withTitle: String(localized: "Allow Once", table: "WorkflowPermissions"))
+        alert.addButton(withTitle: String(localized: "Always Allow", table: "Workflow"))
+        let deny = alert.addButton(withTitle: String(localized: "Don't Allow", table: "Workflow"))
         deny.keyEquivalent = "\u{1b}"
         switch FloatingAlert.runModal(alert) {
         case .alertFirstButtonReturn: return .allowOnce

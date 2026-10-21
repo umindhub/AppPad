@@ -78,29 +78,29 @@ extension LaunchpadViewController: PageGridDelegate {
         let menu = NSMenu()
         switch grid.entries[index] {
         case .app(let app):
-            menu.addItem(ClosureMenuItem(String(localized: "Open")) { [weak self] in
+            menu.addItem(ClosureMenuItem(String(localized: "Open", table: "Launchpad")) { [weak self] in
                 self?.controller?.launch(app)
             })
             menu.addItem(ClosureMenuItem(String(localized: "Show in Finder")) { [weak self] in
                 self?.controller?.hide()
                 NSWorkspace.shared.activateFileViewerSelecting([app.url])
             })
-            menu.addItem(ClosureMenuItem(String(localized: "Set Shortcut…")) { [weak self] in
+            menu.addItem(ClosureMenuItem(String(localized: "Set Shortcut…", table: "Launchpad")) { [weak self] in
                 self?.controller?.requestShortcut(for: app)
             })
             if !app.isSystem, app.bundleID != Bundle.main.bundleIdentifier {
                 menu.addItem(.separator())
-                menu.addItem(ClosureMenuItem(String(localized: "Move to Trash…")) { [weak self] in
+                menu.addItem(ClosureMenuItem(String(localized: "Move to Trash…", table: "Launchpad")) { [weak self] in
                     self?.presentDelete(app)
                 })
             }
         case .folder(let folder, let apps):
             let cell = grid.cells[index]
-            menu.addItem(ClosureMenuItem(String(localized: "Open Folder")) { [weak self] in
+            menu.addItem(ClosureMenuItem(String(localized: "Open Folder", table: "Launchpad")) { [weak self] in
                 guard let self else { return }
                 self.openFolder(folder, apps: apps, fromTile: cell, animated: true)
             })
-            menu.addItem(ClosureMenuItem(String(localized: "Rename…")) { [weak self] in
+            menu.addItem(ClosureMenuItem(String(localized: "Rename…", table: "Launchpad")) { [weak self] in
                 guard let self else { return }
                 self.openFolder(folder, apps: apps, fromTile: cell, animated: true)
                 self.folderOverlay?.beginRenaming()
@@ -175,7 +175,7 @@ extension LaunchpadViewController: PageGridDelegate {
     private func showDeleteConfirm(_ app: AppInfo, scan: AppUninstaller.Scan) {
         let title = app.isAppStore
             ? String(localized: "Delete “\(app.name)”?")
-            : String(localized: "Uninstall “\(app.name)”?")
+            : String(localized: "Uninstall “\(app.name)”?", table: "Launchpad")
         // No checklist: leftovers matched by bundle ID are removed silently (same as the old default).
         let appPath = app.url.standardizedFileURL.path
         let extra = scan.leftovers
@@ -184,7 +184,7 @@ extension LaunchpadViewController: PageGridDelegate {
         let message = String(localized: "The app will be moved to the Trash.")
         showConfirm(
             icon: IconCache.shared.icon(for: app), title: title, message: message, items: [],
-            confirmTitle: String(localized: "Move to Trash"), destructive: true
+            confirmTitle: String(localized: "Move to Trash", table: "Launchpad"), destructive: true
         ) { [weak self] _ in
             self?.performUninstall(app, bundleIDs: scan.bundleIDs, extra: extra)
         }
@@ -230,14 +230,14 @@ extension LaunchpadViewController: PageGridDelegate {
     private func reportUninstall(_ app: AppInfo, result: AppUninstaller.Result) {
         let icon = IconCache.shared.icon(for: app)
         if !result.appRemoved {
-            let title = String(localized: "Couldn’t move “\(app.name)” to the Trash.")
+            let title = String(localized: "Couldn’t move “\(app.name)” to the Trash.", table: "Launchpad")
             switch result.failure ?? .other("") {
             case .cancelled:
                 return   // password prompt cancelled by the user
             case .automationDenied:
                 showConfirm(
                     icon: icon, title: title,
-                    message: String(localized: "This app belongs to the system administrator, so AppPad asks Finder to delete it. Allow AppPad to control Finder in System Settings › Privacy & Security › Automation, then try again."),
+                    message: String(localized: "This app belongs to the system administrator, so AppPad asks Finder to delete it. Allow AppPad to control Finder in System Settings › Privacy & Security › Automation, then try again.", table: "Launchpad"),
                     items: [], confirmTitle: String(localized: "Open System Settings"), destructive: false
                 ) { [weak self] _ in
                     self?.dismissConfirm(animated: true)
@@ -246,19 +246,19 @@ extension LaunchpadViewController: PageGridDelegate {
                 }
             case .stillRunning:
                 showErrorConfirm(icon: icon, title: title,
-                                 message: String(localized: "The app didn’t quit. Quit it and try again."))
+                                 message: String(localized: "The app didn’t quit. Quit it and try again.", table: "Launchpad"))
             case .other(let description):
                 showErrorConfirm(icon: icon, title: title, message: description.isEmpty
-                    ? String(localized: "Try again. Deleting it may require an administrator password.")
+                    ? String(localized: "Try again. Deleting it may require an administrator password.", table: "Launchpad")
                     : description)
             }
         } else if !result.failed.isEmpty {
             // Usually protected containers (no Full Disk Access): offer to reveal them in Finder.
-            var message = String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder.")
+            var message = String(localized: "To remove them automatically, allow AppPad Full Disk Access in System Settings › Privacy & Security. You can also delete them in Finder.", table: "Launchpad")
             if let cask = result.homebrewFailedCask { message += "\n\n" + Self.homebrewHelp(cask) }
             showConfirm(
                 icon: icon,
-                title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash."),
+                title: String(localized: "Some related files of “\(app.name)” couldn’t be moved to the Trash.", table: "Launchpad"),
                 message: message,
                 items: result.failed.map { ConfirmOverlayView.CheckItem(url: $0, checked: true) },
                 confirmTitle: String(localized: "Show in Finder"), destructive: false
@@ -272,9 +272,9 @@ extension LaunchpadViewController: PageGridDelegate {
             // App is in the Trash, only the Homebrew record is left (e.g. its uninstall needs sudo).
             showConfirm(
                 icon: icon,
-                title: String(localized: "Homebrew couldn’t remove the cask of “\(app.name)”."),
+                title: String(localized: "Homebrew couldn’t remove the cask of “\(app.name)”.", table: "Launchpad"),
                 message: Self.homebrewHelp(cask),
-                items: [], confirmTitle: String(localized: "Copy Command"), destructive: false
+                items: [], confirmTitle: String(localized: "Copy Command", table: "Launchpad"), destructive: false
             ) { [weak self] _ in
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(HomebrewCask.command(for: cask), forType: .string)
@@ -323,7 +323,7 @@ extension LaunchpadViewController: PageGridDelegate {
     }
 
     private static func homebrewHelp(_ cask: String) -> String {
-        String(localized: "The app is already in the Trash. To remove it from Homebrew too, run this command in Terminal:")
+        String(localized: "The app is already in the Trash. To remove it from Homebrew too, run this command in Terminal:", table: "Launchpad")
             + "\n" + HomebrewCask.command(for: cask)
     }
 

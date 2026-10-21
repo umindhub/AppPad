@@ -6,7 +6,7 @@ nonisolated struct FolderItem: Codable, Equatable, Sendable {
     var apps: [String]        // AppInfo keys
 
     var displayName: String {
-        name.isEmpty ? String(localized: "Other") : name
+        name.isEmpty ? String(localized: "Other", table: "Launchpad") : name
     }
 }
 
