@@ -62,6 +62,15 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                // Clipboard / Workflow panel header, top left.
+                Toggle(isOn: $prefs.showPanelSwitchArrows) {
+                    Text("Show panel switch arrows", tableName: "Settings")
+                    Text("Shows the ← / → arrows next to the Clipboard and Workflows titles. ⌘⇧K / ⌘⇧J still switch panels when they are hidden.", tableName: "Settings")
+                }
+                Toggle(isOn: $prefs.showPanelShortcutHints) {
+                    Text("Show shortcut hints", tableName: "Settings")
+                    Text("Shows the shortcut line under the Clipboard and Workflows titles. When off, the title sits on the same line as the search field.", tableName: "Settings")
+                }
             }
 
             Section(String(localized: "Keyboard", table: "Settings")) {

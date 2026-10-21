@@ -974,6 +974,7 @@ final class PanelMorph {
 // Clipboard / Workflow panel, left of the search field: title on the first line, shortcut hints
 // on one second line; the two lines as a block are vertically centered on the search field.
 // Small ← / → arrows right after the title switch panels like ⌘⇧K / ⌘⇧J.
+// Arrows and hints can be hidden (Settings › General); without hints the title alone sits on the search line.
 final class PanelHeaderView: FlippedView {
     struct Hint {
         let keys: String
@@ -982,6 +983,23 @@ final class PanelHeaderView: FlippedView {
 
     // -1 previous / +1 next panel (same steps as ⌘⇧K / ⌘⇧J).
     var onSwitch: ((Int) -> Void)?
+
+    // Set by the panels from Preferences; the owner re-lays out after a change.
+    var showsArrows = true {
+        didSet {
+            guard showsArrows != oldValue else { return }
+            previousButton.isHidden = !showsArrows
+            nextButton.isHidden = !showsArrows
+            needsLayout = true
+        }
+    }
+    var showsHints = true {
+        didSet {
+            guard showsHints != oldValue else { return }
+            hintLabel.isHidden = !showsHints
+            needsLayout = true
+        }
+    }
 
     private static let titleHeight: CGFloat = 18
     private static let hintHeight: CGFloat = 15
@@ -1031,8 +1049,11 @@ final class PanelHeaderView: FlippedView {
     // Measured from the text itself (+ the label's inner padding): the field's intrinsic width
     // came out a few points short for the mixed-weight hint line and clipped its last character.
     var preferredSize: NSSize {
+        let titleLine = showsArrows
+            ? Self.titleInset + titleWidth + Self.arrowGap + 2 * Self.arrowSize
+            : titleWidth + Self.textPadding
+        guard showsHints else { return NSSize(width: titleLine, height: Self.titleHeight) }
         let hintWidth = ceil(hintLabel.attributedStringValue.size().width) + Self.textPadding
-        let titleLine = Self.titleInset + titleWidth + Self.arrowGap + 2 * Self.arrowSize
         return NSSize(width: max(hintWidth, titleLine), height: Self.titleHeight + Self.lineGap + Self.hintHeight)
     }
 

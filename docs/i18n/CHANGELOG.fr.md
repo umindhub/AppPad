@@ -18,6 +18,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.6
+
+### Added
+
+#### Réglages
+- Nouvel interrupteur « Afficher les flèches de changement de panneau » dans Général : affiche ou masque les flèches ← / → à côté des titres Presse-papiers et Flux de travail. ⌘⇧K / ⌘⇧J changent toujours de panneau.
+- Nouvel interrupteur « Afficher les indications de raccourcis » dans Général : affiche ou masque la ligne de raccourcis sous les titres Presse-papiers et Flux de travail. Si désactivé, le titre est aligné sur le champ de recherche.
+- Les deux sont activés par défaut.
+
 ## v1.3.5
 
 ### Added

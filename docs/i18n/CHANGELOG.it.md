@@ -18,6 +18,15 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.6
+
+### Added
+
+#### Impostazioni
+- Nuovo interruttore «Mostra frecce per cambiare pannello» in Generali: mostra o nasconde le frecce ← / → accanto ai titoli di Appunti e Flussi di lavoro. ⌘⇧K / ⌘⇧J cambiano comunque pannello.
+- Nuovo interruttore «Mostra suggerimenti abbreviazioni» in Generali: mostra o nasconde la riga delle abbreviazioni sotto i titoli di Appunti e Flussi di lavoro. Se disattivo, il titolo è allineato al campo di ricerca.
+- Entrambi sono attivi per impostazione predefinita.
+
 ## v1.3.5
 
 ### Added

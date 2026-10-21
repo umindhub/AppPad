@@ -5743,6 +5743,122 @@
         }
       }
     },
+    "Show panel switch arrows" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pfeile zum Wechseln der Bereiche anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar flechas para cambiar de panel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les flèches de changement de panneau"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra frecce per cambiare pannello"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パネル切り替え矢印を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "패널 전환 화살표 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon pijlen om van paneel te wisselen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示面板切换箭头"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示面板切換箭頭"
+          }
+        }
+      }
+    },
+    "Show shortcut hints" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tastenkurzbefehl-Hinweise anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar indicaciones de atajos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les indications de raccourcis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra suggerimenti abbreviazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットのヒントを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "단축키 힌트 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon sneltoetshints"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示快捷键提示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示快速鍵提示"
+          }
+        }
+      }
+    },
     "Show Welcome Guide…" : {
       "localizations" : {
         "de" : {
@@ -5855,6 +5971,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 AppPad 的圖像上顯示與 Dock 相同的紅色角標（未讀數、更新等），檔案夾顯示其中 App 的角標總數。"
+          }
+        }
+      }
+    },
+    "Shows the shortcut line under the Clipboard and Workflows titles. When off, the title sits on the same line as the search field." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt die Zeile mit Tastenkurzbefehlen unter den Titeln von Zwischenablage und Workflows. Wenn deaktiviert, steht der Titel auf einer Linie mit dem Suchfeld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra la línea de atajos bajo los títulos de Portapapeles y Flujos de trabajo. Si está desactivado, el título queda en la misma línea que el campo de búsqueda."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche la ligne de raccourcis sous les titres Presse-papiers et Flux de travail. Si désactivé, le titre est aligné sur le champ de recherche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra la riga delle abbreviazioni sotto i titoli di Appunti e Flussi di lavoro. Se disattivo, il titolo è allineato al campo di ricerca."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボードとワークフローのタイトルの下にショートカットの行を表示します。オフのときは、タイトルが検索フィールドと同じ高さに並びます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드와 워크플로 제목 아래에 단축키 줄을 표시합니다. 끄면 제목이 검색 필드와 같은 줄에 놓입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont de regel met sneltoetsen onder de titels van Klembord en Workflows. Indien uit, staat de titel op één lijn met het zoekveld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在剪切板和工作流标题下显示快捷键提示行。关闭后，标题与搜索框位于同一水平线。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在剪貼簿和工作流程標題下顯示快速鍵提示列。關閉後，標題與搜尋欄位位於同一水平線。"
+          }
+        }
+      }
+    },
+    "Shows the ← / → arrows next to the Clipboard and Workflows titles. ⌘⇧K / ⌘⇧J still switch panels when they are hidden." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt die Pfeile ← / → neben den Titeln von Zwischenablage und Workflows. Auch ausgeblendet wechseln ⌘⇧K / ⌘⇧J weiterhin die Bereiche."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra las flechas ← / → junto a los títulos de Portapapeles y Flujos de trabajo. Aunque estén ocultas, ⌘⇧K / ⌘⇧J siguen cambiando de panel."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche les flèches ← / → à côté des titres Presse-papiers et Flux de travail. Même masquées, ⌘⇧K / ⌘⇧J changent toujours de panneau."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra le frecce ← / → accanto ai titoli di Appunti e Flussi di lavoro. Anche se nascoste, ⌘⇧K / ⌘⇧J cambiano comunque pannello."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボードとワークフローのタイトルの横に ← / → 矢印を表示します。非表示でも ⌘⇧K / ⌘⇧J でパネルを切り替えられます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드와 워크플로 제목 옆에 ← / → 화살표를 표시합니다. 숨겨도 ⌘⇧K / ⌘⇧J로 패널을 전환할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont de pijlen ← / → naast de titels van Klembord en Workflows. Ook verborgen wisselen ⌘⇧K / ⌘⇧J nog steeds van paneel."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在剪切板和工作流标题旁显示 ← / → 箭头。隐藏后仍可用 ⌘⇧K / ⌘⇧J 切换面板。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在剪貼簿和工作流程標題旁顯示 ← / → 箭頭。隱藏後仍可用 ⌘⇧K / ⌘⇧J 切換面板。"
           }
         }
       }

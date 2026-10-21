@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.6
+
+### Added
+
+#### Settings
+- New "Show panel switch arrows" switch in General: shows or hides the ← / → arrows next to the Clipboard and Workflows titles. ⌘⇧K / ⌘⇧J still switch panels.
+- New "Show shortcut hints" switch in General: shows or hides the shortcut line under the Clipboard and Workflows titles. When off, the title sits on the same line as the search field.
+- Both are on by default.
+
 ## v1.3.5
 
 ### Added

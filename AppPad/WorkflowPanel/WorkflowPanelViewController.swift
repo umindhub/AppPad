@@ -174,6 +174,8 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     func applyPreferences() {
         _ = view
         searchChrome.isGlass = prefs.glassControls
+        header.showsArrows = prefs.showPanelSwitchArrows
+        header.showsHints = prefs.showPanelShortcutHints
         // Same search font as the clipboard panel → same capsule height and title position.
         searchChrome.textFont = ClipboardFonts.make(family: prefs.clipboardSearchFontFamily,
                                                     size: prefs.clipboardSearchFontSize)

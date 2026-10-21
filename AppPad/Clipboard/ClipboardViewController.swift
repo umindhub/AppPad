@@ -177,6 +177,8 @@ final class ClipboardViewController: NSViewController, NSSearchFieldDelegate,
     func applyPreferences() {
         _ = view
         searchChrome.isGlass = prefs.glassControls
+        header.showsArrows = prefs.showPanelSwitchArrows
+        header.showsHints = prefs.showPanelShortcutHints
         savedToggle.isGlass = prefs.glassControls
         searchChrome.textFont = ClipboardFonts.make(family: prefs.clipboardSearchFontFamily,
                                                     size: prefs.clipboardSearchFontSize)

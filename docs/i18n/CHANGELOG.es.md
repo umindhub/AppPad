@@ -18,6 +18,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.6
+
+### Added
+
+#### Ajustes
+- Nuevo interruptor «Mostrar flechas para cambiar de panel» en General: muestra u oculta las flechas ← / → junto a los títulos de Portapapeles y Flujos de trabajo. ⌘⇧K / ⌘⇧J siguen cambiando de panel.
+- Nuevo interruptor «Mostrar indicaciones de atajos» en General: muestra u oculta la línea de atajos bajo los títulos de Portapapeles y Flujos de trabajo. Si está desactivado, el título queda en la misma línea que el campo de búsqueda.
+- Ambos están activados por omisión.
+
 ## v1.3.5
 
 ### Added

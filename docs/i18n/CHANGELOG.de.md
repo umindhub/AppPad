@@ -18,6 +18,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.6
+
+### Added
+
+#### Einstellungen
+- Neuer Schalter „Pfeile zum Wechseln der Bereiche anzeigen“ unter Allgemein: blendet die Pfeile ← / → neben den Titeln von Zwischenablage und Workflows ein oder aus. ⌘⇧K / ⌘⇧J wechseln weiterhin die Bereiche.
+- Neuer Schalter „Tastenkurzbefehl-Hinweise anzeigen“ unter Allgemein: blendet die Hinweiszeile unter den Titeln von Zwischenablage und Workflows ein oder aus. Wenn deaktiviert, steht der Titel auf einer Linie mit dem Suchfeld.
+- Beide sind standardmäßig aktiviert.
+
 ## v1.3.5
 
 ### Added

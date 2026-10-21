@@ -18,6 +18,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.6
+
+### Added
+
+#### Instellingen
+- Nieuwe schakelaar 'Toon pijlen om van paneel te wisselen' in Algemeen: toont of verbergt de pijlen ← / → naast de titels van Klembord en Workflows. ⌘⇧K / ⌘⇧J wisselen nog steeds van paneel.
+- Nieuwe schakelaar 'Toon sneltoetshints' in Algemeen: toont of verbergt de regel met sneltoetsen onder de titels van Klembord en Workflows. Indien uit, staat de titel op één lijn met het zoekveld.
+- Beide staan standaard aan.
+
 ## v1.3.5
 
 ### Added

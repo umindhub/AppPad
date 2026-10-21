@@ -163,6 +163,8 @@ final class Preferences: ObservableObject {
         static let escClearsFirst = "escClearsSearchFirst"
         static let appBadges = "showAppBadges"
         static let fastPageSwipe = "fastPageSwipe"
+        static let panelSwitchArrows = "panelHeaderShowsSwitchArrows"
+        static let panelShortcutHints = "panelHeaderShowsShortcutHints"
         static let clipEnabled = "clipboardEnabled"
         static let clipHotKey = "clipboardHotKey"
         static let clipSavedHotKey = "clipboardSavedHotKey"
@@ -232,6 +234,10 @@ final class Preferences: ObservableObject {
     @Published var showAppBadges: Bool { didSet { save(showAppBadges, Key.appBadges) } }
     // Two-finger paging: a short swipe turns a page and one swipe can cross several. Off by default.
     @Published var fastPageSwipe: Bool { didSet { save(fastPageSwipe, Key.fastPageSwipe) } }
+    // Clipboard / Workflow panel header: ← / → switch arrows next to the title. On by default.
+    @Published var showPanelSwitchArrows: Bool { didSet { save(showPanelSwitchArrows, Key.panelSwitchArrows) } }
+    // Clipboard / Workflow panel header: shortcut hint line under the title; off = title on the search line. On by default.
+    @Published var showPanelShortcutHints: Bool { didSet { save(showPanelShortcutHints, Key.panelShortcutHints) } }
     @Published var appHotKeys: [AppHotKey] {
         didSet { save((try? JSONEncoder().encode(appHotKeys)) ?? Data(), Key.appHotKeys) }
     }
@@ -319,6 +325,8 @@ final class Preferences: ObservableObject {
         escClearsSearchFirst = d.object(forKey: Key.escClearsFirst) as? Bool ?? false
         showAppBadges = d.object(forKey: Key.appBadges) as? Bool ?? true
         fastPageSwipe = d.object(forKey: Key.fastPageSwipe) as? Bool ?? false
+        showPanelSwitchArrows = d.object(forKey: Key.panelSwitchArrows) as? Bool ?? true
+        showPanelShortcutHints = d.object(forKey: Key.panelShortcutHints) as? Bool ?? true
         workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
         launchpadHotKey = Self.loadCombo(d, Key.launchpadHotKey, default: .defaultLauncher)
         launchpadHotKeyEnabled = d.object(forKey: Key.launchpadHotKeyEnabled) as? Bool ?? false
