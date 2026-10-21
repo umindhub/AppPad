@@ -192,6 +192,15 @@ final class PageGridView: FlippedView {
         return app.isAppStore ? .appStore : .other
     }
 
+    // Grid kept across a reload: natural order, no drag / drop marks left over.
+    func resetTransientState() {
+        for cell in cells {
+            cell.isDragSource = false
+            cell.isDropTarget = false
+        }
+        applyArrangement(nil, animated: false)
+    }
+
     // Live reflow during drags. nil restores natural order.
     // gentle: slower, critically damped spring (used when a gap closes after making a folder).
     func applyArrangement(_ slots: [Int]?, animated: Bool, gentle: Bool = false) {

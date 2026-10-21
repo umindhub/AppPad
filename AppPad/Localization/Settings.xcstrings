@@ -59,6 +59,64 @@
         }
       }
     },
+    "A short two-finger swipe turns a page, and one swipe can move several pages. Applies to AppPad and folders. When off, a longer swipe turns one page." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schon ein kurzes Wischen mit zwei Fingern blättert um, und ein einziges Wischen kann mehrere Seiten weiterblättern. Gilt für AppPad und Ordner. Wenn aus, blättert erst ein längeres Wischen eine Seite um."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un deslizamiento corto con dos dedos pasa de página, y un solo deslizamiento puede avanzar varias páginas. Se aplica a AppPad y a las carpetas. Si está desactivado, hace falta un deslizamiento más largo para pasar una página."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un court balayage à deux doigts change de page, et un seul balayage peut faire défiler plusieurs pages. S’applique à AppPad et aux dossiers. Désactivé, il faut un balayage plus long pour changer de page."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basta un breve scorrimento con due dita per cambiare pagina, e un solo scorrimento può avanzare di più pagine. Vale per AppPad e per le cartelle. Se disattivato, serve uno scorrimento più lungo per cambiare pagina."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2本指で短くスワイプするだけでページがめくれ、1回のスワイプで複数ページ移動できます。AppPad とフォルダに適用されます。オフのときは、長めにスワイプすると1ページめくれます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 손가락으로 짧게 쓸어넘기기만 해도 페이지가 넘어가고, 한 번에 여러 페이지를 넘길 수 있습니다. AppPad와 폴더에 적용됩니다. 끄면 길게 쓸어넘겨야 한 페이지가 넘어갑니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een korte veeg met twee vingers slaat al een pagina om, en één veeg kan meerdere pagina’s verder gaan. Geldt voor AppPad en mappen. Uit: pas een langere veeg slaat één pagina om."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双指轻扫很短的距离即可翻页，一次滑动可连续翻过多页。适用于 AppPad 及文件夹。关闭时需滑动较长距离才翻一页。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙指輕掃很短的距離即可翻頁，一次滑動可連續翻過多頁。適用於 AppPad 及檔案夾。關閉時需滑動較長距離才翻一頁。"
+          }
+        }
+      }
+    },
     "A software update framework for macOS. MIT License." : {
       "localizations" : {
         "de" : {
@@ -3133,6 +3191,64 @@
         }
       }
     },
+    "Fast page swiping" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schnelles Blättern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paso rápido de páginas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Défilement rapide des pages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorrimento rapido delle pagine"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高速ページめくり"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 페이지 넘기기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snel bladeren"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速翻页"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速翻頁"
+          }
+        }
+      }
+    },
     "Fills the screen up to the top edge. The Dock stays below AppPad while it is open." : {
       "localizations" : {
         "de" : {
@@ -6203,6 +6319,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遮罩"
+          }
+        }
+      }
+    },
+    "Trackpad" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trackpad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trackpad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trackpad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trackpad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トラックパッド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "트랙패드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trackpad"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触控板"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "觸控式軌跡板"
           }
         }
       }

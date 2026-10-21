@@ -19,6 +19,9 @@ final class PageIndicatorView: FlippedView {
         didSet { if oldValue != glass { applyGlass() } }
     }
     var onSelect: ((Int) -> Void)?
+    // Continuous scrub (fast page swiping): fractional page while dragging, then the page released on.
+    var onScrub: ((CGFloat) -> Void)?
+    var onScrubEnd: ((Int) -> Void)?
 
     private var glassView: GlassDotIndicatorView?
 
@@ -28,6 +31,9 @@ final class PageIndicatorView: FlippedView {
         if glass {
             let view = GlassDotIndicatorView(frame: bounds)
             view.onSelect = { [weak self] index in self?.onSelect?(index) }
+            view.onScrub = { [weak self] page in self?.onScrub?(page) }
+            view.onScrubEnd = { [weak self] index in self?.onScrubEnd?(index) }
+            view.scrubsContinuously = { Preferences.shared.fastPageSwipe }
             addSubview(view)
             glassView = view
             syncGlass()
@@ -123,6 +129,9 @@ final class PageIndicatorView: FlippedView {
 
     private var isScrubbing = false
     private var lastScrubIndex: Int?
+    private var isContinuous = false     // captured on mouse down
+    private var didDragContinuously = false
+    private var scrubDownX: CGFloat = 0
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
@@ -134,17 +143,44 @@ final class PageIndicatorView: FlippedView {
         guard point.x >= first.minX - 16, point.x <= last.maxX + 16 else { return }
         isScrubbing = true
         lastScrubIndex = nil
+        isContinuous = Preferences.shared.fastPageSwipe
+        didDragContinuously = false
+        scrubDownX = point.x
         select(atX: point.x)
     }
 
     override func mouseDragged(with event: NSEvent) {
         guard isScrubbing else { return }
-        select(atX: convert(event.locationInWindow, from: nil).x)
+        let x = convert(event.locationInWindow, from: nil).x
+        guard isContinuous else {
+            select(atX: x)
+            return
+        }
+        // Small threshold so a click doesn't nudge the page.
+        if !didDragContinuously {
+            guard abs(x - scrubDownX) > 3 else { return }
+            didDragContinuously = true
+        }
+        if let page = fractionalPage(atX: x) { onScrub?(page) }
     }
 
     override func mouseUp(with event: NSEvent) {
+        if isContinuous && didDragContinuously,
+           let page = fractionalPage(atX: convert(event.locationInWindow, from: nil).x) {
+            onScrubEnd?(Int(page.rounded()))
+        }
         isScrubbing = false
         lastScrubIndex = nil
+        didDragContinuously = false
+    }
+
+    // Fractional page under x: dot centers are whole pages (clamped to the row).
+    private func fractionalPage(atX x: CGFloat) -> CGFloat? {
+        let rects = itemRects()
+        guard let first = rects.first, let last = rects.last else { return nil }
+        guard rects.count > 1 else { return 0 }
+        let pitch = (last.midX - first.midX) / CGFloat(rects.count - 1)
+        return min(max((x - first.midX) / pitch, 0), CGFloat(rects.count - 1))
     }
 
     // Nearest page to x (clamped).

@@ -71,6 +71,13 @@ struct GeneralSettingsView: View {
                 }
             }
 
+            Section(String(localized: "Trackpad", table: "Settings")) {
+                Toggle(isOn: $prefs.fastPageSwipe) {
+                    Text("Fast page swiping", tableName: "Settings")
+                    Text("A short two-finger swipe turns a page, and one swipe can move several pages. Applies to AppPad and folders. When off, a longer swipe turns one page.", tableName: "Settings")
+                }
+            }
+
             Section(String(localized: "Displays", table: "Settings")) {
                 Toggle(isOn: $prefs.panelsFollowMouseScreen) {
                     Text("Open on the display with the pointer", tableName: "Settings")

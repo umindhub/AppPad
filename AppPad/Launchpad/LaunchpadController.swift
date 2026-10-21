@@ -864,7 +864,7 @@ final class LaunchpadController: NSObject, NSWindowDelegate {
         layoutStore.move(from: source, to: target, capacity: capacity) { [appsByKey] targetKey, draggedKey in
             DefaultLayout.folderName(for: [targetKey, draggedKey].compactMap { appsByKey[$0] })
         }
-        viewController.reloadAll()
+        viewController.reloadAll(reuseUnchanged: true)   // only the touched pages are rebuilt
     }
 
     func renameFolder(id: String, name: String) {

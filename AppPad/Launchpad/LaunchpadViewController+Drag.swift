@@ -21,6 +21,12 @@ import QuartzCore
 //   is rendered exactly like the real cell, so it is swapped for it in the same frame as the
 //   reload (no cross-fade: two stacked copies look brighter on translucent backgrounds)
 // - until the layout is committed, a click first commits it, then acts on the rebuilt grid
+// - the next icon can be picked up while the previous drop is still landing: it follows the
+//   pointer at once (own floating view), reorder / merge / leaving the panel wait for the commit.
+//   On the commit the drag is rebased onto the rebuilt grid (new source index and cell); its
+//   events come through a local monitor because the pressed cell leaves the window then.
+//   Released before the commit → the landing drop commits first. Not inside folder sheets
+//   (rebuilt by the commit), and not on the tile the landing icon flies into.
 // - search results (apps and folders) can be dragged too: out of the panel = system drag
 //   (Dock, Finder). Inside the results there is no reordering, only merging (same slow-touch
 //   rule as on the pages): an app onto an app → new folder, onto a folder → added to it.
@@ -53,6 +59,7 @@ struct DragState {
     var dotPage: Int?               // page dot under the pointer
     var dotEngaged = false          // a dot already switched pages: next dots switch without dwell
     var springInsert: Int?          // placeholder in the spring-loaded folder
+    var waitsForCommit = false      // started while the previous drop was landing (old layout)
 }
 
 // Folder opened by holding a dragged app on a tile.
@@ -92,10 +99,24 @@ extension LaunchpadViewController {
         return shadow
     }()
 
+    static func makeDragImageView() -> NSImageView {
+        let view = NSImageView()
+        view.imageScaling = .scaleProportionallyUpOrDown
+        view.wantsLayer = true
+        view.shadow = dragShadow
+        return view
+    }
+
     func beginDrag(grid: PageGridView, index: Int, event: NSEvent, grabPoint: NSPoint) {
-        // dragImageView still attached = previous drop is landing; wait for it.
-        guard drag == nil, dragImageView.superview == nil, let controller,
-              grid.cells.indices.contains(index) else { return }
+        guard drag == nil, systemDrag == nil, let controller,
+              grid.cells.indices.contains(index), !grid.cells[index].isDragSource else { return }
+        // Previous drop still landing: start now on the old layout, rebase on its commit.
+        let landing = pendingDrop != nil
+        if landing {
+            if case .folder = grid.context { return }           // folder sheets are rebuilt by the commit
+            guard springFolder == nil, grid.window != nil,
+                  !dragImageView.isDescendant(of: grid.cells[index]) else { return }   // tile being landed in
+        }
         let source: DragSource
         let item: LayoutItem
         switch grid.context {
@@ -118,6 +139,8 @@ extension LaunchpadViewController {
         }
 
         let cell = grid.cells[index]
+        // The landing icon keeps its own view (removed by its commit / fade).
+        if landing || dragImageView.superview != nil { dragImageView = Self.makeDragImageView() }
         let iconRect = root.convert(cell.visualIconRect, from: cell)
         let frame = iconRect.insetBy(dx: -iconRect.width * 0.06, dy: -iconRect.height * 0.06)
         let grab = root.convert(grabPoint, from: nil)
@@ -138,8 +161,102 @@ extension LaunchpadViewController {
             state.hoverPage = page
             state.insertIndex = i
         }
+        state.waitsForCommit = landing
         drag = state
+        if landing { installDragEventMonitor() }
         updateDrag(event)
+    }
+
+    // Events of a drag that began on a grid the pending commit replaces: the pressed cell
+    // leaves the window with it, so mouseDragged / mouseUp are taken here instead.
+    private func installDragEventMonitor() {
+        removeDragEventMonitor()
+        dragEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) { [weak self] event in
+            guard let self, self.drag != nil, event.window === self.view.window else { return event }
+            if event.type == .leftMouseUp {
+                self.endDrag(event)
+            } else {
+                self.updateDrag(event)
+            }
+            return nil
+        }
+    }
+
+    func removeDragEventMonitor() {
+        if let monitor = dragEventMonitor { NSEvent.removeMonitor(monitor) }
+        dragEventMonitor = nil
+    }
+
+    // Layout location of an item (top level only).
+    private func layoutLocation(of item: LayoutItem) -> (page: Int, index: Int)? {
+        guard let controller else { return nil }
+        switch item {
+        case .app(let key):
+            guard let app = controller.app(forKey: key) else { return nil }
+            return controller.layoutLocation(of: .app(app))
+        case .folder(let folder):
+            return controller.layoutLocation(of: .folder(folder, []))
+        }
+    }
+
+    // Cell showing an item in the active grids (pages, or results while searching).
+    private func tileCell(for item: LayoutItem) -> GridCellView? {
+        for case let grid as PageGridView in tileGrids {
+            for (index, entry) in grid.entries.enumerated() where grid.cells.indices.contains(index) {
+                switch (entry, item) {
+                case (.app(let app), .app(let key)) where app.key == key:
+                    return grid.cells[index]
+                case (.folder(let shown, _), .folder(let folder)) where shown.id == folder.id:
+                    return grid.cells[index]
+                default:
+                    continue
+                }
+            }
+        }
+        return nil
+    }
+
+    // The landed drop committed while this drag waited: continue it on the rebuilt grid.
+    private func resumeDrag(after old: DragState) {
+        old.sourceCell.isDragSource = false
+        let location = layoutLocation(of: old.item)
+        let items = location.map { controller?.layoutItems(onPage: $0.page) ?? [] } ?? []
+        guard let location, items.indices.contains(location.index),
+              let cell = tileCell(for: old.item) else {
+            abandonDrag()                 // item is gone (e.g. now inside a folder)
+            return
+        }
+        cell.isDragSource = true
+        var state = DragState(source: .page(location.page, location.index), sourceCell: cell,
+                              item: items[location.index], grabOffset: old.grabOffset)
+        state.lastPoint = old.lastPoint
+        state.lastTime = old.lastTime
+        state.speed = old.speed
+        if !isSearching {
+            state.hoverPage = location.page
+            state.insertIndex = location.index
+        }
+        drag = state
+        if root.subviews.last !== dragImageView { root.addSubview(dragImageView) }   // above anything the commit added
+        if let event = lastDragEvent { updateDrag(event) }
+    }
+
+    // Waiting drag that cannot continue: the icon fades out, nothing changes.
+    private func abandonDrag() {
+        stopDragTimers()
+        removeDragEventMonitor()
+        drag = nil
+        lastDragEvent = nil
+        let floating = dragImageView
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            floating.animator().alphaValue = 0
+        }
+        Task {
+            try? await Task.sleep(for: .milliseconds(220))
+            floating.removeFromSuperview()
+            floating.alphaValue = 1
+        }
     }
 
     func updateDrag(_ event: NSEvent) {
@@ -160,6 +277,8 @@ extension LaunchpadViewController {
 
         let point = root.convert(event.locationInWindow, from: nil)
         dragImageView.setFrameOrigin(NSPoint(x: point.x + state.grabOffset.width, y: point.y + state.grabOffset.height))
+        // Old layout still shown: only the icon follows until the landed drop commits.
+        if state.waitsForCommit { return }
 
         // Left the panel with an app → hand over to a real file drag (Dock, Finder, other apps).
         if case .app(let key) = state.item, !root.bounds.insetBy(dx: -6, dy: -6).contains(point),
@@ -490,6 +609,10 @@ extension LaunchpadViewController {
     }
 
     func endDrag(_ event: NSEvent) {
+        guard drag != nil else { return }
+        removeDragEventMonitor()
+        // A landed drop not committed yet goes first (rebases a waiting drag onto its layout).
+        if pendingDrop != nil { flushPendingDrop(immediate: true) }
         guard let state = drag else { return }
         stopDragTimers()
         drag = nil
@@ -608,8 +731,12 @@ extension LaunchpadViewController {
             return key
         }()
         let token = UUID()
+        let landingView = dragImageView
         pendingDrop = (token: token, run: { [weak self] _ in
             guard let self else { return }
+            // A drag started during the landing is parked so the reload can run, then rebased.
+            let waiting = self.drag
+            self.drag = nil
             state.sourceCell.isDragSource = false
             if case .folder = state.source, state.leftFolder {
                 self.closeFolder()
@@ -625,8 +752,9 @@ extension LaunchpadViewController {
                 springDrop?.overlay.removeFromSuperview()
                 self.reloadAll()                                       // cancelled: restore
             }
-            self.finishDragImage()
+            self.finishDragImage(landingView)
             self.dropQuietUntil = ProcessInfo.processInfo.systemUptime + Self.dropQuietInterval
+            if let waiting { self.resumeDrag(after: waiting) }
         })
         // Merges wait for the gentle gap-closing spring so the reload does not cut it short;
         // a closing spring folder waits for its morph and the tile turning back into the app.
@@ -671,12 +799,12 @@ extension LaunchpadViewController {
     // After the reload (same runloop turn → same frame): the real cell now shows exactly what the
     // floating icon showed, so just remove it. Any overlap / fade would double translucent pixels
     // (folder plate, icon edges) and flash brighter over color backgrounds.
-    private func finishDragImage() {
+    private func finishDragImage(_ imageView: NSImageView) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        dragImageView.removeFromSuperview()
-        dragImageView.layer?.removeAllAnimations()
-        dragImageView.alphaValue = 1
+        imageView.removeFromSuperview()
+        imageView.layer?.removeAllAnimations()
+        imageView.alphaValue = 1
         CATransaction.commit()
     }
 
@@ -884,11 +1012,13 @@ extension LaunchpadViewController {
     func cancelDrag() {
         guard let state = drag else { return }
         stopDragTimers()
+        removeDragEventMonitor()
         closeSpringFolder(animated: false)
         dragImageView.removeFromSuperview()
         state.sourceCell.isDragSource = false
         drag = nil
         lastDragEvent = nil
+        if pendingDrop != nil { flushPendingDrop(immediate: true) }   // earlier drop still landing
         reloadAll(refreshFolder: false)
     }
 
@@ -1060,7 +1190,8 @@ extension LaunchpadViewController {
         settleTask?.cancel()
         settleTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(90))
-            guard !Task.isCancelled, let self, var state = self.drag, let event = self.lastDragEvent else { return }
+            guard !Task.isCancelled, let self, var state = self.drag, !state.waitsForCommit,
+                  let event = self.lastDragEvent else { return }
             state.speed = 0
             self.drag = state
             if case .folder = state.source, !state.leftFolder {
@@ -1233,6 +1364,7 @@ extension LaunchpadViewController: NSDraggingSource {
 
     func beginSystemDrag(app: AppInfo, state: DragState, event: NSEvent) {
         stopDragTimers()
+        removeDragEventMonitor()
         closeSpringFolder(animated: false)
         drag = nil
         lastDragEvent = nil

@@ -13,7 +13,11 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
     let indicator = PageIndicatorView()
     let pager = PagerView()
     let resultsPager = PagerView()
-    let dragImageView = NSImageView()
+    // Floating icon of the running drag. A new drag that starts while the previous drop is still
+    // landing gets a fresh view; the landing one is removed by its own commit (+Drag.swift).
+    var dragImageView = LaunchpadViewController.makeDragImageView()
+    // Routes mouse events of a drag that started during a landing (+Drag.swift).
+    var dragEventMonitor: Any?
     var folderOverlay: FolderOverlayView?
     // Folder shrinking back into its tile (still on screen, can be reopened by a click on the tile).
     var closingFolderOverlay: FolderOverlayView?
@@ -91,10 +95,6 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         emptyLabel.isHidden = true
         resultsPager.isHidden = true
 
-        dragImageView.imageScaling = .scaleProportionallyUpOrDown
-        dragImageView.wantsLayer = true
-        dragImageView.shadow = Self.dragShadow
-
         [pager, resultsPager, searchChrome, indicator, emptyLabel].forEach {
             root.addSubview($0)
         }
@@ -108,6 +108,11 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             self.indicator.progress = progress
         }
         indicator.onSelect = { [weak self] index in
+            self?.activePager.scrollTo(page: index, animated: true)
+        }
+        // Fast page swiping: dragging on the dots scrolls continuously.
+        indicator.onScrub = { [weak self] page in self?.activePager.scrub(toPage: page) }
+        indicator.onScrubEnd = { [weak self] index in
             self?.activePager.scrollTo(page: index, animated: true)
         }
     }
@@ -148,12 +153,19 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
     // MARK: - Data
 
-    func reloadAll(refreshFolder: Bool = true) {
+    // reuseUnchanged: keep page grids whose content is the same (drop commits): only the pages the
+    // move touched are rebuilt, so a drag running meanwhile does not stutter.
+    func reloadAll(refreshFolder: Bool = true, reuseUnchanged: Bool = false) {
         _ = view
         guard let controller, drag == nil else { return }
         let displayPages = controller.displayPages()
-        let pages = displayPages.enumerated().map { index, entries in
-            makePageGrid(page: index, entries: entries)
+        let pages = displayPages.enumerated().map { index, entries -> PageGridView in
+            if reuseUnchanged, let grid = pageGrid(index), grid.columns == prefs.gridColumns,
+               grid.rows == prefs.gridRows, Self.sameEntries(grid.entries, entries) {
+                grid.resetTransientState()
+                return grid
+            }
+            return makePageGrid(page: index, entries: entries)
         }
         pager.setPages(pages)
         warmFolderIcons(displayPages)
@@ -183,6 +195,22 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
         }
         let scale = view.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
         IconCache.shared.warm(apps, scale: scale)
+    }
+
+    // Same items in the same order, shown the same way (apps by key / name, folders by content).
+    static func sameEntries(_ lhs: [GridEntry], _ rhs: [GridEntry]) -> Bool {
+        guard lhs.count == rhs.count else { return false }
+        for (a, b) in zip(lhs, rhs) {
+            switch (a, b) {
+            case (.app(let x), .app(let y)):
+                guard x.key == y.key, x.name == y.name, x.isInstalling == y.isInstalling else { return false }
+            case (.folder(let f, let xs), .folder(let g, let ys)):
+                guard f == g, xs.map(\.key) == ys.map(\.key) else { return false }
+            default:
+                return false
+            }
+        }
+        return true
     }
 
     func makePageGrid(page: Int, entries: [GridEntry]) -> PageGridView {

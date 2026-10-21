@@ -104,6 +104,8 @@ final class FolderOverlayView: FlippedView, NSTextFieldDelegate {
         indicator.style = Preferences.shared.pageIndicatorStyle
         indicator.isHidden = true      // glass is set up in layout, only for paged folders
         indicator.onSelect = { [weak self] page in self?.pager.scrollTo(page: page, animated: true) }
+        indicator.onScrub = { [weak self] page in self?.pager.scrub(toPage: page) }
+        indicator.onScrubEnd = { [weak self] page in self?.pager.scrollTo(page: page, animated: true) }
 
         outsideBlur.material = .fullScreenUI
         outsideBlur.blendingMode = .withinWindow

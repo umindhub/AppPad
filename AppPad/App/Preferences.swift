@@ -160,6 +160,7 @@ final class Preferences: ObservableObject {
         static let followMouseScreen = "panelsFollowMouseScreen"
         static let escClearsFirst = "escClearsSearchFirst"
         static let appBadges = "showAppBadges"
+        static let fastPageSwipe = "fastPageSwipe"
         static let clipEnabled = "clipboardEnabled"
         static let clipHotKey = "clipboardHotKey"
         static let clipSavedHotKey = "clipboardSavedHotKey"
@@ -215,6 +216,8 @@ final class Preferences: ObservableObject {
     @Published var escClearsSearchFirst: Bool { didSet { save(escClearsSearchFirst, Key.escClearsFirst) } }
     // Red badges from the Dock on AppPad icons; folders show the sum. On by default.
     @Published var showAppBadges: Bool { didSet { save(showAppBadges, Key.appBadges) } }
+    // Two-finger paging: a short swipe turns a page and one swipe can cross several. Off by default.
+    @Published var fastPageSwipe: Bool { didSet { save(fastPageSwipe, Key.fastPageSwipe) } }
     @Published var appHotKeys: [AppHotKey] {
         didSet { save((try? JSONEncoder().encode(appHotKeys)) ?? Data(), Key.appHotKeys) }
     }
@@ -301,6 +304,7 @@ final class Preferences: ObservableObject {
         panelsFollowMouseScreen = d.object(forKey: Key.followMouseScreen) as? Bool ?? true
         escClearsSearchFirst = d.object(forKey: Key.escClearsFirst) as? Bool ?? false
         showAppBadges = d.object(forKey: Key.appBadges) as? Bool ?? true
+        fastPageSwipe = d.object(forKey: Key.fastPageSwipe) as? Bool ?? false
         workflowPanelHotKey = Self.loadCombo(d, Key.workflowHotKey, default: .defaultWorkflowPanel)
         clipboardEnabled = d.object(forKey: Key.clipEnabled) as? Bool ?? true
         clipboardHotKey = Self.loadCombo(d, Key.clipHotKey, default: .defaultClipboard)

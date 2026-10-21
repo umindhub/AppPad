@@ -3,6 +3,8 @@ import QuartzCore
 
 // Horizontal pager driven by trackpad gestures.
 // The strip follows the fingers 1:1; on release it snaps (velocity or distance) with a display-link spring.
+// Fast page swiping (setting): a short finger distance moves a whole page, so one swipe can cross several pages;
+// vertical swipes then track the same way (up = next page). Off: vertical swipes jump one page, like macOS 15.
 final class PagerView: FlippedView {
     var onProgress: ((CGFloat) -> Void)?   // fractional page index, for the indicator
 
@@ -27,6 +29,14 @@ final class PagerView: FlippedView {
     private var lastWheelPageTime: TimeInterval = 0
     private var animationTarget: CGFloat?
     private var link: CADisplayLink?
+    private var fastSwipe = false   // captured per gesture
+    // Indicator scrub in progress: fractional page that layout must keep (not snap to currentPage).
+    private var scrubPage: CGFloat?
+
+    // Fast mode: finger travel per page, flick projection time, max extra pages from a flick.
+    private static let fastStep: CGFloat = 120
+    private static let fastProjection: CGFloat = 0.08
+    private static let fastMaxFlickPages: CGFloat = 3
 
     // Last swipe / momentum / snap frame of any pager. macOS eats a trackpad tap that stops a
     // scroll (no click is sent), so the launcher replays taps that land in this window.
@@ -46,13 +56,18 @@ final class PagerView: FlippedView {
     }
 
     private var pageWidth: CGFloat { max(1, bounds.width) }
+    // Where the strip sits when idle: the scrubbed fraction, else the current page.
+    private var restingPage: CGFloat { scrubPage ?? CGFloat(currentPage) }
     private var minOffset: CGFloat { -CGFloat(max(0, pageCount - 1)) * pageWidth }
 
     func setPages(_ newPages: [NSView]) {
         cancelAnimation()
-        pages.forEach { $0.removeFromSuperview() }
+        // Pages kept from the old list stay in the strip (no remove / re-add, no redraw).
+        let kept = Set(newPages.map { ObjectIdentifier($0) })
+        pages.filter { !kept.contains(ObjectIdentifier($0)) }.forEach { $0.removeFromSuperview() }
         pages = newPages
-        pages.forEach { strip.addSubview($0) }
+        pages.forEach { if $0.superview !== strip { strip.addSubview($0) } }
+        scrubPage = nil
         currentPage = min(currentPage, max(0, pages.count - 1))
         layoutPages()
         setOffset(-CGFloat(currentPage) * pageWidth)
@@ -72,7 +87,7 @@ final class PagerView: FlippedView {
         layoutPages()
         if !isTracking && animationTarget == nil {
             cancelAnimation()
-            setOffset(-CGFloat(currentPage) * pageWidth)
+            setOffset(-restingPage * pageWidth)
         }
     }
 
@@ -89,6 +104,7 @@ final class PagerView: FlippedView {
             setOffset(0)
             return
         }
+        scrubPage = nil
         currentPage = min(max(0, page), pageCount - 1)
         let target = -CGFloat(currentPage) * pageWidth
         if animated && window != nil {
@@ -99,12 +115,24 @@ final class PagerView: FlippedView {
         }
     }
 
+    // Indicator scrub: jump to a fractional page, no spring. Ignored during a trackpad swipe.
+    // Stays fractional (layout keeps it) until scrollTo ends the scrub.
+    func scrub(toPage page: CGFloat) {
+        guard pageCount > 0, !isTracking else { return }
+        cancelAnimationKeepingPosition()
+        let clamped = min(max(page, 0), CGFloat(pageCount - 1))
+        scrubPage = clamped
+        currentPage = Int(clamped.rounded())
+        setOffset(-clamped * pageWidth)
+    }
+
     // Stop any spring and settle on the current page.
     func cancelAnimation() {
         link?.invalidate()
         link = nil
-        if animationTarget != nil {
+        if animationTarget != nil || scrubPage != nil {
             animationTarget = nil
+            scrubPage = nil
             setOffset(-CGFloat(currentPage) * pageWidth)
         }
     }
@@ -113,7 +141,7 @@ final class PagerView: FlippedView {
         super.layout()
         layoutPages()
         if !isTracking && animationTarget == nil {
-            setOffset(-CGFloat(currentPage) * pageWidth)
+            setOffset(-restingPage * pageWidth)
         }
     }
 
@@ -153,8 +181,10 @@ final class PagerView: FlippedView {
 
         if event.phase.contains(.began) {
             cancelAnimationKeepingPosition()
+            scrubPage = nil
             isTracking = true
             axis = nil
+            fastSwipe = Preferences.shared.fastPageSwipe
             trackStart = offset
             translation = 0
             velocity = 0
@@ -170,9 +200,9 @@ final class PagerView: FlippedView {
             lastEventTime = event.timestamp
             switch axis {
             case .horizontal:
-                translation += dx
-                velocity = velocity * 0.5 + (dx / CGFloat(dt)) * 0.5
-                setOffset(rubberBand(trackStart + translation))
+                track(dx, dt: dt)
+            case .vertical where fastSwipe:
+                track(dy, dt: dt)
             case .vertical:
                 translation += dy
             case nil:
@@ -187,11 +217,32 @@ final class PagerView: FlippedView {
         }
     }
 
+    // Strip follows the finger delta along the gesture axis.
+    private func track(_ delta: CGFloat, dt: TimeInterval) {
+        translation += delta
+        velocity = velocity * 0.5 + (delta / CGFloat(dt)) * 0.5
+        setOffset(trackedOffset())
+    }
+
+    // Finger gain: 1 normally, page width / fastStep in fast mode.
+    private var gain: CGFloat { fastSwipe ? max(1, pageWidth / Self.fastStep) : 1 }
+
+    // Strip offset for the current translation; edge resistance stays in finger space.
+    private func trackedOffset() -> CGFloat {
+        let g = gain
+        let raw = trackStart + translation * g
+        if raw > 0 { return raw / g * 0.3 }
+        if raw < minOffset { return minOffset + (raw - minOffset) / g * 0.3 }
+        return raw
+    }
+
     private func finishGesture() {
         let width = pageWidth
         let startPage = Int((-trackStart / width).rounded())
         var target = startPage
         switch axis {
+        case .horizontal where fastSwipe, .vertical where fastSwipe:
+            target = fastTarget(startPage: startPage)
         case .horizontal:
             if abs(velocity) > 500 {
                 target += velocity < 0 ? 1 : -1
@@ -209,18 +260,27 @@ final class PagerView: FlippedView {
         scrollTo(page: target, animated: true)
     }
 
+    // Fast mode release: current (unclamped) position plus a short flick projection,
+    // committing to the next page once 30% of it is crossed in the swipe direction.
+    private func fastTarget(startPage: Int) -> Int {
+        let position = -(trackStart + translation * gain) / pageWidth
+        let flick = abs(velocity) > 500
+        var extra = -velocity * Self.fastProjection / Self.fastStep
+        extra = min(max(extra, -Self.fastMaxFlickPages), Self.fastMaxFlickPages)
+        let projected = position + (flick ? extra : 0)
+        let forward = flick ? velocity < 0 : translation < 0
+        var target = forward ? Int(floor(projected + 0.7)) : Int(ceil(projected - 0.7))
+        // A flick always moves at least one page its way.
+        if flick { target = forward ? max(target, startPage + 1) : min(target, startPage - 1) }
+        return target
+    }
+
     // Classic mouse wheel: one notch = one page.
     private func handleMouseWheel(_ event: NSEvent) {
         let delta = abs(event.scrollingDeltaY) >= abs(event.scrollingDeltaX) ? event.scrollingDeltaY : event.scrollingDeltaX
         guard delta != 0, event.timestamp - lastWheelPageTime > 0.3 else { return }
         lastWheelPageTime = event.timestamp
         scrollTo(page: currentPage + (delta < 0 ? 1 : -1), animated: true)
-    }
-
-    private func rubberBand(_ x: CGFloat) -> CGFloat {
-        if x > 0 { return x * 0.3 }
-        if x < minOffset { return minOffset + (x - minOffset) * 0.3 }
-        return x
     }
 
     // MARK: - Spring animation

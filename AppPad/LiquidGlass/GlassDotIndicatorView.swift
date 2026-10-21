@@ -25,6 +25,9 @@ import QuartzCore
 //        drag → lens catches up with the pointer then tracks 1:1, and the page switches
 //               IMMEDIATELY whenever the pointer crosses into another dot (not on release);
 //        up   → lens settles on the current page and drops.
+// Continuous scrub (fast page swiping): while dragging, the page follows the lens position
+//        fractionally (onScrub every frame) instead of switching per dot; release ends on the
+//        nearest dot (onScrubEnd).
 // Force Touch: deep click (stage 2) keeps the lens lifted for forceHoldDelay after release,
 //        then eases back over ~1 s. After a deep click the press never turns into a drag
 //        (finger roll-back on release would pull the lens to the previous dot and back).
@@ -39,6 +42,9 @@ final class GlassDotIndicatorView: FlippedView {
     enum Content: Equatable { case dots, numbers }
 
     var onSelect: ((Int) -> Void)?
+    var onScrub: ((CGFloat) -> Void)?          // fractional page while dragging (continuous mode)
+    var onScrubEnd: ((Int) -> Void)?           // drag released on this page (continuous mode)
+    var scrubsContinuously: () -> Bool = { false }
 
     // MARK: Tuning
 
@@ -149,6 +155,7 @@ final class GlassDotIndicatorView: FlippedView {
     private var isPressingHard = false  // wide drag threshold until mouse up
     private var didDeepClick = false    // stage 2 reached during this press
     private var holdTask: Task<Void, Never>?
+    private var isContinuous = false    // captured on mouse down
 
     // MARK: Init
 
@@ -611,6 +618,7 @@ final class GlassDotIndicatorView: FlippedView {
         downTime = event.timestamp
         pendingDragSince = nil
         lastEmitted = Int(clampedPage(progress).rounded())
+        isContinuous = scrubsContinuously()
 
         pos.configure(Self.travelSpring)
         lift.configure(Self.liftSpring)
@@ -668,6 +676,9 @@ final class GlassDotIndicatorView: FlippedView {
         lastDragTime = event.timestamp
         startAnimating()
 
+        // Continuous mode: the page follows the lens in tick(); no per-dot switching.
+        if isContinuous { return }
+
         // Immediate paging: the dot under the pointer becomes the page now (with hysteresis,
         // so jitter on a dot boundary can't flip pages back and forth).
         let nearest = Int(target.rounded())
@@ -678,9 +689,11 @@ final class GlassDotIndicatorView: FlippedView {
 
     override func mouseUp(with event: NSEvent) {
         guard isPressed else { return }
-        // Pressed / dragged-to dot; pointer drift while releasing force is ignored.
-        let landed = lastEmitted
         let wasDragging = isTracking
+        // Pressed / dragged-to dot; pointer drift while releasing force is ignored.
+        // Continuous drag: nearest dot to where the lens is now.
+        let scrubbed = isContinuous && wasDragging
+        let landed = scrubbed ? Int(clampedPage(pos.value).rounded()) : lastEmitted
         isPressed = false
         isTracking = false
         isCatchingUp = false
@@ -694,7 +707,12 @@ final class GlassDotIndicatorView: FlippedView {
             dropLens(lift: Self.releaseLiftSpring, glow: Self.glowOffSpring)
         }
         startAnimating()
-        emit(landed)
+        if scrubbed {
+            lastEmitted = landed
+            onScrubEnd?(landed)        // always: the page may sit between dots
+        } else {
+            emit(landed)
+        }
     }
 
     // MARK: Force Touch
@@ -797,6 +815,9 @@ final class GlassDotIndicatorView: FlippedView {
         }
         let liftDone = lift.step(dt)
         let glowDone = glow.step(dt)
+
+        // Continuous scrub: page tracks the lens, one update per frame.
+        if isTracking && isContinuous { onScrub?(clampedPage(pos.value)) }
 
         // Release finished: hand the lens back to the pager progress.
         if !isPressed && isSettling && posDone {

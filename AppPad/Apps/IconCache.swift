@@ -98,7 +98,8 @@ final class IconCache {
 
     // MARK: - Blank icon detection
 
-    private static let signatureSide = 32
+    // Pure pixel math: nonisolated so the lazy property initializer can call it.
+    nonisolated private static let signatureSide = 32
 
     // Generic app / folder icon, or a colorless near-white tile (the dashed placeholder).
     private func looksBlank(_ image: NSImage) -> Bool {
@@ -112,7 +113,7 @@ final class IconCache {
     }
 
     // Opaque pixels almost gray and mostly light, or nearly nothing drawn at all.
-    private static func isColorlessLight(_ sig: [UInt8]) -> Bool {
+    nonisolated private static func isColorlessLight(_ sig: [UInt8]) -> Bool {
         var opaque = 0, light = 0, maxSpread = 0
         for i in stride(from: 0, to: sig.count, by: 4) {
             let a = Int(sig[i + 3])
@@ -128,7 +129,7 @@ final class IconCache {
     }
 
     // Small RGBA render used to compare icons.
-    private static func signature(_ image: NSImage) -> [UInt8]? {
+    nonisolated private static func signature(_ image: NSImage) -> [UInt8]? {
         let side = signatureSide
         var rect = CGRect(x: 0, y: 0, width: side, height: side)
         guard let cg = image.cgImage(forProposedRect: &rect, context: nil, hints: nil),
