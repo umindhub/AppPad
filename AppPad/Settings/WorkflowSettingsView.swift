@@ -10,6 +10,7 @@ struct WorkflowSettingsView: View {
 
     @State private var editing: Workflow?
     @State private var editingIsNew = false
+    @State private var editingReadOnly = false                    // built-in: view only
     @State private var shownResult: WorkflowRunResult?
     @State private var pendingDelete: Workflow?
     @State private var secretNames: [String] = []
@@ -35,13 +36,14 @@ struct WorkflowSettingsView: View {
             }
             .formStyle(.grouped)
             // ⌘↩ in the Workflow panel (also fires on first appear): open the editor,
-            // or for a built-in (not editable) scroll to its row and highlight it.
+            // or for a built-in (not editable) scroll to its row, highlight it and open it read-only.
             .onReceive(store.$pendingEditID) { id in
                 guard let id else { return }
                 store.pendingEditID = nil
                 guard let workflow = store.workflow(id: id) else { return }
                 if workflow.isBuiltin {
                     reveal(id, with: proxy)
+                    openReadOnly(workflow)
                 } else {
                     edit(workflow, isNew: false)
                 }
@@ -60,7 +62,7 @@ struct WorkflowSettingsView: View {
         }
         .sheet(item: $editing) { workflow in
             WorkflowEditorView(
-                workflow: workflow, isNew: editingIsNew,
+                workflow: workflow, isNew: editingIsNew, readOnly: editingReadOnly,
                 onSave: { store.save($0); editing = nil },
                 onCancel: { editing = nil }
             )
@@ -281,7 +283,7 @@ struct WorkflowSettingsView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(count: 2) {
-            if !workflow.isBuiltin { edit(workflow, isNew: false) }
+            if workflow.isBuiltin { openReadOnly(workflow) } else { edit(workflow, isNew: false) }
         }
         .contextMenu { rowActions(workflow, last: last) }
         .background(
@@ -292,10 +294,12 @@ struct WorkflowSettingsView: View {
         .id(workflow.id)
     }
 
-    // "…" button and right click. Built-ins can't be edited or deleted: Disable / Enable instead.
+    // "…" button and right click. Built-ins can't be edited or deleted: View and Disable / Enable instead.
     @ViewBuilder
     private func rowActions(_ workflow: Workflow, last: WorkflowRunResult?) -> some View {
-        if !workflow.isBuiltin {
+        if workflow.isBuiltin {
+            Button(String(localized: "View…", table: "WorkflowEditor")) { openReadOnly(workflow) }
+        } else {
             Button(String(localized: "Edit…", table: "WorkflowEditor")) { edit(workflow, isNew: false) }
         }
         Button(String(localized: "Duplicate", table: "WorkflowEditor")) { store.duplicate(workflow) }
@@ -343,6 +347,14 @@ struct WorkflowSettingsView: View {
 
     private func edit(_ workflow: Workflow, isNew: Bool) {
         editingIsNew = isNew
+        editingReadOnly = false
+        editing = workflow
+    }
+
+    // Same sheet, everything locked (built-ins).
+    private func openReadOnly(_ workflow: Workflow) {
+        editingIsNew = false
+        editingReadOnly = true
         editing = workflow
     }
 

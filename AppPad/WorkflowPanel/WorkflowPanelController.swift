@@ -130,6 +130,12 @@ final class WorkflowPanelController: NSObject, NSWindowDelegate {
         WorkflowRunner.shared.start(id: workflow.id, trigger: .panel, argument: argument, confirmed: confirmed)
     }
 
+    // ⌘S / Run button: same run, but the panel stays open and its preview shows the result.
+    func runInPlace(_ workflow: Workflow, argument: String, confirmed: Bool = false) {
+        launchpad.recordUse(workflow.statsKey)
+        WorkflowRunner.shared.start(id: workflow.id, trigger: .panel, argument: argument, confirmed: confirmed)
+    }
+
     func open(_ app: AppInfo) {
         hide()
         launchpad.launch(app)   // records the launch

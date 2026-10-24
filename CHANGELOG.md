@@ -20,6 +20,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.8
+
+### Added
+
+#### Workflows
+- Run button (⌘S) in the Workflow panel: runs the selected workflow, keeps the panel open and shows the result under Last Run.
+- Built-in workflows can now be viewed (read-only) in Settings.
+
+### Changed
+- Workflows: Running without a required argument now marks the hint with a warning icon and a short shake.
+
+### Fixed
+- Launchpad: Fixed the layout being erased when a .pkg upgrade or reinstall took a long time.
+
 ## v1.3.7
 
 ### Changed

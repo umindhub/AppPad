@@ -21,7 +21,7 @@ enum WorkflowPanelKeys {
         kVK_ANSI_1, kVK_ANSI_2, kVK_ANSI_3, kVK_ANSI_4, kVK_ANSI_5,
         kVK_ANSI_6, kVK_ANSI_7, kVK_ANSI_8, kVK_ANSI_9, kVK_ANSI_0,
         kVK_Return, kVK_ANSI_KeypadEnter, kVK_Delete,
-        kVK_ANSI_J, kVK_ANSI_K, kVK_ANSI_W, kVK_ANSI_Comma, kVK_ANSI_Q,
+        kVK_ANSI_J, kVK_ANSI_K, kVK_ANSI_W, kVK_ANSI_Comma, kVK_ANSI_Q, kVK_ANSI_S,
         kVK_ANSI_C, kVK_ANSI_V, kVK_ANSI_X, kVK_ANSI_A, kVK_ANSI_Z,
     ]
 

@@ -1,9 +1,14 @@
 import AppKit
 
 // Right-hand side of the Workflow panel: icon, name, details (steps, permissions, last run) and key hints.
+// Workflows: a Run button (⌘S, panel stays open) sits under the usage / typed argument, above Steps;
+// while running it spins and Last Run stays empty, then shows the result.
+// Run with a required argument left empty: a yellow ! appears before the hint and the line shakes for 1 s
+// (an invalid argument keeps its red ✕ and only shakes); cleared when the argument or row changes.
 // Calculator row: expression and result, ↩ copies (flashCopied shows a short confirmation).
 final class WorkflowPreviewView: FlippedView {
     var onEscape: (() -> Void)?
+    var onRun: (() -> Void)?
 
     private let iconView = NSImageView()
     private let titleLabel = NSTextField(labelWithString: "")
@@ -14,6 +19,15 @@ final class WorkflowPreviewView: FlippedView {
     private let hintLabel = NSTextField(labelWithString: "")
     private var titleText = ""
     private var copiedTask: Task<Void, Never>?
+    private let runButton = WorkflowRunButton()
+    private var runAnchor: Int?          // character index of the button's placeholder in the text
+    private var lastRunAnchor: Int?      // character index where the Last Run section starts
+    private var shownKey: String?        // same item shown again → keep the scroll position
+    private var shownArgument = ""
+    private var argumentWarning = false  // yellow ! on the empty-argument hint, until the argument / row changes
+    private var resultRange: NSRange?    // argument result line in the text (shaken)
+    private var shakeTimer: Timer?
+    private var shakeStart: TimeInterval = 0
 
     private static let outputLimit = 4000
     private static let relativeFormatter: RelativeDateTimeFormatter = {
@@ -49,6 +63,10 @@ final class WorkflowPreviewView: FlippedView {
         textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         textView.onEscape = { [weak self] in self?.onEscape?() }
         textScroll.documentView = textView
+        // Lives inside the text so it scrolls with it; placed over a blank placeholder.
+        runButton.isHidden = true
+        runButton.onClick = { [weak self] in self?.onRun?() }
+        textView.addSubview(runButton)
 
         [iconView, titleLabel, sourcePill, subtitleLabel, textScroll, hintLabel].forEach { addSubview($0) }
         show(nil)
@@ -59,15 +77,34 @@ final class WorkflowPreviewView: FlippedView {
     }
 
     // argument = text after the first space; missingShortcut = a shortcut step not found in Shortcuts.
+    // revealRun: scroll the Run button (and the result below it) into view.
     func show(_ item: WorkflowPanelItem?, isRunning: Bool = false, lastResult: WorkflowRunResult? = nil,
-              argument: String = "", missingShortcut: String? = nil) {
+              argument: String = "", missingShortcut: String? = nil, revealRun: Bool = false) {
         let views: [NSView] = [iconView, titleLabel, subtitleLabel, textScroll, hintLabel]
         sourcePill.configure(nil, style: .pill(fontSize: 13))
         guard let item else {
             views.forEach { $0.isHidden = true }
+            runAnchor = nil
+            runButton.isHidden = true
+            shownKey = nil
+            shownArgument = ""
+            argumentWarning = false
+            stopShake()
             needsLayout = true
             return
         }
+        let key = Self.key(item)
+        let keepScroll = key == shownKey
+        let savedY = textScroll.contentView.bounds.origin.y
+        if key != shownKey || argument != shownArgument {
+            argumentWarning = false
+            stopShake()
+        }
+        shownKey = key
+        shownArgument = argument
+        runAnchor = nil
+        lastRunAnchor = nil
+        resultRange = nil
         views.forEach { $0.isHidden = false }
         copiedTask?.cancel()
         iconView.image = item.icon
@@ -107,8 +144,27 @@ final class WorkflowPreviewView: FlippedView {
             textView.textStorage?.setAttributedString(details(expression: expression, result: result))
             hintLabel.stringValue = String(localized: "↩ Copy", table: "Workflow")
         }
-        textView.scrollToBeginningOfDocument(nil)
+        runButton.isRunning = isRunning
+        runButton.isHidden = runAnchor == nil
+        layoutText()
+        if keepScroll {
+            restoreScroll(savedY)
+        } else {
+            textView.scrollToBeginningOfDocument(nil)
+        }
+        positionRunButton()
+        if revealRun {
+            if isRunning { revealRunButton() } else { revealLastRun() }
+        }
         needsLayout = true
+    }
+
+    private static func key(_ item: WorkflowPanelItem) -> String {
+        switch item {
+        case .workflow(let workflow): return "w:" + workflow.id.uuidString
+        case .app(let app): return "a:" + app.key
+        case .calculator: return "c"
+        }
     }
 
     // MARK: - Text
@@ -129,6 +185,9 @@ final class WorkflowPreviewView: FlippedView {
         if workflow.argument != .off {
             usage(workflow, argument: argument, in: text)
         }
+
+        // Right under the typed argument. ↩ installs / opens Shortcuts while one is missing: no button then.
+        if missingShortcut == nil { runPlaceholder(in: text) }
 
         section(String(localized: "Steps"), in: text)
         for (index, step) in workflow.steps.enumerated() {
@@ -152,9 +211,11 @@ final class WorkflowPreviewView: FlippedView {
             }
         }
 
+        // Running: the button spins and Last Run stays empty until the result is in.
+        lastRunAnchor = text.length
         section(String(localized: "Last Run", table: "Workflow"), in: text)
         if isRunning {
-            line(String(localized: "Running…", table: "Workflow"), in: text)
+            // empty on purpose
         } else if let result = lastResult {
             let when = Self.relativeFormatter.localizedString(for: result.finishedAt, relativeTo: Date())
             let status: String
@@ -177,6 +238,70 @@ final class WorkflowPreviewView: FlippedView {
             line(String(localized: "Not run yet", table: "Workflow"), in: text, color: .secondaryLabelColor)
         }
         return text
+    }
+
+    // Blank line exactly as large as the Run button; positionRunButton() puts the button over it.
+    private func runPlaceholder(in text: NSMutableAttributedString) {
+        let font = NSFont.systemFont(ofSize: 13)
+        text.append(NSAttributedString(string: "\n", attributes: [.font: font]))
+        let size = runButton.preferredSize
+        let attachment = NSTextAttachment()
+        attachment.image = NSImage(size: size, flipped: false) { _ in true }
+        attachment.bounds = NSRect(x: 0, y: font.descender, width: size.width, height: size.height)
+        runAnchor = text.length
+        let row = NSMutableAttributedString(attachment: attachment)
+        row.append(NSAttributedString(string: "\n", attributes: [.font: font]))
+        text.append(row)
+    }
+
+    // MARK: - Run button placement / scrolling
+
+    private func layoutText() {
+        guard let manager = textView.layoutManager, let container = textView.textContainer else { return }
+        manager.ensureLayout(for: container)
+        textView.sizeToFit()
+    }
+
+    private func positionRunButton() {
+        guard let index = runAnchor, let manager = textView.layoutManager, let container = textView.textContainer,
+              index < (textView.textStorage?.length ?? 0) else {
+            runButton.isHidden = true
+            return
+        }
+        manager.ensureLayout(for: container)
+        let glyphs = manager.glyphRange(forCharacterRange: NSRange(location: index, length: 1), actualCharacterRange: nil)
+        let rect = manager.boundingRect(forGlyphRange: glyphs, in: container)
+        let origin = textView.textContainerOrigin
+        let size = runButton.preferredSize
+        runButton.frame = NSRect(x: (rect.minX + origin.x).rounded(), y: (rect.minY + origin.y).rounded(),
+                                 width: size.width, height: size.height)
+    }
+
+    // Same item re-shown (running state / result / argument changed): stay where the user scrolled.
+    private func restoreScroll(_ y: CGFloat) {
+        let clip = textScroll.contentView
+        let maxY = max(0, textView.frame.height - clip.bounds.height)
+        clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: min(max(0, y), maxY)))
+        textScroll.reflectScrolledClipView(clip)
+    }
+
+    // Run just started: make sure the button is on screen.
+    private func revealRunButton() {
+        guard !runButton.isHidden else { return }
+        let top = max(0, runButton.frame.minY - 8)
+        _ = textView.scrollToVisible(NSRect(x: 0, y: top, width: 1, height: runButton.frame.height + 16))
+    }
+
+    // Run finished: Last Run title and as much of the result as fits.
+    private func revealLastRun() {
+        guard let index = lastRunAnchor, let manager = textView.layoutManager, let container = textView.textContainer,
+              index < (textView.textStorage?.length ?? 0) else { return }
+        let glyphs = manager.glyphRange(forCharacterRange: NSRange(location: index, length: 1), actualCharacterRange: nil)
+        let rect = manager.boundingRect(forGlyphRange: glyphs, in: container)
+        let top = max(0, rect.minY + textView.textContainerOrigin.y)
+        let visible = textScroll.contentView.bounds.height
+        let height = min(visible - 1, textView.frame.height - top)
+        _ = textView.scrollToVisible(NSRect(x: 0, y: top, width: 1, height: max(1, height)))
     }
 
     // Where it came from: full link / file name and when, plus "edited" once its behavior changed.
@@ -293,6 +418,8 @@ final class WorkflowPreviewView: FlippedView {
 
         // Result of what was typed. Placeholder, result and error share one size so the page does not jump.
         let typed = argument.trimmingCharacters(in: .whitespaces)
+        let start = text.length
+        defer { resultRange = NSRange(location: start, length: text.length - start) }
         switch WorkflowArguments.parse(typed, type: workflow.argumentType, mode: workflow.argument) {
         case .success(let parsed):
             // Optional argument left empty: keep the line's height with a blank.
@@ -302,12 +429,66 @@ final class WorkflowPreviewView: FlippedView {
                 result(parsed.summary, in: text, state: .valid)
             }
         case .failure(let error):
-            result(error.message, in: text, state: typed.isEmpty ? .neutral : .invalid)
+            let state: ResultState = typed.isEmpty ? (argumentWarning ? .warning : .neutral) : .invalid
+            result(error.message, in: text, state: state)
         }
     }
 
     private enum ResultState {
-        case neutral, valid, invalid, cancelled
+        case neutral, valid, invalid, cancelled, warning
+    }
+
+    // MARK: - Argument warning
+
+    // Run attempted without a valid argument (⌘S / Run button).
+    func warnArgument() {
+        argumentWarning = true
+        startShake()
+    }
+
+    private static let shakeDuration: TimeInterval = 1
+    private static let shakeAmplitude: CGFloat = 4
+    private static let shakeFrequency: Double = 6   // back-and-forth per second
+
+    private func startShake() {
+        stopShake()
+        shakeStart = ProcessInfo.processInfo.systemUptime
+        let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.shakeTick() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        shakeTimer = timer
+    }
+
+    private func stopShake() {
+        guard let timer = shakeTimer else { return }
+        timer.invalidate()
+        shakeTimer = nil
+        applyShakeOffset(0)
+    }
+
+    // Constant swing, easing out over the last 20%.
+    private func shakeTick() {
+        let t = ProcessInfo.processInfo.systemUptime - shakeStart
+        guard t < Self.shakeDuration else {
+            stopShake()
+            return
+        }
+        let fade = min(1, (Self.shakeDuration - t) / (Self.shakeDuration * 0.2))
+        let offset = Self.shakeAmplitude * CGFloat(fade * sin(2 * .pi * Self.shakeFrequency * t))
+        applyShakeOffset(offset)
+    }
+
+    // Moves the whole result line (wrapped lines too) by shifting its indents.
+    private func applyShakeOffset(_ offset: CGFloat) {
+        guard let range = resultRange, let storage = textView.textStorage,
+              range.length > 0, NSMaxRange(range) <= storage.length else { return }
+        guard let style = Self.resultStyle.mutableCopy() as? NSMutableParagraphStyle else { return }
+        style.firstLineHeadIndent = max(0, Self.resultStyle.firstLineHeadIndent + offset)
+        style.headIndent = max(0, Self.resultStyle.headIndent + offset)
+        storage.beginEditing()
+        storage.addAttribute(.paragraphStyle, value: style, range: range)
+        storage.endEditing()
     }
 
     private static let resultFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
@@ -324,12 +505,12 @@ final class WorkflowPreviewView: FlippedView {
     private func result(_ string: String, in text: NSMutableAttributedString, state: ResultState) {
         let textColor: NSColor
         switch state {
-        case .neutral, .cancelled: textColor = .secondaryLabelColor
+        case .neutral, .cancelled, .warning: textColor = .secondaryLabelColor
         case .valid: textColor = .labelColor
         case .invalid: textColor = .systemRed
         }
         badgeLine(string, in: text, state: state, iconAlpha: 1, textColor: textColor,
-                  font: Self.resultFont, iconSize: Self.resultIconSize, style: Self.resultStyle)
+                  font: Self.resultFont, iconSize: Self.resultIconSize, gap: Self.resultTextGap, style: Self.resultStyle)
     }
 
     // Succeeded: lighter green ✓ + secondary text; failed: lighter red ✕ + lighter red text;
@@ -337,22 +518,22 @@ final class WorkflowPreviewView: FlippedView {
     private func lastRun(_ string: String, in text: NSMutableAttributedString, state: ResultState) {
         let textColor: NSColor
         switch state {
-        case .neutral: textColor = .secondaryLabelColor
+        case .neutral, .warning: textColor = .secondaryLabelColor
         case .valid: textColor = .secondaryLabelColor
         case .invalid: textColor = NSColor.systemRed.withAlphaComponent(Self.lastRunAlpha)
         case .cancelled: textColor = .tertiaryLabelColor
         }
         badgeLine(string, in: text, state: state, iconAlpha: Self.lastRunAlpha, textColor: textColor,
-                  font: Self.lastRunFont, iconSize: Self.lastRunIconSize, style: Self.lastRunStyle)
+                  font: Self.lastRunFont, iconSize: Self.lastRunIconSize, gap: Self.resultIconGap, style: Self.lastRunStyle)
     }
 
     private func badgeLine(_ string: String, in text: NSMutableAttributedString, state: ResultState,
                            iconAlpha: CGFloat, textColor: NSColor, font: NSFont, iconSize: CGFloat,
-                           style: NSParagraphStyle) {
+                           gap: CGFloat, style: NSParagraphStyle) {
         let icon = Self.resultIcon(state, alpha: iconAlpha, size: iconSize, font: font, centeredOn: string)
         let line = NSMutableAttributedString(attachment: icon)
         line.append(NSAttributedString(string: "\u{00A0}", attributes: [
-            .font: font, .kern: Self.resultIconGap,
+            .font: font, .kern: gap,
         ]))
         line.append(NSAttributedString(string: string + "\n", attributes: [
             .font: font, .foregroundColor: textColor,
@@ -371,6 +552,7 @@ final class WorkflowPreviewView: FlippedView {
         case .valid: attachment.image = badge(mark: "checkmark", color: .systemGreen, alpha: alpha, size: size)
         case .invalid: attachment.image = badge(mark: "xmark", color: .systemRed, alpha: alpha, size: size)
         case .cancelled: attachment.image = badge(mark: "minus", color: .systemGray, alpha: alpha, size: size)
+        case .warning: attachment.image = badge(mark: "exclamationmark", color: .systemYellow, alpha: alpha, size: size)
         }
         // Vertically centered on the text's visual middle; half-point steps (Retina) instead of whole points.
         let y = textMiddle(string, font: font) - size.height / 2
@@ -436,12 +618,21 @@ final class WorkflowPreviewView: FlippedView {
     // Inner left padding of a pill.
     private static let pillPadX: CGFloat = 10
 
-    // Icon flush left; wrapped lines continue under the text, not under the icon.
+    // Lined up with the Run button below: ✓ / ✕ centered on its ▶, the text starting where "Run" starts.
+    // Wrapped lines continue under the text, not under the icon.
+    private static let resultIconIndent: CGFloat =
+        max(0, (WorkflowRunButton.iconCenterX - resultIconSize / 2).rounded())
+
+    private static let resultTextGap: CGFloat = {
+        let space = ("\u{00A0}" as NSString).size(withAttributes: [.font: resultFont]).width
+        return WorkflowRunButton.titleTextX - resultIconIndent - resultIconSize - space
+    }()
+
     private static let resultStyle: NSParagraphStyle = {
         let p = NSMutableParagraphStyle()
         p.paragraphSpacingBefore = 10
-        let space = ("\u{00A0}" as NSString).size(withAttributes: [.font: resultFont]).width
-        p.headIndent = resultIconSize + space + resultIconGap
+        p.firstLineHeadIndent = resultIconIndent
+        p.headIndent = WorkflowRunButton.titleTextX
         return p
     }()
 
@@ -543,5 +734,157 @@ final class WorkflowPreviewView: FlippedView {
         let contentTop = icon + 12
         textScroll.frame = NSRect(x: 0, y: contentTop, width: b.width,
                                   height: max(0, hintLabel.frame.minY - 10 - contentTop))
+        positionRunButton()   // text reflows when the width changes
+    }
+}
+
+// MARK: - Run button
+
+// Accent capsule "▶ Run ⌘S"; while running, a spinner replaces the label (same size, nothing jumps).
+// Title and key are one attributed label, so they always sit on the same baseline.
+final class WorkflowRunButton: NSView {
+    var onClick: (() -> Void)?
+
+    var isRunning = false {
+        didSet {
+            guard isRunning != oldValue else { return }
+            updateState()
+        }
+    }
+
+    private let iconView = NSImageView()
+    private let titleLabel = NSTextField(labelWithString: "")
+    private let spinner = NSProgressIndicator()
+    private var hovering = false { didSet { needsDisplay = true } }
+    private var pressed = false { didSet { needsDisplay = true } }
+
+    private static let height: CGFloat = 28
+    private static let padX: CGFloat = 14
+    private static let iconGap: CGFloat = 6
+
+    private static let playImage: NSImage? = NSImage(systemSymbolName: "play.fill", accessibilityDescription: nil)?
+        .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 11, weight: .bold))
+    private static var playWidth: CGFloat { playImage?.size.width ?? 10 }
+    // Label cell's own left inset before the first glyph.
+    private static let labelInset: CGFloat = {
+        let cell = NSTextField(labelWithString: "x").cell
+        return cell?.titleRect(forBounds: NSRect(x: 0, y: 0, width: 100, height: 20)).minX ?? 2
+    }()
+
+    // For lining up text outside the button (the argument result line above it).
+    static var iconCenterX: CGFloat { padX + playWidth / 2 }
+    static var titleTextX: CGFloat { padX + playWidth + iconGap + labelInset }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        iconView.image = Self.playImage
+        iconView.contentTintColor = .white
+        let label = NSMutableAttributedString(string: String(localized: "Run", table: "Workflow"), attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .semibold),
+            .foregroundColor: NSColor.white,
+        ])
+        label.append(NSAttributedString(string: "  ⌘S", attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .regular),
+            .foregroundColor: NSColor.white.withAlphaComponent(0.75),
+        ]))
+        titleLabel.attributedStringValue = label
+        spinner.style = .spinning
+        spinner.controlSize = .small
+        spinner.isDisplayedWhenStopped = false
+        spinner.appearance = NSAppearance(named: .darkAqua)   // light spinner on the accent fill
+        [iconView, titleLabel, spinner].forEach { addSubview($0) }
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(String(localized: "Run", table: "Workflow"))
+        updateState()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    var preferredSize: NSSize {
+        let icon = iconView.image?.size.width ?? 10
+        let title = ceil(titleLabel.cell?.cellSize.width ?? 50)
+        return NSSize(width: Self.padX * 2 + icon + Self.iconGap + title, height: Self.height)
+    }
+
+    private func updateState() {
+        [iconView, titleLabel].forEach { $0.isHidden = isRunning }
+        if isRunning { spinner.startAnimation(nil) } else { spinner.stopAnimation(nil) }
+        if isRunning { pressed = false }
+        setAccessibilityEnabled(!isRunning)
+        needsDisplay = true
+    }
+
+    override func layout() {
+        super.layout()
+        let b = bounds
+        let iconSize = iconView.image?.size ?? NSSize(width: 10, height: 10)
+        let titleSize = titleLabel.cell?.cellSize ?? .zero
+        var x = Self.padX
+        iconView.frame = NSRect(x: x, y: ((b.height - iconSize.height) / 2).rounded(),
+                                width: iconSize.width, height: iconSize.height)
+        x += iconSize.width + Self.iconGap
+        titleLabel.frame = NSRect(x: x, y: ((b.height - titleSize.height) / 2).rounded(),
+                                  width: ceil(titleSize.width), height: ceil(titleSize.height))
+        let spin: CGFloat = 16
+        spinner.frame = NSRect(x: ((b.width - spin) / 2).rounded(), y: ((b.height - spin) / 2).rounded(),
+                               width: spin, height: spin)
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let path = NSBezierPath(roundedRect: bounds, xRadius: bounds.height / 2, yRadius: bounds.height / 2)
+        var color = NSColor.controlAccentColor
+        if isRunning {
+            color = color.withAlphaComponent(0.65)
+        } else if pressed {
+            color = color.blended(withFraction: 0.2, of: .black) ?? color
+        } else if hovering {
+            color = color.blended(withFraction: 0.12, of: .white) ?? color
+        }
+        color.setFill()
+        path.fill()
+    }
+
+    // MARK: Mouse
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func resetCursorRects() {
+        addCursorRect(bounds, cursor: .arrow)   // not the text view's I-beam
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach { removeTrackingArea($0) }
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                                       owner: self, userInfo: nil))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+
+    override func mouseDown(with event: NSEvent) {
+        guard !isRunning else { return }
+        pressed = true
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard !isRunning else { return }
+        pressed = bounds.contains(convert(event.locationInWindow, from: nil))
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard !isRunning else { return }
+        let inside = bounds.contains(convert(event.locationInWindow, from: nil))
+        pressed = false
+        if inside { onClick?() }
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        guard !isRunning else { return false }
+        onClick?()
+        return true
     }
 }

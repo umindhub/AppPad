@@ -15,8 +15,10 @@ enum ShortcutsCatalog {
 }
 
 // Sheet: edit a draft; nothing is stored until Save (grants excepted, they apply to saved workflows).
+// readOnly: view a built-in workflow (fields locked, scripts selectable, only Done; grants stay editable).
 struct WorkflowEditorView: View {
     let isNew: Bool
+    let readOnly: Bool
     let onSave: (Workflow) -> Void
     let onCancel: () -> Void
 
@@ -32,12 +34,14 @@ struct WorkflowEditorView: View {
     @State private var keywordText: String
     @State private var localizedKeywordText: [String: String]   // per language, edited as text
 
-    init(workflow: Workflow, isNew: Bool, onSave: @escaping (Workflow) -> Void, onCancel: @escaping () -> Void) {
+    init(workflow: Workflow, isNew: Bool, readOnly: Bool = false,
+         onSave: @escaping (Workflow) -> Void, onCancel: @escaping () -> Void) {
         _draft = State(initialValue: workflow)
         savedIconURL = workflow.iconURL
         _keywordText = State(initialValue: workflow.keywords.joined(separator: ", "))
         _localizedKeywordText = State(initialValue: workflow.localizations.mapValues { $0.keywords.joined(separator: ", ") })
         self.isNew = isNew
+        self.readOnly = readOnly
         self.onSave = onSave
         self.onCancel = onCancel
     }
@@ -47,12 +51,14 @@ struct WorkflowEditorView: View {
             Form {
                 generalSection
                 argumentSection
-                languagesSection
+                if !(readOnly && draft.localizations.isEmpty) {
+                    languagesSection
+                }
                 noticeSection
                 stepsSection
                 permissionsSection
                 authorizationSection
-                if !draft.validationErrors.isEmpty {
+                if !readOnly, !draft.validationErrors.isEmpty {
                     Section {
                         ForEach(draft.validationErrors, id: \.self) { error in
                             Label(error, systemImage: "exclamationmark.triangle.fill")
@@ -68,12 +74,24 @@ struct WorkflowEditorView: View {
             Divider()
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel, action: onCancel)
-                    .keyboardShortcut(.cancelAction)
-                Button("Save") { onSave(normalized(draft)) }
-                    .keyboardShortcut(.defaultAction)
-                    .pillProminentButton()
-                    .disabled(!canSave)
+                if readOnly {
+                    // Esc closes too (invisible cancel twin).
+                    Button(String(localized: "Cancel"), action: onCancel)
+                        .keyboardShortcut(.cancelAction)
+                        .opacity(0)
+                        .frame(width: 0, height: 0)
+                        .accessibilityHidden(true)
+                    Button(String(localized: "Done", table: "Workflow"), action: onCancel)
+                        .keyboardShortcut(.defaultAction)
+                        .pillProminentButton()
+                } else {
+                    Button("Cancel", role: .cancel, action: onCancel)
+                        .keyboardShortcut(.cancelAction)
+                    Button("Save") { onSave(normalized(draft)) }
+                        .keyboardShortcut(.defaultAction)
+                        .pillProminentButton()
+                        .disabled(!canSave)
+                }
             }
             .padding(12)
         }
@@ -104,87 +122,94 @@ struct WorkflowEditorView: View {
                     }
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                TextField(String(localized: "ID", table: "WorkflowEditor"), text: $draft.identifier, prompt: Text(verbatim: "com.example.my-workflow"))
-                    .font(.system(.body, design: .monospaced))
-                if let identifierError {
-                    Text(verbatim: identifierError).font(.caption).foregroundStyle(.orange)
+            Group {
+                VStack(alignment: .leading, spacing: 2) {
+                    TextField(String(localized: "ID", table: "WorkflowEditor"), text: $draft.identifier, prompt: Text(verbatim: "com.example.my-workflow"))
+                        .font(.system(.body, design: .monospaced))
+                    if !readOnly, let identifierError {
+                        Text(verbatim: identifierError).font(.caption).foregroundStyle(.orange)
+                    }
                 }
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                TextField("Version", text: $draft.version, prompt: Text(verbatim: "1.0"))
-                    .font(.system(.body, design: .monospaced))
-                if let versionError {
-                    Text(verbatim: versionError).font(.caption).foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 2) {
+                    TextField("Version", text: $draft.version, prompt: Text(verbatim: "1.0"))
+                        .font(.system(.body, design: .monospaced))
+                    if !readOnly, let versionError {
+                        Text(verbatim: versionError).font(.caption).foregroundStyle(.orange)
+                    }
                 }
-            }
-            TextField("Name", text: $draft.name)
-            TextField(String(localized: "Description", table: "WorkflowEditor"), text: $draft.summary, axis: .vertical)
-                .lineLimit(1...4)
-            VStack(alignment: .leading, spacing: 2) {
-                // Own text state: rebuilding the list on each keystroke would eat the comma being typed.
-                TextField(String(localized: "Keywords", table: "WorkflowEditor"), text: $keywordText, prompt: Text(verbatim: "shutdown, poweroff"))
-                    .font(.system(.body, design: .monospaced))
-                    .onChange(of: keywordText) { _, text in draft.keywords = Workflow.cleanKeywords([text]) }
-                Text("Separate keywords with commas or spaces. An exact keyword ranks the workflow first.", tableName: "WorkflowEditor")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            TextField(String(localized: "Group", table: "WorkflowEditor"), text: $draft.group, prompt: Text("None"))
-            LabeledContent(String(localized: "Icon", table: "WorkflowEditor")) {
-                HStack(spacing: 10) {
-                    Image(nsImage: iconImage)
-                        .resizable()
-                        .interpolation(.high)
-                        .frame(width: 48, height: 48)
-                    Button(String(localized: "Choose Image…", table: "WorkflowEditor"), action: chooseIcon)
-                    if draft.icon != nil || !draft.iconURL.isEmpty {
-                        Button(String(localized: "Use Default", table: "WorkflowEditor")) {
-                            draft.icon = nil
-                            draft.iconURL = ""
+                TextField("Name", text: $draft.name)
+                TextField(String(localized: "Description", table: "WorkflowEditor"), text: $draft.summary, axis: .vertical)
+                    .lineLimit(1...4)
+                VStack(alignment: .leading, spacing: 2) {
+                    // Own text state: rebuilding the list on each keystroke would eat the comma being typed.
+                    TextField(String(localized: "Keywords", table: "WorkflowEditor"), text: $keywordText, prompt: Text(verbatim: "shutdown, poweroff"))
+                        .font(.system(.body, design: .monospaced))
+                        .onChange(of: keywordText) { _, text in draft.keywords = Workflow.cleanKeywords([text]) }
+                    Text("Separate keywords with commas or spaces. An exact keyword ranks the workflow first.", tableName: "WorkflowEditor")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                TextField(String(localized: "Group", table: "WorkflowEditor"), text: $draft.group, prompt: Text("None"))
+                LabeledContent(String(localized: "Icon", table: "WorkflowEditor")) {
+                    HStack(spacing: 10) {
+                        Image(nsImage: iconImage)
+                            .resizable()
+                            .interpolation(.high)
+                            .frame(width: 48, height: 48)
+                        if !readOnly {
+                            Button(String(localized: "Choose Image…", table: "WorkflowEditor"), action: chooseIcon)
+                        }
+                        if !readOnly, draft.icon != nil || !draft.iconURL.isEmpty {
+                            Button(String(localized: "Use Default", table: "WorkflowEditor")) {
+                                draft.icon = nil
+                                draft.iconURL = ""
+                            }
+                        }
+                    }
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        TextField(String(localized: "Icon URL", table: "WorkflowEditor"), text: $draft.iconURL, prompt: Text(verbatim: "https://example.com/icon.png"))
+                            .onSubmit(loadIcon)
+                        if readOnly {
+                            EmptyView()
+                        } else if loadingIcon {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Button(String(localized: "Load", table: "WorkflowEditor"), action: loadIcon)
+                                .disabled(!WorkflowIdentity.isValidIconURL(draft.iconURL))
+                        }
+                    }
+                    if let iconURLError {
+                        Text(verbatim: iconURLError).font(.caption).foregroundStyle(.orange)
+                    } else if let iconStatus {
+                        Text(verbatim: iconStatus).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .onChange(of: draft.iconURL) { _, _ in
+                    iconPreview = nil
+                    iconStatus = nil
+                }
+                Toggle(String(localized: "Enabled", table: "WorkflowEditor"), isOn: $draft.enabled)
+                VStack(alignment: .leading, spacing: 2) {
+                    Toggle(String(localized: "Ask before running", table: "WorkflowEditor"), isOn: $draft.requiresConfirmation)
+                    Text("Shows a confirmation first, however it is started. Use it for actions that are hard to undo.", tableName: "WorkflowEditor")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                LabeledContent(String(localized: "Shortcut in Workflow panel", table: "WorkflowEditor")) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        ShortcutRecorder(combo: $draft.panelKey)
+                            .frame(width: 170, height: 24)
+                        if let conflict = WorkflowPanelKeys.conflict(for: draft.panelKey, excluding: draft.id) {
+                            Text(verbatim: conflict)
+                                .font(.caption)
+                                .foregroundStyle(.orange)
                         }
                     }
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    TextField(String(localized: "Icon URL", table: "WorkflowEditor"), text: $draft.iconURL, prompt: Text(verbatim: "https://example.com/icon.png"))
-                        .onSubmit(loadIcon)
-                    if loadingIcon {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Button(String(localized: "Load", table: "WorkflowEditor"), action: loadIcon)
-                            .disabled(!WorkflowIdentity.isValidIconURL(draft.iconURL))
-                    }
-                }
-                if let iconURLError {
-                    Text(verbatim: iconURLError).font(.caption).foregroundStyle(.orange)
-                } else if let iconStatus {
-                    Text(verbatim: iconStatus).font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            .onChange(of: draft.iconURL) { _, _ in
-                iconPreview = nil
-                iconStatus = nil
-            }
-            Toggle(String(localized: "Enabled", table: "WorkflowEditor"), isOn: $draft.enabled)
-            VStack(alignment: .leading, spacing: 2) {
-                Toggle(String(localized: "Ask before running", table: "WorkflowEditor"), isOn: $draft.requiresConfirmation)
-                Text("Shows a confirmation first, however it is started. Use it for actions that are hard to undo.", tableName: "WorkflowEditor")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            LabeledContent(String(localized: "Shortcut in Workflow panel", table: "WorkflowEditor")) {
-                VStack(alignment: .trailing, spacing: 2) {
-                    ShortcutRecorder(combo: $draft.panelKey)
-                        .frame(width: 170, height: 24)
-                    if let conflict = WorkflowPanelKeys.conflict(for: draft.panelKey, excluding: draft.id) {
-                        Text(verbatim: conflict)
-                            .font(.caption)
-                            .foregroundStyle(.orange)
-                    }
-                }
-            }
+            .disabled(readOnly)
         } header: {
             Text(isNew ? String(localized: "New Workflow", table: "WorkflowEditor") : String(localized: "Workflow", table: "Workflow"))
         } footer: {
@@ -206,6 +231,7 @@ struct WorkflowEditorView: View {
                 Text("Optional", tableName: "WorkflowEditor").tag(ArgumentMode.optional)
                 Text("Required", tableName: "WorkflowEditor").tag(ArgumentMode.required)
             }
+            .disabled(readOnly)
             if draft.argument != .off {
                 Picker(String(localized: "Type", table: "WorkflowEditor"), selection: $draft.argumentType) {
                     Text("Text", tableName: "WorkflowEditor").tag(ArgumentType.text)
@@ -215,7 +241,9 @@ struct WorkflowEditorView: View {
                     Text("Percent (0–100)", tableName: "WorkflowEditor").tag(ArgumentType.percent)
                     Text("Reminder (date, !priority, @list)", tableName: "WorkflowEditor").tag(ArgumentType.reminder)
                 }
+                .disabled(readOnly)
                 TextField(String(localized: "Hint", table: "WorkflowEditor"), text: $draft.argumentHint, prompt: Text(verbatim: "minutes"))
+                    .disabled(readOnly)
                 let examples = WorkflowArguments.examples(for: draft.argumentType)
                 if !examples.isEmpty {
                     let word = WorkflowPanelViewController.token(draft.displayName)
@@ -252,39 +280,47 @@ struct WorkflowEditorView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Button {
-                            draft.localizations[code] = nil
-                            localizedKeywordText[code] = nil
-                        } label: {
-                            Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                        if !readOnly {
+                            Button {
+                                draft.localizations[code] = nil
+                                localizedKeywordText[code] = nil
+                            } label: {
+                                Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.borderless)
+                            .help(Text("Remove Language", tableName: "WorkflowEditor"))
                         }
-                        .buttonStyle(.borderless)
-                        .help(Text("Remove Language", tableName: "WorkflowEditor"))
                     }
                     TextField("Name", text: localizedBinding(code, \.name), prompt: Text(verbatim: draft.name))
+                        .disabled(readOnly)
                     TextField(String(localized: "Description", table: "WorkflowEditor"), text: localizedBinding(code, \.summary),
                               prompt: Text(verbatim: draft.summary), axis: .vertical)
                         .lineLimit(1...4)
+                        .disabled(readOnly)
                     if draft.argument != .off {
                         TextField(String(localized: "Hint", table: "WorkflowEditor"), text: localizedBinding(code, \.argumentHint),
                                   prompt: Text(verbatim: draft.argumentHint))
+                            .disabled(readOnly)
                     }
                     TextField(String(localized: "Keywords", table: "WorkflowEditor"), text: localizedKeywordBinding(code),
                               prompt: Text(verbatim: draft.keywords.joined(separator: ", ")))
                         .font(.system(.body, design: .monospaced))
+                        .disabled(readOnly)
                 }
                 .padding(.vertical, 2)
             }
-            let missing = WorkflowLanguage.editable.filter { draft.localizations[$0] == nil }
-            Menu(String(localized: "Add Language", table: "WorkflowEditor")) {
-                ForEach(missing, id: \.self) { code in
-                    Button(WorkflowLanguage.displayName(code)) {
-                        draft.localizations[code] = WorkflowLocalization()
+            if !readOnly {
+                let missing = WorkflowLanguage.editable.filter { draft.localizations[$0] == nil }
+                Menu(String(localized: "Add Language", table: "WorkflowEditor")) {
+                    ForEach(missing, id: \.self) { code in
+                        Button(WorkflowLanguage.displayName(code)) {
+                            draft.localizations[code] = WorkflowLocalization()
+                        }
                     }
                 }
+                .fixedSize()
+                .disabled(missing.isEmpty)
             }
-            .fixedSize()
-            .disabled(missing.isEmpty)
         } header: {
             Text("Languages", tableName: "WorkflowEditor")
         } footer: {
@@ -298,22 +334,25 @@ struct WorkflowEditorView: View {
 
     private var noticeSection: some View {
         Section {
-            Picker(String(localized: "When it succeeds", table: "WorkflowEditor"), selection: $draft.successNotice) {
-                Text("Show the result", tableName: "WorkflowEditor").tag(SuccessNotice.output)
-                Text("Show a custom message", tableName: "WorkflowEditor").tag(SuccessNotice.custom)
-                Text("No notification", tableName: "WorkflowEditor").tag(SuccessNotice.none)
+            Group {
+                Picker(String(localized: "When it succeeds", table: "WorkflowEditor"), selection: $draft.successNotice) {
+                    Text("Show the result", tableName: "WorkflowEditor").tag(SuccessNotice.output)
+                    Text("Show a custom message", tableName: "WorkflowEditor").tag(SuccessNotice.custom)
+                    Text("No notification", tableName: "WorkflowEditor").tag(SuccessNotice.none)
+                }
+                if draft.successNotice == .custom {
+                    TextField(String(localized: "Message", table: "WorkflowEditor"), text: $draft.successMessage, prompt: Text("Done: {{output}}", tableName: "WorkflowEditor"))
+                }
+                Toggle(String(localized: "Also copy the result to the clipboard", table: "WorkflowEditor"), isOn: $draft.copyOutput)
+                Picker(String(localized: "When it fails", table: "WorkflowEditor"), selection: $draft.failureNotice) {
+                    Text("Show the error", tableName: "WorkflowEditor").tag(FailureNotice.error)
+                    Text("Show a custom message", tableName: "WorkflowEditor").tag(FailureNotice.custom)
+                }
+                if draft.failureNotice == .custom {
+                    TextField(String(localized: "Message", table: "WorkflowEditor"), text: $draft.failureMessage, prompt: Text("Failed: {{error}}", tableName: "WorkflowEditor"))
+                }
             }
-            if draft.successNotice == .custom {
-                TextField(String(localized: "Message", table: "WorkflowEditor"), text: $draft.successMessage, prompt: Text("Done: {{output}}", tableName: "WorkflowEditor"))
-            }
-            Toggle(String(localized: "Also copy the result to the clipboard", table: "WorkflowEditor"), isOn: $draft.copyOutput)
-            Picker(String(localized: "When it fails", table: "WorkflowEditor"), selection: $draft.failureNotice) {
-                Text("Show the error", tableName: "WorkflowEditor").tag(FailureNotice.error)
-                Text("Show a custom message", tableName: "WorkflowEditor").tag(FailureNotice.custom)
-            }
-            if draft.failureNotice == .custom {
-                TextField(String(localized: "Message", table: "WorkflowEditor"), text: $draft.failureMessage, prompt: Text("Failed: {{error}}", tableName: "WorkflowEditor"))
-            }
+            .disabled(readOnly)
         } header: {
             Text("Notifications", tableName: "WorkflowEditor")
         } footer: {
@@ -333,6 +372,7 @@ struct WorkflowEditorView: View {
                 StepEditor(
                     step: $step,
                     number: index + 1,
+                    readOnly: readOnly,
                     canMoveUp: index > 0,
                     canMoveDown: index < draft.steps.count - 1,
                     shortcutNames: shortcutNames,
@@ -341,17 +381,19 @@ struct WorkflowEditorView: View {
                     onDelete: { draft.steps.removeAll { $0.id == step.id } }
                 )
             }
-            Menu(String(localized: "Add Step", table: "WorkflowEditor")) {
-                ForEach(WorkflowStepKind.allCases, id: \.self) { kind in
-                    Button {
-                        draft.steps.append(WorkflowStep(kind: kind))
-                    } label: {
-                        Label(kind.title, systemImage: kind.symbolName)
+            if !readOnly {
+                Menu(String(localized: "Add Step", table: "WorkflowEditor")) {
+                    ForEach(WorkflowStepKind.allCases, id: \.self) { kind in
+                        Button {
+                            draft.steps.append(WorkflowStep(kind: kind))
+                        } label: {
+                            Label(kind.title, systemImage: kind.symbolName)
+                        }
                     }
                 }
+                .menuStyle(.button)   // pill like the other buttons
+                .fixedSize()
             }
-            .menuStyle(.button)   // pill like the other buttons
-            .fixedSize()
         } header: {
             Text("Steps")
         } footer: {
@@ -366,20 +408,23 @@ struct WorkflowEditorView: View {
     private var permissionsSection: some View {
         Section {
             ValueListEditor(title: String(localized: "Read access", table: "WorkflowEditor"), values: $draft.permissions.fileRead,
-                            placeholder: "~/Projects", choose: chooseFiles)
+                            placeholder: "~/Projects", readOnly: readOnly, choose: chooseFiles)
             ValueListEditor(title: String(localized: "Read and write access", table: "WorkflowEditor"), values: $draft.permissions.fileWrite,
-                            placeholder: "~/.Trash", choose: chooseFiles)
+                            placeholder: "~/.Trash", readOnly: readOnly, choose: chooseFiles)
             Toggle(isOn: $draft.permissions.network) {
                 Text("Network access", tableName: "Workflow")
                 Text("Scripts may connect anywhere (curl, git, gh…).", tableName: "WorkflowEditor")
             }
+            .disabled(readOnly)
             Toggle(isOn: $draft.permissions.systemServices) {
                 Text("System services", tableName: "Workflow")
                 Text("open, pbcopy, say, launching apps… Always on for AppleScript.", tableName: "WorkflowEditor")
             }
+            .disabled(readOnly)
             ValueListEditor(title: String(localized: "Control apps (Apple Events)", table: "WorkflowEditor"), values: $draft.permissions.appleEvents,
-                            placeholder: "com.apple.finder", display: { AppLookup.name(forBundleID: $0) }, choose: chooseApps)
-            ValueListEditor(title: String(localized: "HTTP hosts", table: "WorkflowEditor"), values: $draft.permissions.httpHosts, placeholder: "api.github.com")
+                            placeholder: "com.apple.finder", display: { AppLookup.name(forBundleID: $0) }, readOnly: readOnly, choose: chooseApps)
+            ValueListEditor(title: String(localized: "HTTP hosts", table: "WorkflowEditor"), values: $draft.permissions.httpHosts,
+                            placeholder: "api.github.com", readOnly: readOnly)
             if draft.usesHTTP {
                 if secretNames.isEmpty {
                     LabeledContent(String(localized: "Secrets", table: "WorkflowEditor")) {
@@ -390,16 +435,19 @@ struct WorkflowEditorView: View {
                         Toggle(isOn: secretBinding(name)) {
                             Text("Use secret “\(name)”", tableName: "WorkflowEditor")
                         }
+                        .disabled(readOnly)
                     }
                 }
             }
-            HStack {
-                Button(String(localized: "Detect from Steps", table: "WorkflowEditor"), action: detect)
-                if let detectNote {
-                    Text(detectNote)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
+            if !readOnly {
+                HStack {
+                    Button(String(localized: "Detect from Steps", table: "WorkflowEditor"), action: detect)
+                    if let detectNote {
+                        Text(detectNote)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                    }
                 }
             }
         } header: {
@@ -630,6 +678,7 @@ struct WorkflowEditorView: View {
 private struct StepEditor: View {
     @Binding var step: WorkflowStep
     let number: Int
+    let readOnly: Bool
     let canMoveUp: Bool
     let canMoveDown: Bool
     let shortcutNames: [String]
@@ -646,16 +695,18 @@ private struct StepEditor: View {
                 Text(verbatim: "\(number). \(step.kind.title)")
                     .font(.headline)
                 Spacer()
-                Button(action: onMoveUp) { Image(systemName: "chevron.up") }
-                    .disabled(!canMoveUp)
-                    .help(Text("Move Up", tableName: "WorkflowEditor"))
-                Button(action: onMoveDown) { Image(systemName: "chevron.down") }
-                    .disabled(!canMoveDown)
-                    .help(Text("Move Down", tableName: "WorkflowEditor"))
-                Button(action: onDelete) {
-                    Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                if !readOnly {
+                    Button(action: onMoveUp) { Image(systemName: "chevron.up") }
+                        .disabled(!canMoveUp)
+                        .help(Text("Move Up", tableName: "WorkflowEditor"))
+                    Button(action: onMoveDown) { Image(systemName: "chevron.down") }
+                        .disabled(!canMoveDown)
+                        .help(Text("Move Down", tableName: "WorkflowEditor"))
+                    Button(action: onDelete) {
+                        Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                    }
+                    .help(Text("Remove Step", tableName: "WorkflowEditor"))
                 }
-                .help(Text("Remove Step", tableName: "WorkflowEditor"))
             }
             .buttonStyle(.borderless)
 
@@ -667,6 +718,7 @@ private struct StepEditor: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .disabled(readOnly)
             }
         }
         .padding(.vertical, 4)
@@ -679,7 +731,7 @@ private struct StepEditor: View {
             Text("zsh, runs sandboxed. Input on stdin and $APPPAD_INPUT.", tableName: "WorkflowEditor")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            CodeEditorBox(text: $step.script)
+            CodeEditorBox(text: $step.script, isEditable: !readOnly)
         case .appleScript:
             Picker(String(localized: "Language", table: "WorkflowEditor"), selection: $step.language) {
                 Text("AppleScript", tableName: "Workflow").tag(ScriptLanguage.appleScript)
@@ -688,7 +740,8 @@ private struct StepEditor: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .fixedSize()
-            CodeEditorBox(text: $step.script)
+            .disabled(readOnly)
+            CodeEditorBox(text: $step.script, isEditable: !readOnly)
         case .shortcut:
             HStack {
                 TextField(String(localized: "Shortcut name", table: "WorkflowEditor"), text: $step.shortcutName)
@@ -705,8 +758,10 @@ private struct StepEditor: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
             }
+            .disabled(readOnly)
             TextField(String(localized: "Input", table: "WorkflowEditor"), text: $step.shortcutInput, prompt: Text(verbatim: "{{input}}"))
                 .font(.system(.body, design: .monospaced))
+                .disabled(readOnly)
             Text("Sent to the shortcut. Empty = the step input; {{input}} inserts it, \\n starts a new line.", tableName: "WorkflowEditor")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -723,15 +778,16 @@ private struct StepEditor: View {
                     .labelsHidden()
                     .font(.system(.body, design: .monospaced))
             }
+            .disabled(readOnly)
             Text("Headers, one per line (Name: Value). Use {{secret:NAME}} for tokens.", tableName: "WorkflowEditor")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            CodeEditorBox(text: $step.http.headers, minHeight: 60)
+            CodeEditorBox(text: $step.http.headers, minHeight: 60, isEditable: !readOnly)
             if step.http.method != .GET {
                 Text("Body", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                CodeEditorBox(text: $step.http.body, minHeight: 60)
+                CodeEditorBox(text: $step.http.body, minHeight: 60, isEditable: !readOnly)
             }
         case .builtin:
             Picker(String(localized: "Action", table: "WorkflowEditor"), selection: $step.builtin) {
@@ -739,19 +795,23 @@ private struct StepEditor: View {
                     Label(action.title, systemImage: action.symbolName).tag(action)
                 }
             }
+            .disabled(readOnly)
             if step.builtin == .openURL {
                 TextField(String(localized: "URL", table: "WorkflowEditor"), text: $step.url,
                           prompt: Text(verbatim: "https://www.google.com/search?q={{input}}"))
                     .labelsHidden()
                     .font(.system(.body, design: .monospaced))
+                    .disabled(readOnly)
                 Text("{{input}} is replaced by the argument (URL-encoded).", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else if step.builtin == .prefillTerminal {
                 TextField("Folder", text: $step.directory, prompt: Text(verbatim: "~/Projects/MyApp"))
                     .font(.system(.body, design: .monospaced))
+                    .disabled(readOnly)
                 TextField(String(localized: "Command", table: "WorkflowEditor"), text: $step.command, prompt: Text(verbatim: "sh build.sh {{input}}"))
                     .font(.system(.body, design: .monospaced))
+                    .disabled(readOnly)
                 Text("Terminal opens in this folder with the command typed at the prompt. Nothing runs until you press Return there. {{input}} is replaced by the argument.", tableName: "WorkflowEditor")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -772,6 +832,7 @@ private struct ValueListEditor: View {
     @Binding var values: [String]
     var placeholder: String
     var display: ((String) -> String)? = nil
+    var readOnly = false
     var choose: (() -> [String])? = nil
     @State private var newValue = ""
 
@@ -791,23 +852,31 @@ private struct ValueListEditor: View {
                             .lineLimit(1)
                     }
                     Spacer()
-                    Button {
-                        values.removeAll { $0 == value }
-                    } label: {
-                        Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                    if !readOnly {
+                        Button {
+                            values.removeAll { $0 == value }
+                        } label: {
+                            Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    .buttonStyle(.borderless)
                 }
             }
-            HStack {
-                TextField(placeholder, text: $newValue)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(add)
-                Button(String(localized: "Add", table: "Workflow"), action: add)
-                    .disabled(newValue.trimmingCharacters(in: .whitespaces).isEmpty)
-                if let choose {
-                    Button(String(localized: "Choose…", table: "WorkflowEditor")) {
-                        for value in choose() where !values.contains(value) { values.append(value) }
+            if readOnly {
+                if values.isEmpty {
+                    Text("None").font(.callout).foregroundStyle(.secondary)
+                }
+            } else {
+                HStack {
+                    TextField(placeholder, text: $newValue)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit(add)
+                    Button(String(localized: "Add", table: "Workflow"), action: add)
+                        .disabled(newValue.trimmingCharacters(in: .whitespaces).isEmpty)
+                    if let choose {
+                        Button(String(localized: "Choose…", table: "WorkflowEditor")) {
+                            for value in choose() where !values.contains(value) { values.append(value) }
+                        }
                     }
                 }
             }

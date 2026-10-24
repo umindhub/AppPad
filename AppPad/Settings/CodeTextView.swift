@@ -6,6 +6,7 @@ import SwiftUI
 struct CodeTextView: NSViewRepresentable {
     @Binding var text: String
     var fontSize: CGFloat = 12
+    var isEditable = true   // false: read-only but still selectable / scrollable
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 
@@ -31,13 +32,16 @@ struct CodeTextView: NSViewRepresentable {
         textView.textContainerInset = NSSize(width: 4, height: 6)
         textView.drawsBackground = false
         textView.string = text
+        textView.isEditable = isEditable
         textView.delegate = context.coordinator
         return scrollView
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.text = $text
-        guard let textView = scrollView.documentView as? NSTextView, textView.string != text else { return }
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+        if textView.isEditable != isEditable { textView.isEditable = isEditable }
+        guard textView.string != text else { return }
         // Keep the caret where it was when the model changes from outside.
         let selection = textView.selectedRanges
         textView.string = text
@@ -62,9 +66,10 @@ struct CodeTextView: NSViewRepresentable {
 struct CodeEditorBox: View {
     @Binding var text: String
     var minHeight: CGFloat = 90
+    var isEditable = true
 
     var body: some View {
-        CodeTextView(text: $text)
+        CodeTextView(text: $text, isEditable: isEditable)
             .frame(minHeight: minHeight, maxHeight: max(minHeight, 220))
             .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color(nsColor: .separatorColor)))

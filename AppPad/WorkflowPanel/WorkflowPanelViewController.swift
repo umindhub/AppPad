@@ -10,7 +10,8 @@ import Combine
 // ("Set-Timer 10:00"), so the first word always names the item and the rest is the argument.
 // Calculator: when the whole field is a math expression, a calculator row is pinned first (↩ / click copies).
 // While it shows, moving between rows does not rewrite the expression; Tab on another row still does.
-// Keys: ↩ run / open / copy, Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings,
+// Keys: ↩ run / open / copy, ⌘S run and keep the panel open (result in the preview, same as the Run button),
+// Tab complete name (apps and workflows without an argument: run / open right away), ⌘↩ edit workflow in Settings,
 // ⌘1–⌘0 row N (a workflow that takes an argument with none typed yet is only picked, like the mouse), ⌘J/K or arrows move,
 // in-panel workflow shortcuts (Settings › Workflows), Esc closes (or clears first, see General settings).
 // "Ask before running" workflows: an in-panel dialog first (↩ run, Esc cancel, every other key ignored).
@@ -40,6 +41,8 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     private var cancellables = Set<AnyCancellable>()
     private var confirmOverlay: ConfirmOverlayView?
     private var confirmShownAt: TimeInterval = 0
+    // ⌘S / Run button runs not finished yet → start time (spinner right away, reveal the result when done).
+    private var inPlaceRuns: [UUID: Date] = [:]
 
     private var prefs: Preferences { .shared }
     private var runner: WorkflowRunner { .shared }
@@ -97,6 +100,10 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         emptyLabel.font = .systemFont(ofSize: 15)
         emptyLabel.isHidden = true
         preview.onEscape = { [weak self] in self?.focusSearch() }
+        preview.onRun = { [weak self] in
+            self?.runSelectedInPlace()
+            self?.focusSearch()
+        }
 
         [scrollView, divider, preview, searchChrome, header, emptyLabel].forEach {
             root.addSubview($0)
@@ -168,6 +175,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
 
     func didHide() {
         dismissConfirm()
+        inPlaceRuns = [:]
         preview.show(nil)
     }
 
@@ -363,15 +371,26 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         updatePreview()
     }
 
-    private func updatePreview() {
+    // revealNow: a ⌘S run just started → scroll the Run button into view.
+    private func updatePreview(revealNow: Bool = false) {
         guard let item = selectedItem else {
             preview.show(nil)
             return
         }
         if case .workflow(let workflow) = item {
-            preview.show(item, isRunning: runner.running.contains(workflow.id),
-                         lastResult: runner.lastResults[workflow.id],
-                         argument: argument, missingShortcut: missingShortcut(workflow))
+            let last = runner.lastResults[workflow.id]
+            var running = runner.running.contains(workflow.id)
+            var reveal = revealNow
+            if let started = inPlaceRuns[workflow.id] {
+                if let last, last.finishedAt >= started, !running {
+                    inPlaceRuns[workflow.id] = nil   // finished: show and reveal the result once
+                    reveal = true
+                } else {
+                    running = true                   // started, runner not marked yet: spin already
+                }
+            }
+            preview.show(item, isRunning: running, lastResult: last,
+                         argument: argument, missingShortcut: missingShortcut(workflow), revealRun: reveal)
         } else {
             preview.show(item)
         }
@@ -415,7 +434,8 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
     }
 
     // Missing shortcut → install / create it; bad argument → stay open (the preview says why).
-    private func run(_ workflow: Workflow, argument: String? = nil) {
+    // stay: ⌘S / Run button, the panel stays open and the preview shows the result.
+    private func run(_ workflow: Workflow, argument: String? = nil, stay: Bool = false) {
         let value = argument ?? self.argument
         if let name = missingShortcut(workflow) {
             controller?.installShortcut(name)
@@ -423,20 +443,45 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         }
         if case .failure = WorkflowArguments.parse(value, type: workflow.argumentType, mode: workflow.argument) {
             NSSound.beep()
+            if stay { preview.warnArgument() }   // yellow ! on the hint + shake
             updatePreview()
             return
         }
         if workflow.requiresConfirmation {
-            askToRun(workflow, argument: value)
+            askToRun(workflow, argument: value, stay: stay)
             return
         }
-        controller?.run(workflow, argument: value)
+        start(workflow, argument: value, confirmed: false, stay: stay)
+    }
+
+    private func start(_ workflow: Workflow, argument: String, confirmed: Bool, stay: Bool) {
+        guard stay else {
+            controller?.run(workflow, argument: argument, confirmed: confirmed)
+            return
+        }
+        guard !runner.running.contains(workflow.id), inPlaceRuns[workflow.id] == nil else {
+            NSSound.beep()
+            return
+        }
+        inPlaceRuns[workflow.id] = Date()
+        controller?.runInPlace(workflow, argument: argument, confirmed: confirmed)
+        updatePreview(revealNow: true)
+    }
+
+    // ⌘S / Run button on the selected row (workflows only).
+    private func runSelectedInPlace() {
+        guard confirmOverlay == nil else { return }
+        guard case .workflow(let workflow)? = selectedItem else {
+            NSSound.beep()
+            return
+        }
+        run(workflow, stay: true)
     }
 
     // MARK: - Confirmation
 
     // Same in-panel dialog as the Launchpad's uninstall (the non-activating panel keeps focus).
-    private func askToRun(_ workflow: Workflow, argument: String) {
+    private func askToRun(_ workflow: Workflow, argument: String, stay: Bool) {
         dismissConfirm()
         let overlay = ConfirmOverlayView(
             icon: WorkflowIcon.image(for: workflow),
@@ -447,7 +492,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
         )
         overlay.onConfirm = { [weak self] _ in
             self?.dismissConfirm()
-            self?.controller?.run(workflow, argument: argument, confirmed: true)
+            self?.start(workflow, argument: argument, confirmed: true, stay: stay)
         }
         overlay.onCancel = { [weak self] in self?.dismissConfirm(animated: true) }
         overlay.frame = view.bounds
@@ -634,6 +679,7 @@ final class WorkflowPanelViewController: NSViewController, NSSearchFieldDelegate
             return true
         }
         switch key {
+        case "s": runSelectedInPlace()
         case "j": moveSelection(1)
         case "k": moveSelection(-1)
         case "w": controller?.hide()

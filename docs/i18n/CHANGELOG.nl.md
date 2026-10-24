@@ -18,6 +18,20 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.8
+
+### Added
+
+#### Workflows
+- Knop Voer uit (⌘S) in het workflowpaneel: voert de geselecteerde workflow uit, houdt het paneel open en toont het resultaat onder ‘Laatste uitvoering’.
+- Ingebouwde workflows zijn nu te bekijken (alleen-lezen) in Instellingen.
+
+### Changed
+- Workflows: uitvoeren zonder verplicht argument markeert de hint nu met een waarschuwingssymbool en een korte trilling.
+
+### Fixed
+- Launchpad: de indeling wordt niet meer gewist wanneer een .pkg-update of herinstallatie lang duurt.
+
 ## v1.3.7
 
 ### Changed

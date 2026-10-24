@@ -18,6 +18,20 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.8
+
+### Added
+
+#### Flussi di lavoro
+- Pulsante Esegui (⌘S) nel pannello dei flussi di lavoro: esegue il flusso selezionato, lascia aperto il pannello e mostra il risultato in «Ultima esecuzione».
+- I flussi di lavoro integrati ora si possono visualizzare (sola lettura) nelle Impostazioni.
+
+### Changed
+- Flussi di lavoro: eseguendo senza un argomento obbligatorio, il suggerimento viene segnalato con un’icona di avviso e una breve vibrazione.
+
+### Fixed
+- Launchpad: risolto il problema per cui la disposizione veniva cancellata quando un aggiornamento o una reinstallazione tramite .pkg richiedeva molto tempo.
+
 ## v1.3.7
 
 ### Changed

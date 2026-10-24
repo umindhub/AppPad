@@ -18,6 +18,20 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.8
+
+### Added
+
+#### Flux de travail
+- Bouton Exécuter (⌘S) dans le panneau des flux de travail : exécute le flux sélectionné, garde le panneau ouvert et affiche le résultat sous « Dernière exécution ».
+- Les flux de travail intégrés peuvent désormais être consultés (lecture seule) dans les Réglages.
+
+### Changed
+- Flux de travail : lancer sans l’argument requis signale désormais l’indication par une icône d’avertissement et une brève secousse.
+
+### Fixed
+- Launchpad : la disposition n’est plus effacée lorsqu’une mise à jour ou réinstallation via .pkg prend du temps.
+
 ## v1.3.7
 
 ### Changed

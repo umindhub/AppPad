@@ -18,6 +18,20 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.8
+
+### Added
+
+#### Workflows
+- Ausführen-Taste (⌘S) im Workflow-Fenster: führt den ausgewählten Workflow aus, lässt das Fenster offen und zeigt das Ergebnis unter „Letzte Ausführung“.
+- Integrierte Workflows lassen sich jetzt in den Einstellungen ansehen (schreibgeschützt).
+
+### Changed
+- Workflows: Fehlt ein erforderliches Argument, wird der Hinweis beim Ausführen mit einem Warnsymbol markiert und kurz geschüttelt.
+
+### Fixed
+- Launchpad: Das Layout wird nicht mehr gelöscht, wenn ein .pkg-Update oder eine Neuinstallation länger dauert.
+
 ## v1.3.7
 
 ### Changed
