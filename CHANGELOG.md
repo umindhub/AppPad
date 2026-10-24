@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Each release section starts with `## vX.Y.Z` — `push_apppad_release.sh` uses it as the GitHub release notes.
 
 
+## v1.3.9
+
+### Changed
+- Launchpad: Dropping an icon no longer rebuilds the whole page, so moving and grouping icons stays smooth.
+
+### Fixed
+- Launchpad: Picking up another icon while the previous drop is still animating no longer flickers or gets stuck.
+- Launchpad: Clicking a folder right after dropping an app into it now opens it immediately.
+- Launchpad: Icons still sliding into place can be clicked and dragged where they appear on screen.
+
 ## v1.3.8
 
 ### Added

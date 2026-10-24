@@ -18,6 +18,16 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.3.9
+
+### Changed
+- Launchpad: Al soltar un icono ya no se reconstruye toda la página, por lo que mover y agrupar iconos es más fluido.
+
+### Fixed
+- Launchpad: Ahora se puede coger otro icono mientras el anterior aún se está colocando, sin parpadeos ni bloqueos.
+- Launchpad: Hacer clic en una carpeta justo después de soltar una app en ella la abre al instante.
+- Launchpad: Los iconos que aún se están desplazando se pueden pulsar y arrastrar donde se ven en pantalla.
+
 ## v1.3.8
 
 ### Added

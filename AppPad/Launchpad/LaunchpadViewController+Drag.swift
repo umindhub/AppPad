@@ -107,7 +107,15 @@ extension LaunchpadViewController {
         return view
     }
 
-    func beginDrag(grid: PageGridView, index: Int, event: NSEvent, grabPoint: NSPoint) {
+    func beginDrag(grid: PageGridView, index: Int, event: NSEvent, grabPoint: NSPoint, rebased: Bool = false) {
+        // Pressed on a grid that a drop commit replaced before the drag threshold was crossed:
+        // the stale cell's index points into the old layout, so start on the rebuilt cell instead.
+        if grid.window == nil {
+            guard !rebased, drag == nil, systemDrag == nil,
+                  let fresh = freshCell(replacing: grid, index: index) else { return }
+            beginDrag(grid: fresh.grid, index: fresh.index, event: event, grabPoint: grabPoint, rebased: true)
+            return
+        }
         guard drag == nil, systemDrag == nil, let controller,
               grid.cells.indices.contains(index), !grid.cells[index].isDragSource else { return }
         // Previous drop still landing: start now on the old layout, rebase on its commit.
@@ -141,9 +149,13 @@ extension LaunchpadViewController {
         let cell = grid.cells[index]
         // The landing icon keeps its own view (removed by its commit / fade).
         if landing || dragImageView.superview != nil { dragImageView = Self.makeDragImageView() }
-        let iconRect = root.convert(cell.visualIconRect, from: cell)
-        let frame = iconRect.insetBy(dx: -iconRect.width * 0.06, dy: -iconRect.height * 0.06)
+        let iconRect = displayedIconRect(of: cell)
+        var frame = iconRect.insetBy(dx: -iconRect.width * 0.06, dy: -iconRect.height * 0.06)
         let grab = root.convert(grabPoint, from: nil)
+        // Rebased cell may sit elsewhere than the pressed one: keep the icon under the pointer.
+        if rebased, !frame.contains(grab) {
+            frame.origin = NSPoint(x: grab.x - frame.width / 2, y: grab.y - frame.height / 2)
+        }
         dragImageView.image = cell.snapshotIcon()
         dragImageView.layer?.removeAllAnimations()   // clear a previous landing transform
         dragImageView.alphaValue = 1
@@ -163,8 +175,38 @@ extension LaunchpadViewController {
         }
         state.waitsForCommit = landing
         drag = state
-        if landing { installDragEventMonitor() }
+        // Stale or soon replaced pressed cell: take the drag events at the window instead.
+        if landing || rebased { installDragEventMonitor() }
         updateDrag(event)
+    }
+
+    // Same item on the grids now shown (the pressed grid was rebuilt by a commit).
+    private func freshCell(replacing grid: PageGridView, index: Int) -> (grid: PageGridView, index: Int)? {
+        guard grid.entries.indices.contains(index) else { return nil }
+        let key = PageGridView.identity(of: grid.entries[index])
+        let candidates: [PageGridView]
+        if case .folder(let id) = grid.context {
+            candidates = folderOverlay.map { $0.folderID == id ? [$0.grid] : [] } ?? []
+        } else {
+            candidates = tileGrids.compactMap { $0 as? PageGridView }
+        }
+        for fresh in candidates where fresh.window != nil {
+            for (i, shown) in fresh.entries.enumerated()
+            where fresh.cells.indices.contains(i) && PageGridView.identity(of: shown) == key {
+                return (fresh, i)
+            }
+        }
+        return nil
+    }
+
+    // Icon rect (root) where the cell is drawn right now: a reflow slide may still be running.
+    private func displayedIconRect(of cell: GridCellView) -> NSRect {
+        let rect = root.convert(cell.visualIconRect, from: cell)
+        let offset = cell.slideOffset
+        guard offset != .zero, let superview = cell.superview else { return rect }
+        let origin = root.convert(NSPoint.zero, from: superview)
+        let moved = root.convert(NSPoint(x: offset.width, y: offset.height), from: superview)
+        return rect.offsetBy(dx: moved.x - origin.x, dy: moved.y - origin.y)
     }
 
     // Events of a drag that began on a grid the pending commit replaces: the pressed cell
@@ -737,7 +779,6 @@ extension LaunchpadViewController {
             // A drag started during the landing is parked so the reload can run, then rebased.
             let waiting = self.drag
             self.drag = nil
-            state.sourceCell.isDragSource = false
             if case .folder = state.source, state.leftFolder {
                 self.closeFolder()
             }
@@ -752,6 +793,9 @@ extension LaunchpadViewController {
                 springDrop?.overlay.removeFromSuperview()
                 self.reloadAll()                                       // cancelled: restore
             }
+            // Cleared only after the reload: a grid updated in place must still see the landed
+            // cell as the drag source, so it is put on its new slot at once instead of sliding there.
+            state.sourceCell.isDragSource = false
             self.finishDragImage(landingView)
             self.dropQuietUntil = ProcessInfo.processInfo.systemUptime + Self.dropQuietInterval
             if let waiting { self.resumeDrag(after: waiting) }

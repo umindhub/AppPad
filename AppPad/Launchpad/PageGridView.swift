@@ -174,6 +174,78 @@ final class PageGridView: FlippedView {
         needsLayout = true
     }
 
+    // Drop commit on a grid that stays: cells of items still shown are kept (no rebuild, no
+    // redraw, running slides keep going), changed ones reconfigured, new ones made, gone ones removed.
+    func updateEntries(_ newEntries: [GridEntry], editing: Bool) {
+        var pool: [String: (cell: GridCellView, entry: GridEntry)] = [:]
+        for (i, cell) in cells.enumerated() where entries.indices.contains(i) {
+            pool[Self.identity(of: entries[i])] = (cell, entries[i])
+        }
+        var placedAtOnce = Set<ObjectIdentifier>()   // fresh cells and the landed drag source
+        let newCells = newEntries.enumerated().map { index, entry -> GridCellView in
+            if let old = pool.removeValue(forKey: Self.identity(of: entry)) {
+                let cell = old.cell
+                if cell.isDragSource { placedAtOnce.insert(ObjectIdentifier(cell)) }
+                cell.isDragSource = false
+                cell.isDropTarget = false
+                cell.isSelected = false
+                cell.layer?.zPosition = 0
+                if !Self.sameContent(old.entry, entry) {
+                    cell.configure(entry)
+                    cell.setEditing(editing, badge: badgeKind(for: entry))
+                }
+                cell.index = index
+                return cell
+            }
+            let cell = GridCellView()
+            cell.grid = self
+            cell.index = index
+            cell.configure(entry)
+            cell.setEditing(editing, badge: badgeKind(for: entry))
+            addSubview(cell)
+            placedAtOnce.insert(ObjectIdentifier(cell))
+            return cell
+        }
+        pool.values.forEach { $0.cell.removeFromSuperview() }
+        entries = newEntries
+        cells = newCells
+        slotOverride = nil
+
+        let icon = currentMetrics.icon
+        let limit = fixedCellHeight == nil ? columns * rows : Int.max
+        for (index, cell) in cells.enumerated() {
+            cell.iconSize = icon
+            let target = slotRect(index)
+            if placedAtOnce.contains(ObjectIdentifier(cell)) {
+                cell.layer?.removeAnimation(forKey: "slide")
+                cell.frame = target
+            } else {
+                Self.slide(cell, to: target)      // no-op when already there
+            }
+            if !cell.isConcealed { cell.alphaValue = index < limit ? 1 : 0 }
+        }
+    }
+
+    // Same item (app by key, folder by id), whatever it shows.
+    static func identity(of entry: GridEntry) -> String {
+        switch entry {
+        case .app(let app): return "app:" + app.key
+        case .folder(let folder, _): return "folder:" + folder.id
+        }
+    }
+
+    // Same item shown the same way (apps by key / name, folders by content).
+    static func sameContent(_ lhs: GridEntry, _ rhs: GridEntry) -> Bool {
+        switch (lhs, rhs) {
+        case (.app(let x), .app(let y)):
+            return x.key == y.key && x.name == y.name && x.isInstalling == y.isInstalling
+        case (.folder(let f, let xs), .folder(let g, let ys)):
+            return f == g && xs.map(\.key) == ys.map(\.key)
+        default:
+            return false
+        }
+    }
+
     func setSelectedIndex(_ index: Int?) {
         for (i, cell) in cells.enumerated() {
             cell.isSelected = (i == index)

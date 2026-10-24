@@ -18,6 +18,16 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.3.9
+
+### Changed
+- Launchpad : Déposer une icône ne reconstruit plus toute la page, le déplacement et le regroupement restent fluides.
+
+### Fixed
+- Launchpad : Il est désormais possible de saisir une autre icône pendant que la précédente termine son animation, sans clignotement ni blocage.
+- Launchpad : Cliquer sur un dossier juste après y avoir déposé une app l’ouvre immédiatement.
+- Launchpad : Les icônes encore en train de glisser à leur place peuvent être cliquées et déplacées là où elles s’affichent.
+
 ## v1.3.8
 
 ### Added

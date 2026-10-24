@@ -153,8 +153,8 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
     // MARK: - Data
 
-    // reuseUnchanged: keep page grids whose content is the same (drop commits): only the pages the
-    // move touched are rebuilt, so a drag running meanwhile does not stutter.
+    // reuseUnchanged (drop commits): keep the page grids; unchanged ones as they are, the pages the
+    // move touched are updated in place (cells reused), so a drag running meanwhile does not stutter.
     func reloadAll(refreshFolder: Bool = true, reuseUnchanged: Bool = false) {
         _ = view
         guard let controller, drag == nil else { return }
@@ -163,6 +163,12 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
             if reuseUnchanged, let grid = pageGrid(index), grid.columns == prefs.gridColumns,
                grid.rows == prefs.gridRows, Self.sameEntries(grid.entries, entries) {
                 grid.resetTransientState()
+                return grid
+            }
+            // Changed page: update its grid in place (a full rebuild drops frames mid-drag).
+            if reuseUnchanged, let grid = pageGrid(index), grid.columns == prefs.gridColumns,
+               grid.rows == prefs.gridRows {
+                grid.updateEntries(entries, editing: isEditingLayout)
                 return grid
             }
             return makePageGrid(page: index, entries: entries)
@@ -199,18 +205,7 @@ final class LaunchpadViewController: NSViewController, NSSearchFieldDelegate {
 
     // Same items in the same order, shown the same way (apps by key / name, folders by content).
     static func sameEntries(_ lhs: [GridEntry], _ rhs: [GridEntry]) -> Bool {
-        guard lhs.count == rhs.count else { return false }
-        for (a, b) in zip(lhs, rhs) {
-            switch (a, b) {
-            case (.app(let x), .app(let y)):
-                guard x.key == y.key, x.name == y.name, x.isInstalling == y.isInstalling else { return false }
-            case (.folder(let f, let xs), .folder(let g, let ys)):
-                guard f == g, xs.map(\.key) == ys.map(\.key) else { return false }
-            default:
-                return false
-            }
-        }
-        return true
+        lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { PageGridView.sameContent($0, $1) }
     }
 
     func makePageGrid(page: Int, entries: [GridEntry]) -> PageGridView {

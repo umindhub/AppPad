@@ -18,6 +18,16 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.3.9
+
+### Changed
+- Launchpad: Il rilascio di un’icona non ricostruisce più l’intera pagina, quindi spostare e raggruppare le icone resta fluido.
+
+### Fixed
+- Launchpad: Ora è possibile afferrare un’altra icona mentre la precedente è ancora in animazione, senza sfarfallii o blocchi.
+- Launchpad: Facendo clic su una cartella subito dopo avervi rilasciato un’app, la cartella si apre immediatamente.
+- Launchpad: Le icone che stanno ancora scorrendo al loro posto si possono cliccare e trascinare dove appaiono sullo schermo.
+
 ## v1.3.8
 
 ### Added

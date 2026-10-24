@@ -18,6 +18,16 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.3.9
+
+### Changed
+- Launchpad: Bij het neerzetten van een symbool wordt niet meer de hele pagina opnieuw opgebouwd, zodat verplaatsen en groeperen soepel blijft.
+
+### Fixed
+- Launchpad: Een ander symbool oppakken terwijl het vorige nog animeert, flikkert of blokkeert niet meer.
+- Launchpad: Een map gaat nu direct open als je erop klikt meteen nadat je er een app in hebt gezet.
+- Launchpad: Symbolen die nog naar hun plek schuiven, kun je aanklikken en slepen waar ze op het scherm staan.
+
 ## v1.3.8
 
 ### Added

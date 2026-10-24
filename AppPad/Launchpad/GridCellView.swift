@@ -225,6 +225,7 @@ final class GridCellView: FlippedView {
             installingURL = app.isInstalling ? app.url : nil
             appBadgeKeys = app.isInstalling ? [] : [app.key]
         case .folder(let folder, let apps):
+            folderIcon.hiddenIndex = nil          // a reused tile may still show a landing preview
             folderIcon.icons = apps.prefix(9).map { IconCache.shared.icon(for: $0) }
             imageView.isHidden = true
             folderIcon.isHidden = false
@@ -609,14 +610,37 @@ final class GridCellView: FlippedView {
     // clicks elsewhere in the cell fall through to the grid background.
     // The cell itself (not its image subviews) takes the click, so the whole drag's
     // mouseDragged / mouseUp events always arrive here.
+    // Tested where the cell is drawn: during a reflow slide its frame is already the final one.
     override func hitTest(_ point: NSPoint) -> NSView? {
-        let local = convert(point, from: superview)
+        // A drag source is invisible (alpha only) and may share its slot with the cell moving in;
+        // the running drag keeps its events anyway (they go to the cell that got the mouse down).
+        guard !isDragSource else { return nil }
+        let offset = slideOffset
+        let shown = NSPoint(x: point.x - offset.width, y: point.y - offset.height)
+        let local = convert(shown, from: superview)
         let active = isEditing ? iconContainer.frame : iconRect
         guard active.contains(local) else { return nil }
-        if !badge.isHidden, badge.bounds.contains(badge.convert(point, from: superview)) {
+        if !badge.isHidden, badge.bounds.contains(badge.convert(shown, from: superview)) {
             return badge
         }
         return self
+    }
+
+    // Offset (superview coordinates) from the frame to where an in-flight slide draws the cell.
+    var slideOffset: NSSize {
+        guard let layer, layer.animation(forKey: "slide") != nil,
+              let shown = layer.presentation()?.transform else { return .zero }
+        // Layer space matches the superview unless its y axis runs the other way.
+        let sameY = abs(layer.frame.minY - frame.minY) < 0.5
+        return NSSize(width: shown.m41, height: sameY ? shown.m42 : -shown.m42)
+    }
+
+    // Window point in cell coordinates, relative to where the cell is drawn.
+    private func displayedLocal(windowPoint: NSPoint) -> NSPoint {
+        guard let superview else { return convert(windowPoint, from: nil) }
+        let offset = slideOffset
+        let point = superview.convert(windowPoint, from: nil)
+        return convert(NSPoint(x: point.x - offset.width, y: point.y - offset.height), from: superview)
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -669,7 +693,7 @@ final class GridCellView: FlippedView {
             grid?.cellDragEnded(self, event: event)
             return
         }
-        guard wasPressed, !longPressFired, iconRect.contains(convert(event.locationInWindow, from: nil)) else { return }
+        guard wasPressed, !longPressFired, iconRect.contains(displayedLocal(windowPoint: event.locationInWindow)) else { return }
         grid?.cellDidClick(self)
     }
 

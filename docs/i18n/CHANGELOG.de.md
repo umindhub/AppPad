@@ -18,6 +18,16 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.3.9
+
+### Changed
+- Launchpad: Beim Ablegen eines Symbols wird nicht mehr die ganze Seite neu aufgebaut, Verschieben und Gruppieren bleiben flüssig.
+
+### Fixed
+- Launchpad: Ein weiteres Symbol lässt sich jetzt aufnehmen, während das vorherige noch animiert wird – ohne Flackern oder Hängenbleiben.
+- Launchpad: Ein Ordner öffnet sich jetzt sofort, wenn er direkt nach dem Ablegen einer App angeklickt wird.
+- Launchpad: Symbole, die noch an ihren Platz gleiten, lassen sich dort anklicken und ziehen, wo sie gerade angezeigt werden.
+
 ## v1.3.8
 
 ### Added
