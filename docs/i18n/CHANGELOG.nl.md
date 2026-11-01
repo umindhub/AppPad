@@ -20,6 +20,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.4.5
+
+### Opgelost
+- Account: De foutmelding "De openbare licentiesleutel ontbreekt in deze build" na het inloggen is opgelost.
+
 ## v1.4.4
 
 ### Toegevoegd

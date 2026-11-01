@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.4.5
+
+### Fixed
+- Account: Fixed the "License public key is missing from this build" error shown after signing in.
+
 ## v1.4.4
 
 ### Added

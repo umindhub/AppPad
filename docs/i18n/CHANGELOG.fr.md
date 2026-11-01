@@ -20,6 +20,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.4.5
+
+### Corrigé
+- Compte : correction de l’erreur « La clé publique de licence est absente de cette version » affichée après la connexion.
+
 ## v1.4.4
 
 ### Ajouté

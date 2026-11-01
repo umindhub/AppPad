@@ -20,6 +20,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.4.5
+
+### Behoben
+- Konto: Der Fehler „Der Lizenzschlüssel fehlt in diesem Build“ nach der Anmeldung wurde behoben.
+
 ## v1.4.4
 
 ### Hinzugefügt
