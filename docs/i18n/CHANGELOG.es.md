@@ -20,6 +20,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.4.4
+
+### Añadido
+
+#### Cuenta
+- Inicia sesión con tu cuenta de YouMindHub en Ajustes › Cuenta.
+- Prueba gratuita en el primer inicio; después, compra para seguir usando AppPad.
+
+### Nota
+- AppPad ahora es una app de pago por 4,99 $.
+
 ## v1.4.3
 
 ### Añadido

@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.4.4
+
+### Added
+
+#### Account
+- Sign in with your YouMindHub account in Settings › Account.
+- Free trial on first launch; purchase to keep using AppPad afterwards.
+
+### Note
+- AppPad is now a paid app at $4.99.
+
 ## v1.4.3
 
 ### Added
