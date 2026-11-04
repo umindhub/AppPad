@@ -1,0 +1,111 @@
+<p align="center">
+  <img src="../images/icon.png" width="128" alt="AppPad">
+</p>
+
+<h1 align="center">AppPad</h1>
+
+<p align="center">
+  Riporta il Launchpad originale su macOS 26+ (compatibile anche con macOS 15), con appunti, flussi di lavoro, abbreviazioni per le app e controllo delle finestre.
+</p>
+
+<p align="center">
+  <a href="https://apppad.youmindhub.com">Sito web</a> · <a href="CHANGELOG.it.md">Registro delle modifiche</a>
+</p>
+
+<p align="center">
+  <a href="../../README.md">English</a> ·
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a> ·
+  Italiano ·
+  <a href="README.nl.md">Nederlands</a>
+</p>
+
+---
+
+## Installazione
+
+### Opzione 1: scarica il DMG
+
+[Scarica l’ultima versione](https://github.com/umindhub/AppPad/releases/latest), apri il DMG e trascina AppPad nella cartella Applicazioni.
+
+### Opzione 2: Homebrew
+
+```bash
+brew tap umindhub/tap
+brew trust umindhub/tap
+brew install --cask apppad
+```
+
+## Funzionalità
+
+### Launchpad
+- Ricostruzione fedele del classico Launchpad di macOS, disposizione predefinita secondo l’ordine di sistema
+- Si apre con il pizzico a quattro dita, dalla barra dei menu o facendo clic su AppPad nel Dock (un altro clic lo chiude)
+- Cartelle, trascina per riordinare o creare cartelle; tieni premuta un’icona o il tasto ⌥ per la modalità modifica
+- Disinstallazione pulita integrata: rimuove l’app insieme ai file residui
+- Ricerca a griglia, indicatore di pagina (punti / numeri), controlli Liquid Glass (macOS 26+)
+- Sfondi: bianco / grigio chiaro / grigio scuro / sfondo scrivania / colore personalizzato, impostazioni separate per aspetto chiaro e scuro
+
+### Appunti
+- Testi e immagini conservati in modo permanente
+- Qualsiasi elemento copiato può essere salvato
+- `⌘1`–`⌘0` per incollare rapidamente, filtro per app di origine, sintassi di ricerca `NomeApp::`, anteprima dal vivo
+
+### Flussi di lavoro & AI MCP
+- `⌘Space` apre il pannello Flussi di lavoro: app e flussi di lavoro ordinati insieme in base all’utilizzo
+- I flussi di lavoro eseguono script shell, AppleScript, Comandi Rapidi o richieste HTTP, con argomenti (es. `time 10`)
+- Integrati: Svuota il Cestino, Imposta timer, Imposta sveglia, Imposta volume, Esci da tutte le app…
+- I permessi dichiarati sono applicati da una vera sandbox (Consenti una volta / Non consentire / Consenti sempre)
+- Importa e condividi flussi di lavoro come file JSON o link
+- Server MCP integrato: gli assistenti IA compatibili con MCP possono richiamare e controllare direttamente i tuoi flussi di lavoro
+- L’IA può leggere tramite MCP le regole per scrivere flussi di lavoro e crearne di nuovi per te
+- I flussi di lavoro avviati dall’IA passano dalle stesse richieste di permesso e dalla stessa sandbox dei tuoi
+
+### Calcolatrice
+- Digita un’espressione direttamente nel campo di ricerca del pannello Flussi di lavoro per calcolare (supporta la notazione scientifica)
+
+### Abbreviazioni app
+- Assegna un’abbreviazione da tastiera globale a qualsiasi app
+
+### Controllo finestre
+- Aggancia a sinistra / destra (½ → ⅓ → ⅔), ingrandisci, ripristina, sposta su un altro monitor — tutte le abbreviazioni sono personalizzabili
+
+### Altro
+- Avvia al login
+- `⌘⇧K` / `⌘⇧J` passa con un’animazione tra Launchpad, Flussi di lavoro e Appunti
+- 10 lingue: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
+
+## Requisiti
+
+- macOS 15 o successivo
+
+## Licenza
+
+AppPad è un software commerciale proprietario. © 2026 YouMindHub. Tutti i diritti riservati. Questo repository contiene solo le versioni pubblicate e la documentazione; il codice sorgente non è pubblico.
+
+| Parte | Licenza |
+| --- | --- |
+| App AppPad | Proprietaria, tutti i diritti riservati |
+| Flussi di lavoro integrati | Parte di AppPad, proprietari, tutti i diritti riservati |
+| Specifica del formato dei flussi di lavoro | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.it), © YouMindHub |
+| Flussi di lavoro di terze parti nel Workflow Market | © i rispettivi autori, con la licenza scelta da ciascun autore |
+
+- I flussi di lavoro che crei sono tuoi. Decidi tu come concederli in licenza, condividerli o venderli.
+- Inviando un flusso di lavoro al Workflow Market concedi a YouMindHub il diritto non esclusivo di ospitarlo e distribuirlo tramite AppPad. Il diritto d’autore resta tuo.
+- La specifica del formato è distribuita con licenza CC BY 4.0: puoi copiarla, adattarla e ridistribuirla citando AppPad.
+- I flussi di lavoro integrati non possono essere estratti né ridistribuiti separatamente da AppPad.
+- Il nome “AppPad” e la sua icona non sono coperti da nessuna delle licenze sopra indicate.
+
+## Ringraziamenti
+
+- [GRDB.swift](https://github.com/groue/GRDB.swift) — licenza MIT
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — licenza MIT
+
+---
+
+© 2026 YouMindHub

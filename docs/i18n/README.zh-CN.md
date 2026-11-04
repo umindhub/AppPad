@@ -1,0 +1,111 @@
+<p align="center">
+  <img src="../images/icon.png" width="128" alt="AppPad">
+</p>
+
+<h1 align="center">AppPad</h1>
+
+<p align="center">
+  把原汁原味的启动台带回到 macOS 26+，也支持 macOS 15 —— 另附剪切板、工作流、App 快捷键与窗口控制。
+</p>
+
+<p align="center">
+  <a href="https://apppad.youmindhub.com">官网</a> · <a href="CHANGELOG.zh-CN.md">更新日志</a>
+</p>
+
+<p align="center">
+  <a href="../../README.md">English</a> ·
+  简体中文 ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.it.md">Italiano</a> ·
+  <a href="README.nl.md">Nederlands</a>
+</p>
+
+---
+
+## 安装
+
+### 方式一：下载 DMG
+
+[下载最新版本](https://github.com/umindhub/AppPad/releases/latest)，打开 DMG 后将 AppPad 拖入“应用程序”文件夹。
+
+### 方式二：Homebrew
+
+```bash
+brew tap umindhub/tap
+brew trust umindhub/tap
+brew install --cask apppad
+```
+
+## 功能
+
+### 启动台
+- 完整还原经典 macOS 启动台，默认布局与系统顺序一致
+- 四指捏合、菜单栏或点击程序坞中的 AppPad 打开（再次点击关闭）
+- 文件夹、拖动排序 / 合并成文件夹，长按图标或按住 ⌥ 进入编辑模式
+- 内置干净卸载：删除 App 的同时清理残留文件
+- 网格搜索、页面指示器（圆点 / 数字）、“液态玻璃”控件（macOS 26+）
+- 背景：白色 / 浅灰色 / 深灰色 / 壁纸 / 自定颜色，浅色与深色主题分别保存设置
+
+### 剪切板
+- 支持文字和图片永久保存
+- 复制内容可收藏
+- `⌘1`–`⌘0` 快速粘贴，来源 App 筛选和 `App名::` 搜索语法，右侧实时预览
+
+### 工作流 & AI MCP
+- `⌘Space` 打开工作流面板：App 与工作流按使用频率统一排序
+- 工作流可运行 Shell 脚本、AppleScript、快捷指令或 HTTP 请求，支持参数（如 `time 10`）
+- 内置：清倒废纸篓、设置倒计时、设置闹钟、设置音量、退出所有应用……
+- 权限声明由真实沙盒强制执行（允许一次 / 不允许 / 始终允许）
+- 以 JSON 文件或链接导入、分享工作流
+- 内置 MCP 服务：支持 MCP 的 AI 助手可直接调用和控制你的工作流
+- AI 可通过 MCP 读取工作流编写规范，直接帮你创建新工作流
+- AI 运行的工作流与你手动运行一样，经过同一套权限确认和沙盒
+
+### 计算器
+- 在工作流面板搜索框直接输入算式即可计算（支持科学计数法）
+
+### App 快捷键
+- 为任意 App 设置全局快捷键
+
+### 窗口控制
+- 靠左 / 靠右排列（½ → ⅓ → ⅔）、最大化、恢复、移到其他显示器，快捷键均可自定义
+
+### 其他
+- 支持开机启动
+- `⌘⇧K` / `⌘⇧J` 在启动台、工作流面板、剪切板之间变形切换
+- 10 种语言：德、英、西、法、意、日、韩、荷、简中、繁中
+
+## 系统要求
+
+- macOS 15 或更高版本
+
+## 许可协议
+
+AppPad 是闭源商业软件。© 2026 YouMindHub，保留所有权利。本仓库只用于发布安装包和文档，不包含源码。
+
+| 部分 | 协议 |
+| --- | --- |
+| AppPad 应用 | 专有，保留所有权利 |
+| 内置工作流 | 属于 AppPad 的一部分，专有，保留所有权利 |
+| 工作流格式规范 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.zh-hans)，© YouMindHub |
+| 工作流市场中的第三方工作流 | 版权归各作者，授权方式由作者自行决定 |
+
+- 你自己编写的工作流归你所有，如何授权、分享或出售由你决定。
+- 向工作流市场提交工作流，即表示你授予 YouMindHub 通过 AppPad 托管和分发该工作流的非独占权利，版权仍归你所有。
+- 工作流格式规范采用 CC BY 4.0 协议：注明出自 AppPad 即可自由复制、修改和再分发。
+- 内置工作流不得脱离 AppPad 单独提取或再分发。
+- “AppPad” 名称与图标不在上述任何协议授权范围内。
+
+## 致谢
+
+- [GRDB.swift](https://github.com/groue/GRDB.swift) —— MIT 协议
+- [Sparkle](https://github.com/sparkle-project/Sparkle) —— MIT 协议
+
+---
+
+© 2026 YouMindHub

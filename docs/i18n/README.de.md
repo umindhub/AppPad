@@ -1,0 +1,111 @@
+<p align="center">
+  <img src="../images/icon.png" width="128" alt="AppPad">
+</p>
+
+<h1 align="center">AppPad</h1>
+
+<p align="center">
+  Bringt das originale Launchpad zurück auf macOS 26+ (läuft auch unter macOS 15). Dazu Zwischenablage, Workflows, App-Kurzbefehle und Fenstersteuerung.
+</p>
+
+<p align="center">
+  <a href="https://apppad.youmindhub.com">Website</a> · <a href="CHANGELOG.de.md">Änderungsprotokoll</a>
+</p>
+
+<p align="center">
+  <a href="../../README.md">English</a> ·
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  Deutsch ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.it.md">Italiano</a> ·
+  <a href="README.nl.md">Nederlands</a>
+</p>
+
+---
+
+## Installation
+
+### Option 1: DMG herunterladen
+
+[Neueste Version herunterladen](https://github.com/umindhub/AppPad/releases/latest), DMG öffnen und AppPad in den Ordner „Programme“ ziehen.
+
+### Option 2: Homebrew
+
+```bash
+brew tap umindhub/tap
+brew trust umindhub/tap
+brew install --cask apppad
+```
+
+## Funktionen
+
+### Launchpad
+- Originalgetreue Nachbildung des klassischen macOS-Launchpads, Standardanordnung folgt der Systemreihenfolge
+- Öffnen per Vier-Finger-Zusammenziehen, über die Menüleiste oder per Klick auf AppPad im Dock (erneuter Klick schließt)
+- Ordner, Apps per Drag & Drop anordnen oder zu Ordnern zusammenfassen, langes Drücken auf ein Symbol oder ⌥ gedrückt halten für den Bearbeitungsmodus
+- Integrierte saubere Deinstallation: entfernt die App samt Restdateien
+- Rastersuche, Seitenanzeige (Punkte / Zahlen), Liquid-Glass-Steuerelemente (macOS 26+)
+- Hintergründe: Weiß / Hellgrau / Dunkelgrau / Hintergrundbild / eigene Farbe, getrennte Einstellungen für helles und dunkles Erscheinungsbild
+
+### Zwischenablage
+- Texte und Bilder werden dauerhaft gespeichert
+- Jeder kopierte Eintrag kann gesichert werden
+- `⌘1`–`⌘0` zum schnellen Einsetzen, Filter nach Quell-App, Suchsyntax `AppName::`, Live-Vorschau
+
+### Workflows & AI MCP
+- `⌘Space` öffnet das Workflow-Panel: Apps und Workflows gemeinsam nach Nutzung sortiert
+- Workflows führen Shell-Skripte, AppleScript, Kurzbefehle oder HTTP-Anfragen aus, auch mit Argumenten (z. B. `time 10`)
+- Integriert: Papierkorb entleeren, Timer stellen, Wecker stellen, Lautstärke einstellen, Alle Apps beenden …
+- Deklarierte Berechtigungen werden durch eine echte Sandbox erzwungen (Einmal erlauben / Nicht erlauben / Immer erlauben)
+- Workflows als JSON-Datei oder Link importieren und teilen
+- Integrierter MCP-Server: KI-Assistenten mit MCP-Unterstützung können deine Workflows direkt aufrufen und steuern
+- Die KI kann über MCP die Regeln zum Schreiben von Workflows lesen und neue Workflows für dich erstellen
+- Von der KI gestartete Workflows durchlaufen dieselben Berechtigungsabfragen und dieselbe Sandbox wie deine eigenen
+
+### Rechner
+- Rechenausdruck direkt in das Suchfeld des Workflow-Panels eingeben (wissenschaftliche Notation wird unterstützt)
+
+### App-Kurzbefehle
+- Jeder App einen globalen Tastaturkurzbefehl zuweisen
+
+### Fenstersteuerung
+- Links / rechts andocken (½ → ⅓ → ⅔), maximieren, wiederherstellen, auf einen anderen Bildschirm verschieben – alle Kurzbefehle anpassbar
+
+### Sonstiges
+- Beim Anmelden starten
+- `⌘⇧K` / `⌘⇧J` wechselt mit einer fließenden Animation zwischen Launchpad, Workflows und Zwischenablage
+- 10 Sprachen: de, en, es, fr, it, ja, ko, nl, zh-Hans, zh-Hant
+
+## Systemvoraussetzungen
+
+- macOS 15 oder neuer
+
+## Lizenz
+
+AppPad ist proprietäre kommerzielle Software. © 2026 YouMindHub. Alle Rechte vorbehalten. Dieses Repository enthält nur Release-Builds und Dokumentation; der Quellcode ist nicht öffentlich.
+
+| Teil | Lizenz |
+| --- | --- |
+| App AppPad | Proprietär, alle Rechte vorbehalten |
+| Integrierte Workflows | Teil von AppPad, proprietär, alle Rechte vorbehalten |
+| Spezifikation des Workflow-Formats | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.de), © YouMindHub |
+| Workflows von Drittanbietern im Workflow Market | © ihre Autoren, Lizenz nach Wahl des jeweiligen Autors |
+
+- Von dir erstellte Workflows gehören dir. Du entscheidest selbst, wie du sie lizenzierst, teilst oder verkaufst.
+- Mit dem Einreichen eines Workflows im Workflow Market räumst du YouMindHub das nicht-exklusive Recht ein, ihn über AppPad bereitzustellen und zu verbreiten. Das Urheberrecht bleibt bei dir.
+- Die Spezifikation des Workflow-Formats steht unter CC BY 4.0: Du darfst sie kopieren, bearbeiten und weitergeben, sofern du AppPad als Quelle nennst.
+- Integrierte Workflows dürfen nicht getrennt von AppPad extrahiert oder weitergegeben werden.
+- Der Name „AppPad“ und das Symbol fallen unter keine der oben genannten Lizenzen.
+
+## Danksagungen
+
+- [GRDB.swift](https://github.com/groue/GRDB.swift) — MIT-Lizenz
+- [Sparkle](https://github.com/sparkle-project/Sparkle) — MIT-Lizenz
+
+---
+
+© 2026 YouMindHub
