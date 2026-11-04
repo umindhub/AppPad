@@ -19,6 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.1
+
+### Changed
+- AI Assistants: Script workflows written by AI now follow the Mac's default shell, so they run more reliably.
+- Updates: In the "up to date" window, the OK button's label now shrinks together with the button during the countdown.
+
+### Fixed
+- AI Assistants: Scrolling the review dialog when AI saves a workflow no longer stutters.
+
+## v1.5.0
+
+### Changed
+- Settings: "Fast page swiping" moved from General to the AppPad tab, in its own "Trackpad Fast Paging" section.
+
+### Fixed
+- Launchpad: Apps whose identity changes with each version (e.g. SEGGER J-Link) now stay in their folders after an update instead of scattering across the pages.
+- Backup: Restoring now brings back the recognized text of clipboard images, so a search still finds text inside them. Images from older backups are recognized right after the restore.
+
 ## v1.4.9
 
 ### Changed

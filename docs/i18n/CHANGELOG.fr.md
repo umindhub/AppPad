@@ -20,6 +20,24 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.5.1
+
+### Modifié
+- Assistants IA : Les workflows de script écrits par l’IA utilisent désormais le shell par défaut du Mac et fonctionnent donc de façon plus fiable.
+- Mises à jour : Dans la fenêtre « À jour », le libellé du bouton OK rétrécit maintenant avec le bouton pendant le compte à rebours.
+
+### Corrigé
+- Assistants IA : Le défilement dans la fenêtre de vérification lorsque l’IA enregistre un workflow n’est plus saccadé.
+
+## v1.5.0
+
+### Modifié
+- Réglages : « Défilement rapide des pages » passe de Général à l’onglet AppPad, dans sa propre section « Défilement rapide des pages au trackpad ».
+
+### Corrigé
+- Launchpad : les apps dont l’identifiant change à chaque version (par ex. SEGGER J-Link) restent dans leurs dossiers après une mise à jour au lieu de s’éparpiller sur les pages.
+- Sauvegarde : la restauration récupère aussi le texte reconnu dans les images du presse-papiers, la recherche trouve donc toujours le texte qu’elles contiennent. Les images des anciennes sauvegardes sont reconnues juste après la restauration.
+
 ## v1.4.9
 
 ### Modifié

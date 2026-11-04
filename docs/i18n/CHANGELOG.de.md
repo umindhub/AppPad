@@ -20,6 +20,24 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.5.1
+
+### Geändert
+- KI-Assistenten: Von KI geschriebene Skript-Workflows nutzen jetzt die Standard-Shell des Mac und laufen dadurch zuverlässiger.
+- Updates: Im Fenster „Auf dem neuesten Stand“ schrumpft die Beschriftung der OK-Taste während des Countdowns jetzt zusammen mit der Taste.
+
+### Behoben
+- KI-Assistenten: Das Scrollen im Prüfdialog beim Speichern eines Workflows durch die KI ruckelt nicht mehr.
+
+## v1.5.0
+
+### Geändert
+- Einstellungen: „Schnelles Blättern“ ist von „Allgemein“ in den Tab „AppPad“ umgezogen, in einen eigenen Abschnitt „Schnelles Blättern mit dem Trackpad“.
+
+### Behoben
+- Launchpad: Apps, deren Kennung sich mit jeder Version ändert (z. B. SEGGER J-Link), bleiben nach einem Update in ihren Ordnern, statt sich über die Seiten zu verteilen.
+- Backup: Beim Wiederherstellen wird der erkannte Text von Bildern in der Zwischenablage mit zurückgeholt, sodass die Suche weiterhin Text in Bildern findet. Bilder aus älteren Backups werden direkt nach der Wiederherstellung erkannt.
+
 ## v1.4.9
 
 ### Geändert

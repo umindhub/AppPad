@@ -20,6 +20,24 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.1
+
+### Gewijzigd
+- AI-assistenten: Door AI geschreven scriptworkflows gebruiken nu de standaardshell van de Mac en werken daardoor betrouwbaarder.
+- Updates: In het venster ‘Up-to-date’ krimpt het label van de OK-knop tijdens het aftellen nu mee met de knop.
+
+### Opgelost
+- AI-assistenten: Scrollen in het controlevenster wanneer AI een workflow bewaart, hapert niet meer.
+
+## v1.5.0
+
+### Gewijzigd
+- Instellingen: 'Snel bladeren' is verplaatst van Algemeen naar het tabblad AppPad, in een eigen sectie 'Snel bladeren met trackpad'.
+
+### Opgelost
+- Launchpad: apps waarvan de identiteit per versie verandert (bijv. SEGGER J-Link) blijven na een update in hun map in plaats van over de pagina's verspreid te raken.
+- Back-up: bij het terugzetten komt ook de herkende tekst van klembordafbeeldingen terug, zodat zoeken nog steeds tekst in afbeeldingen vindt. Afbeeldingen uit oudere back-ups worden direct na het terugzetten herkend.
+
 ## v1.4.9
 
 ### Gewijzigd
