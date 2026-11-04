@@ -20,6 +20,16 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.5.3
+
+### Modificato
+- Informazioni: Il link al sito ufficiale ora punta al nuovo indirizzo.
+
+## v1.5.2
+
+### Modificato
+- Aggiornamenti: nella finestra «Aggiornato», la scritta OK sfuma durante il conto alla rovescia e scompare prima che il pulsante, restringendosi, la raggiunga, in tutte le lingue.
+
 ## v1.5.1
 
 ### Modificato

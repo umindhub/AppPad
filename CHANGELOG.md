@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.3
+
+### Changed
+- About: The official website link now points to the new address.
+
+## v1.5.2
+
+### Changed
+- Updates: In the "up to date" window, the OK label now fades out during the countdown and is gone before the shrinking button reaches it, in every language.
+
 ## v1.5.1
 
 ### Changed

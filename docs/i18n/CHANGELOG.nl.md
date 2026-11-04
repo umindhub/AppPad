@@ -20,6 +20,16 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.3
+
+### Gewijzigd
+- Over: De link naar de officiële website verwijst nu naar het nieuwe adres.
+
+## v1.5.2
+
+### Gewijzigd
+- Updates: In het venster ‘Up-to-date’ vervaagt het OK-label tijdens het aftellen en is het in elke taal verdwenen voordat de krimpende knop het bereikt.
+
 ## v1.5.1
 
 ### Gewijzigd
