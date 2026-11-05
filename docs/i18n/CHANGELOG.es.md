@@ -20,6 +20,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.5.4
+
+### Añadido
+
+#### Flujos de trabajo
+- Nuevo flujo integrado “Abrir Ajustes del Sistema”: escribe “system pantallas” para ir directamente a esa sección; sin sección, abre Ajustes del Sistema.
+- Escribe el nombre de una sección, como “pantalla” o “wifi”, y las secciones de Ajustes del Sistema que coincidan aparecen como filas propias; pulsa Retorno para abrirla.
+- Los nombres funcionan en todos los idiomas de AppPad, incluidas las secciones de Privacidad y seguridad como Cámara, Micrófono y Grabación de pantalla.
+
 ## v1.5.3
 
 ### Cambiado

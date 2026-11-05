@@ -20,6 +20,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.5.4
+
+### Ajouts
+
+#### Workflows
+- Nouveau workflow intégré « Ouvrir Réglages Système » : tapez « system moniteurs » pour aller directement à cette section ; sans section, il ouvre Réglages Système.
+- Tapez le nom d’une section, comme « moniteur » ou « wifi », et les sections de Réglages Système correspondantes apparaissent comme lignes à part ; appuyez sur Retour pour l’ouvrir.
+- Les noms fonctionnent dans toutes les langues d’AppPad, y compris les sections de Confidentialité et sécurité comme Caméra, Micro et Enregistrement de l’écran.
+
 ## v1.5.3
 
 ### Modifié

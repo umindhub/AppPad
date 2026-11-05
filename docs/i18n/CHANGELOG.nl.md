@@ -20,6 +20,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.4
+
+### Toegevoegd
+
+#### Workflows
+- Nieuwe ingebouwde workflow ‘Open Systeeminstellingen’: typ ‘system beeldschermen’ om direct naar dat onderdeel te gaan; zonder onderdeel opent Systeeminstellingen.
+- Typ de naam van een onderdeel, zoals ‘beeldscherm’ of ‘wifi’, en passende onderdelen van Systeeminstellingen verschijnen als eigen rijen; druk op Return om te openen.
+- Namen werken in alle talen van AppPad, ook onderdelen van Privacy en beveiliging zoals Camera, Microfoon en Schermopname.
+
 ## v1.5.3
 
 ### Gewijzigd

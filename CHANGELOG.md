@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.4
+
+### Added
+
+#### Workflows
+- New built-in workflow “Open System Settings”: type “system displays” to jump straight to that page; without a page it opens System Settings.
+- Type a page name such as “display” or “wifi” and matching System Settings pages show up as their own rows; press Return to open one.
+- Page names work in every language AppPad supports, including Privacy & Security pages like Camera, Microphone and Screen Recording.
+
 ## v1.5.3
 
 ### Changed

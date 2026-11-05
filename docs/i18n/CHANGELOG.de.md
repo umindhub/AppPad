@@ -20,6 +20,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.5.4
+
+### Hinzugefügt
+
+#### Workflows
+- Neuer integrierter Workflow „Systemeinstellungen öffnen“: Gib „system displays“ ein, um direkt zu diesem Bereich zu springen; ohne Bereich öffnen sich die Systemeinstellungen.
+- Gib einen Bereichsnamen wie „display“ oder „wlan“ ein, und passende Bereiche der Systemeinstellungen erscheinen als eigene Zeilen; mit Return öffnen.
+- Bereichsnamen funktionieren in allen Sprachen von AppPad, auch Bereiche unter Datenschutz & Sicherheit wie Kamera, Mikrofon und Bildschirmaufnahme.
+
 ## v1.5.3
 
 ### Geändert
