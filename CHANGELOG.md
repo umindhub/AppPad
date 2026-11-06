@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.6
+
+### Added
+
+#### Launchpad
+- Hold the left mouse button and drag on empty space to turn pages; pressing and dragging on the trackpad works too. Folders and search results can be paged the same way.
+
+### Changed
+- Launchpad: Scrolling the mouse wheel down now goes to the next page, regardless of the system's natural scrolling setting; the new "Natural mouse wheel paging" switch under Fast Paging (off by default) reverses it.
+- Settings: "Trackpad Fast Paging" is now called "Fast Paging" and also makes mouse-wheel paging faster: keep spinning the wheel to move through several pages.
+
+### Fixed
+- Launchpad: Mice with smooth scrolling could not turn pages with the wheel.
+
 ## v1.5.5
 
 ### Added

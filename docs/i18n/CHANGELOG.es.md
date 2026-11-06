@@ -20,6 +20,20 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.5.6
+
+### Añadido
+
+#### Launchpad
+- Mantén pulsado el botón izquierdo del ratón y arrastra sobre un espacio vacío para pasar de página; también funciona pulsando y arrastrando en el trackpad. Las carpetas y los resultados de búsqueda se pueden paginar igual.
+
+### Cambiado
+- Launchpad: Girar la rueda del ratón hacia abajo ahora pasa a la página siguiente, sea cual sea el ajuste de desplazamiento natural del sistema; el nuevo interruptor «Paso de páginas natural con la rueda del ratón» en «Paso rápido de páginas» (desactivado por omisión) invierte el sentido.
+- Ajustes: «Paso rápido de páginas con el trackpad» ahora se llama «Paso rápido de páginas» y también acelera el paso de páginas con la rueda del ratón: sigue girándola para avanzar varias páginas.
+
+### Corregido
+- Launchpad: Los ratones con desplazamiento suave no podían pasar de página con la rueda.
+
 ## v1.5.5
 
 ### Añadido

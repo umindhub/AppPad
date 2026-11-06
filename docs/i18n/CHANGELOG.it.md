@@ -20,6 +20,20 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.5.6
+
+### Aggiunto
+
+#### Launchpad
+- Tieni premuto il tasto sinistro del mouse e trascina su uno spazio vuoto per cambiare pagina; funziona anche premendo e trascinando sul trackpad. Cartelle e risultati di ricerca si sfogliano allo stesso modo.
+
+### Modificato
+- Launchpad: Girando la rotella del mouse verso il basso si passa ora alla pagina successiva, indipendentemente dallo scorrimento naturale di sistema; il nuovo interruttore «Scorrimento naturale delle pagine con la rotella» in «Scorrimento rapido delle pagine» (disattivato per impostazione predefinita) inverte la direzione.
+- Impostazioni: «Scorrimento rapido delle pagine con il trackpad» ora si chiama «Scorrimento rapido delle pagine» e rende più veloce anche il cambio pagina con la rotella: continua a girarla per scorrere più pagine.
+
+### Corretto
+- Launchpad: I mouse con scorrimento fluido non riuscivano a cambiare pagina con la rotella.
+
 ## v1.5.5
 
 ### Aggiunto

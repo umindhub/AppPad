@@ -20,6 +20,20 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.5.6
+
+### Ajouté
+
+#### Launchpad
+- Maintenez le bouton gauche de la souris et faites glisser sur un espace vide pour changer de page ; cliquer-glisser sur le trackpad fonctionne aussi. Les dossiers et les résultats de recherche se feuillettent de la même façon.
+
+### Modifié
+- Launchpad : Tourner la molette de la souris vers le bas passe désormais à la page suivante, quel que soit le réglage de défilement naturel du système ; le nouvel interrupteur « Défilement naturel des pages à la molette » sous « Défilement rapide des pages » (désactivé par défaut) inverse le sens.
+- Réglages : « Défilement rapide des pages au trackpad » s’appelle désormais « Défilement rapide des pages » et accélère aussi le changement de page à la molette : continuez à la tourner pour parcourir plusieurs pages.
+
+### Corrigé
+- Launchpad : Les souris à défilement fluide ne pouvaient pas changer de page avec la molette.
+
 ## v1.5.5
 
 ### Ajouté

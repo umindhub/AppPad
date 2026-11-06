@@ -20,6 +20,20 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.5.6
+
+### Hinzugefügt
+
+#### Launchpad
+- Mit gedrückter linker Maustaste auf einer freien Fläche ziehen, um umzublättern; Drücken und Ziehen auf dem Trackpad funktioniert ebenso. Ordner und Suchergebnisse lassen sich genauso blättern.
+
+### Geändert
+- Launchpad: Das Mausrad nach unten blättert jetzt zur nächsten Seite, unabhängig von der Systemeinstellung für natürliches Scrollen; der neue Schalter „Natürliches Blättern mit dem Mausrad“ unter „Schnelles Blättern“ (standardmäßig aus) kehrt die Richtung um.
+- Einstellungen: „Schnelles Blättern mit dem Trackpad“ heißt jetzt „Schnelles Blättern“ und beschleunigt auch das Blättern mit dem Mausrad: Weiterdrehen blättert über mehrere Seiten.
+
+### Behoben
+- Launchpad: Mäuse mit sanftem Scrollen konnten mit dem Mausrad nicht umblättern.
+
 ## v1.5.5
 
 ### Hinzugefügt

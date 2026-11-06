@@ -20,6 +20,20 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.6
+
+### Toegevoegd
+
+#### Launchpad
+- Houd de linkermuisknop ingedrukt en sleep over een lege plek om te bladeren; indrukken en slepen op het trackpad werkt ook. Mappen en zoekresultaten blader je op dezelfde manier.
+
+### Gewijzigd
+- Launchpad: Het muiswiel naar beneden draaien gaat nu naar de volgende pagina, ongeacht de systeeminstelling voor natuurlijk scrollen; de nieuwe schakelaar 'Natuurlijk bladeren met muiswiel' onder 'Snel bladeren' (standaard uit) keert de richting om.
+- Instellingen: 'Snel bladeren met trackpad' heet nu 'Snel bladeren' en maakt ook bladeren met het muiswiel sneller: blijf draaien om meerdere pagina's verder te gaan.
+
+### Opgelost
+- Launchpad: Muizen met vloeiend scrollen konden niet bladeren met het muiswiel.
+
 ## v1.5.5
 
 ### Toegevoegd
