@@ -20,6 +20,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.5.7
+
+### Behoben
+- Launchpad: Das erste Öffnen eines Ordners nach dem Start ruckelt nicht mehr; Ordner öffnen sich sofort flüssig.
+
 ## v1.5.6
 
 ### Hinzugefügt

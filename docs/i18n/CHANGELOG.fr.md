@@ -20,6 +20,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.5.7
+
+### Corrigé
+- Launchpad : la première ouverture d’un dossier après le lancement ne saccade plus ; les dossiers s’ouvrent instantanément et en douceur.
+
 ## v1.5.6
 
 ### Ajouté

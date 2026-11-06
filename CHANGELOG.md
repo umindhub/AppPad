@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.7
+
+### Fixed
+- Launchpad: Opening a folder for the first time after launch no longer stutters; folders now open smoothly right away.
+
 ## v1.5.6
 
 ### Added

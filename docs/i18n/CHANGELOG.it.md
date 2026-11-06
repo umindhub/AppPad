@@ -20,6 +20,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.5.7
+
+### Corretto
+- Launchpad: la prima apertura di una cartella dopo l’avvio non scatta più; le cartelle si aprono subito in modo fluido.
+
 ## v1.5.6
 
 ### Aggiunto

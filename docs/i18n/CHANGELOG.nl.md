@@ -20,6 +20,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.7
+
+### Opgelost
+- Launchpad: Een map voor het eerst openen na het starten hapert niet meer; mappen openen meteen vloeiend.
+
 ## v1.5.6
 
 ### Toegevoegd
