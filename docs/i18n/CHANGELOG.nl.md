@@ -20,6 +20,21 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.5
+
+### Toegevoegd
+
+#### Workflowmarkt
+- Installeer workflows uit de Workflowmarkt op youmindhub.com met één klik. Voordat een workflow wordt toegevoegd, laat AppPad zien wat hij doet en om welke rechten hij vraagt.
+- Instellingen › Workflows heeft een nieuwe banner die de Workflowmarkt opent, met een link om je eigen workflows te publiceren.
+
+### Gewijzigd
+- Workflows: Workflows uit de Workflowmarkt krijgen het label ‘Workflowmarkt’ met hun auteur.
+- Workflows: ‘Controleer op workflowupdates’ werkt ook workflows uit de Workflowmarkt bij en meldt het als er een niet meer beschikbaar is.
+
+### Opmerking
+- Installatielinks van de oude Workflowmarkt-pagina werken niet meer. Open de workflow opnieuw op youmindhub.com.
+
 ## v1.5.4
 
 ### Toegevoegd

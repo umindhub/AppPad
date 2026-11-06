@@ -20,6 +20,21 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.5.5
+
+### Aggiunto
+
+#### Mercato dei flussi
+- Installa con un clic i flussi del Mercato dei flussi su youmindhub.com. Prima di aggiungerlo, AppPad mostra cosa fa il flusso e quali permessi chiede.
+- Impostazioni › Flussi di lavoro ha un nuovo banner che apre il Mercato dei flussi, con un link per pubblicare i tuoi flussi.
+
+### Modificato
+- Flussi di lavoro: i flussi del Mercato dei flussi sono contrassegnati con «Mercato dei flussi» e il loro autore.
+- Flussi di lavoro: «Cerca aggiornamenti dei flussi» aggiorna anche i flussi del Mercato dei flussi e ti avvisa quando uno non è più disponibile.
+
+### Nota
+- I link di installazione della vecchia pagina del Mercato dei flussi non funzionano più. Apri di nuovo il flusso su youmindhub.com.
+
 ## v1.5.4
 
 ### Aggiunte

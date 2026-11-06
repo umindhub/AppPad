@@ -20,6 +20,21 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.5.5
+
+### Ajouté
+
+#### Marché des flux
+- Installez en un clic des flux du Marché des flux sur youmindhub.com. Avant de l’ajouter, AppPad montre ce que fait le flux et les autorisations qu’il demande.
+- Réglages › Flux de travail affiche une nouvelle bannière qui ouvre le Marché des flux, avec un lien pour publier vos propres flux.
+
+### Modifié
+- Flux de travail : les flux du Marché des flux portent la mention « Marché des flux » avec leur auteur.
+- Flux de travail : « Rechercher des mises à jour des flux » met aussi à jour les flux du Marché des flux et vous prévient quand l’un d’eux n’y est plus disponible.
+
+### Remarque
+- Les liens d’installation de l’ancienne page du Marché des flux ne fonctionnent plus. Rouvrez le flux sur youmindhub.com.
+
 ## v1.5.4
 
 ### Ajouts

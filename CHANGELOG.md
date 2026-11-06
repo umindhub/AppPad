@@ -19,6 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.5
+
+### Added
+
+#### Workflow Market
+- Install workflows from the Workflow Market on youmindhub.com with one click. Before adding one, AppPad shows what it does and which permissions it asks for.
+- Settings › Workflows has a new banner that opens the Workflow Market, with a link to publish your own workflows.
+
+### Changed
+- Workflows: Workflows from the Workflow Market are labeled “Workflow Market” together with their author.
+- Workflows: Check Workflow Updates also updates workflows from the Workflow Market and tells you when one is no longer available there.
+
+### Note
+- Install links from the old Workflow Market page no longer work. Open the workflow again on youmindhub.com.
+
 ## v1.5.4
 
 ### Added
