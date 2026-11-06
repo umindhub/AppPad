@@ -20,6 +20,18 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.5.8
+
+### Geändert
+- Backup: Integrierte Workflows werden nicht mehr gesichert und beim Wiederherstellen übersprungen; sie kommen immer mit der App.
+
+### Behoben
+- Workflows: Die integrierten Workflows zum Hinzufügen/Entfernen in Claude Desktop erscheinen nach einem Update nicht mehr doppelt.
+- Backup: Das Wiederherstellen eines älteren Backups fügt veraltete integrierte Workflows nicht mehr als Drittanbieter-Workflows hinzu.
+
+### Hinweis
+- Der Ein/Aus-Status und die Panel-Kurzbefehle integrierter Workflows werden nicht mehr aus Backups wiederhergestellt.
+
 ## v1.5.7
 
 ### Behoben

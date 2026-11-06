@@ -20,6 +20,18 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.5.8
+
+### Gewijzigd
+- Back-up: Ingebouwde workflows worden niet meer in back-ups opgenomen en worden bij het herstellen overgeslagen; ze komen altijd met de app mee.
+
+### Opgelost
+- Workflows: De ingebouwde workflows voor toevoegen/verwijderen in Claude Desktop verschijnen na een update niet meer dubbel.
+- Back-up: Het herstellen van een oudere back-up voegt verouderde ingebouwde workflows niet meer toe als workflows van derden.
+
+### Opmerking
+- De aan/uit-status en paneelsnelkoppelingen van ingebouwde workflows worden niet meer uit back-ups hersteld.
+
 ## v1.5.7
 
 ### Opgelost

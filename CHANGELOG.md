@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.5.8
+
+### Changed
+- Backup: Built-in workflows are no longer included in backups and are skipped when restoring; they always come with the app.
+
+### Fixed
+- Workflows: The built-in Claude Desktop add/remove workflows no longer show up twice after updating.
+- Backup: Restoring an older backup no longer brings back outdated built-in workflows as third-party ones.
+
+### Note
+- The on/off state and panel shortcuts of built-in workflows are no longer restored from backups.
+
 ## v1.5.7
 
 ### Fixed
