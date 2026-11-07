@@ -20,6 +20,31 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.6.0
+
+### Cambiado
+- Portapapeles: Los filtros de texto, imágenes y archivos siempre permanecen visibles. Los tipos sin elementos en las apps seleccionadas se muestran atenuados y se pueden seguir pulsando (la lista simplemente aparece vacía).
+- Portapapeles: Al seleccionar apps o tipos, los demás ya no se atenúan; la selección se indica solo con el resaltado.
+- Portapapeles: Mantener pulsado ⌘ ya no muestra insignias numéricas en la lista; las indicaciones ⌘1–⌘0 siguen como antes.
+
+### Corregido
+- Portapapeles: La fila de filtros ya no da saltos al cambiar de app.
+
+## v1.5.9
+
+### Cambiado
+- Flujos de trabajo: los scripts se ejecutan en un entorno aislado más estricto y ya no pueden abrir apps, archivos ni enlaces por sí mismos, ni ejecutar atajos. Usa un paso “Abrir URL” para los enlaces y un paso “Atajo” para los atajos.
+- Flujos de trabajo: los pasos “Abrir URL” ya no abren archivos ni ejecutan atajos; el resto de enlaces funciona como antes.
+- Flujos de trabajo: los scripts no pueden controlar otras apps (macOS no lo permite), así que ya no piden acceso de Automatización.
+- Flujos de trabajo: los flujos escritos por asistentes de IA siguen estas reglas.
+
+### Corregido
+- Flujos de trabajo: los pasos de AppleScript no se ejecutaban, ni siquiera los más sencillos.
+- Flujos de trabajo: algunos scripts de shell que escriben texto de varias líneas no se ejecutaban.
+
+### Nota
+- Si alguno de tus flujos abre apps o enlaces, o ejecuta un atajo desde un script, sustituye esa parte por un paso “Abrir URL” o “Atajo”.
+
 ## v1.5.8
 
 ### Cambiado

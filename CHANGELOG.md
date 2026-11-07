@@ -19,6 +19,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.0
+
+### Changed
+- Clipboard: Text, image and file filters always stay visible. Types the selected apps have no items of are shown faded and can still be clicked (the list is simply empty).
+- Clipboard: Selecting apps or types no longer fades the other ones; the selection is shown by its highlight only.
+- Clipboard: Holding ⌘ no longer shows number badges in the list; the ⌘1–⌘0 hints stay as before.
+
+### Fixed
+- Clipboard: The filter row no longer jumps around when switching apps.
+
+## v1.5.9
+
+### Changed
+- Workflows: Scripts run in a stricter sandbox and can no longer open apps, files or links, or run shortcuts on their own. Use an “Open URL” step for links and a “Shortcut” step for shortcuts.
+- Workflows: “Open URL” steps no longer open files or run shortcuts; all other links work as before.
+- Workflows: Scripts can’t control other apps (macOS doesn’t allow it), so they no longer ask for Automation access.
+- Workflows: Workflows written by AI assistants follow these rules.
+
+### Fixed
+- Workflows: AppleScript steps failed to run, even very simple ones.
+- Workflows: Some shell scripts that write multi-line text failed to run.
+
+### Note
+- If one of your own workflows opens apps or links, or runs a shortcut from inside a script, replace that part with an “Open URL” or “Shortcut” step.
+
 ## v1.5.8
 
 ### Changed

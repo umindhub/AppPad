@@ -20,6 +20,31 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.6.0
+
+### Modificato
+- Appunti: I filtri per testo, immagini e file restano sempre visibili. I tipi senza elementi nelle app selezionate appaiono attenuati e si possono comunque cliccare (l’elenco è semplicemente vuoto).
+- Appunti: Selezionando app o tipi, gli altri non vengono più attenuati; la selezione è indicata solo dall’evidenziazione.
+- Appunti: Tenendo premuto ⌘ non compaiono più badge numerici nell’elenco; i suggerimenti ⌘1–⌘0 restano come prima.
+
+### Corretto
+- Appunti: La barra dei filtri non salta più quando si cambia app.
+
+## v1.5.9
+
+### Modificato
+- Flussi di lavoro: gli script vengono eseguiti in una sandbox più rigida e non possono più aprire da soli app, file o link, né eseguire comandi rapidi. Usa un passaggio “Apri URL” per i link e un passaggio “Comando rapido” per i comandi rapidi.
+- Flussi di lavoro: i passaggi “Apri URL” non aprono più file e non eseguono più comandi rapidi; tutti gli altri link funzionano come prima.
+- Flussi di lavoro: gli script non possono controllare altre app (macOS non lo consente), quindi non chiedono più l’accesso Automazione.
+- Flussi di lavoro: i flussi scritti dagli assistenti IA rispettano queste regole.
+
+### Corretto
+- Flussi di lavoro: i passaggi AppleScript non venivano eseguiti, nemmeno i più semplici.
+- Flussi di lavoro: alcuni script shell che scrivono testo su più righe non venivano eseguiti.
+
+### Nota
+- Se uno dei tuoi flussi apre app o link, o esegue un comando rapido da uno script, sostituisci quella parte con un passaggio “Apri URL” o “Comando rapido”.
+
 ## v1.5.8
 
 ### Modificato

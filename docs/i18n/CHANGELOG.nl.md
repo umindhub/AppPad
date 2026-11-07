@@ -20,6 +20,31 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.6.0
+
+### Gewijzigd
+- Klembord: De filters voor tekst, afbeeldingen en bestanden blijven altijd zichtbaar. Typen waarvoor de geselecteerde apps geen items hebben, worden vervaagd weergegeven en zijn nog steeds aanklikbaar (de lijst is dan gewoon leeg).
+- Klembord: Bij het selecteren van apps of typen worden de andere niet meer vervaagd; de selectie wordt alleen nog door de markering aangegeven.
+- Klembord: ⌘ ingedrukt houden toont geen nummerbadges meer in de lijst; de hints ⌘1–⌘0 blijven zoals voorheen.
+
+### Opgelost
+- Klembord: De filterbalk verspringt niet meer bij het wisselen van app.
+
+## v1.5.9
+
+### Gewijzigd
+- Workflows: scripts draaien in een strengere sandbox en kunnen niet meer zelf apps, bestanden of links openen of opdrachten uitvoeren. Gebruik een stap ‘Open URL’ voor links en een stap ‘Opdracht’ voor opdrachten.
+- Workflows: stappen ‘Open URL’ openen geen bestanden meer en voeren geen opdrachten meer uit; alle andere links werken zoals voorheen.
+- Workflows: scripts kunnen geen andere apps bedienen (macOS staat dat niet toe) en vragen daarom niet meer om toegang tot Automatisering.
+- Workflows: workflows die door AI-assistenten worden geschreven, volgen deze regels.
+
+### Opgelost
+- Workflows: AppleScript-stappen werden niet uitgevoerd, zelfs heel eenvoudige niet.
+- Workflows: sommige shellscripts die tekst van meerdere regels schrijven, werden niet uitgevoerd.
+
+### Opmerking
+- Als een van je eigen workflows in een script apps of links opent of een opdracht uitvoert, vervang dat deel dan door een stap ‘Open URL’ of ‘Opdracht’.
+
 ## v1.5.8
 
 ### Gewijzigd

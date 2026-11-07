@@ -20,6 +20,31 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.0
+
+### Geändert
+- Zwischenablage: Die Filter für Text, Bilder und Dateien bleiben immer sichtbar. Typen, für die die ausgewählten Apps keine Einträge haben, werden blass angezeigt und lassen sich trotzdem anklicken (die Liste ist dann einfach leer).
+- Zwischenablage: Beim Auswählen von Apps oder Typen werden die anderen nicht mehr blass; die Auswahl wird nur noch durch die Hervorhebung angezeigt.
+- Zwischenablage: Gedrückt gehaltenes ⌘ zeigt keine Zahlen-Badges mehr in der Liste; die Hinweise ⌘1–⌘0 bleiben wie bisher.
+
+### Behoben
+- Zwischenablage: Die Filterleiste springt beim Wechseln der Apps nicht mehr hin und her.
+
+## v1.5.9
+
+### Geändert
+- Workflows: Skripte laufen in einer strengeren Sandbox und können Apps, Dateien und Links nicht mehr selbst öffnen oder Kurzbefehle ausführen. Verwende für Links einen Schritt „URL öffnen“ und für Kurzbefehle einen Schritt „Kurzbefehl“.
+- Workflows: Schritte „URL öffnen“ öffnen keine Dateien mehr und führen keine Kurzbefehle mehr aus; alle anderen Links funktionieren wie bisher.
+- Workflows: Skripte können keine anderen Apps steuern (macOS erlaubt das nicht) und fragen daher nicht mehr nach Automation-Zugriff.
+- Workflows: Von KI-Assistenten geschriebene Workflows halten sich an diese Regeln.
+
+### Behoben
+- Workflows: AppleScript-Schritte ließen sich nicht ausführen, selbst ganz einfache.
+- Workflows: Manche Shell-Skripte, die mehrzeiligen Text schreiben, ließen sich nicht ausführen.
+
+### Hinweis
+- Wenn einer deiner eigenen Workflows in einem Skript Apps oder Links öffnet oder einen Kurzbefehl ausführt, ersetze diesen Teil durch einen Schritt „URL öffnen“ oder „Kurzbefehl“.
+
 ## v1.5.8
 
 ### Geändert

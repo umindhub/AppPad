@@ -20,6 +20,31 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.6.0
+
+### Modifié
+- Presse-papiers : Les filtres texte, images et fichiers restent toujours visibles. Les types sans éléments pour les apps sélectionnées apparaissent estompés et restent cliquables (la liste est simplement vide).
+- Presse-papiers : Sélectionner des apps ou des types n’estompe plus les autres ; la sélection est indiquée uniquement par sa surbrillance.
+- Presse-papiers : Maintenir ⌘ n’affiche plus de pastilles numérotées dans la liste ; les indications ⌘1–⌘0 restent comme avant.
+
+### Corrigé
+- Presse-papiers : La barre de filtres ne saute plus lors du changement d’app.
+
+## v1.5.9
+
+### Modifié
+- Flux de travail : les scripts s’exécutent dans un bac à sable plus strict et ne peuvent plus ouvrir eux-mêmes des apps, des fichiers ou des liens, ni exécuter des raccourcis. Utilisez une étape « Ouvrir l’URL » pour les liens et une étape « Raccourci » pour les raccourcis.
+- Flux de travail : les étapes « Ouvrir l’URL » n’ouvrent plus de fichiers et n’exécutent plus de raccourcis ; tous les autres liens fonctionnent comme avant.
+- Flux de travail : les scripts ne peuvent pas contrôler d’autres apps (macOS ne le permet pas) et ne demandent donc plus l’accès Automatisation.
+- Flux de travail : les flux écrits par les assistants IA respectent ces règles.
+
+### Corrigé
+- Flux de travail : les étapes AppleScript ne s’exécutaient pas, même les plus simples.
+- Flux de travail : certains scripts shell qui écrivent du texte sur plusieurs lignes ne s’exécutaient pas.
+
+### Remarque
+- Si l’un de vos flux ouvre des apps ou des liens, ou exécute un raccourci depuis un script, remplacez cette partie par une étape « Ouvrir l’URL » ou « Raccourci ».
+
 ## v1.5.8
 
 ### Modifié
