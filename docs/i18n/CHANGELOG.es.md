@@ -20,6 +20,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.6.3
+
+### Cambiado
+- Cuenta: Tu sesión se mantiene iniciada de forma fiable; un problema breve de red o del servidor ya no la cierra.
+
+### Corregido
+- Cuenta: AppPad podía cerrar tu sesión en segundo plano sin avisar.
+
 ## v1.6.2
 
 ### Cambiado

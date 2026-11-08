@@ -20,6 +20,14 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.6.3
+
+### Modifié
+- Compte : Vous restez connecté de façon fiable ; un bref problème de réseau ou de serveur ne vous déconnecte plus.
+
+### Corrigé
+- Compte : AppPad pouvait vous déconnecter silencieusement en arrière-plan.
+
 ## v1.6.2
 
 ### Modifié

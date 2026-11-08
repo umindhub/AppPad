@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.3
+
+### Changed
+- Account: You stay signed in reliably; a brief network or server problem no longer signs you out.
+
+### Fixed
+- Account: AppPad could sign you out silently in the background.
+
 ## v1.6.2
 
 ### Changed
