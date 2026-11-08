@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.2
+
+### Changed
+- Launchpad: Opening with a four-finger pinch is smoother, also after a long time unused.
+- Launchpad: Opens faster after switching to another display.
+
+### Fixed
+- Launchpad: The first open after switching between light and dark appearance no longer pauses.
+
 ## v1.6.1
 
 ### Changed

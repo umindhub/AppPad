@@ -20,6 +20,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > **Changement de licence :** AppPad jusqu’à v1.4.3 incluse a été publié sous AGPL-3.0. Les versions suivantes sont un logiciel commercial propriétaire.
 
+## v1.6.2
+
+### Modifié
+- Launchpad : l’ouverture par pincement à quatre doigts est plus fluide, même après une longue inactivité.
+- Launchpad : s’ouvre plus vite après être passé à un autre écran.
+
+### Corrigé
+- Launchpad : la première ouverture après un passage entre l’apparence claire et sombre ne marque plus de pause.
+
 ## v1.6.1
 
 ### Modifié
