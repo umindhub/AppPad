@@ -20,6 +20,14 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.1
+
+### Geändert
+- Launchpad: Blättern zwischen Seiten und das Öffnen per Vier-Finger-Geste laufen flüssiger.
+
+### Behoben
+- Launchpad: Das erste Blättern zu jeder Seite nach dem Öffnen ruckelt nicht mehr.
+
 ## v1.6.0
 
 ### Geändert
