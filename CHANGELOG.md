@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.4
+
+### Changed
+- Account: After a network outage, AppPad keeps retrying in the background for several hours, so your sign-in and license recover on their own.
+
 ## v1.6.3
 
 ### Changed

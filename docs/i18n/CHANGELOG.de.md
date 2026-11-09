@@ -20,6 +20,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.4
+
+### Geändert
+- Konto: Nach einem Netzwerkausfall versucht AppPad es im Hintergrund mehrere Stunden lang erneut, sodass Anmeldung und Lizenz sich von selbst wiederherstellen.
+
 ## v1.6.3
 
 ### Geändert

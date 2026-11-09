@@ -20,6 +20,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.6.4
+
+### Gewijzigd
+- Account: Na een netwerkstoring blijft AppPad het enkele uren op de achtergrond opnieuw proberen, zodat je aanmelding en licentie zich vanzelf herstellen.
+
 ## v1.6.3
 
 ### Gewijzigd
