@@ -20,6 +20,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.5
+
+### Geändert
+- Launchpad: Das Öffnen mit der Vier-Finger-Pinch-Geste ist schneller und flüssiger.
+- Launchpad: Öffnet mit dem Hintergrundbild als Hintergrund schneller.
+
+### Behoben
+- Launchpad: Kurzes Ruckeln beim Öffnen per Pinch-Geste direkt nach dem Start oder nach dem Wechsel auf einen anderen Bildschirm behoben.
+
 ## v1.6.4
 
 ### Geändert

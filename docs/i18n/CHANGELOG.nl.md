@@ -20,6 +20,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.6.5
+
+### Gewijzigd
+- Launchpad: Openen met de knijpbeweging met vier vingers gaat sneller en vloeiender.
+- Launchpad: Opent sneller met de bureaubladachtergrond als achtergrond.
+
+### Opgelost
+- Launchpad: Kort haperen opgelost bij openen met de knijpbeweging direct na het starten of na het wisselen naar een ander scherm.
+
 ## v1.6.4
 
 ### Gewijzigd
