@@ -20,6 +20,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.6.6
+
+### Cambiado
+- Launchpad: Se ha mejorado el gesto de pellizco con cuatro dedos, que ahora es más fluido y receptivo.
+
 ## v1.6.5
 
 ### Cambiado
