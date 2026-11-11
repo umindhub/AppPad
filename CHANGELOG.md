@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.7
+
+### Fixed
+- Launchpad: Fixed the Dock flickering when moving icons.
+
 ## v1.6.6
 
 ### Changed
