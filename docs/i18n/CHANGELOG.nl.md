@@ -20,6 +20,16 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.6.8
+
+### Toegevoegd
+
+#### Vensters
+- Pas het formaat van vensters aan naar het kwart linksboven, linksonder, rechtsboven of rechtsonder van het scherm.
+
+#### Workflows
+- Workflows kunnen nu apps beheren: verbergen, openen, afsluiten en de venstergrootte instellen.
+
 ## v1.6.7
 
 ### Fixed

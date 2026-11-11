@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.8
+
+### Added
+
+#### Windows
+- Resize windows to the top-left, bottom-left, top-right, or bottom-right quarter of the screen.
+
+#### Workflows
+- Workflows can now control apps: hide, open, quit, and set window size.
+
 ## v1.6.7
 
 ### Fixed

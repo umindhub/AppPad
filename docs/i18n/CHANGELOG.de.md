@@ -20,6 +20,16 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.8
+
+### Hinzugefügt
+
+#### Fenster
+- Fenstergröße auf das obere linke, untere linke, obere rechte oder untere rechte Viertel des Bildschirms ändern.
+
+#### Workflows
+- Workflows können jetzt Apps steuern: ausblenden, öffnen, beenden und die Fenstergröße festlegen.
+
 ## v1.6.7
 
 ### Fixed
