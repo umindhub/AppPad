@@ -20,6 +20,19 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.6.9
+
+### Added
+
+#### Workbench
+- Als een workflow-zoekopdracht geen resultaten oplevert, worden nu een app-marktcategorie en de app-marktwebsite aangeboden.
+
+### Changed
+- Klembord: De weergave van opgeslagen klemborditems is verbeterd.
+
+### Fixed
+- Instellingen: Een probleem met de avatarcache in Account is opgelost.
+
 ## v1.6.8
 
 ### Toegevoegd

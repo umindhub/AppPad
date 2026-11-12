@@ -20,6 +20,19 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.6.9
+
+### Added
+
+#### Workbench
+- Wenn die Workflow-Suche keine Treffer liefert, werden jetzt eine App-Markt-Kategorie und die App-Markt-Website angeboten.
+
+### Changed
+- Zwischenablage: Die Anzeige gespeicherter Zwischenablage-Einträge wurde verbessert.
+
+### Fixed
+- Einstellungen: Ein Problem mit dem Avatar-Cache im Konto wurde behoben.
+
 ## v1.6.8
 
 ### Hinzugefügt

@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.6.9
+
+### Added
+
+#### Workbench
+- When a workflow search finds no match, App Market category and App Market website entries are now offered.
+
+### Changed
+- Clipboard: Improved the display of saved clipboard items.
+
+### Fixed
+- Settings: Fixed an avatar cache issue in Account.
+
 ## v1.6.8
 
 ### Added
