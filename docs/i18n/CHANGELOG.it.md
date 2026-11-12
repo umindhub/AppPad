@@ -20,6 +20,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > **Cambio di licenza:** AppPad fino alla v1.4.3 inclusa è stato pubblicato sotto AGPL-3.0. Le versioni successive sono software commerciale proprietario.
 
+## v1.7.0
+
+### Modificato
+- OCR: Riconoscimento del testo più veloce e fluido.
+
 ## v1.6.9
 
 ### Added
