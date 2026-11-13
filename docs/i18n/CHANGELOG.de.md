@@ -20,6 +20,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
 
+## v1.7.1
+
+### Geändert
+- Einstellungen: Das Layout des Einstellungsfensters wurde für ein einheitlicheres Erscheinungsbild überarbeitet.
+
 ## v1.7.0
 
 ### Geändert

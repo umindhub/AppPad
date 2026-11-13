@@ -20,6 +20,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > **Licentiewijziging:** AppPad tot en met v1.4.3 is uitgebracht onder AGPL-3.0. Latere versies zijn propriëtaire commerciële software.
 
+## v1.7.1
+
+### Gewijzigd
+- Instellingen: De indeling van het instellingenvenster is verfijnd voor een consistentere uitstraling.
+
 ## v1.7.0
 
 ### Gewijzigd
