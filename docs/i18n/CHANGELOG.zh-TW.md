@@ -18,8 +18,6 @@ AppPad 的所有重要變更都記錄在此檔案中。
 
 > 本文為 [CHANGELOG.md](../../CHANGELOG.md) 的譯文，如有出入，以英文版為準。
 
-> **授權變更**：AppPad v1.4.3 及之前的版本以 AGPL-3.0 開源發布，之後的版本為閉源商業軟體。
-
 ## v1.7.2
 
 ### 修復
@@ -287,7 +285,7 @@ AppPad 的所有重要變更都記錄在此檔案中。
 ### 新增
 
 #### 設定
-- 在「關於」上方新增「捐助」頁：可掃描微信 QR 碼支持 AppPad，或在 GitHub 上按 Star。
+- 在「關於」上方新增「捐助」頁：可掃描微信 QR 碼支持 AppPad。
 
 ## v1.4.1
 
@@ -799,4 +797,3 @@ AppPad 的所有重要變更都記錄在此檔案中。
 #### 發佈
 - 使用 Developer ID 簽署並經過 Apple 公證。
 - 透過 Homebrew 安裝：`brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`。
-- 原始碼採用 AGPL-3.0 授權。內建工作流程、工作流程格式和第三方工作流程採用 MIT 授權。

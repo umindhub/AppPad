@@ -18,8 +18,6 @@ AppPad의 주요 변경 사항은 모두 이 파일에 기록됩니다.
 
 > 이 문서는 [CHANGELOG.md](../../CHANGELOG.md)의 번역본입니다. 내용이 다를 경우 영어판을 기준으로 합니다.
 
-> **라이선스 변경:** AppPad v1.4.3까지는 AGPL-3.0으로 공개되었습니다. 이후 버전은 독점 상용 소프트웨어입니다.
-
 ## v1.7.2
 
 ### 수정됨
@@ -288,7 +286,7 @@ AppPad의 주요 변경 사항은 모두 이 파일에 기록됩니다.
 ### 추가
 
 #### 설정
-- '정보' 위에 '후원' 탭 추가: WeChat QR 코드로 AppPad를 후원하거나 GitHub에서 스타를 줄 수 있습니다.
+- '정보' 위에 '후원' 탭 추가: WeChat QR 코드로 AppPad를 후원할 수 있습니다.
 
 ## v1.4.1
 
@@ -800,4 +798,3 @@ AppPad의 주요 변경 사항은 모두 이 파일에 기록됩니다.
 #### 배포
 - Developer ID로 서명되고 Apple의 공증을 받았습니다.
 - Homebrew로 설치: `brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`.
-- 소스 코드는 AGPL-3.0. 내장 워크플로, 워크플로 형식, 서드파티 워크플로는 MIT 라이선스입니다.

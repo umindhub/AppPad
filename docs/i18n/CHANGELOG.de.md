@@ -18,8 +18,6 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
-> **Lizenzänderung:** AppPad bis einschließlich v1.4.3 wurde unter der AGPL-3.0 veröffentlicht. Spätere Versionen sind proprietäre kommerzielle Software.
-
 ## v1.7.2
 
 ### Behoben
@@ -288,7 +286,7 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Hinzugefügt
 
 #### Einstellungen
-- Neuer Tab „Spenden“ über „Über“: AppPad per WeChat-QR-Code unterstützen oder auf GitHub einen Stern geben.
+- Neuer Tab „Spenden“ über „Über“: AppPad per WeChat-QR-Code unterstützen.
 
 ## v1.4.1
 
@@ -800,4 +798,3 @@ Erste öffentliche Version. Erfordert macOS 26 Tahoe oder neuer (Universal: Appl
 #### Vertrieb
 - Mit Developer ID signiert und von Apple notariell beglaubigt.
 - Installation mit Homebrew: `brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`.
-- Quellcode unter AGPL-3.0. Integrierte Workflows, das Workflow-Format und Workflows von Drittanbietern unter MIT.

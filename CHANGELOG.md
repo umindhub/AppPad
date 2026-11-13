@@ -17,8 +17,6 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-> **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
-
 ## v1.7.2
 
 ### Fixed
@@ -287,7 +285,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 #### Settings
-- New Donate tab above About: support AppPad via WeChat by scanning the QR code, or give it a star on GitHub.
+- New Donate tab above About: support AppPad via WeChat by scanning the QR code.
 
 ## v1.4.1
 
@@ -799,4 +797,3 @@ First public release. Requires macOS 26 Tahoe or later (Universal: Apple Silicon
 #### Distribution
 - Signed with Developer ID and notarized by Apple.
 - Install with Homebrew: `brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`.
-- Source code under AGPL-3.0. Built-in workflows, the workflow format and third-party workflows under MIT.

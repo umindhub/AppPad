@@ -18,8 +18,6 @@ AppPad 的所有重要变更都记录在此文件中。
 
 > 本文为 [CHANGELOG.md](../../CHANGELOG.md) 的译文，如有出入，以英文版为准。
 
-> **协议变更**：AppPad v1.4.3 及之前的版本以 AGPL-3.0 开源发布，之后的版本为闭源商业软件。
-
 ## v1.7.2
 
 ### 修复
@@ -288,7 +286,7 @@ AppPad 的所有重要变更都记录在此文件中。
 ### 新增
 
 #### 设置
-- 在「关于」上方新增「捐助」页：可扫描微信二维码支持 AppPad，或在 GitHub 上点 Star。
+- 在「关于」上方新增「捐助」页：可扫描微信二维码支持 AppPad。
 
 ## v1.4.1
 
@@ -800,4 +798,3 @@ AppPad 的所有重要变更都记录在此文件中。
 #### 分发
 - 使用 Developer ID 签名并经过 Apple 公证。
 - 通过 Homebrew 安装：`brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`。
-- 源代码采用 AGPL-3.0 协议。内置工作流、工作流格式和第三方工作流采用 MIT 协议。

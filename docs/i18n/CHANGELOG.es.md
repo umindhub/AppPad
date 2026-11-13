@@ -18,8 +18,6 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
-> **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
-
 ## v1.7.2
 
 ### Corregido
@@ -288,7 +286,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 ### Añadido
 
 #### Ajustes
-- Nueva pestaña Donar encima de Acerca de: apoya AppPad escaneando el código QR de WeChat o dale una estrella en GitHub.
+- Nueva pestaña Donar encima de Acerca de: apoya AppPad escaneando el código QR de WeChat.
 
 ## v1.4.1
 
@@ -800,4 +798,3 @@ Primera versión pública. Requiere macOS 26 Tahoe o posterior (Universal: Apple
 #### Distribución
 - Firmado con Developer ID y notarizado por Apple.
 - Instálalo con Homebrew: `brew tap umindhub/tap && brew trust umindhub/tap && brew install --cask apppad`.
-- Código fuente bajo AGPL-3.0. Los flujos integrados, el formato de flujos de trabajo y los flujos de terceros, bajo MIT.
