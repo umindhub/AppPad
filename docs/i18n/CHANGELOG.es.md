@@ -20,6 +20,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > **Cambio de licencia:** AppPad hasta la v1.4.3 inclusive se publicó bajo AGPL-3.0. Las versiones posteriores son software comercial propietario.
 
+## v1.7.2
+
+### Corregido
+- Flujos de trabajo: cuando una búsqueda empieza con comillas, la búsqueda web ahora recibe solo el texto posterior a la primera comilla.
+
 ## v1.7.1
 
 ### Cambiado

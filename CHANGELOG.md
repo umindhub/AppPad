@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 > **License change:** AppPad v1.4.3 and earlier were released under AGPL-3.0. Later versions are closed-source commercial software.
 
+## v1.7.2
+
+### Fixed
+- Workflows: When a search starts with a quote mark, the web search now receives only the text after the first quote mark.
+
 ## v1.7.1
 
 ### Changed
