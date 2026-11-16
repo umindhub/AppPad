@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.3  - 2026-11-16
+
+### Fixed
+- Instellingen: Bij het scrollen met het muiswiel over de zijbalk volgt de selectie nu de getoonde pagina.
+
 ## v1.7.2
 
 ### Opgelost

@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.3  - 2026-11-16
+
+### Fixed
+- Ajustes: Al desplazar la rueda del ratón sobre la barra lateral, la selección ahora sigue a la página mostrada.
+
 ## v1.7.2
 
 ### Corregido

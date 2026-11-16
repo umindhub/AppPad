@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.3  - 2026-11-16
+
+### Fixed
+- Einstellungen: Beim Scrollen mit dem Mausrad über der Seitenleiste folgt die Markierung jetzt der angezeigten Seite.
+
 ## v1.7.2
 
 ### Behoben

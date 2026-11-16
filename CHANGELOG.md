@@ -17,6 +17,11 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.3  - 2026-11-16
+
+### Fixed
+- Settings: Scrolling the mouse wheel over the sidebar now moves the highlight to the page being shown.
+
 ## v1.7.2
 
 ### Fixed
