@@ -18,6 +18,12 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.7.4  - 2026-11-23
+
+### Corrigé
+- Launchpad : Cliquer sur un espace vide juste après avoir déposé une icône fonctionne désormais immédiatement, sans attendre que l'icône se pose.
+- Launchpad : En mode édition, les pastilles de suppression grandissent et rétrécissent désormais avec les icônes à l'ouverture et à la fermeture d'un dossier.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed

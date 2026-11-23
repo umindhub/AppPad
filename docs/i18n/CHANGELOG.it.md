@@ -18,6 +18,12 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.7.4  - 2026-11-23
+
+### Corretto
+- Launchpad: Fare clic su uno spazio vuoto subito dopo aver rilasciato un'icona ora funziona immediatamente, senza aspettare che l'icona si assesti.
+- Launchpad: In modalità modifica, i badge di eliminazione ora crescono e si riducono insieme alle icone quando si apre o si chiude una cartella.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed

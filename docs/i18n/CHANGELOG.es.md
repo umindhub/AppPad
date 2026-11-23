@@ -18,6 +18,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.4  - 2026-11-23
+
+### Corregido
+- Launchpad: Hacer clic en un espacio vacío justo después de soltar un icono ahora funciona al instante, sin esperar a que el icono se asiente.
+- Launchpad: En el modo de edición, las insignias de eliminar ahora crecen y se reducen junto con los iconos al abrir o cerrar una carpeta.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed

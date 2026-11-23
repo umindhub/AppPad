@@ -18,6 +18,12 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.4  - 2026-11-23
+
+### Opgelost
+- Launchpad: Klikken op een lege plek direct na het loslaten van een icoon werkt nu meteen, zonder te wachten tot het icoon op zijn plek is.
+- Launchpad: In de bewerkingsmodus groeien en krimpen de verwijderknoppen nu samen met de iconen bij het openen en sluiten van een map.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed

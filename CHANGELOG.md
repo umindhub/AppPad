@@ -17,6 +17,12 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.4  - 2026-11-23
+
+### Fixed
+- Launchpad: Clicking empty space right after dropping an icon now works immediately, without waiting for the icon to settle.
+- Launchpad: In edit mode, the delete badges now grow and shrink together with the icons when a folder opens or closes.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed

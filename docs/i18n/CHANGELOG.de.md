@@ -18,6 +18,12 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.4  - 2026-11-23
+
+### Behoben
+- Launchpad: Ein Klick auf eine leere Fläche direkt nach dem Ablegen eines Symbols funktioniert jetzt sofort, ohne zu warten, bis das Symbol an seinem Platz ist.
+- Launchpad: Im Bearbeitungsmodus wachsen und schrumpfen die Löschen-Symbole jetzt beim Öffnen und Schließen eines Ordners gemeinsam mit den Symbolen.
+
 ## v1.7.3  - 2026-11-16
 
 ### Fixed
