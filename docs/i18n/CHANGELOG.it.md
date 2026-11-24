@@ -18,6 +18,16 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.7.5  - 2026-11-24
+
+### Aggiunto
+
+#### Generale
+- Margini del pannello: imposta i margini sinistro/destro, superiore e inferiore dei pannelli Appunti e Flussi di lavoro, ciascuno in percentuale della larghezza del pannello. Il layout si adatta così allo schermo e resta equilibrato anche sugli schermi a bassa risoluzione.
+
+### Modificato
+- Appunti / Flussi di lavoro: l'elenco e l'anteprima ora seguono gli angoli inferiori arrotondati del pannello.
+
 ## v1.7.4  - 2026-11-23
 
 ### Corretto

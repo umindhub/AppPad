@@ -18,6 +18,16 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.5  - 2026-11-24
+
+### Toegevoegd
+
+#### Algemeen
+- Paneelmarge: stel de marges links/rechts, boven en onder van de panelen Klembord en Workflows in, elk als percentage van de paneelbreedte. Zo past de indeling zich aan het scherm aan en ziet ze er ook op schermen met lage resolutie evenwichtig uit.
+
+### Gewijzigd
+- Klembord / Workflows: de lijst en het voorbeeld volgen nu de afgeronde onderhoeken van het paneel.
+
 ## v1.7.4  - 2026-11-23
 
 ### Opgelost

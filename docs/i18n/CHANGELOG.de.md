@@ -18,6 +18,16 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.5  - 2026-11-24
+
+### Hinzugefügt
+
+#### Allgemein
+- Panelabstand: Abstand links/rechts, oben und unten der Panels Zwischenablage und Workflows jeweils in Prozent der Panelbreite einstellbar. Das Layout passt sich so der Bildschirmgröße an und wirkt auch auf Displays mit niedriger Auflösung ausgewogen.
+
+### Geändert
+- Zwischenablage / Workflows: Liste und Vorschau folgen jetzt den abgerundeten unteren Ecken des Panels.
+
 ## v1.7.4  - 2026-11-23
 
 ### Behoben

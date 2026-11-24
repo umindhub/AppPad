@@ -17,6 +17,16 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.5  - 2026-11-24
+
+### Added
+
+#### General
+- Panel padding: set the left/right, top and bottom padding of the Clipboard and Workflows panels, each as a percentage of the panel width, so the layout scales with the screen and looks balanced on low-resolution displays.
+
+### Changed
+- Clipboard / Workflows: the list and preview now follow the rounded bottom corners of the panel.
+
 ## v1.7.4  - 2026-11-23
 
 ### Fixed
