@@ -18,6 +18,19 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.7.5  - 2026-11-24
+
+### Ajouté
+
+#### Général
+- Marges du panneau : réglez les marges gauche/droite, haute et basse des panneaux Presse-papiers et Flux de travail, chacune en pourcentage de la largeur du panneau.
+
+### Modifié
+- Presse-papiers / Flux de travail : la liste et l'aperçu suivent désormais les coins inférieurs arrondis du panneau.
+
+### Corrigé
+- Presse-papiers / Flux de travail : les marges ne s'adaptaient pas à la taille de l'écran et paraissaient déséquilibrées sur les écrans à faible résolution.
+
 ## v1.7.4  - 2026-11-23
 
 ### Corrigé

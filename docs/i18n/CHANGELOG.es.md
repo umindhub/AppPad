@@ -18,6 +18,19 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.5  - 2026-11-24
+
+### Añadido
+
+#### General
+- Margen del panel: ajusta los márgenes izquierdo/derecho, superior e inferior de los paneles Portapapeles y Flujos de trabajo, cada uno como porcentaje del ancho del panel.
+
+### Cambiado
+- Portapapeles / Flujos de trabajo: la lista y la vista previa ahora siguen las esquinas inferiores redondeadas del panel.
+
+### Corregido
+- Portapapeles / Flujos de trabajo: los márgenes no se adaptaban al tamaño de la pantalla y se veían desproporcionados en pantallas de baja resolución.
+
 ## v1.7.4  - 2026-11-23
 
 ### Corregido
