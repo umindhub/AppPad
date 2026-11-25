@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.6  - 2026-11-25
+
+### Opgelost
+- Klembord: ⌘⇧⌫ verwijdert een item nu volledig, ook opgeslagen items, zowel in de geschiedenis als in de weergave Opgeslagen.
+
 ## v1.7.5  - 2026-11-24
 
 ### Toegevoegd

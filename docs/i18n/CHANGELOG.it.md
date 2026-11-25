@@ -18,6 +18,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.7.6  - 2026-11-25
+
+### Corretto
+- Appunti: ⌘⇧⌫ ora elimina completamente un elemento, anche quelli salvati, sia nella cronologia sia nella vista dei salvati.
+
 ## v1.7.5  - 2026-11-24
 
 ### Aggiunto

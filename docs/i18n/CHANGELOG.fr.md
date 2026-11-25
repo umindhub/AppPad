@@ -18,6 +18,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.7.6  - 2026-11-25
+
+### Corrigé
+- Presse-papiers : ⌘⇧⌫ supprime désormais complètement un élément, y compris les éléments enregistrés, dans l’historique comme dans la vue « Enregistrés ».
+
 ## v1.7.5  - 2026-11-24
 
 ### Ajouté

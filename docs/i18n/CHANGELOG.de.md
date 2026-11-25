@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.6  - 2026-11-25
+
+### Behoben
+- Zwischenablage: ⌘⇧⌫ löscht einen Eintrag jetzt vollständig, auch gespeicherte, sowohl im Verlauf als auch in der Ansicht „Gespeichert“.
+
 ## v1.7.5  - 2026-11-24
 
 ### Hinzugefügt

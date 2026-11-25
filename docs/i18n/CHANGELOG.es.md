@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.6  - 2026-11-25
+
+### Corregido
+- Portapapeles: ⌘⇧⌫ ahora elimina un elemento por completo, incluidos los guardados, tanto en el historial como en la vista de guardados.
+
 ## v1.7.5  - 2026-11-24
 
 ### Añadido

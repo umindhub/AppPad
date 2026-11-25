@@ -17,6 +17,11 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.6  - 2026-11-25
+
+### Fixed
+- Clipboard: ⌘⇧⌫ now fully deletes an item, including saved ones, in both the history and Saved views.
+
 ## v1.7.5  - 2026-11-24
 
 ### Added
