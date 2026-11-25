@@ -17,6 +17,11 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.7 - 2026-11-25
+
+### Changed
+- Clipboard: Items in Saved now show a star mark, so Saved is easy to tell apart from History.
+
 ## v1.7.6  - 2026-11-25
 
 ### Fixed

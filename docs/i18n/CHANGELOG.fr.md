@@ -18,6 +18,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.7.7 - 2026-11-25
+
+### Changed
+- Presse-papiers : les éléments de « Enregistré » affichent désormais une étoile, pour les distinguer facilement de l’historique.
+
 ## v1.7.6  - 2026-11-25
 
 ### Corrigé

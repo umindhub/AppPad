@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.7 - 2026-11-25
+
+### Changed
+- Portapapeles: los elementos de «Guardado» ahora muestran una estrella, para distinguirlos fácilmente del historial.
+
 ## v1.7.6  - 2026-11-25
 
 ### Corregido

@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.7 - 2026-11-25
+
+### Changed
+- Klembord: items onder 'Bewaard' tonen nu een ster, zodat ze makkelijk te onderscheiden zijn van de geschiedenis.
+
 ## v1.7.6  - 2026-11-25
 
 ### Opgelost
