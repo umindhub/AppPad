@@ -18,6 +18,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.7.8 - 2026-11-26
+
+### Cambiado
+- Portapapeles: El botón de guardados junto al campo de búsqueda ahora es un botón redondo con ⭐️ y sin texto.
+
+### Corregido
+- Portapapeles: Los iconos de texto, imagen y archivo ahora siguen la búsqueda, por lo que los tipos sin resultados se atenúan correctamente, también en guardados.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed

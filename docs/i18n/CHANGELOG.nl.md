@@ -18,6 +18,14 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.8 - 2026-11-26
+
+### Gewijzigd
+- Klembord: De knop voor bewaarde items naast het zoekveld is nu een ronde ⭐️-knop zonder tekst.
+
+### Opgelost
+- Klembord: De pictogrammen voor tekst, afbeelding en bestand volgen nu de zoekopdracht, zodat typen zonder resultaten correct worden gedimd, ook bij bewaarde items.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed

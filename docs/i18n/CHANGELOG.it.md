@@ -18,6 +18,14 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.7.8 - 2026-11-26
+
+### Modificato
+- Appunti: il pulsante dei salvati accanto al campo di ricerca ora è un pulsante rotondo ⭐️ senza testo.
+
+### Corretto
+- Appunti: le icone di testo, immagine e file ora seguono la ricerca, così i tipi senza risultati vengono attenuati correttamente, anche nei salvati.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed

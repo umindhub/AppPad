@@ -17,6 +17,14 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.8 - 2026-11-26
+
+### Changed
+- Clipboard: The Saved button next to the search field is now a round ⭐️ button without text.
+
+### Fixed
+- Clipboard: The text, image, and file icons now follow your search, so types with no matching items are dimmed correctly, including in Saved.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed

@@ -18,6 +18,14 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.7.8 - 2026-11-26
+
+### Modifié
+- Presse-papiers : le bouton des éléments enregistrés à côté du champ de recherche est désormais un bouton rond ⭐️ sans texte.
+
+### Corrigé
+- Presse-papiers : les icônes texte, image et fichier suivent désormais la recherche, ce qui estompe correctement les types sans résultat, y compris dans les éléments enregistrés.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed

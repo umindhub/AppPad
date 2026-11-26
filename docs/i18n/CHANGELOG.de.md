@@ -18,6 +18,14 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.8 - 2026-11-26
+
+### Geändert
+- Zwischenablage: Die Schaltfläche „Gesichert“ neben dem Suchfeld ist jetzt eine runde ⭐️-Schaltfläche ohne Text.
+
+### Behoben
+- Zwischenablage: Die Symbole für Text, Bild und Datei richten sich jetzt nach der Suche, sodass Typen ohne passende Einträge richtig abgeblendet werden, auch in „Gesichert“.
+
 ## v1.7.7 - 2026-11-25
 
 ### Changed
