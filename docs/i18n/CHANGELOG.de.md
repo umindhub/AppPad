@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.7.9  - 2026-11-27
+
+### Behoben
+- Launchpad: Mehrere Probleme mit Symbolen behoben. Apps, die in mehreren Versionen installiert sind, werden jetzt korrekt angezeigt.
+
 ## v1.7.8 - 2026-11-26
 
 ### Geändert

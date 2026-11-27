@@ -18,6 +18,11 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.7.9  - 2026-11-27
+
+### Opgelost
+- Launchpad: Meerdere problemen met pictogrammen opgelost. Apps die in meerdere versies zijn geïnstalleerd, worden nu correct weergegeven.
+
 ## v1.7.8 - 2026-11-26
 
 ### Gewijzigd

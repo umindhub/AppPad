@@ -17,6 +17,11 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.7.9  - 2026-11-27
+
+### Fixed
+- Launchpad: Fixed several icon issues. Apps with multiple versions installed now display correctly.
+
 ## v1.7.8 - 2026-11-26
 
 ### Changed
