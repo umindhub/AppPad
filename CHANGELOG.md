@@ -17,6 +17,15 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Shortcuts: An app's shortcut now opens that exact copy, so different versions of the same app can each have their own shortcut.
+
+### Fixed
+- Shortcuts: The app list and assigned shortcuts now update right away when apps are installed or removed.
+- Shortcuts: Shortcuts no longer get mixed up or lost when several versions of an app are installed, and removed apps are now correctly shown as not found.
+
 ## v1.7.9  - 2026-11-27
 
 ### Fixed

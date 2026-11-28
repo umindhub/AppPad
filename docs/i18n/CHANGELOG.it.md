@@ -18,6 +18,15 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Scorciatoie: la scorciatoia di un'app ora apre esattamente quella copia, così versioni diverse della stessa app possono avere ciascuna la propria scorciatoia.
+
+### Fixed
+- Scorciatoie: l'elenco delle app e le scorciatoie assegnate ora si aggiornano subito quando le app vengono installate o rimosse.
+- Scorciatoie: le scorciatoie non vengono più confuse o perse quando sono installate più versioni di un'app, e le app rimosse vengono ora mostrate correttamente come non trovate.
+
 ## v1.7.9  - 2026-11-27
 
 ### Corretto

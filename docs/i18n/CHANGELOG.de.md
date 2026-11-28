@@ -18,6 +18,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Tastenkürzel: Das Tastenkürzel einer App öffnet jetzt genau diese Kopie, sodass verschiedene Versionen derselben App jeweils ein eigenes Kürzel haben können.
+
+### Fixed
+- Tastenkürzel: Die App-Liste und die zugewiesenen Kürzel werden jetzt sofort aktualisiert, wenn Apps installiert oder entfernt werden.
+- Tastenkürzel: Kürzel werden bei mehreren installierten Versionen einer App nicht mehr vertauscht oder gehen verloren, und entfernte Apps werden korrekt als nicht gefunden angezeigt.
+
 ## v1.7.9  - 2026-11-27
 
 ### Behoben

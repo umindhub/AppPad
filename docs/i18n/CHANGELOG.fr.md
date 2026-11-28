@@ -18,6 +18,15 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Raccourcis : le raccourci d'une app ouvre désormais précisément cette copie, ce qui permet à plusieurs versions d'une même app d'avoir chacune son propre raccourci.
+
+### Fixed
+- Raccourcis : la liste des apps et les raccourcis attribués se mettent désormais à jour immédiatement lors de l'installation ou de la suppression d'apps.
+- Raccourcis : les raccourcis ne sont plus mélangés ni perdus lorsque plusieurs versions d'une app sont installées, et les apps supprimées s'affichent correctement comme introuvables.
+
 ## v1.7.9  - 2026-11-27
 
 ### Corrigé

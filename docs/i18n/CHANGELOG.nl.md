@@ -18,6 +18,15 @@ De opmaak is gebaseerd op [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 > Dit is een vertaling van [CHANGELOG.md](../../CHANGELOG.md). Bij verschillen is de Engelse versie leidend.
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Sneltoetsen: De sneltoets van een app opent nu precies die kopie, zodat verschillende versies van dezelfde app elk een eigen sneltoets kunnen hebben.
+
+### Fixed
+- Sneltoetsen: De applijst en de toegewezen sneltoetsen worden nu direct bijgewerkt wanneer apps worden geïnstalleerd of verwijderd.
+- Sneltoetsen: Sneltoetsen raken niet meer door elkaar of kwijt wanneer er meerdere versies van een app zijn geïnstalleerd, en verwijderde apps worden nu correct als niet gevonden weergegeven.
+
 ## v1.7.9  - 2026-11-27
 
 ### Opgelost

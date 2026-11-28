@@ -18,6 +18,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.8.0  - 2026-11-28
+
+### Changed
+- Atajos: El atajo de una app ahora abre exactamente esa copia, de modo que distintas versiones de la misma app pueden tener cada una su propio atajo.
+
+### Fixed
+- Atajos: La lista de apps y los atajos asignados ahora se actualizan al instante cuando se instalan o eliminan apps.
+- Atajos: Los atajos ya no se mezclan ni se pierden cuando hay varias versiones de una app instaladas, y las apps eliminadas ahora se muestran correctamente como no encontradas.
+
 ## v1.7.9  - 2026-11-27
 
 ### Corregido
