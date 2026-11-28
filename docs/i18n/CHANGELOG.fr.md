@@ -18,6 +18,11 @@ Le format s’appuie sur [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 > Ce document est une traduction de [CHANGELOG.md](../../CHANGELOG.md). En cas de divergence, la version anglaise fait foi.
 
+## v1.8.1  - 2026-11-28
+
+### Corrigé
+- Raccourcis clavier : Correction d'un problème empêchant les raccourcis clavier de fonctionner correctement.
+
 ## v1.8.0  - 2026-11-28
 
 ### Changed

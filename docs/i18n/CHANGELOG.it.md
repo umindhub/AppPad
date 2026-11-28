@@ -18,6 +18,11 @@ Il formato si basa su [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e
 
 > Questo documento è una traduzione di [CHANGELOG.md](../../CHANGELOG.md). In caso di differenze, fa fede la versione inglese.
 
+## v1.8.1  - 2026-11-28
+
+### Corretto
+- Scorciatoie da tastiera: Risolto un problema per cui le scorciatoie da tastiera non funzionavano correttamente.
+
 ## v1.8.0  - 2026-11-28
 
 ### Changed

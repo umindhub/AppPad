@@ -18,6 +18,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y
 
 > Este documento es una traducción de [CHANGELOG.md](../../CHANGELOG.md). En caso de discrepancia, prevalece la versión en inglés.
 
+## v1.8.1  - 2026-11-28
+
+### Corregido
+- Atajos de teclado: Se corrigió un problema por el que los atajos de teclado no funcionaban correctamente.
+
 ## v1.8.0  - 2026-11-28
 
 ### Changed

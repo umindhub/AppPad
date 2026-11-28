@@ -17,6 +17,11 @@ All notable changes to AppPad are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## v1.8.1  - 2026-11-28
+
+### Fixed
+- Shortcuts: Fixed an issue where keyboard shortcuts did not work properly.
+
 ## v1.8.0  - 2026-11-28
 
 ### Changed

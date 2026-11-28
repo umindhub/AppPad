@@ -18,6 +18,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 > Dies ist eine Übersetzung von [CHANGELOG.md](../../CHANGELOG.md). Bei Abweichungen gilt die englische Fassung.
 
+## v1.8.1  - 2026-11-28
+
+### Behoben
+- Tastenkürzel: Ein Problem wurde behoben, bei dem Tastenkürzel nicht richtig funktionierten.
+
 ## v1.8.0  - 2026-11-28
 
 ### Changed
